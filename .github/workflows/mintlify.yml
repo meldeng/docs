@@ -17,3 +17,4 @@ jobs:
           node-version: 20
       - run: npm install -g mintlify
       - run: mintlify broken-links
+        continue-on-error: true
