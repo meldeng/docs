@@ -542,5 +542,10 @@
     "socials": {
       "x": "https://x.com/meldio"
     }
+  },
+  "api": {
+    "examples": {
+      "prefill": true
+    }
   }
 }
