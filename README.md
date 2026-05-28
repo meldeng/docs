@@ -44,6 +44,17 @@ View your local preview at `http://localhost:3000`.
 
 Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
 
+## Versioned API reference
+
+The Mintlify API reference is generated from two sources of truth:
+
+- `docs.template.json` contains the shared site configuration and Documentation tab
+- `openapi/*.json` contains versioned API specs for each product
+
+Run `python3 update_docs_json.py` to regenerate `docs.json` after changing the shared docs navigation or the version list.
+
+Run `python3 normalize_openapi.py openapi` after adding specs to keep stable `/api-reference/...` endpoint links working across Mintlify versions.
+
 ## Need help?
 
 ### Troubleshooting

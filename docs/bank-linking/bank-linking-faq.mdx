@@ -18,7 +18,7 @@ Answers to the most common questions developers ask while integrating Meld Bank 
   </Accordion>
 
   <Accordion title="Q3: Why can't I find a certain institution in the Meld picker?">
-    Assuming the institution is supported by one of the providers you have enabled, the likely issue is that the institution doesn't support all of the products you requested when calling [/connect/start](/api-reference/bank-linking/bank-linking-connect-create). Meld filters the institutions returned in the picker to only the ones that support all products requested. To check if this is the issue, try making a request for only `BALANCES` and `TRANSACTIONS` and see if your institution shows up.
+    Assuming the institution is supported by one of the providers you have enabled, the likely issue is that the institution doesn't support all of the products you requested when calling [/connect/start](/api-reference/bank-linking/connect/bank-linking-connect-create). Meld filters the institutions returned in the picker to only the ones that support all products requested. To check if this is the issue, try making a request for only `BALANCES` and `TRANSACTIONS` and see if your institution shows up.
   </Accordion>
 
   <Accordion title="Q4: I have a connection that doesn't seem to have been updated in a while even though the user has been making transactions in their account. Why is that?">

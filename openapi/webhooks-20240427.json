@@ -1,0 +1,1198 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "WEBHOOKS",
+    "termsOfService": "urn:tos",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://springdoc.org"
+    },
+    "version": "unversioned",
+    "description": ""
+  },
+  "servers": [
+    {
+      "url": "https://api-sb.meld.io",
+      "description": "Meld API sandbox"
+    },
+    {
+      "url": "https://api.meld.io",
+      "description": "Meld API production"
+    }
+  ],
+  "paths": {
+    "/notifications/webhooks": {
+      "post": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Create a new webhook profile",
+        "operationId": "webhooks-profiles-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookProfileCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Webhook profile created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookProfile"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/webhooks/profile/webhooks-profiles-create"
+        }
+      },
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Search webhook profiles",
+        "description": "Returns a list of webhook profiles that match the query parameters. The webhook profiles are sorted by name.",
+        "operationId": "webhooks-profiles-search",
+        "parameters": [
+          {
+            "name": "before",
+            "in": "query",
+            "description": "Unique key corresponding to a webhook profile's position in the paginated list of results -- used to indicate that only profiles residing before this key will be retrieved.\n\nEach webhook profile carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "Unique key corresponding to a webhook profile's position in the paginated list of results -- used to indicate that only profiles residing after this key will be retrieved.\n\nEach webhook profile carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Max number of webhook profiles that should be returned.\n\n*Default value*: 10\n\n*Minimum value*: 1\n\n*Maximum value*: 100",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching webhook profiles are returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookProfilePage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/webhooks/profile/webhooks-profiles-search"
+        }
+      }
+    },
+    "/notifications/webhooks/event-types": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Get all webhook event types that can be sent",
+        "operationId": "webhooks-events-get",
+        "responses": {
+          "200": {
+            "description": "Available event types.\n\nReference [Webhook events](https://docs.meld.io/docs/webhook-events)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/webhooks/profile/webhooks-events-get"
+        }
+      }
+    },
+    "/notifications/webhooks/{webhookProfileId}": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Get an existing webhook profile",
+        "operationId": "webhooks-profiles-get",
+        "parameters": [
+          {
+            "name": "webhookProfileId",
+            "in": "path",
+            "description": "Unique identifier for the webhook profile",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook profile is returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookProfile"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Webhook profile cannot be found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/webhooks/profile/webhooks-profiles-get"
+        }
+      },
+      "patch": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Update an existing webhook profile",
+        "operationId": "webhooks-profiles-update",
+        "parameters": [
+          {
+            "name": "webhookProfileId",
+            "in": "path",
+            "description": "Unique identifier for the webhook profile",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookProfileUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook profile has been updated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookProfile"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Webhook profile cannot be found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/webhooks/profile/webhooks-profiles-update"
+        }
+      }
+    },
+    "/notifications/webhooks/{webhookProfileId}/test": {
+      "post": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Test an existing webhook profile",
+        "description": "Sends a WEBHOOK_TEST event to the URL in the profile",
+        "operationId": "webhooks-profiles-test",
+        "parameters": [
+          {
+            "name": "webhookProfileId",
+            "in": "path",
+            "description": "Unique identifier for the webhook profile",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test message sent",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookProfileTestResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Webhook profile cannot be found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/webhooks/profile/webhooks-profiles-test"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "YodleeEvent": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object"
+          },
+          "info": {
+            "type": "string"
+          },
+          "loginName": {
+            "type": "string"
+          },
+          "notificationId": {
+            "type": "string"
+          },
+          "notificationTime": {
+            "type": "string"
+          }
+        }
+      },
+      "YodleeWebhookPayload": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/YodleeEvent"
+          }
+        }
+      },
+      "TransakWebhookRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        }
+      },
+      "TestWebhookInRequest": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "note": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "accountId",
+          "id",
+          "type"
+        ]
+      },
+      "RevolutWebhookPayload": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string"
+          },
+          "order_id": {
+            "type": "string"
+          },
+          "wallet": {
+            "type": "string"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "causes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "display_message": {
+            "type": "string"
+          },
+          "documentation_url": {
+            "type": "string"
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "error_type": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "number"
+          },
+          "suggested_action": {
+            "type": "string"
+          }
+        }
+      },
+      "PlaidWebhookPayload": {
+        "type": "object",
+        "properties": {
+          "canceled_investments_transactions": {
+            "type": "number"
+          },
+          "consent_expiration_time": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "error": {
+            "$ref": "#/components/schemas/Error"
+          },
+          "historical_update_complete": {
+            "type": "boolean"
+          },
+          "initial_update_complete": {
+            "type": "boolean"
+          },
+          "item_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "new_holdings": {
+            "type": "number"
+          },
+          "new_investments_transactions": {
+            "type": "number"
+          },
+          "new_transactions": {
+            "type": "number"
+          },
+          "new_webhook_url": {
+            "type": "string"
+          },
+          "removed_transactions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "updated_holdings": {
+            "type": "number"
+          },
+          "webhook_code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "webhook_type": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "item_id",
+          "webhook_code",
+          "webhook_type"
+        ]
+      },
+      "MoovWebhookPayload": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/WebhookData"
+          },
+          "eventID": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "WebhookData": {
+        "type": "object",
+        "properties": {
+          "accountID": {
+            "type": "string"
+          },
+          "bankAccountID": {
+            "type": "string"
+          },
+          "capability": {
+            "type": "string"
+          },
+          "cardID": {
+            "type": "string"
+          },
+          "disputeID": {
+            "type": "string"
+          },
+          "paymentMethodID": {
+            "type": "string"
+          },
+          "refundID": {
+            "type": "string"
+          },
+          "representativeID": {
+            "type": "string"
+          },
+          "sourceID": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "transferID": {
+            "type": "string"
+          },
+          "updateType": {
+            "type": "string"
+          },
+          "walletID": {
+            "type": "string"
+          }
+        }
+      },
+      "Destination": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "details": {
+            "$ref": "#/components/schemas/DestinationDetails"
+          },
+          "fee": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "rail": {
+            "type": "string"
+          }
+        }
+      },
+      "DestinationDetails": {
+        "type": "object",
+        "properties": {
+          "accountName": {
+            "type": "string"
+          },
+          "accountNumber": {
+            "type": "string"
+          },
+          "bankName": {
+            "type": "string"
+          },
+          "routingNumber": {
+            "type": "string"
+          },
+          "schema": {
+            "type": "string"
+          }
+        }
+      },
+      "DueNetworkData": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DueNetworkEventData"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "ownerId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "source": {
+                "$ref": "#/components/schemas/Source"
+              },
+              "destination": {
+                "$ref": "#/components/schemas/Destination"
+              },
+              "fxRate": {
+                "type": "number"
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "expiresAt": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "DueNetworkEventData": {},
+      "DueNetworkKycSubmissionData": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DueNetworkEventData"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "ownerId": {
+                "type": "string"
+              },
+              "applicantId": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "info": {
+                "$ref": "#/components/schemas/JsonNode"
+              },
+              "requirements": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Requirement"
+                }
+              },
+              "documents": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/JsonNode"
+                }
+              },
+              "questionnaires": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/JsonNode"
+                }
+              },
+              "presetCode": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "DueNetworkWebhookPayload": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DueNetworkData"
+              },
+              {
+                "$ref": "#/components/schemas/DueNetworkKycSubmissionData"
+              }
+            ]
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "JsonNode": {},
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "requiredWhen": {
+            "$ref": "#/components/schemas/JsonNode"
+          },
+          "schema": {
+            "$ref": "#/components/schemas/JsonNode"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "RequiredDocument": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "oneOf": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JsonNode"
+            }
+          }
+        }
+      },
+      "RequiredQuestionnaire": {
+        "type": "object",
+        "properties": {
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            }
+          },
+          "templateId": {
+            "type": "string"
+          }
+        }
+      },
+      "Requirement": {
+        "type": "object",
+        "properties": {
+          "condition": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JsonNode"
+            }
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequiredDocument"
+            }
+          },
+          "info": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JsonNode"
+            }
+          },
+          "kind": {
+            "type": "string"
+          },
+          "oneOf": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JsonNode"
+            }
+          },
+          "questionnaires": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequiredQuestionnaire"
+            }
+          },
+          "then": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JsonNode"
+            }
+          }
+        }
+      },
+      "Source": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "fee": {
+            "type": "string"
+          },
+          "rail": {
+            "type": "string"
+          }
+        }
+      },
+      "CoinFlowWebhookPayload": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "created": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WebhookData"
+          },
+          "eventType": {
+            "type": "string"
+          }
+        }
+      },
+      "BraintreeForm": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string"
+          }
+        }
+      },
+      "AeropayWebhookPayload": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/WebhookData"
+          },
+          "date": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string"
+          }
+        }
+      },
+      "WebhookProfileCreateRequest": {
+        "type": "object",
+        "properties": {
+          "eventTypes": {
+            "type": "array",
+            "description": "Event types that will be sent to the URL. If empty, then all events will be sent to the URL.\n\nReference [Webhook events](https://docs.meld.io/docs/webhook-events)",
+            "items": {
+              "type": "string",
+              "enum": [
+                "TRANSACTION_CRYPTO_PENDING",
+                "TRANSACTION_CRYPTO_FAILED",
+                "TRANSACTION_CRYPTO_TRANSFERRING",
+                "TRANSACTION_CRYPTO_COMPLETE",
+                "TRANSACTION_FIAT_CREATED",
+                "TRANSACTION_FIAT_UPDATED",
+                "BANK_LINKING_CONNECTION_COMPLETED",
+                "BANK_LINKING_CONNECTION_DELETED",
+                "BANK_LINKING_CONNECTION_STATUS_CHANGE",
+                "BANK_LINKING_ACCOUNTS_ADDED",
+                "BANK_LINKING_ACCOUNTS_UPDATING",
+                "BANK_LINKING_ACCOUNTS_UPDATED",
+                "BANK_LINKING_ACCOUNTS_REMOVED",
+                "BANK_LINKING_TRANSACTIONS_AGGREGATED",
+                "BANK_LINKING_HISTORICAL_TRANSACTIONS_AGGREGATED",
+                "BANK_LINKING_NEW_ACCOUNTS_AVAILABLE",
+                "CUSTOMER_KYC_STATUS_CHANGE",
+                "TEST",
+                "WEBHOOK_TEST"
+              ]
+            }
+          },
+          "eventVersion": {
+            "type": "string",
+            "description": "Version of webhooks sent to the URL. If not specified, the current date will be used.\n\nReference [Webhook version](https://docs.meld.io/docs/versioning)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "description": "URL where webhooks will be sent",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ]
+      },
+      "WebhookProfile": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Account Id"
+          },
+          "eventTypes": {
+            "type": "array",
+            "description": "Event types that will be sent to the URL. If empty, then all events will be sent to the URL.\n\nReference [Webhook events](https://docs.meld.io/docs/webhook-events)",
+            "items": {
+              "type": "string"
+            }
+          },
+          "eventVersion": {
+            "type": "string",
+            "description": "Version of webhooks sent to the URL.\n\nReference [Webhook version](https://docs.meld.io/docs/versioning)"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier"
+          },
+          "key": {
+            "type": "string",
+            "description": "Unique key corresponding to a webhook profile's position in a paginated list of results. Only present if this webhook profile is in a paginated response.\n\nReference [Pagination](https://docs.meld.io/docs/pagination)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "secret": {
+            "type": "string",
+            "description": "Secret used to validate authenticity of a webhook.\n\nReference [Webhook authentication](https://docs.meld.io/docs/webhook-authentication)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "URL where webhooks will be sent"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "displayMessage": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "WebhookProfileTestResponse": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Unique identifier of this request"
+          }
+        }
+      },
+      "ContactUsRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "employer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "employer",
+          "firstName"
+        ]
+      },
+      "ContactUsResponse": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "WebhookProfileUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "eventTypes": {
+            "type": "array",
+            "description": "Event types that will be sent to the URL. If empty, then all events will be sent to the URL.\n\nReference [Webhook events](https://docs.meld.io/docs/webhook-events)",
+            "items": {
+              "type": "string",
+              "enum": [
+                "TRANSACTION_CRYPTO_PENDING",
+                "TRANSACTION_CRYPTO_FAILED",
+                "TRANSACTION_CRYPTO_TRANSFERRING",
+                "TRANSACTION_CRYPTO_COMPLETE",
+                "TRANSACTION_FIAT_CREATED",
+                "TRANSACTION_FIAT_UPDATED",
+                "BANK_LINKING_CONNECTION_COMPLETED",
+                "BANK_LINKING_CONNECTION_DELETED",
+                "BANK_LINKING_CONNECTION_STATUS_CHANGE",
+                "BANK_LINKING_ACCOUNTS_ADDED",
+                "BANK_LINKING_ACCOUNTS_UPDATING",
+                "BANK_LINKING_ACCOUNTS_UPDATED",
+                "BANK_LINKING_ACCOUNTS_REMOVED",
+                "BANK_LINKING_TRANSACTIONS_AGGREGATED",
+                "BANK_LINKING_HISTORICAL_TRANSACTIONS_AGGREGATED",
+                "BANK_LINKING_NEW_ACCOUNTS_AVAILABLE",
+                "CUSTOMER_KYC_STATUS_CHANGE",
+                "TEST",
+                "WEBHOOK_TEST"
+              ]
+            }
+          },
+          "eventVersion": {
+            "type": "string",
+            "description": "Version of webhooks sent to the URL.\n\nReference [Webhook version](https://docs.meld.io/docs/versioning)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "URL where webhooks will be sent"
+          }
+        }
+      },
+      "WebhookProfilePage": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of webhook profiles returned"
+          },
+          "remaining": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The number of remaining webhook profiles before/after this page, depending the direction this page was selected"
+          },
+          "webhookProfiles": {
+            "type": "array",
+            "description": "List of webhook profiles",
+            "items": {
+              "$ref": "#/components/schemas/WebhookProfile"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "x-default": "BASIC <Meld API Key>"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Settings"
+    }
+  ],
+  "x-readme": {
+    "explorer-enabled": true,
+    "proxy-enabled": false,
+    "samples-enabled": true,
+    "headers": [
+      {
+        "key": "Meld-Version",
+        "value": "2024-04-27"
+      }
+    ]
+  }
+}

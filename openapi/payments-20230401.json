@@ -1,0 +1,5719 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PAYMENTS",
+    "termsOfService": "urn:tos",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://springdoc.org"
+    },
+    "version": "unversioned",
+    "description": ""
+  },
+  "servers": [
+    {
+      "url": "https://api-sb.meld.io",
+      "description": "Meld API sandbox"
+    },
+    {
+      "url": "https://api.meld.io",
+      "description": "Meld API production"
+    }
+  ],
+  "paths": {
+    "/payments/tokens": {
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Create a Meld payment token",
+        "description": "Use this endpoint to create long-lasting Meld payment tokens that can be used across service providers. These tokens can replace the payment method provided for future transactions. [For more details see this page](https://docs.meld.io/docs/payment-methods-and-tokenization).",
+        "operationId": "/payment-token-post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTokenResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/transactions/payment-token-post"
+        }
+      }
+    },
+    "/payments/transactions": {
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Create a payment transaction",
+        "description": "Use this endpoint to create a payment transaction. You can find sample code in our public Postman collection, or build it in the adjacent API explorer. The link to our postman collection is: [https://www.postman.com/meldeng/workspace/meld-io-public-api-collection](https://www.postman.com/meldeng/workspace/meld-io-public-api-collection)\n\n**IDEMPOTENT REQUESTS**: Please refer to [Idempotency Key](https://docs.meld.io/docs/idempotency-key)\n\n**PASSTHROUGH ENABLED REQUESTS**: Please refer to [Passthrough Headers](https://docs.meld.io/docs/credential-passthrough)\n\n**ERRORS**: Please refer to [Error Responses](https://docs.meld.io/docs/fiat-error-responses)",
+        "operationId": "/payments-transactions-create",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Reference",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Public",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Private",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Oauth",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentTransactionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Payment transaction created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse20230401"
+                }
+              }
+            }
+          },
+          "425": {
+            "description": "It is too early for a retry",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Error",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/transactions/payments-transactions-create"
+        }
+      },
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Search transactions",
+        "description": "Search a list of transactions you've previously created. The transactions are ordered by the date of creation.",
+        "operationId": "/payments-transactions-search",
+        "parameters": [
+          {
+            "name": "statuses",
+            "in": "query",
+            "description": "Comma separated list of transaction status.\n\nIf present, only transactions with the specified status will be included.\n\n*Possible values*:\n\nPENDING_CREATED\n\nPENDING\n\nPROCESSING\n\nAUTHORIZED\n\nAUTHORIZATION_EXPIRED\n\nSETTLING\n\nONRAMP_SETTLED\n\nSETTLED\n\nREFUNDED\n\nDECLINED\n\nCANCELLED\n\nFAILED\n\nERROR\n\nVOIDED\n\nTWO_FA_REQUIRED\n\nTWO_FA_PROVIDED",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "serviceProviders",
+            "in": "query",
+            "description": "Comma separated list of service providers.\n\nReturn only transactions with these specific providers. You can specify multiple service providers in the query string and separate them with commas\n\nReference [Crypto supported service providers](https://docs.meld.io/docs/crypto-supported-service-providers-assets) and [Fiat supported service providers](https://docs.meld.io/docs/fiat-supported-service-providers) for a full list of supported service providers",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Limits number of returned accounts.\n\n*Default value*: 10 or the number of ids provided\n\n*Minimum value*: 1\n\n*Maximum value*: 100",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "amountFrom",
+            "in": "query",
+            "description": "Return only transactions with the amount equal to or greater than this amount",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "amountTo",
+            "in": "query",
+            "description": "Return only transactions with the amount equal to or less than this amount",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Return only transactions created after this DateTime. The correct string will use the ISO DateTime or ISO Date Format.\n\nEx:2021-08-31T01:30:00 or 2022-02-25 are accepted",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Return only transactions created before this DateTime. The correct string will use the ISO DateTime or ISO Date Format.\n\nEx:2021-08-31T01:30:00 or 2022-02-25 are accepted",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "description": "The unique key corresponding to a payment transaction's position in the paginated list of results -- used to indicate that only payment transactions residing before this key will be retrieved.\n\nEach payment transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)The before and after fields cannot be used in the same request.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The unique key corresponding to a payment transaction's position in the paginated list of results -- used to indicate that only payment transactions residing after this key will be retrieved.\n\nEach payment transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)The before and after fields cannot be used in the same request.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apiAccessProfileIds",
+            "in": "query",
+            "description": "Comma separated list of API access profile ids",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerIds",
+            "in": "query",
+            "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. This takes a comma separated list of customer ids.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "externalCustomerIds",
+            "in": "query",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity. This takes a comma separated list of external customer ids.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionIds",
+            "in": "query",
+            "description": "Comma separated list of session ids",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "externalSessionIds",
+            "in": "query",
+            "description": "Comma separated list of external session ids",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "externalReferenceIds",
+            "in": "query",
+            "description": "Comma separated list of reference ids",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "types",
+            "in": "query",
+            "description": "Comma separated list of transaction types",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderIds",
+            "in": "query",
+            "description": "Comma separated list of order ids (for virtual account ramp)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "serviceProviderTransactionId",
+            "in": "query",
+            "description": "service provider transaction id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment transaction found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionListResponse20230401"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/transactions/payments-transactions-search"
+        }
+      }
+    },
+    "/payments/transactions/{id}/capture": {
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Capture a payment transaction",
+        "description": "See [here](https://docs.meld.io/docs/authorization-capture) to learn more about authorization and capture.",
+        "operationId": "/payments-transactions-capture",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Reference",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Public",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Private",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Oauth",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier for this transaction",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentCaptureRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Payment captured",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse20230401"
+                }
+              }
+            }
+          },
+          "425": {
+            "description": "It is too early for a retry",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/transactions/payments-transactions-capture"
+        }
+      }
+    },
+    "/payments/transactions/{id}": {
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Get transaction by id",
+        "description": "Search transaction by its Meld identifier",
+        "operationId": "/payments-transactions-get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the transaction to be fetched",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse20230401"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payment transaction with the id informed was not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse20230401"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/transactions/payments-transactions-get"
+        }
+      }
+    },
+    "/payments/transactions/{id}/refund": {
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Refund a payment transaction",
+        "description": "This is the endpoint to refund a transaction on any of the supported providers. Full as well as partial refunds are supported, so it is not mandatory to inform the total value of the original transaction in the case of a full refund. Note: While the parameters within the body are optional, you must at least pass in a valid JSON body, e.g. { }.",
+        "operationId": "/payments-transactions-refund",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Reference",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Public",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Private",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Oauth",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the transaction to be refunded",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentRefundRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Payment successfully refunded",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse20230401"
+                }
+              }
+            }
+          },
+          "425": {
+            "description": "It is too early for a retry",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Error",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/transactions/payments-transactions-refund"
+        }
+      }
+    },
+    "/payments/transactions/payout": {
+      "post": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Create a payout transaction",
+        "description": "Use this endpoint to create a payout transaction. You can find sample code in our public Postman collection, or build it in the adjacent API explorer. The link to our postman collection is: [https://www.postman.com/meldeng/workspace/meld-io-public-api-collection](https://www.postman.com/meldeng/workspace/meld-io-public-api-collection)\n\n**IDEMPOTENT REQUESTS**: Please refer to [Idempotency Key](https://docs.meld.io/docs/idempotency-key)\n\n**ERRORS**: Please refer to [Error Responses](https://docs.meld.io/docs/fiat-error-responses)",
+        "operationId": "/payouts-transactions-create",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayoutTransactionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Payout transaction created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse20230401"
+                }
+              }
+            }
+          },
+          "425": {
+            "description": "It is too early for a retry",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Error",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/transactions/payouts-transactions-create"
+        }
+      }
+    },
+    "/payments/external/import": {
+      "post": {
+        "tags": [
+          "External Transactions"
+        ],
+        "summary": "Import an external payment transaction",
+        "description": "This is the endpoint to import a transaction on any of the supported providers. Use this endpoint if you have performed transactions on one or more providers outside of Meld, and want to import those transactions into Meld's system. Note that when performing an [external refund](https://docs.meld.io/docs/crypto-supported-service-providers-assets), the initial transaction is automatically imported into Meld's system.",
+        "operationId": "/payments-external-transactions-import",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Reference",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Public",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Private",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Oauth",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Payment successfully imported",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse"
+                }
+              }
+            }
+          },
+          "425": {
+            "description": "It is too early for a retry",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Error",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/external-transactions/payments-external-transactions-import"
+        }
+      }
+    },
+    "/payments/external/refund": {
+      "post": {
+        "tags": [
+          "External Transactions"
+        ],
+        "summary": "Refund an external payment transaction",
+        "description": "This is the endpoint to refund an external transaction on any of the supported providers. Use this endpoint if you have created a transaction with any of these providers outside of Meld's system, but want to perform the refund using Meld. Note that this will also cause the original transaction to be imported into Meld's system. Both partial and full refunds are supported.",
+        "operationId": "/payments-external-transactions-refund",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Reference",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Public",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Key-Private",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Meld-Passthrough-Oauth",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalRefundRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Payment successfully refunded",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse20230401"
+                }
+              }
+            }
+          },
+          "425": {
+            "description": "It is too early for a retry",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionResponse20230401"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Error",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/external-transactions/payments-external-transactions-refund"
+        }
+      }
+    },
+    "/payments/risk-analysis": {
+      "post": {
+        "tags": [
+          "Risk"
+        ],
+        "summary": "Create a risk analysis",
+        "description": "Perform an ACH risk analysis and create associated records",
+        "operationId": "/payments-transactions-risk-analysis",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiskAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Risk analysis created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskAnalysisResponse"
+                }
+              }
+            }
+          },
+          "425": {
+            "description": "It is too early for a retry",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Error",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/payments/risk/payments-transactions-risk-analysis"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateWidgetPreferenceRequest": {
+        "type": "object",
+        "properties": {
+          "preferences": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "preferences",
+            "minProperties": 1
+          }
+        },
+        "required": [
+          "preferences"
+        ]
+      },
+      "WidgetPreferenceResponse": {
+        "type": "object",
+        "properties": {
+          "preferences": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Widget preferences"
+          }
+        }
+      },
+      "CryptoCreateCustomerRequest": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/CustomerInput"
+          }
+        },
+        "required": [
+          "customer"
+        ]
+      },
+      "CustomerAddressDetails": {
+        "type": "object",
+        "properties": {
+          "addressDetailsFields": {
+            "type": "object",
+            "writeOnly": true
+          },
+          "city": {
+            "type": "string",
+            "description": "City, district, suburb, town, or village"
+          },
+          "country": {
+            "type": "string",
+            "description": "Two-letter country code (ISO 3166-1 alpha-2)"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "The first name on the address"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The last name on the address"
+          },
+          "lineOne": {
+            "type": "string",
+            "description": "Address line 1 (e.g., street, PO Box, or company name)"
+          },
+          "lineTwo": {
+            "type": "string",
+            "description": "Address line 2 (e.g., apartment, suite, unit, or building)"
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "ZIP or postal code"
+          },
+          "region": {
+            "type": "string",
+            "description": "State, county, province, or region"
+          }
+        }
+      },
+      "CustomerAddressInput": {
+        "type": "object",
+        "properties": {
+          "addressDetails": {
+            "$ref": "#/components/schemas/CustomerAddressDetails",
+            "description": "Address details"
+          },
+          "type": {
+            "type": "string",
+            "description": "Address type such as BILLING, SHIPPING, RESIDENCE, etc.",
+            "enum": [
+              "BILLING",
+              "SHIPPING",
+              "RESIDENCE"
+            ]
+          }
+        }
+      },
+      "CustomerInput": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "description": "Your customer's addresses, such as BILLING, SHIPPING, RESIDENCE, etc.",
+            "items": {
+              "$ref": "#/components/schemas/CustomerAddressInput"
+            }
+          },
+          "billingAddress": {
+            "$ref": "#/components/schemas/CustomerAddressInput"
+          },
+          "billingAddressDetails": {
+            "$ref": "#/components/schemas/CustomerAddressDetails"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Your customer's email address."
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Your (optional) Id for this customer, for example an id or reference from your database which you may supply during customer creation"
+          },
+          "id": {
+            "type": "string",
+            "description": "Meld's internal Id for the Customer"
+          },
+          "name": {
+            "$ref": "#/components/schemas/CustomerName",
+            "description": "Your customer's name"
+          },
+          "nameEmpty": {
+            "type": "boolean"
+          },
+          "nameJSONB": {
+            "$ref": "#/components/schemas/JSONB"
+          },
+          "nameOrEmptyString": {
+            "type": "string"
+          },
+          "nameOrNull": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Your customer's phone number"
+          },
+          "residenceAddress": {
+            "$ref": "#/components/schemas/CustomerAddressInput"
+          },
+          "residenceAddressDetails": {
+            "$ref": "#/components/schemas/CustomerAddressDetails"
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/CustomerAddressInput"
+          },
+          "shippingAddressDetails": {
+            "$ref": "#/components/schemas/CustomerAddressDetails"
+          }
+        }
+      },
+      "CustomerName": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "Your customer's first name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Your customer's last name"
+          }
+        }
+      },
+      "JSONB": {},
+      "CryptoCreateCustomerResponse": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string"
+          },
+          "kycStatus": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/KycStatus"
+            }
+          }
+        }
+      },
+      "KycStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "INFORMATION_NEEDED",
+              "SUBMITTED",
+              "APPROVED",
+              "DENIED"
+            ]
+          },
+          "verificationUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "CryptoVirtualAccountQuoteRequest": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "Two-letter country code (ISO 3166-1 alpha-2)",
+            "example": "US"
+          },
+          "customerId": {
+            "type": "string",
+            "description": "Customer id. Required for virtual account ramp quotes.",
+            "minLength": 1
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Enter a cryptocurrency symbol here if purchasing crypto or a fiat currency 3 letter code if selling crypto.",
+            "example": "USD or BTC",
+            "minLength": 1
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method Type or SubType\n\nThe paymentMethodType and paymentMethodSubType included here are a sample set. Review the [Supported Payment Methods](https://www.meld.io/coverage/payment-methods) section to view the complete list.",
+            "minLength": 1
+          },
+          "serviceProviders": {
+            "type": "array",
+            "description": "An optional list of Strings representing the Service Providers for this Quote.\n\nReference [Crypto supported service providers](https://www.meld.io/coverage/service-providers) for a full list of supported service providers\n\nIf this field is null or an empty list, Meld will get quotes from all the service providers linked to the API key used on the request.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ACROSS",
+                "AEROPAY",
+                "AKOYA",
+                "ALCHEMYPAY",
+                "APPLEPAY",
+                "AUTHORIZENET",
+                "BANXA",
+                "BILIRA",
+                "BINANCECONNECT",
+                "BINANCEPAY",
+                "BLOCKCHAINDOTCOM",
+                "BOOMFI",
+                "BRAINTREE",
+                "BRALE",
+                "BTCDIRECT",
+                "CASHAPP",
+                "CHECKOUT",
+                "CIRCLE",
+                "COINBASEPAY",
+                "COINFLOW",
+                "DUENETWORK",
+                "ELDORADO",
+                "FINICITY",
+                "FONBNK",
+                "GUARDARIAN",
+                "HARBOUR",
+                "KOYWE",
+                "KRYPTONIM",
+                "MERCURYO",
+                "MESH",
+                "MESO",
+                "MOONPAY",
+                "MOOV",
+                "MX",
+                "NMI",
+                "NOAH",
+                "ONMETA",
+                "ONRAMPMONEY",
+                "PAYBIS",
+                "PAYPAL",
+                "PLAID",
+                "RAMP",
+                "REVOLUT",
+                "ROBINHOOD",
+                "ROUTERPROTOCOL",
+                "SALTEDGE",
+                "SALTEDGEPARTNERS",
+                "SARDINE",
+                "SHIFT4",
+                "SHOPIFY",
+                "SIMPLEX",
+                "SKRILLCRYPTO",
+                "SQUARE",
+                "STRIPE",
+                "SUMSUB",
+                "SWAPPED",
+                "TANGOCARD",
+                "TELLER",
+                "TOPPER",
+                "TRANSAK",
+                "TREMENDOUS",
+                "TRANSFI",
+                "UNLIMIT",
+                "WYRE",
+                "XANPOOL",
+                "YELLOWCARD",
+                "YODLEE"
+              ]
+            }
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "The source amount for this transaction.",
+            "example": 50,
+            "minimum": 0.0
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Enter a fiat currency 3 letter code here if purchasing crypto or a cryptocurrency symbol if selling crypto.",
+            "example": "BTC or USD",
+            "minLength": 1
+          },
+          "subdivision": {
+            "type": "string",
+            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA.",
+            "example": "US-CA"
+          }
+        },
+        "required": [
+          "countryCode",
+          "customerId",
+          "destinationCurrencyCode",
+          "paymentMethodType",
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "CryptoVirtualAccountQuote": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "Two-letter country code (ISO 3166-1 alpha-2)"
+          },
+          "destinationAmount": {
+            "type": "number",
+            "description": "Destination currency amount to be received for this quote"
+          },
+          "destinationAmountWithoutFees": {
+            "type": "number",
+            "description": "The fiat amount exchanged when selling crypto, excluding fees. This will be deprecated in the future."
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Code of currency being quoted: BTC, ETH, ..."
+          },
+          "exchangeRate": {
+            "type": "number",
+            "description": "The exchange rate at the time the request is sent"
+          },
+          "fiatAmountWithoutFees": {
+            "type": "number",
+            "description": "The fiat amount exchanged when buying or selling crypto, excluding fees."
+          },
+          "networkFee": {
+            "type": "number",
+            "description": "The network fee applied to a crypto transaction. To ensure that transactions are processed on cryptocurrency networks, outgoing transactions to external cryptocurrency addresses typically incur a \"mining\" or \"network\" fee. This fee is paid to cryptocurrency miners, which are the systems that process the transactions and secure the respective network."
+          },
+          "partnerFee": {
+            "type": "number",
+            "description": "The fee amount charged by the partner to process your customer's purchase. This fee % can be set by you."
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method Type used for this quote"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service Provider used on this quote",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "Amount requested + fees"
+          },
+          "sourceAmountWithoutFees": {
+            "type": "number",
+            "description": "The fiat amount being used to buy crypto, excluding fees. This will be deprecated in the future."
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "totalFee": {
+            "type": "number",
+            "description": "The total amount of fees that will be charged."
+          },
+          "transactionFee": {
+            "type": "number",
+            "description": "The fee amount charged by the service provider to process your customer's purchase"
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "The type of crypto transaction, which is CRYPTO_PURCHASE or CRYPTO_SELL."
+          }
+        }
+      },
+      "CryptoVirtualAccountQuoteResponse": {
+        "type": "object",
+        "properties": {
+          "quotes": {
+            "type": "array",
+            "description": "List of quotes",
+            "items": {
+              "$ref": "#/components/schemas/CryptoVirtualAccountQuote"
+            }
+          }
+        }
+      },
+      "VirtualAccountOnrampOrderRequest": {
+        "type": "object",
+        "description": "Request to create a virtual account onramp order",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Customer id",
+            "minLength": 1
+          },
+          "customerPhoneNumber": {
+            "type": "string",
+            "description": "customer phone number of the individual initiating the order on behalf of the sub account. This is required if passed payment method type requires phone number for example MOBILE_MONEY."
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Destination cryptocurrency code",
+            "example": "USDC",
+            "minLength": 1
+          },
+          "destinationWalletAddress": {
+            "type": "string",
+            "description": "Wallet address to receive the cryptocurrency",
+            "example": "0xe51f36521fF5D857824e615a64D34808534a55f4",
+            "minLength": 1
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "External customer id of the individual initiating the order"
+          },
+          "externalSubaccountCustomerId": {
+            "type": "string",
+            "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "The desired payment method type in order to send the fiat currency",
+            "minLength": 1
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service provider to use for this onramp order",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "Source amount in fiat currency",
+            "example": 20000,
+            "minimum": 0.0
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Source currency code",
+            "example": "USD",
+            "minLength": 1
+          },
+          "subaccountCustomerId": {
+            "type": "string",
+            "description": "Optional Meld customer id used to track the business sub-account this transaction belongs to when multiple businesses operate under one Meld account."
+          }
+        },
+        "required": [
+          "customerId",
+          "destinationCurrencyCode",
+          "destinationWalletAddress",
+          "paymentMethodType",
+          "serviceProvider",
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "displayMessage": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AchReceivingBankInformation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ReceivingBankInformation"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "accountNumber": {
+                "type": "string",
+                "description": "Bank account number"
+              },
+              "routingNumber": {
+                "type": "string",
+                "description": "Bank routing number"
+              }
+            }
+          }
+        ],
+        "description": "Receiving bank details for ACH"
+      },
+      "LocalBankTransferReceivingBankInformation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ReceivingBankInformation"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "accountNumber": {
+                "type": "string",
+                "description": "Bank account number"
+              },
+              "routingNumber": {
+                "type": "string",
+                "description": "Bank routing number"
+              }
+            }
+          }
+        ],
+        "description": "Receiving bank details for LOCAL_BANK_TRANSFER"
+      },
+      "ReceivingBankInformation": {
+        "description": "Receiving bank details. The schema depends on paymentMethodType.",
+        "discriminator": {
+          "propertyName": "paymentMethodType"
+        },
+        "properties": {
+          "paymentMethodType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentMethodType"
+        ]
+      },
+      "SepaReceivingBankInformation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ReceivingBankInformation"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "iban": {
+                "type": "string",
+                "description": "IBAN"
+              }
+            }
+          }
+        ],
+        "description": "Receiving bank details for SEPA"
+      },
+      "VirtualAccountOnrampOrderResponse": {
+        "type": "object",
+        "description": "Response containing virtual account onramp order details and bank information",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "description": "Unique order ID for tracking the onramp order"
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment method type for the bank transfer"
+          },
+          "receivingBankInformation": {
+            "description": "Bank information for receiving the fiat transfer; shape depends on paymentMethodType",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AchReceivingBankInformation"
+              },
+              {
+                "$ref": "#/components/schemas/LocalBankTransferReceivingBankInformation"
+              },
+              {
+                "$ref": "#/components/schemas/SepaReceivingBankInformation"
+              }
+            ]
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "The raw service provider details for the order"
+          }
+        }
+      },
+      "AchPaymentMethodDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "bankName": {
+                "type": "string",
+                "description": "Bank's name"
+              },
+              "accountType": {
+                "type": "string",
+                "description": "Bank account type",
+                "example": "CHECKING, SAVINGS",
+                "minLength": 1
+              },
+              "routingNumber": {
+                "type": "string",
+                "description": "Bank routing number",
+                "minLength": 1
+              },
+              "accountNumber": {
+                "type": "string",
+                "description": "Bank account number",
+                "minLength": 1
+              },
+              "beneficiaryAddress": {
+                "$ref": "#/components/schemas/Address",
+                "description": "Beneficiary's address"
+              },
+              "bankAddress": {
+                "$ref": "#/components/schemas/Address",
+                "description": "Bank address"
+              }
+            }
+          }
+        ],
+        "description": "Payment method details for ACH / LOCAL_BANK_TRANSFER",
+        "required": [
+          "accountNumber",
+          "accountType",
+          "bankAddress",
+          "beneficiaryAddress",
+          "routingNumber"
+        ]
+      },
+      "Address": {
+        "type": "object",
+        "description": "Address information",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "City",
+            "minLength": 1
+          },
+          "country": {
+            "type": "string",
+            "description": "Two-letter country code (ISO 3166-1 alpha-2)",
+            "example": "US",
+            "minLength": 1
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "Postal code",
+            "minLength": 1
+          },
+          "state": {
+            "type": "string",
+            "description": "State"
+          },
+          "street_line_1": {
+            "type": "string",
+            "description": "Street line 1",
+            "minLength": 1
+          },
+          "street_line_2": {
+            "type": "string",
+            "description": "Street line 2"
+          }
+        },
+        "required": [
+          "city",
+          "country",
+          "postalCode",
+          "street_line_1"
+        ]
+      },
+      "PaymentMethod": {
+        "type": "object",
+        "description": "Payment method details for offramp",
+        "properties": {
+          "details": {
+            "description": "Payment method details",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AchPaymentMethodDetails"
+              },
+              {
+                "$ref": "#/components/schemas/SepaPaymentMethodDetails"
+              }
+            ]
+          },
+          "owner": {
+            "type": "string",
+            "description": "Account owner's first and last name",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "description": "Payment method type",
+            "enum": [
+              "LOCAL_BANK_TRANSFER",
+              "ACH",
+              "SEPA"
+            ]
+          }
+        },
+        "required": [
+          "details",
+          "owner",
+          "type"
+        ]
+      },
+      "PaymentMethodDetails": {
+        "description": "Payment method details. The schema depends on paymentMethod.type."
+      },
+      "SepaPaymentMethodDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "iban": {
+                "type": "string",
+                "description": "IBAN",
+                "minLength": 1
+              }
+            }
+          }
+        ],
+        "description": "Payment method details for SEPA",
+        "required": [
+          "iban"
+        ]
+      },
+      "VirtualAccountOfframpOrderRequest": {
+        "type": "object",
+        "description": "Request to create a virtual account offramp order",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Customer id",
+            "minLength": 1
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Destination fiat currency code",
+            "example": "USD",
+            "minLength": 1
+          },
+          "externalSubaccountCustomerId": {
+            "type": "string",
+            "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
+          },
+          "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethod",
+            "description": "Payment method details for how and where the fiat currency will be received"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service provider to use for this offramp order",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "Source amount in cryptocurrency",
+            "example": 20000,
+            "minimum": 0.0
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Source cryptocurrency code",
+            "example": "USDC",
+            "minLength": 1
+          },
+          "sourceWalletAddress": {
+            "type": "string",
+            "description": "Source wallet address to send cryptocurrency from",
+            "example": "0xe51f36521fF5D857824e615a64D34808534a55e6",
+            "minLength": 1
+          },
+          "subaccountCustomerId": {
+            "type": "string",
+            "description": "Optional Meld customer id used to track the business sub-account this transaction belongs to when multiple businesses operate under one Meld account."
+          }
+        },
+        "required": [
+          "customerId",
+          "destinationCurrencyCode",
+          "paymentMethod",
+          "serviceProvider",
+          "sourceAmount",
+          "sourceCurrencyCode",
+          "sourceWalletAddress"
+        ]
+      },
+      "VirtualAccountOfframpOrderResponse": {
+        "type": "object",
+        "description": "Response containing virtual account offramp order details",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "description": "Unique order ID for tracking the offramp order"
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment method for receiving the fiat funds"
+          },
+          "walletAddress": {
+            "type": "string",
+            "description": "Wallet address used for the transfer"
+          }
+        }
+      },
+      "PaymentMethodInput": {
+        "type": "object",
+        "description": "PaymentMethod objects represent your customer's payment instruments",
+        "properties": {
+          "details": {
+            "$ref": "#/components/schemas/PaymentMethodDetails"
+          },
+          "type": {
+            "type": "string",
+            "description": "Payment method type used for this transaction, some methods may only apply for some providers, e.g. PLAID_TRANSFER_AUTHORIZATION for PLAID",
+            "enum": [
+              "ACH",
+              "CARD",
+              "MELD_PAYMENT_TOKEN",
+              "PLAID_TRANSFER_AUTHORIZATION"
+            ],
+            "minLength": 1
+          }
+        },
+        "required": [
+          "details",
+          "type"
+        ]
+      },
+      "PaymentTransactionRequest": {
+        "type": "object",
+        "properties": {
+          "3ds": {
+            "$ref": "#/components/schemas/ThreeDeeEssInput",
+            "description": "3ds settings"
+          },
+          "capture": {
+            "type": "boolean",
+            "description": "Should the payment be captured immediately, if set to false an authorization will be performed instead"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerInput",
+            "description": "Information about your customer"
+          },
+          "customerId": {
+            "type": "string",
+            "description": "Meld's internal Id for the Customer"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description about the transaction"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your (optional) Id for this customer, for example an id or reference from your database which you may supply during customer creation"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "A payment method nonce is a secure, one-time-use reference to payment information. It's the key element that allows your server to communicate sensitive payment information to the service provider without ever touching the raw data."
+          },
+          "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethodInput",
+            "description": "PaymentMethod objects represent your customer's payment instruments."
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction. Required when using a nonce or passthrough credentials, as they are tied to a specific service provider. Do not pass this in if you would like to use [routing](https://docs.meld.io/docs/routing-overview#payments-routing) to select a service provider.",
+            "enum": [
+              "AUTHORIZENET",
+              "BRAINTREE",
+              "CHECKOUT",
+              "CIRCLE",
+              "NMI",
+              "STRIPE"
+            ]
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Provider specific details which may can be provided for this transaction, if supported by the Service Provider. For example, you can set a custom billing descriptor for your transaction using Checkout.com"
+          },
+          "sourceAmount": {
+            "type": "string",
+            "description": "Amount intended to be collected by this payment",
+            "example": "10.50",
+            "minLength": 1
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code, in lowercase. Must be a supported currency",
+            "example": "USD",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "ThreeDeeEssInput": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CryptoDetails": {
+        "type": "object",
+        "properties": {
+          "blockchainTransactionId": {
+            "type": "string",
+            "description": "The transaction id on the blockchain"
+          },
+          "chainId": {
+            "type": "string",
+            "description": "A unique identifier that represents a blockchain network. The chainId of a particular network is standard everywhere."
+          },
+          "institution": {
+            "type": "string",
+            "description": "The institution used to execute the transaction. Only applicable for transfers currently."
+          },
+          "networkFee": {
+            "type": "number",
+            "description": "This fee is paid to cryptocurrency miners, which are the systems that process the transactions"
+          },
+          "networkFeeInUsd": {
+            "type": "number",
+            "description": "This network fee in USD"
+          },
+          "offrampDestinationWalletAddress": {
+            "type": "string",
+            "description": "The offramp destination wallet address"
+          },
+          "partnerFee": {
+            "type": "number",
+            "description": "The partner fee amount"
+          },
+          "partnerFeeInUsd": {
+            "type": "number",
+            "description": "The partner fee in USD"
+          },
+          "swapFee": {
+            "type": "number",
+            "description": "The swap fee amount charged by the swap provider for ramp+swap transactions"
+          },
+          "swapFeeInUsd": {
+            "type": "number",
+            "description": "The swap fee in USD"
+          },
+          "totalFee": {
+            "type": "number",
+            "description": "The total amount of fees that will be charged"
+          },
+          "totalFeeInUsd": {
+            "type": "number",
+            "description": "The total fee in USD"
+          },
+          "transactionFee": {
+            "type": "number",
+            "description": "The fee amount charged by the service provider to process your customer's purchase"
+          },
+          "transactionFeeInUsd": {
+            "type": "number",
+            "description": "The transaction fee in USD"
+          },
+          "walletAddress": {
+            "type": "string",
+            "description": "Your customer's crypto wallet"
+          }
+        }
+      },
+      "CustomerAddressOutput": {
+        "type": "object",
+        "properties": {
+          "addressDetails": {
+            "$ref": "#/components/schemas/CustomerAddressDetails",
+            "description": "Address details"
+          },
+          "type": {
+            "type": "string",
+            "description": "Address type such as BILLING, SHIPPING, RESIDENCE, etc.",
+            "enum": [
+              "BILLING",
+              "SHIPPING",
+              "RESIDENCE"
+            ]
+          }
+        }
+      },
+      "CustomerOutput": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your Account Id"
+          },
+          "addresses": {
+            "type": "array",
+            "description": "Your Customer's addresses, such as billing, shipping, etc.",
+            "items": {
+              "$ref": "#/components/schemas/CustomerAddressOutput"
+            }
+          },
+          "email": {
+            "type": "string",
+            "description": "Your Customer's email address"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Your optionally supplied Id for your Customer, e.g. a Customer Id in your system"
+          },
+          "id": {
+            "type": "string",
+            "description": "Meld's internal Id for the Customer"
+          },
+          "name": {
+            "$ref": "#/components/schemas/CustomerName",
+            "description": "Your Customer's name"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Your Customer's phone number"
+          },
+          "serviceProviders": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A map of Service Providers and service provider IDs for this Customer"
+          },
+          "status": {
+            "type": "string",
+            "description": "ACTIVE or INACTIVE, may not be set"
+          }
+        }
+      },
+      "MultiFactorAuthorizationStatusOutput": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "description": "How the card details were authorized",
+            "enum": [
+              "SMS",
+              "CARD",
+              "EMAIL",
+              "THREE_DS"
+            ]
+          },
+          "submitted": {
+            "type": "boolean",
+            "description": "Return ***True*** if the information was submitted"
+          },
+          "successful": {
+            "type": "boolean",
+            "description": "Return ***True*** if the submitted information is a match"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL used to perform authorization (if applicable)"
+          }
+        }
+      },
+      "PaymentDetails": {
+        "type": "object",
+        "properties": {
+          "authAmount": {
+            "type": "number",
+            "description": "The amount authorized to be charged (must be greater than the amount intended to be collected.) Note that the number of digits with a decimal point varies with the currency. Reference the list of active codes of official ISO 4217 currency names."
+          },
+          "captureAmount": {
+            "type": "number",
+            "description": "The amount captured (can be less than the amount intended to be collected.) Note that the number of digits with a decimal point varies with the currency. Reference the list of active codes of official ISO 4217 currency names."
+          }
+        }
+      },
+      "PaymentTransactionOutput20230401": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your account Id"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "The ISO 3166 2-digit country code."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "An ISO 8601 DateTime at which the object was created."
+          },
+          "cryptoDetails": {
+            "$ref": "#/components/schemas/CryptoDetails",
+            "description": "Details of the crypto currency purchase, sale, or transfer"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerOutput",
+            "description": "Your customer's details"
+          },
+          "description": {
+            "type": "string",
+            "description": "An arbitrary string which you can attach to this transaction. It is displayed when in the web interface alongside the charge."
+          },
+          "destinationAmount": {
+            "type": "number",
+            "description": "The destination amount of the transaction, e.g. the amount of crypto currency purchased"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalReferenceId": {
+            "type": "string",
+            "description": "Your optional reference id provided during transaction creation"
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "The external Id of the session."
+          },
+          "externalSubaccountCustomerId": {
+            "type": "string",
+            "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
+          },
+          "fiatAmountInUsd": {
+            "type": "number",
+            "description": "The fiat amount of the transaction in usd"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this transaction"
+          },
+          "isImported": {
+            "type": "boolean",
+            "description": "Return ***True*** if this transaction was initiated outside Meld"
+          },
+          "isPassthrough": {
+            "type": "boolean",
+            "description": "Return ***True*** if the passthrough credentials were used"
+          },
+          "key": {
+            "type": "string",
+            "description": "Pagination key, may be used with the \"after\" parameter in search requests.  Only set and relevant for paginated calls"
+          },
+          "multiFactorAuthorizationStatus": {
+            "type": "array",
+            "description": "The transaction required multi-factor authentication methods, and their current status. When required, must be approved for the purchase tobe completed successfully.",
+            "items": {
+              "$ref": "#/components/schemas/MultiFactorAuthorizationStatusOutput"
+            },
+            "uniqueItems": true
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Unique identifier for the order associated with this transaction, when applicable"
+          },
+          "parentPaymentTransactionId": {
+            "type": "string",
+            "description": "The Id of the associated object for this line item"
+          },
+          "passthroughReference": {
+            "type": "string",
+            "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
+          },
+          "paymentDetails": {
+            "$ref": "#/components/schemas/PaymentDetails",
+            "description": "payment details"
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method type used for this transaction."
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction"
+          },
+          "serviceProviderCreatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The ISO 8601 DateTime when the transaction was created on the service provider's side"
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "The service provider's details"
+          },
+          "serviceProviderTransactionUrl": {
+            "type": "string",
+            "description": "A link to the resource on the Service Provider, may not be present"
+          },
+          "serviceTransactionId": {
+            "type": "string",
+            "description": "The service provider's unique identifier for this transaction"
+          },
+          "sessionClientTags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A map of client tags"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "The Id of the session."
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "The amount of the transaction"
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the transaction"
+          },
+          "subaccountCustomerId": {
+            "type": "string",
+            "description": "Optional Meld customer id used to track the business sub-account this transaction belongs to when multiple businesses operate under one Meld account."
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "The transaction's type"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time at which the object was last updated. Measured in seconds since the Unix epoch."
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "serviceProvider",
+          "sessionId",
+          "status",
+          "transactionType",
+          "updatedAt"
+        ]
+      },
+      "PaymentTransactionResponse20230401": {
+        "type": "object",
+        "properties": {
+          "transaction": {
+            "$ref": "#/components/schemas/PaymentTransactionOutput20230401",
+            "description": "Payment transaction information"
+          }
+        }
+      },
+      "PaymentRefundRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "An arbitrary string attached to the object. Often useful for displaying to users."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason for the refund"
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "Amount to be refunded. Can be a partial refund. If not provided, a refund for the total value will be submitted",
+            "minimum": 0.0
+          }
+        },
+        "required": [
+          "sourceAmount"
+        ]
+      },
+      "PaymentCaptureRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "If not provided then the entire Authorization amount will be captured.",
+            "minimum": 0.0
+          }
+        }
+      },
+      "PayoutTransactionRequest": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld's internal Id for the Customer"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description about the transaction"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your (optional) Id for this customer, for example an id or reference from your database which you may supply during customer creation"
+          },
+          "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethodInput",
+            "description": "PaymentMethod objects represent your customer's receiving payment instrument"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction.",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Provider specific details which may can be provided for this transaction, if supported by the Service Provider."
+          },
+          "sourceAmount": {
+            "type": "string",
+            "description": "Amount intended to be sent by this payout",
+            "example": "10.50",
+            "minLength": 1
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code, in lowercase. Must be a supported currency",
+            "example": "USD",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "PaymentTokenRequest": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/CustomerInput",
+            "description": "Information about your customer"
+          },
+          "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethodInput"
+          },
+          "serviceProviders": {
+            "type": "array",
+            "description": "The service provider(s) to attempt to create tokens with. If successful, the returned Meld payment token will be compatible with each of these providers.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "AUTHORIZENET",
+                "BRAINTREE",
+                "CHECKOUT",
+                "CIRCLE",
+                "NMI",
+                "STRIPE"
+              ]
+            }
+          }
+        }
+      },
+      "PaymentTokenResponse": {
+        "type": "object",
+        "properties": {
+          "meldPaymentMethodTokenId": {
+            "type": "string",
+            "description": "The id of the meld payment method token"
+          },
+          "serviceProviders": {
+            "type": "array",
+            "description": "List of service providers that successfully tokenized the provided payment method. This Meld payment token can be used to create future transactions with these service providers.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ACROSS",
+                "AEROPAY",
+                "AKOYA",
+                "ALCHEMYPAY",
+                "APPLEPAY",
+                "AUTHORIZENET",
+                "BANXA",
+                "BILIRA",
+                "BINANCECONNECT",
+                "BINANCEPAY",
+                "BLOCKCHAINDOTCOM",
+                "BOOMFI",
+                "BRAINTREE",
+                "BRALE",
+                "BTCDIRECT",
+                "CASHAPP",
+                "CHECKOUT",
+                "CIRCLE",
+                "COINBASEPAY",
+                "COINFLOW",
+                "DUENETWORK",
+                "ELDORADO",
+                "FINICITY",
+                "FONBNK",
+                "GUARDARIAN",
+                "HARBOUR",
+                "KOYWE",
+                "KRYPTONIM",
+                "MERCURYO",
+                "MESH",
+                "MESO",
+                "MOONPAY",
+                "MOOV",
+                "MX",
+                "NMI",
+                "NOAH",
+                "ONMETA",
+                "ONRAMPMONEY",
+                "PAYBIS",
+                "PAYPAL",
+                "PLAID",
+                "RAMP",
+                "REVOLUT",
+                "ROBINHOOD",
+                "ROUTERPROTOCOL",
+                "SALTEDGE",
+                "SALTEDGEPARTNERS",
+                "SARDINE",
+                "SHIFT4",
+                "SHOPIFY",
+                "SIMPLEX",
+                "SKRILLCRYPTO",
+                "SQUARE",
+                "STRIPE",
+                "SUMSUB",
+                "SWAPPED",
+                "TANGOCARD",
+                "TELLER",
+                "TOPPER",
+                "TRANSAK",
+                "TREMENDOUS",
+                "TRANSFI",
+                "UNLIMIT",
+                "WYRE",
+                "XANPOOL",
+                "YELLOWCARD",
+                "YODLEE"
+              ]
+            }
+          }
+        }
+      },
+      "ServiceProviderCustomerCreateRequest": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld's id for the customer"
+          },
+          "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethodInput",
+            "description": "Customer's payment instrument"
+          }
+        },
+        "required": [
+          "customerId",
+          "paymentMethod"
+        ]
+      },
+      "ServiceProviderCustomersCreateBatchRequest": {
+        "type": "object",
+        "properties": {
+          "customers": {
+            "type": "array",
+            "description": "Customers to create",
+            "items": {
+              "$ref": "#/components/schemas/ServiceProviderCustomerCreateRequest"
+            },
+            "minItems": 1
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service provider to create the customers with"
+          }
+        },
+        "required": [
+          "customers",
+          "serviceProvider"
+        ]
+      },
+      "ServiceProviderCustomersCreateBatchResponse": {
+        "type": "object",
+        "properties": {
+          "batchId": {
+            "type": "string"
+          }
+        }
+      },
+      "PaymentDetailsRequest": {
+        "type": "object",
+        "properties": {
+          "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethodInput"
+          }
+        }
+      },
+      "PlaidMigrateAccountResponse": {
+        "type": "object",
+        "description": "The id and token for a Plaid account used in a transfer",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "The Plaid access token for the newly created item.",
+            "minLength": 1
+          },
+          "accountId": {
+            "type": "string",
+            "description": "The Plaid account id for the newly created item.",
+            "minLength": 1
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Plaid's unique identifier for the request, which can be used for troubleshooting. This identifier, like all Plaid identifiers, is case sensitive.",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "accessToken",
+          "accountId",
+          "requestId"
+        ]
+      },
+      "PlaidTransferAccountFields": {
+        "type": "object",
+        "description": "The id and token for a Plaid account used in a transfer",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "The Plaid access_token for the account that will be debited or credited.",
+            "minLength": 1
+          },
+          "accountId": {
+            "type": "string",
+            "description": "The Plaid account_id corresponding to the end-user account that will be debited or credited.",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "accessToken",
+          "accountId"
+        ]
+      },
+      "RiskAnalysisRequest": {
+        "type": "object",
+        "properties": {
+          "achClass": {
+            "type": "string",
+            "description": "The ACH class of the transaction (CCD, PPD, TEL, WEB)",
+            "enum": [
+              "CCD",
+              "PPD",
+              "TEL",
+              "WEB"
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount intended to be sent by this transaction",
+            "example": "10.50"
+          },
+          "currencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code, in lowercase. Must be a supported currency",
+            "example": "USD",
+            "minLength": 1
+          },
+          "name": {
+            "$ref": "#/components/schemas/CustomerName",
+            "description": "Customer name"
+          },
+          "plaidTransferAccountFields": {
+            "$ref": "#/components/schemas/PlaidTransferAccountFields",
+            "description": "The id and token for a Plaid account used in a transfer"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction.",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of the transaction, either CHARGE or PAYOUT",
+            "enum": [
+              "CHARGE",
+              "REFUND",
+              "CRYPTO_PURCHASE",
+              "CRYPTO_PURCHASE_SWAP",
+              "CRYPTO_SELL",
+              "CRYPTO_SELL_SWAP",
+              "CRYPTO_TRANSFER",
+              "PAYOUT"
+            ]
+          }
+        },
+        "required": [
+          "achClass",
+          "amount",
+          "currencyCode"
+        ]
+      },
+      "DecisionRationale": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Risk": {
+        "type": "object",
+        "properties": {
+          "bankInitiatedReturnScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "customerInitiatedReturnScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "riskLevel": {
+            "type": "string"
+          }
+        }
+      },
+      "RiskAnalysisResponse": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string"
+          },
+          "decisionRationale": {
+            "$ref": "#/components/schemas/DecisionRationale"
+          },
+          "risk": {
+            "$ref": "#/components/schemas/Risk"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "serviceProviderTransferAuthorizationId": {
+            "type": "string"
+          }
+        }
+      },
+      "ExternalRefundRequest": {
+        "type": "object",
+        "properties": {
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider that processed the original transaction",
+            "enum": [
+              "AUTHORIZENET",
+              "BRAINTREE",
+              "CHECKOUT",
+              "CIRCLE",
+              "NMI",
+              "STRIPE"
+            ]
+          },
+          "serviceTransactionId": {
+            "type": "string",
+            "description": "The service provider's unique identifier for the original transaction",
+            "minLength": 1
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "Amount to be refunded. Can be a partial refund",
+            "minimum": 0.0
+          }
+        },
+        "required": [
+          "serviceProvider",
+          "serviceTransactionId",
+          "sourceAmount"
+        ]
+      },
+      "ExternalImportRequest": {
+        "type": "object",
+        "properties": {
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider from where the transaction will be imported",
+            "enum": [
+              "AUTHORIZENET",
+              "BRAINTREE",
+              "CHECKOUT",
+              "CIRCLE",
+              "NMI",
+              "STRIPE"
+            ]
+          },
+          "serviceTransactionId": {
+            "type": "string",
+            "description": "The id of the transaction to be imported",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "serviceProvider",
+          "serviceTransactionId"
+        ]
+      },
+      "CryptoPurchaseDetails": {
+        "type": "object",
+        "properties": {
+          "blockchainTransactionId": {
+            "type": "string",
+            "description": "The transaction id on the blockchain"
+          },
+          "destinationAmount": {
+            "type": "number",
+            "description": "The amount of the destination currency your customer received in their wallet"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "The destination currency symbol your customer received in their wallet(e.g., BTC, ETH)"
+          },
+          "institution": {
+            "type": "string",
+            "description": "The institution used to execute the transaction. Only applicable for transfers currently."
+          },
+          "networkFee": {
+            "type": "number",
+            "description": "This fee is paid to cryptocurrency miners, which are the systems that process the transactions"
+          },
+          "networkFeeInUsd": {
+            "type": "number",
+            "description": "This network fee in USD"
+          },
+          "partnerFee": {
+            "type": "number",
+            "description": "The partner fee amount"
+          },
+          "partnerFeeInUsd": {
+            "type": "number",
+            "description": "The partner fee in USD"
+          },
+          "totalFee": {
+            "type": "number",
+            "description": "The total amount of fees that will be charged"
+          },
+          "totalFeeInUsd": {
+            "type": "number",
+            "description": "The total fee in USD"
+          },
+          "transactionFee": {
+            "type": "number",
+            "description": "The fee amount charged by the service provider to process your customer's purchase"
+          },
+          "transactionFeeInUsd": {
+            "type": "number",
+            "description": "The transaction fee in USD"
+          },
+          "walletAddress": {
+            "type": "string",
+            "description": "Your customer's crypto wallet"
+          }
+        }
+      },
+      "PaymentMethodOutput": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your Account Id"
+          },
+          "id": {
+            "type": "string",
+            "description": "The Payment Method's Meld Id"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The Service Provider on which this payment method is specified"
+          },
+          "token": {
+            "type": "string",
+            "description": "The ID the Service Provider uses for this Payment Method"
+          }
+        }
+      },
+      "PaymentTransactionOutput": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your account Id"
+          },
+          "authAmount": {
+            "type": "number",
+            "description": "The amount authorized to be charged (must be greater than the amount intended to be collected.) Note that the number of digits with a decimal point varies with the currency. Reference the list of active codes of official ISO 4217 currency names."
+          },
+          "captureAmount": {
+            "type": "number",
+            "description": "The amount captured (can be less than the amount intended to be collected.) Note that the number of digits with a decimal point varies with the currency. Reference the list of active codes of official ISO 4217 currency names."
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "The ISO 3166 2-digit country code."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "An ISO 8601 DateTime at which the object was created."
+          },
+          "cryptoPurchaseDetails": {
+            "$ref": "#/components/schemas/CryptoPurchaseDetails",
+            "description": "Details of the crypto currency purchase"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerOutput",
+            "description": "Your customer's details"
+          },
+          "description": {
+            "type": "string",
+            "description": "An arbitrary string which you can attach to this transaction. It is displayed when in the web interface alongside the charge."
+          },
+          "destinationAmount": {
+            "type": "number",
+            "description": "The destination amount of the transaction, e.g. the amount of crypto currency purchased"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "destinationWalletAddress": {
+            "type": "string",
+            "description": "The wallet the crypto currency is being deposited in, if known"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalReferenceId": {
+            "type": "string",
+            "description": "Your optional reference id provided during transaction creation"
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "The external Id of the session."
+          },
+          "externalSubaccountCustomerId": {
+            "type": "string",
+            "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this transaction"
+          },
+          "isImported": {
+            "type": "boolean",
+            "description": "Return ***True*** if this transaction was initiated outside Meld"
+          },
+          "isPassthrough": {
+            "type": "boolean",
+            "description": "Return ***True*** if the passthrough credentials were used"
+          },
+          "key": {
+            "type": "string",
+            "description": "Pagination key, may be used with the \"after\" parameter in search requests.  Only set and relevant for paginated calls"
+          },
+          "multiFactorAuthorizationStatus": {
+            "type": "array",
+            "description": "The transaction required multi-factor authentication methods, and their current status. When required, must be approved for the purchase tobe completed successfully.",
+            "items": {
+              "$ref": "#/components/schemas/MultiFactorAuthorizationStatusOutput"
+            },
+            "uniqueItems": true
+          },
+          "parentPaymentTransactionId": {
+            "type": "string",
+            "description": "The Id of the associated object for this line item"
+          },
+          "passthroughReference": {
+            "type": "string",
+            "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
+          },
+          "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethodOutput",
+            "description": "PaymentMethod objects represent your customer's payment instruments."
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method type used for this transaction."
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction"
+          },
+          "serviceProviderCreatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The ISO 8601 DateTime when the transaction was created on the service provider's side"
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "The service provider's details"
+          },
+          "serviceProviderTransactionUrl": {
+            "type": "string",
+            "description": "A link to the resource on the Service Provider, may not be present"
+          },
+          "serviceTransactionId": {
+            "type": "string",
+            "description": "The service provider's unique identifier for this transaction"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "The Id of the session."
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "The amount of the transaction"
+          },
+          "sourceAmountInUsd": {
+            "type": "number",
+            "description": "The amount of the transaction in usd"
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "sourceWalletAddress": {
+            "type": "string",
+            "description": "The wallet the crypto currency is being withdrawn from, if known"
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the transaction"
+          },
+          "subaccountCustomerId": {
+            "type": "string",
+            "description": "Optional Meld customer id used to track the business sub-account this transaction belongs to when multiple businesses operate under one Meld account."
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "The transaction's type"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time at which the object was last updated. Measured in seconds since the Unix epoch."
+          },
+          "wallet": {
+            "type": "string",
+            "description": "The wallet used for a crypto currency transaction, if known"
+          }
+        }
+      },
+      "PaymentTransactionResponse": {
+        "type": "object",
+        "properties": {
+          "transaction": {
+            "$ref": "#/components/schemas/PaymentTransactionOutput",
+            "description": "Payment transaction information"
+          }
+        }
+      },
+      "TransactionMultiFactorAuthorizationRequest": {
+        "type": "object",
+        "properties": {
+          "card2faCode": {
+            "type": "string"
+          },
+          "emailCode": {
+            "type": "string"
+          },
+          "smsCode": {
+            "type": "string"
+          },
+          "transactionId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "transactionId"
+        ]
+      },
+      "UploadDocumentResponse": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string"
+          }
+        }
+      },
+      "FiatSessionDataInput": {
+        "description": "Data related to the session",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/FiatTransactionSessionDataInput"
+          }
+        ]
+      },
+      "FiatTokenForWidgetRequest": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/WidgetCustomerInput",
+            "description": "Information about your customer"
+          },
+          "customerId": {
+            "type": "string",
+            "description": "Meld generated unique identifier for your customer. This should be used to track customer activity."
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "Your reference Id for your widget session"
+          },
+          "sessionData": {
+            "$ref": "#/components/schemas/FiatSessionDataInput",
+            "description": "Data related to the session"
+          },
+          "sessionType": {
+            "type": "string",
+            "description": "The type of widget session to create",
+            "enum": [
+              "FIAT_PAYMENTS"
+            ]
+          }
+        },
+        "required": [
+          "sessionData",
+          "sessionType"
+        ]
+      },
+      "FiatTransactionSessionDataInput": {
+        "type": "object",
+        "properties": {
+          "transaction": {
+            "$ref": "#/components/schemas/WidgetTransactionInput",
+            "description": "Transaction to process"
+          }
+        },
+        "required": [
+          "transaction"
+        ]
+      },
+      "WidgetCustomerInput": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Your customer's email address. If provided we will pass it to the Service Provider's widget"
+          }
+        }
+      },
+      "WidgetTransactionInput": {
+        "type": "object",
+        "properties": {
+          "3ds": {
+            "$ref": "#/components/schemas/ThreeDeeEssInput",
+            "description": "3ds settings"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description about the transaction"
+          },
+          "externalTransactionId": {
+            "type": "string",
+            "description": "Your reference id for this transaction"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction.",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Provider specific details which may can be provided for this transaction, if supported by the Service Provider. For example, you can set a custom billing descriptor for your transaction using Checkout.com"
+          },
+          "sourceAmount": {
+            "type": "string",
+            "description": "Amount intended to be collected by this payment",
+            "example": "10.50",
+            "minLength": 1
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code, in lowercase. Must be a supported currency",
+            "example": "USD",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "serviceProvider",
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "FiatSessionTokenResponse": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld generated unique identifier for your customer. This should be used to track customer activity."
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "Your reference Id for your widget session"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this session"
+          },
+          "token": {
+            "type": "string",
+            "description": "The session token"
+          }
+        }
+      },
+      "KycInfo": {
+        "type": "object",
+        "description": "KYC verification information for token passthrough",
+        "properties": {
+          "kycProvider": {
+            "type": "string",
+            "description": "The KYC provider that issued the token",
+            "enum": [
+              "SUMSUB"
+            ],
+            "example": "SUMSUB"
+          },
+          "kycShareToken": {
+            "type": "string",
+            "description": "The shareable KYC token from the KYC provider (e.g., Sumsub share token). This token can be used to transfer verified KYC status to downstream providers. Required when kycProvider is specified.",
+            "example": "_act-sbx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+          }
+        }
+      },
+      "SessionDataInput": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "Two-letter country code (ISO 3166-1 alpha-2)"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "The cryptocurrency the user is buying (e.g. BTC, ETH) or the fiat currency the user is selling crypto for (e.g. USD, EUR).",
+            "minLength": 1
+          },
+          "kycInfo": {
+            "$ref": "#/components/schemas/KycInfo",
+            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it."
+          },
+          "lockFields": {
+            "type": "array",
+            "description": "Where supported by the Service Provider, Meld can help you lock the cryptocurrency and/or wallet address fields within the widget. Enable this by passing in the \"destinationCurrencyCode\" and/or \"walletAddress\" as strings in this field. See [this page](https://docs.meld.io/docs/white-label-cutomization#locking-fields) for more details.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "cryptoCurrency",
+                "destinationCurrencyCode",
+                "sourceCurrencyCode",
+                "walletAddress",
+                "sourceAmount",
+                "paymentMethodType"
+              ]
+            }
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method Type\n\nThe paymentMethodType and paymentMethodSubType included here are a sample set. Review the [Supported Payment Methods](https://www.meld.io/coverage/payment-methods) section to view the complete list.",
+            "enum": [
+              "APPLE_PAY",
+              "MASTERCARD",
+              "SEPA",
+              "VISA"
+            ]
+          },
+          "redirectFlow": {
+            "type": "boolean",
+            "description": "The user is redirected back to the wallet, and the wallet gets the amount, token, and wallet address to send money to from the SP's API, then queues up a transfer in the wallet UI and the user just hits confirm"
+          },
+          "redirectUrl": {
+            "type": "string",
+            "description": "The url to redirect to following completion of the widget flow"
+          },
+          "refundWalletAddress": {
+            "type": "string",
+            "description": "Optional wallet address where the swap provider sends refunds if the swap fails. Only applicable for ramp+swap (e.g. fiat->USDC->USDH) sessions."
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction\n\nReference [Crypto supported service providers](https://www.meld.io/coverage/service-providers) for a full list of supported service providers",
+            "enum": [
+              "ALCHEMYPAY",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BTCDIRECT",
+              "COINBASEPAY",
+              "FONBNK",
+              "GUARDARIAN",
+              "KRYPTONIM",
+              "KOYWE",
+              "MESH",
+              "MERCURYO",
+              "MESO",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "SARDINE",
+              "SHIFT4",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "STRIPE",
+              "SWAPPED",
+              "TOPPER",
+              "TRANSAK",
+              "TRANSFI",
+              "UNLIMIT",
+              "YELLOWCARD"
+            ]
+          },
+          "sourceAmount": {
+            "type": "string",
+            "description": "The amount of source currency your customer wants tosend in this transaction (e.g., 50.05)",
+            "minLength": 1
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "The fiat currency the user is buying crypto with (e.g. USD, EUR) or the cryptocurrency the user is selling (e.g. BTC, ETH).",
+            "minLength": 1
+          },
+          "walletAddress": {
+            "type": "string",
+            "description": "Your customer's wallet address. This field is required when buying crypto but optional when selling crypto."
+          },
+          "walletTag": {
+            "type": "string",
+            "description": "Your customer's wallet tag/destination tag/memo. This field is required for certain cryptocurrencies."
+          }
+        },
+        "required": [
+          "countryCode",
+          "destinationCurrencyCode",
+          "serviceProvider",
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "SessionTokenForWidgetRequest": {
+        "type": "object",
+        "properties": {
+          "bypassKyc": {
+            "type": "boolean",
+            "description": "When true, the system will automatically look up the customer's KYC status and generate a share token if KYC is approved. Requires a valid customerId or externalCustomerId."
+          },
+          "customerId": {
+            "type": "string",
+            "description": "Meld generated unique identifier for your customer. This should be used to track customer activity."
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "Your reference Id for your widget session"
+          },
+          "externalSubaccountCustomerId": {
+            "type": "string",
+            "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
+          },
+          "sessionData": {
+            "$ref": "#/components/schemas/SessionDataInput",
+            "description": "Data related to the session"
+          },
+          "subaccountCustomerId": {
+            "type": "string",
+            "description": "Optional Meld customer id used to track the business sub-account this transaction belongs to when multiple businesses operate under one Meld account."
+          }
+        },
+        "required": [
+          "sessionData"
+        ]
+      },
+      "SessionTokenResponse": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld generated unique identifier for your customer. This should be used to track customer activity."
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "Your reference Id for your widget session"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this session"
+          },
+          "serviceProviderWidgetUrl": {
+            "type": "string",
+            "description": "The service provider's widget URL"
+          },
+          "token": {
+            "type": "string",
+            "description": "The session token"
+          },
+          "widgetUrl": {
+            "type": "string",
+            "description": "The crypto widget URL"
+          }
+        }
+      },
+      "SessionTokenRequest": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld generated unique identifier for your customer. This should be used to track customer activity."
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "Your reference Id for your customer"
+          }
+        }
+      },
+      "CryptoQuoteRequest": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "Two-letter country code (ISO 3166-1 alpha-2)",
+            "example": "US",
+            "minLength": 1
+          },
+          "customerId": {
+            "type": "string",
+            "description": "Meld generated unique identifier for your customer. This should be used to track customer activity."
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Enter a cryptocurrency symbol here if purchasing crypto or a fiat currency 3 letter code if selling crypto.",
+            "example": "USD or BTC",
+            "minLength": 1
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method Type or SubType\n\nThe paymentMethodType and paymentMethodSubType included here are a sample set. Review the [Supported Payment Methods](https://www.meld.io/coverage/payment-methods) section to view the complete list.",
+            "enum": [
+              "APPLE_PAY",
+              "MASTERCARD",
+              "SEPA",
+              "VISA"
+            ]
+          },
+          "serviceProviders": {
+            "type": "array",
+            "description": "An optional list of Strings representing the Service Providers for this Quote.\n\nReference [Crypto supported service providers](https://www.meld.io/coverage/service-providers) for a full list of supported service providers\n\nIf this field is null or an empty list, Meld will get quotes from all the service providers linked to the API key used on the request.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "AUTHORIZENET",
+                "BRAINTREE",
+                "CHECKOUT",
+                "CIRCLE",
+                "NMI",
+                "STRIPE"
+              ]
+            }
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "The source amount for this transaction.",
+            "example": 50,
+            "minimum": 0.0
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Enter a fiat currency 3 letter code here if purchasing crypto or a cryptocurrency symbol if selling crypto.",
+            "example": "BTC or USD",
+            "minLength": 1
+          },
+          "subdivision": {
+            "type": "string",
+            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA.",
+            "example": "US-CA"
+          },
+          "walletAddress": {
+            "type": "string",
+            "description": "Your customer's wallet address"
+          }
+        },
+        "required": [
+          "countryCode",
+          "destinationCurrencyCode",
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "CryptoQuote": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "Two-letter country code (ISO 3166-1 alpha-2)"
+          },
+          "destinationAmount": {
+            "type": "number",
+            "description": "Destination currency amount to be received for this quote"
+          },
+          "destinationAmountWithoutFees": {
+            "type": "number",
+            "description": "The fiat amount exchanged when selling crypto, excluding fees. This will be deprecated in the future."
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Code of currency being quoted: BTC, ETH, ..."
+          },
+          "exchangeRate": {
+            "type": "number",
+            "description": "The exchange rate at the time the request is sent"
+          },
+          "fiatAmountWithoutFees": {
+            "type": "number",
+            "description": "The fiat amount exchanged when buying or selling crypto, excluding fees."
+          },
+          "institutionName": {
+            "type": "string",
+            "description": "The name of the institution or broker used for this quote, if present. Deprecated, no longer used."
+          },
+          "isNativeAvailable": {
+            "type": "boolean",
+            "description": "Indicates if native Apple Pay flow is available for this quote"
+          },
+          "lowKyc": {
+            "type": "boolean",
+            "description": "LowKYC indicating if the quote amount is below the provider's low KYC threshold, meaning the user may not need to upload documents, which can increase conversion."
+          },
+          "networkFee": {
+            "type": "number",
+            "description": "The network fee applied to a crypto transaction. To ensure that transactions are processed on cryptocurrency networks, outgoing transactions to external cryptocurrency addresses typically incur a \"mining\" or \"network\" fee. This fee is paid to cryptocurrency miners, which are the systems that process the transactions and secure the respective network."
+          },
+          "partnerFee": {
+            "type": "number",
+            "description": "The fee amount charged by the partner to process your customer's purchase. This fee % can be set by you."
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method Type used for this quote",
+            "enum": [
+              "APPLE_PAY",
+              "MASTERCARD",
+              "SEPA",
+              "VISA"
+            ]
+          },
+          "rampScore": {
+            "type": "number",
+            "description": "A numerical score representing the expectation a Customer will convert (Ramp score)"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service Provider used on this quote",
+            "enum": [
+              "AUTHORIZENET",
+              "BRAINTREE",
+              "CHECKOUT",
+              "CIRCLE",
+              "NMI",
+              "STRIPE"
+            ]
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "Amount requested + fees"
+          },
+          "sourceAmountWithoutFees": {
+            "type": "number",
+            "description": "The fiat amount being used to buy crypto, excluding fees. This will be deprecated in the future."
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "totalFee": {
+            "type": "number",
+            "description": "The total amount of fees that will be charged."
+          },
+          "transactionFee": {
+            "type": "number",
+            "description": "The fee amount charged by the service provider to process your customer's purchase"
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "The type of crypto transaction, which is CRYPTO_PURCHASE or CRYPTO_SELL."
+          }
+        }
+      },
+      "CryptoQuoteResponse": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string"
+          },
+          "quotes": {
+            "type": "array",
+            "description": "List of quotes",
+            "items": {
+              "$ref": "#/components/schemas/CryptoQuote"
+            }
+          }
+        }
+      },
+      "MercuryoMerchantSessionRequest": {
+        "type": "object",
+        "properties": {
+          "validationURL": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^https?://.+$"
+          }
+        },
+        "required": [
+          "validationURL"
+        ]
+      },
+      "MercuryoMerchantSessionResponse": {
+        "type": "object",
+        "properties": {
+          "merchantSession": {}
+        }
+      },
+      "BillingAddress": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string"
+          },
+          "country_code": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "state_code": {
+            "type": "string"
+          },
+          "street_line_1": {
+            "type": "string"
+          },
+          "street_line_2": {
+            "type": "string"
+          },
+          "zip_code": {
+            "type": "string"
+          }
+        }
+      },
+      "MercuryoNativeApplePayRequest": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "minLength": 1
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/BillingAddress"
+          },
+          "buy_token": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ip": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$"
+          },
+          "last_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "merchant_transaction_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pay_token": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "address",
+          "first_name",
+          "ip",
+          "last_name",
+          "merchant_transaction_id",
+          "pay_token"
+        ]
+      },
+      "MercuryoNativeApplePayResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ResponseData"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ResponseData": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "fiat_amount": {
+            "type": "string"
+          },
+          "fiatcurrency": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "payment_status": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "redirect_url": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/Transaction"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "WidgetEventRequest": {
+        "type": "object",
+        "properties": {
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider that this event is coming from",
+            "minLength": 1
+          },
+          "serviceProviderEventId": {
+            "type": "string",
+            "description": "The service provider's ID for the given event, for example transaction ID for transaction events",
+            "minLength": 1
+          },
+          "serviceProviderEventPayload": {
+            "description": "JSON payload of the widget event, for reference only, can't fully trust content sent from FE"
+          },
+          "serviceProviderEventType": {
+            "type": "string",
+            "description": "The service provider's type for the given event",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "serviceProvider",
+          "serviceProviderEventId",
+          "serviceProviderEventType"
+        ]
+      },
+      "WidgetEventResponse": {},
+      "CryptoDcaInfoRequest": {
+        "type": "object",
+        "properties": {
+          "cryptoCurrency": {
+            "type": "string",
+            "description": "The crypto currency for which the DCA information is requested",
+            "minLength": 1
+          },
+          "currencyCode": {
+            "type": "string",
+            "description": "A string representing the currency code. (e.g.: 'USD'",
+            "minLength": 1
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "A String representing the provider where this transactions was created (e.g.: BRAINTREE",
+            "minLength": 1
+          },
+          "serviceProviderCustomerId": {
+            "type": "string"
+          },
+          "walletAddress": {
+            "type": "string",
+            "description": "The wallet address for which the DCA information is request",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "cryptoCurrency",
+          "currencyCode",
+          "serviceProvider",
+          "walletAddress"
+        ]
+      },
+      "CryptoDcaInfoResponse": {
+        "type": "object",
+        "properties": {
+          "bic": {
+            "type": "string",
+            "description": "The BIC of the bank."
+          },
+          "description": {
+            "type": "string",
+            "description": "The code that needs to be sent in the description field."
+          },
+          "iban": {
+            "type": "string",
+            "description": "The IBAN where the fiat need to be sent to."
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the account holder."
+          }
+        }
+      },
+      "HeadlessOrderRequest": {
+        "type": "object",
+        "description": "Request to create a headless onramp order",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "Country code (ISO 3166-1 alpha-2)",
+            "example": "US",
+            "minLength": 1
+          },
+          "customerId": {
+            "type": "string",
+            "description": "Meld customer id (one of customerId / externalCustomerId is required)"
+          },
+          "customerPhoneNumber": {
+            "type": "string",
+            "description": "Customer phone number \u2014 required for MOBILE_MONEY"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Destination cryptocurrency code",
+            "example": "USDC",
+            "minLength": 1
+          },
+          "destinationWalletAddress": {
+            "type": "string",
+            "description": "Wallet address to receive the cryptocurrency",
+            "minLength": 1
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Caller's external customer id (one of customerId / externalCustomerId is required)"
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "Caller's reference for the order; unique per account when provided"
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment method type",
+            "enum": [
+              "CREDIT_DEBIT_CARD",
+              "APPLE_PAY",
+              "ACH",
+              "SEPA",
+              "PIX",
+              "MOBILE_MONEY"
+            ]
+          },
+          "providerData": {
+            "description": "Provider-specific extension; subtype keyed by serviceProvider",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/YellowcardData"
+              }
+            ]
+          },
+          "redirectUrl": {
+            "type": "string",
+            "description": "Redirect URL \u2014 required for CARD/REDIRECT; validated against headlessConfig.allowedRedirectUrls"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service provider to use for the order",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "sessionType": {
+            "type": "string",
+            "description": "Direction of the order",
+            "enum": [
+              "BUY",
+              "SELL"
+            ]
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "Source amount",
+            "example": 200,
+            "minimum": 0.0
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Source currency code (ISO 4217)",
+            "example": "USD",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "countryCode",
+          "destinationCurrencyCode",
+          "destinationWalletAddress",
+          "paymentMethodType",
+          "serviceProvider",
+          "sessionType",
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "ProviderData": {
+        "description": "Provider-specific extension keyed by serviceProvider",
+        "discriminator": {
+          "propertyName": "serviceProvider"
+        },
+        "properties": {
+          "serviceProvider": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "serviceProvider"
+        ]
+      },
+      "YellowcardData": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProviderData"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "subaccountCustomerId": {
+                "type": "string",
+                "description": "Meld-only sub-account customer grouping id"
+              },
+              "externalSubaccountCustomerId": {
+                "type": "string",
+                "description": "Caller's external sub-account customer reference"
+              }
+            }
+          }
+        ],
+        "description": "Yellowcard-specific provider data"
+      },
+      "ApplePayOrder": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "serviceProviderWidgetUrl": {
+                "type": "string",
+                "description": "Short-TTL provider URL; caller opens at user tap"
+              }
+            }
+          }
+        ],
+        "description": "Apple Pay response \u2014 present when paymentMethodType == APPLE_PAY"
+      },
+      "BankTransferOrder": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "accountNumber": {
+                "type": "string",
+                "description": "ACH account number"
+              },
+              "routingNumber": {
+                "type": "string",
+                "description": "ACH routing number"
+              },
+              "iban": {
+                "type": "string",
+                "description": "SEPA IBAN"
+              },
+              "bic": {
+                "type": "string",
+                "description": "SEPA / wire BIC"
+              },
+              "pixKey": {
+                "type": "string",
+                "description": "PIX key"
+              },
+              "mobileMoneyReference": {
+                "type": "string",
+                "description": "Mobile money reference"
+              }
+            }
+          }
+        ],
+        "description": "Bank-transfer response \u2014 present for ACH, SEPA, PIX, MOBILE_MONEY"
+      },
+      "CardOrder": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "serviceProviderWidgetUrl": {
+                "type": "string",
+                "description": "Provider-hosted widget URL"
+              },
+              "renderMode": {
+                "type": "string",
+                "description": "Render mode for the card surface (NPP-sourced)",
+                "enum": [
+                  "IFRAME",
+                  "REDIRECT"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "Card-method response \u2014 present when paymentMethodType == CREDIT_DEBIT_CARD"
+      },
+      "HeadlessOrderResponse": {
+        "type": "object",
+        "description": "Headless onramp order response envelope",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld customer id"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Caller's external customer id"
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "Caller's external session id"
+          },
+          "id": {
+            "type": "string",
+            "description": "Meld order id (headless_order.id)"
+          },
+          "paymentMethodResponseDetails": {
+            "description": "Method-specific response payload",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ApplePayOrder"
+              },
+              {
+                "$ref": "#/components/schemas/BankTransferOrder"
+              },
+              {
+                "$ref": "#/components/schemas/CardOrder"
+              }
+            ]
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment method type \u2014 also acts as the discriminator for paymentMethodResponseDetails",
+            "enum": [
+              "CREDIT_DEBIT_CARD",
+              "APPLE_PAY",
+              "ACH",
+              "SEPA",
+              "PIX",
+              "MOBILE_MONEY"
+            ]
+          }
+        }
+      },
+      "PaymentMethodResponseDetails": {
+        "discriminator": {
+          "propertyName": "paymentMethodType"
+        },
+        "properties": {
+          "paymentMethodType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentMethodType"
+        ]
+      },
+      "TokenSessionAuthResponse": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "customerServiceProviderAuthId": {
+            "type": "string"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "sessionId": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyAccessProfileResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "The status of the access profile",
+            "enum": [
+              "VALID",
+              "INVALID",
+              "NOT_SUPPORTED"
+            ]
+          }
+        }
+      },
+      "PaymentTransactionListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of payment transactions returned."
+          },
+          "remaining": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of payment transactions before/after this page, depending the direction this page was selected."
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total number of payment transactions."
+          },
+          "transactions": {
+            "type": "array",
+            "description": "List of transactions",
+            "items": {
+              "$ref": "#/components/schemas/SearchedPaymentTransactionOutput"
+            }
+          }
+        }
+      },
+      "SearchedPaymentTransactionOutput": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your account Id"
+          },
+          "apiAccessProfileId": {
+            "type": "string",
+            "description": "The id of the API access profile used to create this transaction. May be null if the transaction was not created via an endpoint that uses an API key for authentication. For example, when imported as a result of a webhook from a service provider."
+          },
+          "authAmount": {
+            "type": "number",
+            "description": "The amount authorized to be charged (must be greater than the amount intended to be collected.) Note that the number of digits with a decimal point varies with the currency. Reference the list of active codes of official ISO 4217 currency names."
+          },
+          "captureAmount": {
+            "type": "number",
+            "description": "The amount captured (can be less than the amount intended to be collected.) Note that the number of digits with a decimal point varies with the currency. Reference the list of active codes of official ISO 4217 currency names."
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "The ISO 3166 2-digit country code."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "An ISO 8601 DateTime at which the object was created."
+          },
+          "cryptoPurchaseDetails": {
+            "$ref": "#/components/schemas/CryptoPurchaseDetails",
+            "description": "Details of the crypto currency purchase"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerOutput",
+            "description": "Your customer's details"
+          },
+          "description": {
+            "type": "string",
+            "description": "An arbitrary string which you can attach to this transaction. It is displayed when in the web interface alongside the charge."
+          },
+          "destinationAmount": {
+            "type": "number",
+            "description": "The destination amount of the transaction, e.g. the amount of crypto currency purchased"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "destinationWalletAddress": {
+            "type": "string",
+            "description": "The wallet the crypto currency is being deposited in, if known"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalReferenceId": {
+            "type": "string",
+            "description": "Your optional reference id provided during transaction creation"
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "The external Id of the session."
+          },
+          "externalSubaccountCustomerId": {
+            "type": "string",
+            "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this transaction"
+          },
+          "isImported": {
+            "type": "boolean",
+            "description": "Return ***True*** if this transaction was initiated outside Meld"
+          },
+          "isPassthrough": {
+            "type": "boolean",
+            "description": "Return ***True*** if the passthrough credentials were used"
+          },
+          "key": {
+            "type": "string",
+            "description": "Pagination key, may be used with the \"after\" parameter in search requests.  Only set and relevant for paginated calls"
+          },
+          "multiFactorAuthorizationStatus": {
+            "type": "array",
+            "description": "The transaction required multi-factor authentication methods, and their current status. When required, must be approved for the purchase tobe completed successfully.",
+            "items": {
+              "$ref": "#/components/schemas/MultiFactorAuthorizationStatusOutput"
+            },
+            "uniqueItems": true
+          },
+          "parentPaymentTransactionId": {
+            "type": "string",
+            "description": "The Id of the associated object for this line item"
+          },
+          "passthroughReference": {
+            "type": "string",
+            "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
+          },
+          "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethodOutput",
+            "description": "PaymentMethod objects represent your customer's payment instruments."
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method type used for this transaction."
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction"
+          },
+          "serviceProviderCreatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The ISO 8601 DateTime when the transaction was created on the service provider's side"
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "The service provider's details"
+          },
+          "serviceProviderTransactionUrl": {
+            "type": "string",
+            "description": "A link to the resource on the Service Provider, may not be present"
+          },
+          "serviceTransactionId": {
+            "type": "string",
+            "description": "The service provider's unique identifier for this transaction"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "The Id of the session."
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "The amount of the transaction"
+          },
+          "sourceAmountInUsd": {
+            "type": "number",
+            "description": "The amount of the transaction in usd"
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "sourceWalletAddress": {
+            "type": "string",
+            "description": "The wallet the crypto currency is being withdrawn from, if known"
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the transaction"
+          },
+          "subaccountCustomerId": {
+            "type": "string",
+            "description": "Optional Meld customer id used to track the business sub-account this transaction belongs to when multiple businesses operate under one Meld account."
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "The transaction's type"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time at which the object was last updated. Measured in seconds since the Unix epoch."
+          },
+          "wallet": {
+            "type": "string",
+            "description": "The wallet used for a crypto currency transaction, if known"
+          }
+        }
+      },
+      "ServiceProviderCustomer": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string"
+          },
+          "serviceProviderCustomerId": {
+            "type": "string",
+            "description": "May be null if the customer has not been created yet or could not be created. See the serviceProviderDetails for more information."
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        }
+      },
+      "ServiceProviderCustomersGetBatchResponse": {
+        "type": "object",
+        "properties": {
+          "customers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceProviderCustomer"
+            }
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CryptoLimit": {
+        "type": "object",
+        "properties": {
+          "currencyCode": {
+            "type": "string",
+            "description": "The fiat currency\u2019s 3 letter code."
+          },
+          "defaultAmount": {
+            "type": "number",
+            "description": "The default amount the crypto wizard shows for the fiat currency."
+          },
+          "maxAmount": {
+            "type": "number",
+            "description": "The maximum amount a quote can be requested for, regardless of cryptocurrency."
+          },
+          "minAmount": {
+            "type": "number",
+            "description": "The minimum amount a quote can be requested for, regardless of cryptocurrency."
+          }
+        }
+      },
+      "BalanceResponse": {
+        "type": "object",
+        "properties": {
+          "balance": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          }
+        }
+      },
+      "SessionTransactionSimple": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "FiatSessionDataOutput": {
+        "type": "object",
+        "properties": {
+          "transaction": {
+            "$ref": "#/components/schemas/WidgetTransactionOutput",
+            "description": "Transaction"
+          }
+        }
+      },
+      "FiatSessionDataResponse": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your account Id"
+          },
+          "customerId": {
+            "type": "string",
+            "description": "Meld generated unique identifier for your customer. This should be used to track customer activity."
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this session"
+          },
+          "sessionData": {
+            "$ref": "#/components/schemas/FiatSessionDataOutput",
+            "description": "Data related to the session"
+          },
+          "widgetPreferences": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Widget Preferences"
+          }
+        }
+      },
+      "WidgetTransactionOutput": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "A description about the transaction"
+          },
+          "externalTransactionId": {
+            "type": "string",
+            "description": "Your reference id for this transaction"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this transaction, may be null until transaction is created"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction.",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ],
+            "minLength": 1
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Provider specific details which may can be provided for this transaction, if supported by the Service Provider. For example, you can set a custom billing descriptor for your transaction using Checkout.com"
+          },
+          "sourceAmount": {
+            "type": "string",
+            "description": "Amount intended to be collected by this payment",
+            "example": "10.50",
+            "minLength": 1
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code, in lowercase. Must be a supported currency",
+            "example": "USD",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the transaction, may be null until transaction is created"
+          }
+        },
+        "required": [
+          "serviceProvider",
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "TransactionListResponse": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionResponse"
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "TransactionResponse": {
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "ServiceProviderAdditionalParameters": {
+        "description": "Service provider specific additional parameters"
+      },
+      "SessionCryptoDataResponse": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your account Id"
+          },
+          "customerId": {
+            "type": "string",
+            "description": "Meld generated unique identifier for your customer. This should be used to track customer activity."
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this session"
+          },
+          "sessionData": {
+            "$ref": "#/components/schemas/SessionDataOutput",
+            "description": "Data related to the session"
+          },
+          "widgetPreferences": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Widget Preferences"
+          }
+        }
+      },
+      "SessionDataOutput": {
+        "type": "object",
+        "properties": {
+          "additionalParams": {
+            "$ref": "#/components/schemas/ServiceProviderAdditionalParameters",
+            "description": "Service provider specific additional parameters"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Two-letter country code (ISO 3166-1 alpha-2)"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "The cryptocurrency the user is buying (e.g. BTC, ETH) or the fiat currency the user is selling crypto for (e.g. USD, EUR).",
+            "minLength": 1
+          },
+          "isNativeApplePayAvailable": {
+            "type": "boolean",
+            "description": "Whether native Apple Pay is available for this session (provider eligibility signal). Present for Apple Pay sessions when supported."
+          },
+          "lockFields": {
+            "type": "array",
+            "description": "Where supported by the Service Provider, Meld can help you lock the cryptocurrency and/or wallet address fields within the widget. Enable this by passing in the \"cryptoCurrency\" and/or \"walletAddress\" as strings in this field. See [this page](https://docs.meld.io/docs/white-label-cutomization#locking-fields) for more details.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "cryptoCurrency",
+                "destinationCurrencyCode",
+                "sourceCurrencyCode",
+                "walletAddress",
+                "sourceAmount",
+                "paymentMethodType"
+              ]
+            }
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method Type\n\nThe paymentMethodType and paymentMethodSubType included here are a sample set. Review the [Supported Payment Methods](https://www.meld.io/coverage/payment-methods) section to view the complete list.",
+            "enum": [
+              "APPLE_PAY",
+              "MASTERCARD",
+              "SEPA",
+              "VISA"
+            ]
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction\n\nReference [Crypto supported service providers](https://www.meld.io/coverage/service-providers) for a full list of supported service providers",
+            "enum": [
+              "ALCHEMYPAY",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BTCDIRECT",
+              "COINBASEPAY",
+              "FONBNK",
+              "GUARDARIAN",
+              "KRYPTONIM",
+              "KOYWE",
+              "MESH",
+              "MERCURYO",
+              "MESO",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "SARDINE",
+              "SHIFT4",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "STRIPE",
+              "SWAPPED",
+              "TOPPER",
+              "TRANSAK",
+              "TRANSFI",
+              "UNLIMIT",
+              "YELLOWCARD"
+            ]
+          },
+          "sessionType": {
+            "type": "string",
+            "description": "The type for this Session. This is only returned, not read. This is inferred from the source and destination currencies used to create the session.",
+            "enum": [
+              "BUY",
+              "SELL",
+              "TRANSFER"
+            ]
+          },
+          "sourceAmount": {
+            "type": "string",
+            "description": "The amount of source currency your customer wants tosend in this transaction (e.g., 50.05)"
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "The fiat currency the user is buying crypto with (e.g. USD, EUR) or the cryptocurrency the user is selling (e.g. BTC, ETH)."
+          },
+          "sourceCurrencyCodes": {
+            "type": "array",
+            "description": "List of crypto currencies available for the customer to transfer (e.g. BTC, ETH).",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "walletAddress": {
+            "type": "string",
+            "description": "Your customer's wallet address. This field is required when buying crypto but optional when selling crypto."
+          },
+          "walletTag": {
+            "type": "string",
+            "description": "Your customer's wallet tag/destination tag/memo. This field is required for certain cryptocurrencies."
+          }
+        },
+        "required": [
+          "destinationCurrencyCode",
+          "serviceProvider"
+        ]
+      },
+      "CryptoConnectCustomerResponse": {
+        "type": "object",
+        "properties": {
+          "connectionUrl": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string"
+          }
+        }
+      },
+      "ApplePayPaymentSessionResponse": {
+        "type": "object",
+        "properties": {
+          "paymentSession": {}
+        }
+      },
+      "PaymentTransactionListResponse20230401": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of payment transactions returned."
+          },
+          "remaining": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of payment transactions before/after this page, depending the direction this page was selected."
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total number of payment transactions."
+          },
+          "transactions": {
+            "type": "array",
+            "description": "List of transactions",
+            "items": {
+              "$ref": "#/components/schemas/SearchedPaymentTransactionOutput20230401"
+            }
+          }
+        }
+      },
+      "SearchedPaymentTransactionOutput20230401": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your account Id"
+          },
+          "apiAccessProfileId": {
+            "type": "string",
+            "description": "The id of the API access profile used to create this transaction. May be null if the transaction was not created via an endpoint that uses an API key for authentication. For example, when imported as a result of a webhook from a service provider."
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "The ISO 3166 2-digit country code."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "An ISO 8601 DateTime at which the object was created."
+          },
+          "cryptoDetails": {
+            "$ref": "#/components/schemas/CryptoDetails",
+            "description": "Details of the crypto currency purchase, sale, or transfer"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerOutput",
+            "description": "Your customer's details"
+          },
+          "description": {
+            "type": "string",
+            "description": "An arbitrary string which you can attach to this transaction. It is displayed when in the web interface alongside the charge."
+          },
+          "destinationAmount": {
+            "type": "number",
+            "description": "The destination amount of the transaction, e.g. the amount of crypto currency purchased"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalReferenceId": {
+            "type": "string",
+            "description": "Your optional reference id provided during transaction creation"
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "The external Id of the session."
+          },
+          "externalSubaccountCustomerId": {
+            "type": "string",
+            "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
+          },
+          "fiatAmountInUsd": {
+            "type": "number",
+            "description": "The fiat amount of the transaction in usd"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this transaction"
+          },
+          "isImported": {
+            "type": "boolean",
+            "description": "Return ***True*** if this transaction was initiated outside Meld"
+          },
+          "isPassthrough": {
+            "type": "boolean",
+            "description": "Return ***True*** if the passthrough credentials were used"
+          },
+          "key": {
+            "type": "string",
+            "description": "Pagination key, may be used with the \"after\" parameter in search requests.  Only set and relevant for paginated calls"
+          },
+          "multiFactorAuthorizationStatus": {
+            "type": "array",
+            "description": "The transaction required multi-factor authentication methods, and their current status. When required, must be approved for the purchase tobe completed successfully.",
+            "items": {
+              "$ref": "#/components/schemas/MultiFactorAuthorizationStatusOutput"
+            },
+            "uniqueItems": true
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Unique identifier for the order associated with this transaction, when applicable"
+          },
+          "parentPaymentTransactionId": {
+            "type": "string",
+            "description": "The Id of the associated object for this line item"
+          },
+          "passthroughReference": {
+            "type": "string",
+            "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
+          },
+          "paymentDetails": {
+            "$ref": "#/components/schemas/PaymentDetails",
+            "description": "payment details"
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method type used for this transaction."
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction"
+          },
+          "serviceProviderCreatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The ISO 8601 DateTime when the transaction was created on the service provider's side"
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "The service provider's details"
+          },
+          "serviceProviderTransactionUrl": {
+            "type": "string",
+            "description": "A link to the resource on the Service Provider, may not be present"
+          },
+          "serviceTransactionId": {
+            "type": "string",
+            "description": "The service provider's unique identifier for this transaction"
+          },
+          "sessionClientTags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A map of client tags"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "The Id of the session."
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "The amount of the transaction"
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the transaction"
+          },
+          "subaccountCustomerId": {
+            "type": "string",
+            "description": "Optional Meld customer id used to track the business sub-account this transaction belongs to when multiple businesses operate under one Meld account."
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "The transaction's type"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time at which the object was last updated. Measured in seconds since the Unix epoch."
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "serviceProvider",
+          "sessionId",
+          "status",
+          "transactionType",
+          "updatedAt"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "x-default": "BASIC <Meld API Key>"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Payment",
+      "description": ""
+    }
+  ],
+  "x-readme": {
+    "explorer-enabled": true,
+    "proxy-enabled": false,
+    "samples-enabled": true,
+    "headers": [
+      {
+        "key": "Meld-Version",
+        "value": "2023-04-01"
+      }
+    ]
+  }
+}
