@@ -109,20 +109,33 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
           mkdir -p openapi
+          PUBLIC_VERSIONS=(20260203 20250304 20231219)
 
-          # Copy generated files, stripping the leading "oas-" prefix:
-          #   output/oas-crypto-20260203.json → openapi/crypto-20260203.json
+          copy_public_oas() {
+            local src="$1"
+            local dest_name
+            dest_name="$(basename "$src" | sed 's/^oas-//')"
+            cp "$src" "openapi/${dest_name}"
+          }
+
+          # Copy only published API versions into openapi/ (see update_docs_json.py).
           if [ "$VERSION" = "all" ] && [ "$SERVICE" = "all" ]; then
-            for f in output/oas-*.json; do
-              cp "$f" "openapi/$(basename "$f" | sed 's/^oas-//')"
+            for v in "${PUBLIC_VERSIONS[@]}"; do
+              for f in output/oas-*-"${v}".json; do
+                [ -f "$f" ] || continue
+                copy_public_oas "$f"
+              done
             done
           elif [ "$VERSION" = "all" ]; then
-            for f in output/oas-${SERVICE}-*.json; do
-              cp "$f" "openapi/$(basename "$f" | sed 's/^oas-//')"
+            for v in "${PUBLIC_VERSIONS[@]}"; do
+              f="output/oas-${SERVICE}-${v}.json"
+              [ -f "$f" ] || continue
+              copy_public_oas "$f"
             done
           elif [ "$SERVICE" = "all" ]; then
-            for f in output/oas-*-${VERSION}.json; do
-              cp "$f" "openapi/$(basename "$f" | sed 's/^oas-//')"
+            for f in output/oas-*-"${VERSION}".json; do
+              [ -f "$f" ] || continue
+              copy_public_oas "$f"
             done
           else
             cp "output/oas-${SERVICE}-${VERSION}.json" "openapi/${SERVICE}-${VERSION}.json"

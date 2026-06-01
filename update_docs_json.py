@@ -6,37 +6,23 @@ import copy
 import json
 from pathlib import Path
 
-VERSION_ORDER = [
-    "20260203",
-    "20250304",
-    "20240427",
-    "20231219",
-    "20231122",
-    "20230911",
-    "20230401",
-    "20221110",
-    "20220921",
-    "20220719",
-]
-
 PUBLIC_VERSION_ORDER = [
     "20260203",
     "20250304",
     "20231219",
 ]
 
-SECTIONS_BY_VERSION = {
-    "20260203": ["crypto", "banklinking", "payments", "customer", "serviceproviders", "webhooks", "beta"],
-    "20250304": ["crypto", "banklinking", "payments", "customer", "serviceproviders", "webhooks", "beta"],
-    "20240427": ["crypto", "banklinking", "payments", "customer", "serviceproviders", "webhooks", "beta"],
-    "20231219": ["crypto", "banklinking", "payments", "customer", "serviceproviders", "webhooks", "beta"],
-    "20231122": ["serviceproviders"],
-    "20230911": ["crypto", "banklinking", "payments", "customer"],
-    "20230401": ["crypto", "payments", "customer"],
-    "20221110": ["crypto", "banklinking", "payments", "customer", "serviceproviders", "webhooks", "beta"],
-    "20220921": ["crypto", "banklinking", "payments", "customer", "serviceproviders", "webhooks", "beta"],
-    "20220719": ["crypto", "banklinking", "payments", "customer", "serviceproviders", "webhooks", "beta"],
-}
+PUBLIC_SERVICES = [
+    "crypto",
+    "banklinking",
+    "payments",
+    "customer",
+    "serviceproviders",
+    "webhooks",
+    "beta",
+]
+
+SECTIONS_BY_VERSION = {version: PUBLIC_SERVICES for version in PUBLIC_VERSION_ORDER}
 
 TAB_LABELS = {
     "crypto": "Crypto",
@@ -117,8 +103,8 @@ def build_version_entry(version_key: str, docs_tab: dict, is_default: bool) -> d
 
 def validate_openapi_sources(repo_root: Path):
     missing = []
-    for version_key in VERSION_ORDER:
-        for service in SECTIONS_BY_VERSION[version_key]:
+    for version_key in PUBLIC_VERSION_ORDER:
+        for service in PUBLIC_SERVICES:
             path = repo_root / f"openapi/{service}-{version_key}.json"
             if not path.exists():
                 missing.append(path)

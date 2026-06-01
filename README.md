@@ -46,14 +46,15 @@ Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/sett
 
 ## Versioned API reference
 
-The Mintlify API reference is generated from two sources of truth:
+The Mintlify API reference is generated at deploy time from OpenAPI specs in git (not from committed endpoint MDX).
 
-- `docs.template.json` contains the shared site configuration and Documentation tab
-- `openapi/*.json` contains versioned API specs for each product
+- `docs.template.json` — shared site config and Documentation tab
+- `openapi/*.json` — one spec per service per **published** API version (`2026-02-03`, `2025-03-04`, `2023-12-19`)
+- `docs.json` — generated navigation (`python3 update_docs_json.py`)
 
-Run `python3 update_docs_json.py` to regenerate `docs.json` after changing the shared docs navigation or the version list.
+After changing specs, run `python3 normalize_openapi.py openapi` to apply Mintlify hrefs and required-only Try it examples.
 
-Run `python3 normalize_openapi.py openapi` after adding specs to keep stable `/api-reference/...` endpoint links working across Mintlify versions.
+To refresh specs from the backend, run the **Sync API Reference** GitHub Action (opens a PR; does not push directly to `main`).
 
 ## Need help?
 
