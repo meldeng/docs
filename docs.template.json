@@ -36,6 +36,7 @@
   },
   "api": {
     "examples": {
+      "defaults": "required",
       "prefill": true
     }
   },

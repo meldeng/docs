@@ -1335,7 +1335,6 @@
           "destinationCurrencyCode": {
             "type": "string",
             "description": "Enter a cryptocurrency symbol here if purchasing crypto or a fiat currency 3 letter code if selling crypto.",
-            "example": "USD or BTC",
             "minLength": 1
           },
           "paymentMethodType": {
@@ -1428,13 +1427,11 @@
           "sourceCurrencyCode": {
             "type": "string",
             "description": "Enter a fiat currency 3 letter code here if purchasing crypto or a cryptocurrency symbol if selling crypto.",
-            "example": "BTC or USD",
             "minLength": 1
           },
           "subdivision": {
             "type": "string",
-            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA.",
-            "example": "US-CA"
+            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA."
           }
         },
         "required": [
@@ -3775,13 +3772,11 @@
             "description": "The KYC provider that issued the token",
             "enum": [
               "SUMSUB"
-            ],
-            "example": "SUMSUB"
+            ]
           },
           "kycShareToken": {
             "type": "string",
-            "description": "The shareable KYC token from the KYC provider (e.g., Sumsub share token). This token can be used to transfer verified KYC status to downstream providers. Required when kycProvider is specified.",
-            "example": "_act-sbx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            "description": "The shareable KYC token from the KYC provider (e.g., Sumsub share token). This token can be used to transfer verified KYC status to downstream providers. Required when kycProvider is specified."
           }
         }
       },
@@ -4007,7 +4002,6 @@
           "destinationCurrencyCode": {
             "type": "string",
             "description": "Enter a cryptocurrency symbol here if purchasing crypto or a fiat currency 3 letter code if selling crypto.",
-            "example": "USD or BTC",
             "minLength": 1
           },
           "externalCustomerId": {
@@ -4048,13 +4042,11 @@
           "sourceCurrencyCode": {
             "type": "string",
             "description": "Enter a fiat currency 3 letter code here if purchasing crypto or a cryptocurrency symbol if selling crypto.",
-            "example": "BTC or USD",
             "minLength": 1
           },
           "subdivision": {
             "type": "string",
-            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA.",
-            "example": "US-CA"
+            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA."
           },
           "walletAddress": {
             "type": "string",

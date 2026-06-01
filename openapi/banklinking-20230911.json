@@ -2309,8 +2309,7 @@
           },
           "institutionSelectionText": {
             "type": "string",
-            "description": "The text to display at the top of bank picker",
-            "example": "Select your institution"
+            "description": "The text to display at the top of bank picker"
           },
           "routingRetry": {
             "type": "boolean",
@@ -2353,7 +2352,8 @@
             "type": "string",
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "minLength": 1,
-            "default": "testUser"
+            "default": "testUser",
+            "example": "testUser"
           },
           "institutionId": {
             "type": "string",
@@ -2361,8 +2361,7 @@
           },
           "institutionSearchString": {
             "type": "string",
-            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value",
-            "example": "Chase"
+            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value"
           },
           "optionalProducts": {
             "type": "array",
@@ -2392,13 +2391,7 @@
                 "OWNERS",
                 "TRANSACTIONS"
               ]
-            },
-            "default": [
-              "TRANSACTIONS",
-              "IDENTIFIERS",
-              "BALANCES",
-              "OWNERS"
-            ]
+            }
           },
           "redirectUrl": {
             "type": "string",
@@ -2411,13 +2404,7 @@
               "type": "string"
             },
             "uniqueItems": true
-          },
-          "example": [
-            "TRANSACTIONS",
-            "IDENTIFIERS",
-            "BALANCES",
-            "OWNERS"
-          ]
+          }
         },
         "required": [
           "externalCustomerId"
@@ -2463,7 +2450,8 @@
             "type": "string",
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "minLength": 1,
-            "default": "testUser"
+            "default": "testUser",
+            "example": "testUser"
           },
           "institutionId": {
             "type": "string",
@@ -2471,8 +2459,7 @@
           },
           "institutionSearchString": {
             "type": "string",
-            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value",
-            "example": "Chase"
+            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value"
           },
           "optionalProducts": {
             "type": "array",
@@ -2506,13 +2493,7 @@
                 "INVESTMENT_TRANSACTIONS",
                 "TRANSACTIONS"
               ]
-            },
-            "default": [
-              "TRANSACTIONS",
-              "IDENTIFIERS",
-              "BALANCES",
-              "OWNERS"
-            ]
+            }
           },
           "redirectUrl": {
             "type": "string",
@@ -2525,13 +2506,7 @@
               "type": "string"
             },
             "uniqueItems": true
-          },
-          "example": [
-            "TRANSACTIONS",
-            "IDENTIFIERS",
-            "BALANCES",
-            "OWNERS"
-          ]
+          }
         },
         "required": [
           "externalCustomerId"
@@ -4498,7 +4473,8 @@
             "type": "string",
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "minLength": 1,
-            "default": "testUser"
+            "default": "testUser",
+            "example": "testUser"
           },
           "institutionId": {
             "type": "string",
@@ -4506,8 +4482,7 @@
           },
           "institutionSearchString": {
             "type": "string",
-            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value",
-            "example": "Chase"
+            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value"
           },
           "optionalProducts": {
             "type": "array",
@@ -4537,13 +4512,7 @@
                 "INVESTMENT_TRANSACTIONS",
                 "TRANSACTIONS"
               ]
-            },
-            "default": [
-              "TRANSACTIONS",
-              "IDENTIFIERS",
-              "BALANCES",
-              "OWNERS"
-            ]
+            }
           },
           "redirectUrl": {
             "type": "string",
@@ -4556,13 +4525,7 @@
               "type": "string"
             },
             "uniqueItems": true
-          },
-          "example": [
-            "TRANSACTIONS",
-            "IDENTIFIERS",
-            "BALANCES",
-            "OWNERS"
-          ]
+          }
         },
         "required": [
           "externalCustomerId"

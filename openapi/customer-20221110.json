@@ -3362,8 +3362,7 @@
           },
           "institutionSelectionText": {
             "type": "string",
-            "description": "The text to display at the top of bank picker",
-            "example": "Select your institution"
+            "description": "The text to display at the top of bank picker"
           },
           "routingRetry": {
             "type": "boolean",
@@ -3880,8 +3879,7 @@
         "properties": {
           "companyName": {
             "type": "string",
-            "description": "Company name",
-            "example": "Acme Corp"
+            "description": "Company name"
           },
           "createdAt": {
             "type": "string",
@@ -3890,8 +3888,7 @@
           },
           "email": {
             "type": "string",
-            "description": "Email address",
-            "example": "john.doe@example.com"
+            "description": "Email address"
           },
           "errorMessage": {
             "type": "string",
@@ -3899,45 +3896,34 @@
           },
           "fullName": {
             "type": "string",
-            "description": "Full name",
-            "example": "John Doe"
+            "description": "Full name"
           },
           "id": {
             "type": "string",
-            "description": "Lead ID",
-            "example": "550e8400-e29b-41d4-a716-446655440000"
+            "description": "Lead ID"
           },
           "isFirstTimeDialogShown": {
             "type": "boolean",
-            "description": "Whether first-time dialog has been shown",
-            "example": false
+            "description": "Whether first-time dialog has been shown"
           },
           "reasonName": {
             "type": "string",
-            "description": "Reason name(s) - can be a single reason or multiple comma-separated reasons",
-            "example": "TRADITIONAL_RAMPS,VIRTUAL_ACCOUNTS"
+            "description": "Reason name(s) - can be a single reason or multiple comma-separated reasons"
           },
           "roleName": {
             "type": "string",
-            "description": "Role name",
-            "example": "ENGINEER"
+            "description": "Role name"
           },
           "sharedIntegrationNames": {
             "type": "array",
             "description": "Service provider names of integrations shared during onboarding",
-            "example": [
-              "BANXA",
-              "MOONPAY",
-              "TRANSAK"
-            ],
             "items": {
               "type": "string"
             }
           },
           "status": {
             "type": "string",
-            "description": "Current status",
-            "example": "SUBMITTED"
+            "description": "Current status"
           },
           "updatedAt": {
             "type": "string",
@@ -4034,7 +4020,6 @@
           "dateOfBirth": {
             "type": "string",
             "description": "Customer's date of birth in ISO format (yyyy-MM-dd)",
-            "example": "1990-03-15",
             "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
           },
           "email": {
@@ -4093,8 +4078,7 @@
           },
           "dateOfBirth": {
             "type": "string",
-            "description": "Customer's date of birth in ISO format (yyyy-MM-dd)",
-            "example": "1990-03-15"
+            "description": "Customer's date of birth in ISO format (yyyy-MM-dd)"
           },
           "email": {
             "type": "string",
@@ -4325,14 +4309,12 @@
               "REJECTED",
               "EXPIRED",
               "UNKNOWN"
-            ],
-            "example": "APPROVED"
+            ]
           },
           "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "description": "When the status was last updated",
-            "example": "2026-01-22T10:05:00Z"
+            "description": "When the status was last updated"
           }
         }
       },
@@ -4917,16 +4899,14 @@
         "properties": {
           "customerId": {
             "type": "string",
-            "description": "Customer id (Meld)",
-            "example": "W912345678"
+            "description": "Customer id (Meld)"
           },
           "serviceProvider": {
             "type": "string",
             "description": "KYC provider",
             "enum": [
               "SUMSUB"
-            ],
-            "example": "SUMSUB"
+            ]
           },
           "status": {
             "type": "string",
@@ -4937,8 +4917,7 @@
               "REJECTED",
               "EXPIRED",
               "UNKNOWN"
-            ],
-            "example": "PENDING"
+            ]
           },
           "url": {
             "type": "string",
@@ -6273,8 +6252,7 @@
         "properties": {
           "exists": {
             "type": "boolean",
-            "description": "Whether a lead exists for the given email",
-            "example": true
+            "description": "Whether a lead exists for the given email"
           }
         }
       },
@@ -6283,13 +6261,11 @@
         "properties": {
           "displayName": {
             "type": "string",
-            "description": "Display name",
-            "example": "Engineer"
+            "description": "Display name"
           },
           "name": {
             "type": "string",
-            "description": "Role name",
-            "example": "ENGINEER"
+            "description": "Role name"
           }
         }
       },
@@ -6298,13 +6274,11 @@
         "properties": {
           "displayName": {
             "type": "string",
-            "description": "Display name",
-            "example": "Traditional Ramps"
+            "description": "Display name"
           },
           "name": {
             "type": "string",
-            "description": "Reason name",
-            "example": "TRADITIONAL_RAMPS"
+            "description": "Reason name"
           }
         }
       },
@@ -6327,8 +6301,7 @@
           },
           "onboardingReasonName": {
             "type": "string",
-            "description": "Onboarding reason name",
-            "example": "TRADITIONAL_RAMPS"
+            "description": "Onboarding reason name"
           }
         }
       },

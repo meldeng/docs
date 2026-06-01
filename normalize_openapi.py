@@ -30,6 +30,13 @@ PATH_PRIORITY_BY_SERVICE = {
     ],
 }
 
+PLACEHOLDER_EXAMPLE_VALUES = {
+    "<string>",
+    "<unknown>",
+    "string",
+    "unknown",
+}
+
 
 def slugify(text: str) -> str:
     text = text.lower().replace("&", " and ")
@@ -121,6 +128,134 @@ def normalize_descriptions(value) -> int:
     return updated
 
 
+def is_placeholder_example(value) -> bool:
+    if not isinstance(value, str):
+        return False
+    normalized = value.strip()
+    if normalized in PLACEHOLDER_EXAMPLE_VALUES:
+        return True
+    if normalized.startswith("<") and normalized.endswith(">"):
+        return True
+    return False
+
+
+def should_drop_example(value) -> bool:
+    if is_placeholder_example(value):
+        return True
+    if isinstance(value, str) and " or " in value.lower():
+        return True
+    return False
+
+
+def resolve_ref(ref: str, schemas: dict) -> dict | None:
+    if not ref.startswith("#/components/schemas/"):
+        return None
+    name = ref.removeprefix("#/components/schemas/")
+    target = schemas.get(name)
+    return target if isinstance(target, dict) else None
+
+
+def sanitize_object_schema(schema: dict) -> int:
+    properties = schema.get("properties")
+    if not isinstance(properties, dict):
+        return 0
+
+    updated = 0
+    required = set(schema.get("required") or [])
+
+    # SpringDoc occasionally emits a spurious `example` property on request objects.
+    if "example" in properties and "example" not in required:
+        del properties["example"]
+        updated += 1
+
+    for name, prop in properties.items():
+        if not isinstance(prop, dict):
+            continue
+
+        if name not in required:
+            if "example" in prop:
+                del prop["example"]
+                updated += 1
+            if "default" in prop:
+                del prop["default"]
+                updated += 1
+            continue
+
+        default = prop.get("default")
+        example = prop.get("example")
+        if default is not None:
+            if example != default:
+                prop["example"] = default
+                updated += 1
+        elif "example" in prop and should_drop_example(example):
+            del prop["example"]
+            updated += 1
+
+    return updated
+
+
+def sanitize_schema_node(schema: dict, schemas: dict, visited: set[str] | None = None) -> int:
+    if not isinstance(schema, dict):
+        return 0
+
+    visited = visited or set()
+    updated = 0
+
+    ref = schema.get("$ref")
+    if isinstance(ref, str):
+        ref_name = ref.removeprefix("#/components/schemas/")
+        if ref_name in visited:
+            return 0
+        target = resolve_ref(ref, schemas)
+        if target is not None:
+            visited.add(ref_name)
+            updated += sanitize_schema_node(target, schemas, visited)
+        return updated
+
+    if schema.get("type") == "object" or isinstance(schema.get("properties"), dict):
+        updated += sanitize_object_schema(schema)
+
+    items = schema.get("items")
+    if isinstance(items, dict):
+        updated += sanitize_schema_node(items, schemas, visited)
+
+    return updated
+
+
+def sanitize_component_schemas(payload: dict) -> int:
+    schemas = payload.get("components", {}).get("schemas", {})
+    if not isinstance(schemas, dict):
+        return 0
+
+    updated = 0
+    for schema in schemas.values():
+        updated += sanitize_schema_node(schema, schemas)
+    return updated
+
+
+def strip_request_body_examples(payload: dict) -> int:
+    updated = 0
+    for operations in payload.get("paths", {}).values():
+        if not isinstance(operations, dict):
+            continue
+        for method, operation in operations.items():
+            if method.lower() not in HTTP_METHODS or not isinstance(operation, dict):
+                continue
+            request_body = operation.get("requestBody")
+            if not isinstance(request_body, dict):
+                continue
+            for content in (request_body.get("content") or {}).values():
+                if not isinstance(content, dict):
+                    continue
+                if "example" in content:
+                    del content["example"]
+                    updated += 1
+                if "examples" in content:
+                    del content["examples"]
+                    updated += 1
+    return updated
+
+
 def reorder_paths(payload: dict, service: str) -> int:
     path_priority = PATH_PRIORITY_BY_SERVICE.get(service)
     paths = payload.get("paths")
@@ -148,6 +283,8 @@ def normalize_spec(spec_path: Path) -> int:
 
     payload = json.loads(spec_path.read_text(encoding="utf-8"))
     updated = normalize_descriptions(payload)
+    updated += sanitize_component_schemas(payload)
+    updated += strip_request_body_examples(payload)
     updated += reorder_paths(payload, service)
 
     for path_name, operations in payload.get("paths", {}).items():

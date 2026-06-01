@@ -34,19 +34,6 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SessionTokenForWidgetRequestV20231219"
-              },
-              "example": {
-                "sessionType": "BUY",
-                "sessionData": {
-                  "serviceProvider": "TOPPER",
-                  "countryCode": "US",
-                  "sourceCurrencyCode": "USD",
-                  "sourceAmount": "100",
-                  "destinationCurrencyCode": "BTC",
-                  "walletAddress": "bc1qr74wmrcwqq9w5yxczxj6udts9mnqsh3xlhk5yp"
-                },
-                "externalSessionId": "example-session-id",
-                "externalCustomerId": "example-customer-id"
               }
             }
           },
@@ -832,7 +819,6 @@
           "destinationCurrencyCode": {
             "type": "string",
             "description": "Enter a cryptocurrency symbol here if purchasing crypto or a fiat currency 3 letter code if selling crypto.",
-            "example": "USD or BTC",
             "minLength": 1
           },
           "paymentMethodType": {
@@ -925,13 +911,11 @@
           "sourceCurrencyCode": {
             "type": "string",
             "description": "Enter a fiat currency 3 letter code here if purchasing crypto or a cryptocurrency symbol if selling crypto.",
-            "example": "BTC or USD",
             "minLength": 1
           },
           "subdivision": {
             "type": "string",
-            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA.",
-            "example": "US-CA"
+            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA."
           }
         },
         "required": [
@@ -3356,13 +3340,11 @@
             "description": "The KYC provider that issued the token",
             "enum": [
               "SUMSUB"
-            ],
-            "example": "SUMSUB"
+            ]
           },
           "kycShareToken": {
             "type": "string",
-            "description": "The shareable KYC token from the KYC provider (e.g., Sumsub share token). This token can be used to transfer verified KYC status to downstream providers. Required when kycProvider is specified.",
-            "example": "_act-sbx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            "description": "The shareable KYC token from the KYC provider (e.g., Sumsub share token). This token can be used to transfer verified KYC status to downstream providers. Required when kycProvider is specified."
           }
         }
       },
@@ -3589,7 +3571,7 @@
           "destinationCurrencyCode": {
             "type": "string",
             "description": "Enter a cryptocurrency symbol here if purchasing crypto or a fiat currency 3 letter code if selling crypto.",
-            "example": "USD or BTC",
+            "example": "BTC",
             "minLength": 1,
             "default": "BTC"
           },
@@ -3653,27 +3635,25 @@
           "sourceAmount": {
             "type": "number",
             "description": "The source amount for this transaction.",
-            "example": 50,
+            "example": 100,
             "minimum": 0.0,
             "default": 100
           },
           "sourceCurrencyCode": {
             "type": "string",
             "description": "Enter a fiat currency 3 letter code here if purchasing crypto or a cryptocurrency symbol if selling crypto.",
-            "example": "BTC or USD",
+            "example": "USD",
             "minLength": 1,
             "default": "USD"
           },
           "subdivision": {
             "type": "string",
-            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA.",
-            "example": "US-CA"
+            "description": "subdivision is a optional parameter Only applicable if the country code is US or CA."
           },
           "walletAddress": {
             "type": "string",
             "description": "Your customer's wallet address"
-          },
-          "example": "USD"
+          }
         },
         "required": [
           "countryCode",
@@ -5337,13 +5317,15 @@
           "countryCode": {
             "type": "string",
             "description": "Two-letter country code (ISO 3166-1 alpha-2)",
-            "default": "US"
+            "default": "US",
+            "example": "US"
           },
           "destinationCurrencyCode": {
             "type": "string",
             "description": "The cryptocurrency the customer is buying (e.g. BTC, ETH).",
             "minLength": 1,
-            "default": "BTC"
+            "default": "BTC",
+            "example": "BTC"
           },
           "institutionId": {
             "type": "string",
@@ -5452,31 +5434,34 @@
               "YELLOWCARD",
               "YODLEE"
             ],
-            "default": "TRANSAK"
+            "default": "TRANSAK",
+            "example": "TRANSAK"
           },
           "sourceAmount": {
             "type": "string",
             "description": "The amount of source currency your customer wants tosend in this transaction (e.g., 50.05)",
             "minLength": 1,
-            "default": "100"
+            "default": "100",
+            "example": "100"
           },
           "sourceCurrencyCode": {
             "type": "string",
             "description": "The fiat currency the user is buying crypto with (e.g. USD, EUR).",
             "minLength": 1,
-            "default": "USD"
+            "default": "USD",
+            "example": "USD"
           },
           "walletAddress": {
             "type": "string",
             "description": "Your customer's wallet address",
             "minLength": 1,
-            "default": "1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F"
+            "default": "1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F",
+            "example": "1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F"
           },
           "walletTag": {
             "type": "string",
             "description": "Your customer's wallet tag/destination tag/memo. This field is required for certain cryptocurrencies."
-          },
-          "example": "1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F"
+          }
         },
         "required": [
           "countryCode",
