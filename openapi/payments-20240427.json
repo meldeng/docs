@@ -137,6 +137,10 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PaymentTransactionRequest"
+              },
+              "example": {
+                "sourceAmount": "10.50",
+                "sourceCurrencyCode": "USD"
               }
             }
           },
@@ -658,6 +662,9 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PaymentRefundRequest"
+              },
+              "example": {
+                "sourceAmount": 0
               }
             }
           },
@@ -738,6 +745,10 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PayoutTransactionRequest"
+              },
+              "example": {
+                "sourceAmount": "10.50",
+                "sourceCurrencyCode": "USD"
               }
             }
           },
@@ -858,6 +869,9 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ExternalImportRequest"
+              },
+              "example": {
+                "serviceProvider": "AUTHORIZENET"
               }
             }
           },
@@ -978,6 +992,10 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ExternalRefundRequest"
+              },
+              "example": {
+                "serviceProvider": "AUTHORIZENET",
+                "sourceAmount": 0
               }
             }
           },
@@ -1058,6 +1076,11 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RiskAnalysisRequest"
+              },
+              "example": {
+                "achClass": "CCD",
+                "amount": "10.50",
+                "currencyCode": "USD"
               }
             }
           },

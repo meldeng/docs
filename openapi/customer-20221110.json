@@ -354,6 +354,9 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateCustomerAddressRequest"
+              },
+              "example": {
+                "type": "BILLING"
               }
             }
           },
@@ -417,6 +420,10 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/InitiateKycRequest"
+              },
+              "example": {
+                "mode": "HOSTED_URL",
+                "serviceProvider": "SUMSUB"
               }
             }
           },

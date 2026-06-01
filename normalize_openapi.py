@@ -233,7 +233,75 @@ def sanitize_component_schemas(payload: dict) -> int:
     return updated
 
 
-def strip_request_body_examples(payload: dict) -> int:
+def build_property_example_value(prop: dict, schemas: dict, visited: set[str]):
+    if "default" in prop:
+        return prop["default"]
+    example = prop.get("example")
+    if example is not None and not should_drop_example(example):
+        return example
+    enum_values = prop.get("enum")
+    if isinstance(enum_values, list) and enum_values:
+        return enum_values[0]
+
+    if "$ref" in prop:
+        nested = build_required_example({"$ref": prop["$ref"]}, schemas, visited)
+        return nested
+
+    prop_type = prop.get("type")
+    if prop_type == "object" or isinstance(prop.get("properties"), dict):
+        return build_required_example(prop, schemas, visited)
+    if prop_type == "array":
+        return []
+    if prop_type == "boolean":
+        return False
+    if prop_type in {"number", "integer"}:
+        return 0
+    return None
+
+
+def build_required_example(schema: dict, schemas: dict, visited: set[str] | None = None) -> dict | None:
+    if not isinstance(schema, dict):
+        return None
+
+    visited = set(visited or ())
+    working_schema = schema
+
+    ref = schema.get("$ref")
+    if isinstance(ref, str):
+        ref_name = ref.removeprefix("#/components/schemas/")
+        if ref_name in visited:
+            return None
+        target = resolve_ref(ref, schemas)
+        if target is None:
+            return None
+        visited.add(ref_name)
+        working_schema = target
+
+    if working_schema.get("type") != "object" and not isinstance(working_schema.get("properties"), dict):
+        return None
+
+    properties = working_schema.get("properties") or {}
+    required = working_schema.get("required") or []
+    if not required:
+        return None
+
+    example = {}
+    for name in required:
+        prop = properties.get(name)
+        if not isinstance(prop, dict):
+            continue
+        value = build_property_example_value(prop, schemas, visited)
+        if value is not None:
+            example[name] = value
+    return example or None
+
+
+def inject_required_only_request_examples(payload: dict) -> int:
+    """Mintlify prefill uses requestBody examples; without one it fabricates <string> for optional fields."""
+    schemas = payload.get("components", {}).get("schemas", {})
+    if not isinstance(schemas, dict):
+        return 0
+
     updated = 0
     for operations in payload.get("paths", {}).values():
         if not isinstance(operations, dict):
@@ -244,11 +312,25 @@ def strip_request_body_examples(payload: dict) -> int:
             request_body = operation.get("requestBody")
             if not isinstance(request_body, dict):
                 continue
-            for content in (request_body.get("content") or {}).values():
-                if not isinstance(content, dict):
+            for media_type, content in (request_body.get("content") or {}).items():
+                if not isinstance(content, dict) or "json" not in media_type:
                     continue
-                if "example" in content:
-                    del content["example"]
+                schema = content.get("schema")
+                if not isinstance(schema, dict):
+                    continue
+
+                example = build_required_example(schema, schemas)
+                if example is None:
+                    if "example" in content:
+                        del content["example"]
+                        updated += 1
+                    if "examples" in content:
+                        del content["examples"]
+                        updated += 1
+                    continue
+
+                if content.get("example") != example:
+                    content["example"] = example
                     updated += 1
                 if "examples" in content:
                     del content["examples"]
@@ -284,7 +366,7 @@ def normalize_spec(spec_path: Path) -> int:
     payload = json.loads(spec_path.read_text(encoding="utf-8"))
     updated = normalize_descriptions(payload)
     updated += sanitize_component_schemas(payload)
-    updated += strip_request_body_examples(payload)
+    updated += inject_required_only_request_examples(payload)
     updated += reorder_paths(payload, service)
 
     for path_name, operations in payload.get("paths", {}).items():

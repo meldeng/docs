@@ -34,6 +34,12 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SessionTokenForWidgetRequestV20231219"
+              },
+              "example": {
+                "sessionData": {
+                  "serviceProvider": "ALCHEMYPAY"
+                },
+                "sessionType": "BUY"
               }
             }
           },
@@ -419,6 +425,10 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CryptoVirtualAccountQuoteRequest"
+              },
+              "example": {
+                "countryCode": "US",
+                "sourceAmount": 50
               }
             }
           },
@@ -482,6 +492,13 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/VirtualAccountOnrampOrderRequest"
+              },
+              "example": {
+                "destinationCurrencyCode": "USDC",
+                "destinationWalletAddress": "0xe51f36521fF5D857824e615a64D34808534a55f4",
+                "serviceProvider": "ACROSS",
+                "sourceAmount": 20000,
+                "sourceCurrencyCode": "USD"
               }
             }
           },
@@ -552,6 +569,16 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/VirtualAccountOfframpOrderRequest"
+              },
+              "example": {
+                "destinationCurrencyCode": "USD",
+                "paymentMethod": {
+                  "type": "LOCAL_BANK_TRANSFER"
+                },
+                "serviceProvider": "ACROSS",
+                "sourceAmount": 20000,
+                "sourceCurrencyCode": "USDC",
+                "sourceWalletAddress": "0xe51f36521fF5D857824e615a64D34808534a55e6"
               }
             }
           },

@@ -34,6 +34,9 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ConnectStartRequest_2022_07_19"
+              },
+              "example": {
+                "externalCustomerId": "testUser"
               }
             }
           },
@@ -412,6 +415,9 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ConnectionAddProductsRequest"
+              },
+              "example": {
+                "products": []
               }
             }
           },
@@ -547,6 +553,9 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ImportRequest"
+              },
+              "example": {
+                "connections": []
               }
             }
           },
@@ -781,6 +790,9 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/FinancialAccountProcessorCreateTokenRequest"
+              },
+              "example": {
+                "processor": "ACHQ"
               }
             }
           },
