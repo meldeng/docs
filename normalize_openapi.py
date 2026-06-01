@@ -44,6 +44,38 @@ def slugify(text: str) -> str:
     return text.strip("-")
 
 
+def version_key_from_spec_path(spec_path: Path) -> str | None:
+    _, version_key = spec_path.stem.rsplit("-", 1)
+    if len(version_key) != 8 or not version_key.isdigit():
+        return None
+    return version_key
+
+
+def version_display(version_key: str) -> str:
+    return f"{version_key[:4]}-{version_key[4:6]}-{version_key[6:8]}"
+
+
+def sync_openapi_info_version(payload: dict, version: str) -> int:
+    """Backend exports info.version as 'unversioned'; align with the dated API version."""
+    updated = 0
+    info = payload.setdefault("info", {})
+    if info.get("version") != version:
+        info["version"] = version
+        updated += 1
+
+    readme = payload.setdefault("x-readme", {})
+    headers = readme.setdefault("headers", [])
+    for header in headers:
+        if isinstance(header, dict) and header.get("key") == "Meld-Version":
+            if header.get("value") != version:
+                header["value"] = version
+                updated += 1
+            return updated
+
+    headers.append({"key": "Meld-Version", "value": version})
+    return updated + 1
+
+
 def fallback_operation_slug(method: str, path: str) -> str:
     path_slug = slugify(path.replace("{", "").replace("}", ""))
     return f"{method}-{path_slug}"
@@ -364,7 +396,11 @@ def normalize_spec(spec_path: Path) -> int:
         return 0
 
     payload = json.loads(spec_path.read_text(encoding="utf-8"))
-    updated = normalize_descriptions(payload)
+    updated = 0
+    version_key = version_key_from_spec_path(spec_path)
+    if version_key:
+        updated += sync_openapi_info_version(payload, version_display(version_key))
+    updated += normalize_descriptions(payload)
     updated += sanitize_component_schemas(payload)
     updated += inject_required_only_request_examples(payload)
     updated += reorder_paths(payload, service)
