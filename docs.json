@@ -392,49 +392,49 @@
                 "group": "Crypto",
                 "openapi": {
                   "source": "openapi/crypto-20260203.json",
-                  "directory": "_generated-api/2026-02-03/crypto"
+                  "directory": "api-reference/crypto"
                 }
               },
               {
                 "group": "Bank Linking",
                 "openapi": {
                   "source": "openapi/banklinking-20260203.json",
-                  "directory": "_generated-api/2026-02-03/bank-linking"
+                  "directory": "api-reference/bank-linking"
                 }
               },
               {
                 "group": "Payments",
                 "openapi": {
                   "source": "openapi/payments-20260203.json",
-                  "directory": "_generated-api/2026-02-03/payments"
+                  "directory": "api-reference/payments"
                 }
               },
               {
                 "group": "Customer",
                 "openapi": {
                   "source": "openapi/customer-20260203.json",
-                  "directory": "_generated-api/2026-02-03/customer"
+                  "directory": "api-reference/customer"
                 }
               },
               {
                 "group": "Service Providers",
                 "openapi": {
                   "source": "openapi/serviceproviders-20260203.json",
-                  "directory": "_generated-api/2026-02-03/service-providers"
+                  "directory": "api-reference/service-providers"
                 }
               },
               {
                 "group": "Webhooks",
                 "openapi": {
                   "source": "openapi/webhooks-20260203.json",
-                  "directory": "_generated-api/2026-02-03/webhooks"
+                  "directory": "api-reference/webhooks"
                 }
               },
               {
                 "group": "Beta",
                 "openapi": {
                   "source": "openapi/beta-20260203.json",
-                  "directory": "_generated-api/2026-02-03/beta"
+                  "directory": "api-reference/beta"
                 }
               }
             ]
@@ -793,49 +793,49 @@
                 "group": "Crypto",
                 "openapi": {
                   "source": "openapi/crypto-20250304.json",
-                  "directory": "_generated-api/2025-03-04/crypto"
+                  "directory": "api-reference/crypto"
                 }
               },
               {
                 "group": "Bank Linking",
                 "openapi": {
                   "source": "openapi/banklinking-20250304.json",
-                  "directory": "_generated-api/2025-03-04/bank-linking"
+                  "directory": "api-reference/bank-linking"
                 }
               },
               {
                 "group": "Payments",
                 "openapi": {
                   "source": "openapi/payments-20250304.json",
-                  "directory": "_generated-api/2025-03-04/payments"
+                  "directory": "api-reference/payments"
                 }
               },
               {
                 "group": "Customer",
                 "openapi": {
                   "source": "openapi/customer-20250304.json",
-                  "directory": "_generated-api/2025-03-04/customer"
+                  "directory": "api-reference/customer"
                 }
               },
               {
                 "group": "Service Providers",
                 "openapi": {
                   "source": "openapi/serviceproviders-20250304.json",
-                  "directory": "_generated-api/2025-03-04/service-providers"
+                  "directory": "api-reference/service-providers"
                 }
               },
               {
                 "group": "Webhooks",
                 "openapi": {
                   "source": "openapi/webhooks-20250304.json",
-                  "directory": "_generated-api/2025-03-04/webhooks"
+                  "directory": "api-reference/webhooks"
                 }
               },
               {
                 "group": "Beta",
                 "openapi": {
                   "source": "openapi/beta-20250304.json",
-                  "directory": "_generated-api/2025-03-04/beta"
+                  "directory": "api-reference/beta"
                 }
               }
             ]
@@ -1192,49 +1192,49 @@
                 "group": "Crypto",
                 "openapi": {
                   "source": "openapi/crypto-20231219.json",
-                  "directory": "_generated-api/2023-12-19/crypto"
+                  "directory": "api-reference/crypto"
                 }
               },
               {
                 "group": "Bank Linking",
                 "openapi": {
                   "source": "openapi/banklinking-20231219.json",
-                  "directory": "_generated-api/2023-12-19/bank-linking"
+                  "directory": "api-reference/bank-linking"
                 }
               },
               {
                 "group": "Payments",
                 "openapi": {
                   "source": "openapi/payments-20231219.json",
-                  "directory": "_generated-api/2023-12-19/payments"
+                  "directory": "api-reference/payments"
                 }
               },
               {
                 "group": "Customer",
                 "openapi": {
                   "source": "openapi/customer-20231219.json",
-                  "directory": "_generated-api/2023-12-19/customer"
+                  "directory": "api-reference/customer"
                 }
               },
               {
                 "group": "Service Providers",
                 "openapi": {
                   "source": "openapi/serviceproviders-20231219.json",
-                  "directory": "_generated-api/2023-12-19/service-providers"
+                  "directory": "api-reference/service-providers"
                 }
               },
               {
                 "group": "Webhooks",
                 "openapi": {
                   "source": "openapi/webhooks-20231219.json",
-                  "directory": "_generated-api/2023-12-19/webhooks"
+                  "directory": "api-reference/webhooks"
                 }
               },
               {
                 "group": "Beta",
                 "openapi": {
                   "source": "openapi/beta-20231219.json",
-                  "directory": "_generated-api/2023-12-19/beta"
+                  "directory": "api-reference/beta"
                 }
               }
             ]

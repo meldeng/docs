@@ -62,11 +62,11 @@ def extract_docs_tab(template_docs: dict) -> dict:
 
 
 def openapi_config(service: str, version_key: str) -> dict:
-    version = version_display(version_key)
     route = SERVICE_ROUTE_SEGMENTS[service]
+    # Same directory for every API version so endpoint URLs stay stable when switching versions.
     return {
         "source": f"openapi/{service}-{version_key}.json",
-        "directory": f"_generated-api/{version}/{route}",
+        "directory": f"api-reference/{route}",
     }
 
 
