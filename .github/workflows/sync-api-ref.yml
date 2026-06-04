@@ -1,0 +1,200 @@
+name: Sync API Reference
+
+# Generates versioned OAS files from the backend and opens a draft PR on a
+# branch in this repo (never pushes directly to main).
+#
+# Secrets required: none beyond the default GITHUB_TOKEN.
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "Service to generate (all = every section)"
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - payments
+          - banklinking
+          - crypto
+          - webhooks
+          - customer
+          - serviceproviders
+          - beta
+      version:
+        description: "API version to sync (all = every version)"
+        required: true
+        type: choice
+        default: "20260203"
+        options:
+          - all
+          - "20260203"
+          - "20250304"
+          - "20231219"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push branch
+      pull-requests: write # open PR
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Python + deps ─────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r scripts-requirements.txt
+
+      # ── 3. Resolve inputs ────────────────────────────────────────────────────
+      - name: Resolve inputs
+        id: inputs
+        shell: bash
+        run: |
+          service="${{ github.event.inputs.service }}"
+          version="${{ github.event.inputs.version }}"
+
+          # Map workflow service → backend service name used in OAS URL
+          backend_service=""
+          if [ "$service" != "all" ]; then
+            case "$service" in
+              payments|crypto)   backend_service="payment"          ;;
+              banklinking)       backend_service="aggregation"      ;;
+              customer)          backend_service="account"          ;;
+              serviceproviders)  backend_service="service-provider" ;;
+              webhooks)          backend_service="notification"     ;;
+              beta)              backend_service="metric"           ;;
+              *)  echo "Unknown service: $service"; exit 1 ;;
+            esac
+          fi
+
+          run_suffix="$(date +%Y%m%d%H%M%S)"
+          echo "backend_service=$backend_service"                     >> "$GITHUB_OUTPUT"
+          echo "branch=api-ref/update-${version}-${service}-${run_suffix}" >> "$GITHUB_OUTPUT"
+
+      # ── 4. Generate OAS files ────────────────────────────────────────────────
+      - name: Generate OAS files
+        env:
+          CONFIG_FILE: readme.yml
+        shell: bash
+        run: |
+          args=()
+          if [ -n "${{ steps.inputs.outputs.backend_service }}" ]; then
+            args+=(--service "${{ steps.inputs.outputs.backend_service }}")
+          fi
+          python3 UpdateReadMeOAS.py "${args[@]}"
+
+      # ── 5. Create branch, copy files, update docs.json ───────────────────────
+      - name: Create branch and apply changes
+        shell: bash
+        run: |
+          BRANCH="${{ steps.inputs.outputs.branch }}"
+          VERSION="${{ github.event.inputs.version }}"
+          SERVICE="${{ github.event.inputs.service }}"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          mkdir -p openapi
+          PUBLIC_VERSIONS=(20260203 20250304 20231219)
+
+          copy_public_oas() {
+            local src="$1"
+            local dest_name
+            dest_name="$(basename "$src" | sed 's/^oas-//')"
+            cp "$src" "openapi/${dest_name}"
+          }
+
+          # Copy only published API versions into openapi/ (see update_docs_json.py).
+          if [ "$VERSION" = "all" ] && [ "$SERVICE" = "all" ]; then
+            for v in "${PUBLIC_VERSIONS[@]}"; do
+              for f in output/oas-*-"${v}".json; do
+                [ -f "$f" ] || continue
+                copy_public_oas "$f"
+              done
+            done
+          elif [ "$VERSION" = "all" ]; then
+            for v in "${PUBLIC_VERSIONS[@]}"; do
+              f="output/oas-${SERVICE}-${v}.json"
+              [ -f "$f" ] || continue
+              copy_public_oas "$f"
+            done
+          elif [ "$SERVICE" = "all" ]; then
+            for f in output/oas-*-"${VERSION}".json; do
+              [ -f "$f" ] || continue
+              copy_public_oas "$f"
+            done
+          else
+            cp "output/oas-${SERVICE}-${VERSION}.json" "openapi/${SERVICE}-${VERSION}.json"
+          fi
+
+          # Normalize stable Mintlify hrefs inside the generated specs
+          python3 normalize_openapi.py openapi
+
+          # Regenerate navigation.versions in docs.json
+          python3 update_docs_json.py \
+            --docs    docs.json \
+            --template docs.template.json \
+            --version "$VERSION" \
+            --service "$SERVICE"
+
+          # Stage all generated updates so doc/link edits made by normalization are included.
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing changed – skipping commit and PR."
+            echo "pushed=false" >> "$GITHUB_ENV"
+          else
+            git commit -m "api-ref: sync ${SERVICE} OAS for version ${VERSION}"
+            git push origin "$BRANCH"
+            echo "pushed=true" >> "$GITHUB_ENV"
+          fi
+
+      # ── 6. Open draft PR ─────────────────────────────────────────────────────
+      - name: Open draft PR
+        if: env.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          SERVICE="${{ github.event.inputs.service }}"
+          BRANCH="${{ steps.inputs.outputs.branch }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          gh pr create \
+            --base  main \
+            --head  "$BRANCH" \
+            --draft \
+            --title "api-ref: ${SERVICE} → ${VERSION}" \
+            --body  "## API Reference update
+
+          **Service:** \`${SERVICE}\`
+          **Version:** \`${VERSION}\`
+          **Triggered by:** [workflow run](${RUN_URL})
+
+          ### What changed
+          - \`openapi/\` — generated OAS files fetched from \`api-qa.meld.io\` via \`UpdateReadMeOAS.py\`
+          - \`docs.json\` — regenerated from \`docs.template.json\` with updated versioned openapi references
+          - \`openapi/\` — normalized with stable \`x-mint.href\` routes for \`/api-reference/...\` links
+
+          ### Review checklist
+          - [ ] Spot-check a few endpoints in the generated JSON files look correct
+          - [ ] Confirm \`docs.json\` version list order and default version are correct
+          - [ ] If this is a new version, verify the \`tag: Latest\` label moved to it
+          - [ ] Merge and confirm Mintlify deploys cleanly
+
+          > **Note:** \`api-reference/\` now contains stable landing pages for old service-level links,
+          > while endpoint pages are driven by versioned \`openapi/\` specs."

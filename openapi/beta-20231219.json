@@ -1,0 +1,584 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BETA",
+    "termsOfService": "urn:tos",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://springdoc.org"
+    },
+    "version": "2023-12-19",
+    "description": ""
+  },
+  "servers": [
+    {
+      "url": "https://api-sb.meld.io",
+      "description": "Meld API sandbox"
+    },
+    {
+      "url": "https://api.meld.io",
+      "description": "Meld API production"
+    }
+  ],
+  "paths": {
+    "/activity-log": {
+      "get": {
+        "tags": [
+          "Activity Log"
+        ],
+        "summary": "Search activity log",
+        "description": "Retrieve logged activity filtered by various parameters over a date range.\n\nSee [here](https://docs.meld.io/docs/debugging-activity-log) for information on how to use the activity log and why.",
+        "operationId": "activity-log-search",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Start date/time of the date range.\n\nISO DateTime Format yyyy-MM-dd'T'HH:mm:ss e.g. '2021-02-15T10:30:00.000-08:00'\n\nTime zone must match the time zone of the end date/time if also present.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "description": "End date/time of the date range.\n\nISO DateTime Format yyyy-MM-dd'T'HH:mm:ss e.g. '2021-02-15T11:30:00.000-08:00'\n\nTime zone must match the time zone of the start date/time if also present.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "actions",
+            "in": "query",
+            "description": "Comma separated list of actions to include.\n\nOnly include activity for these actions.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "description": "Only include activity that occurred during this request.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "description": "Only include activity for this customer.\n\nThe ***customerId*** and ***externalCustomerId*** fields cannot be used in the same request.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "externalCustomerId",
+            "in": "query",
+            "description": "Only include activity for this customer.\n\nThe ***customerId*** and ***externalCustomerId*** fields cannot be used in the same request.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "connectionIds",
+            "in": "query",
+            "description": "Comma separated list of connection ids to include.\n\nOnly include activity for these connections.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "financialAccountIds",
+            "in": "query",
+            "description": "Comma separated list of financial account ids to include.\n\nOnly include activity for these financial accounts.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "eventType",
+            "in": "query",
+            "description": "Only include activity for this event type.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "description": "Unique key corresponding to an activity's position in the paginated list of results -- used to indicate that only activity residing before this key will be retrieved.\n\nEach activity carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "Unique key corresponding to an activity's position in the paginated list of results -- used to indicate that only activity residing after this key will be retrieved.\n\nEach activity carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Limits number of returned activity.\n\n*Default value*: 10\n\n*Minimum value*: 1\n\n*Maximum value*: 100",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity is returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityPage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/beta/activity-log/activity-log-search"
+        }
+      }
+    },
+    "/activity-log/details": {
+      "get": {
+        "tags": [
+          "Activity Log"
+        ],
+        "summary": "Gets details for activities",
+        "operationId": "activity-log-details-get",
+        "parameters": [
+          {
+            "name": "keys",
+            "in": "query",
+            "description": "Comma separated list of activity keys",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity details are returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DetailsResponse"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/beta/activity-log/activity-log-details-get"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MetricDetail": {
+        "type": "object",
+        "properties": {
+          "datetime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Will be in the same timezone as the one used in the request"
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "MetricSummary": {
+        "type": "object",
+        "properties": {
+          "deltaAmount": {
+            "type": "number",
+            "description": "The difference between the value at the end and the value at the start. A negative delta amount means the value at the end was less than the value at the start."
+          },
+          "deltaPercent": {
+            "type": "number",
+            "description": "The percentage difference between the value at the end and the value at the start in terms of a multiplier (e.g. 50% = 0.5; 200% = 2.0). A negative delta percent means the value at the end was less than the value at the start (e.g. 100 -> 50 = -0.5; 100 -> 150 = 0.5). If the start value is zero, the delta percent is 1 (100%). If the end value is zero, the delta percent is -1 (-100%)."
+          },
+          "endValue": {
+            "type": "number",
+            "description": "The value at the end of the dataset. This is the value of the newest detail for the metric resolution."
+          },
+          "startValue": {
+            "type": "number",
+            "description": "The value at the start of the dataset. This is the value of the oldest detail for the metric resolution."
+          },
+          "value": {
+            "type": "number",
+            "description": "The value over the entire dataset."
+          }
+        }
+      },
+      "MetricsResponse": {
+        "type": "object",
+        "properties": {
+          "details": {
+            "type": "array",
+            "description": "Details for each metric type per resolution from start to end of the window",
+            "items": {
+              "$ref": "#/components/schemas/MetricDetail"
+            }
+          },
+          "summaries": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MetricSummary"
+            }
+          }
+        }
+      },
+      "MetricInstitutionSearch": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "searchString": {
+            "type": "string"
+          }
+        }
+      },
+      "MetricCount": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "GroupMetric": {
+        "type": "object",
+        "properties": {
+          "groupByValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Map of group by field and its value for this group"
+          },
+          "key": {
+            "type": "string",
+            "description": "When this metric is part of a paginated list, this key represents its position in the list."
+          },
+          "metricTypeValues": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/GroupMetricTypeValue"
+            },
+            "description": "Map of metric type and its value for this group"
+          }
+        }
+      },
+      "GroupMetricTypeValue": {
+        "type": "object",
+        "properties": {
+          "percent": {
+            "type": "number",
+            "description": "Percentage this value is of the total value for all the groups combined. All groups includes those not returned by this response because they are after the cutoff limit. For example, if there are 15 groups, but the response is limited to 10, the total value is for all 15 groups."
+          },
+          "value": {
+            "type": "number",
+            "description": "Value for a metric type and group"
+          }
+        }
+      },
+      "GroupMetricsResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of groups returned."
+          },
+          "groups": {
+            "type": "array",
+            "description": "Ordered list of groups",
+            "items": {
+              "$ref": "#/components/schemas/GroupMetric"
+            }
+          },
+          "remaining": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of remaining groups before/after this page, depending on the direction this page was selected."
+          }
+        }
+      },
+      "ConnectionStepResponse": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "institutionConnectionId": {
+            "type": "string"
+          },
+          "institutionId": {
+            "type": "string"
+          },
+          "institutionName": {
+            "type": "string"
+          },
+          "institutionSearchCharacters": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "serviceProvider": {
+            "type": "string"
+          },
+          "serviceProviderAttempt": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "serviceProviderInstitutionId": {
+            "type": "string"
+          },
+          "step": {
+            "type": "string"
+          },
+          "timeTaken": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ActivityPage": {
+        "type": "object",
+        "properties": {
+          "activities": {
+            "type": "array",
+            "description": "Activities",
+            "items": {
+              "$ref": "#/components/schemas/ActivityResponse"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of activities returned."
+          },
+          "remaining": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of remaining activities before/after this page, depending on the direction this page was selected."
+          }
+        }
+      },
+      "ActivityResponse": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "What happened",
+            "enum": [
+              "API_ACCESS_PROFILE_CREATED",
+              "API_ACCESS_PROFILE_UPDATED",
+              "API_ACCESS_PROFILE_DISABLED",
+              "API_ACCESS_PROFILE_ENABLED",
+              "API_ACCESS_PROFILE_EXPIRED",
+              "INBOUND_REQUEST",
+              "INBOUND_REQUEST_DASHBOARD",
+              "INBOUND_REQUEST_WEBHOOK",
+              "INBOUND_REQUEST_WIDGET",
+              "INBOUND_REQUEST_INTERNAL",
+              "INSTITUTION_CONNECTION_COMPLETED",
+              "INSTITUTION_CONNECTION_CREATED",
+              "INSTITUTION_CONNECTION_DELETED",
+              "INSTITUTION_CONNECTION_EXPIRED",
+              "INSTITUTION_CONNECTION_IMPORT_FAILED",
+              "INSTITUTION_CONNECTION_IMPORTED",
+              "INSTITUTION_CONNECTION_UPDATED",
+              "INSTITUTION_CONNECTION_WIDGET_EVENT",
+              "INSTITUTION_CONNECTION_WIDGET_ERROR",
+              "OUTBOUND_REQUEST",
+              "OUTBOUND_REQUEST_WEBHOOK",
+              "OUTBOUND_REQUEST_SERVICE_PROVIDER",
+              "PAYMENT_TRANSACTION_CREATED",
+              "PAYMENT_TRANSACTION_UPDATED",
+              "SERVICE_PROVIDER_ACCESS_PROFILE_CREATED",
+              "SERVICE_PROVIDER_ACCESS_PROFILE_UPDATED",
+              "SERVICE_PROVIDER_ACCESS_PROFILE_DISABLED",
+              "SERVICE_PROVIDER_ACCESS_PROFILE_ENABLED",
+              "SERVICE_PROVIDER_ACCESS_PROFILE_EXPIRED"
+            ]
+          },
+          "actor": {
+            "$ref": "#/components/schemas/Actor",
+            "description": "Who did it"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Key attributes related to this activity"
+          },
+          "details": {
+            "description": "Details about this activity (depends on the action)"
+          },
+          "entity": {
+            "$ref": "#/components/schemas/Entity",
+            "description": "What did this happen to"
+          },
+          "key": {
+            "type": "string",
+            "description": "When this activity is part of a paginated list, this key represents its position in the list"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When did it happen"
+          }
+        }
+      },
+      "Actor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type"
+          }
+        }
+      },
+      "Entity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type"
+          }
+        }
+      },
+      "DetailsResponse": {
+        "type": "object",
+        "properties": {
+          "details": {
+            "description": "Details about the activity with this key"
+          },
+          "key": {
+            "type": "string",
+            "description": "Key of an activity from a search response"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "x-default": "BASIC <Meld API Key>"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Activity Log"
+    }
+  ],
+  "x-readme": {
+    "explorer-enabled": true,
+    "proxy-enabled": false,
+    "samples-enabled": true,
+    "headers": [
+      {
+        "key": "Meld-Version",
+        "value": "2023-12-19"
+      }
+    ]
+  }
+}

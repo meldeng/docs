@@ -1,0 +1,1329 @@
+---
+#
+# Common configs across all API Reference sections
+#
+sp_crypto: &supported_crypto_sp
+  - ALCHEMYPAY
+  - BANXA
+  - BILIRA
+  - BINANCECONNECT
+  - BINANCEPAY
+  - BLOCKCHAINDOTCOM
+  - BOOMFI
+  - BTCDIRECT
+  - COINBASEPAY
+  - FONBNK
+  - GUARDARIAN
+  - KRYPTONIM
+  - KOYWE
+  - MESH
+  - MERCURYO
+  - MESO
+  - ONMETA
+  - ONRAMPMONEY
+  - PAYBIS
+  - PAYPAL
+  - RAMP
+  - REVOLUT
+  - ROBINHOOD
+  - SARDINE
+  - SHIFT4
+  - SIMPLEX
+  - SKRILLCRYPTO
+  - STRIPE
+  - SWAPPED
+  - TOPPER
+  - TRANSAK
+  - TRANSFI
+  - UNLIMIT
+  - YELLOWCARD
+sp_fiat: &supported_fiat_sp
+  - AUTHORIZENET
+  - BRAINTREE
+  - CHECKOUT
+  - CIRCLE
+  - NMI
+  - STRIPE
+sp_banklinking: &supported_banklinking_sp
+  - AKOYA
+  - FINICITY
+  - MX
+  - PLAID
+  - SALTEDGE
+  - SALTEDGEPARTNERS
+  - YODLEE
+sp_all: &supported_all_sp
+  - AUTHORIZENET
+  - BANXA
+  - BINANCECONNECT
+  - BRAINTREE
+  - BLOCKCHAINDOTCOM
+  - BTCDIRECT
+  - CHECKOUT
+  - CIRCLE
+  - FINICITY
+  - KOYWE
+  - MOONPAY
+  - MX
+  - NMI
+  - ONRAMPMONEY
+  - PAYBIS
+  - PLAID
+  - RAMP
+  - ROBINHOOD
+  - SARDINE
+  - SIMPLEX
+  - STRIPE
+  - TOPPER
+  - TRANSAK
+  - TRANSFI
+  - UNLIMIT
+  - YODLEE
+sp_virtual_account: &supported_virtual_account_sp
+  - BRALE
+  - NOAH
+payment_method_types_crypto: &supported_payment_method_types_crypto
+  - APPLE_PAY
+  - MASTERCARD
+  - SEPA
+  - VISA
+payment_method_types_fiat: &supported_payment_method_types_fiat
+  - CARD
+  - MELD_PAYMENT_TOKEN
+payment_method_types: &supported_payment_method_types
+  - ACH
+  - BANK_TRANSFER
+  - CARD
+  - LOCAL
+  - MOBILE_WALLET
+  - SEPA
+payment_method_subtypes: &supported_payment_method_subtypes
+  - ACH
+  - AMERICAN_EXPRESS
+  - APPLE_PAY
+  - ASTROPAY
+  - AU_BANK_TRANSFER
+  - BANCONTACT
+  - BANGKOK_BANK_MOBILE
+  - BPI
+  - BUALUANG_IPAY
+  - DINERS_CLUB
+  - DISCOVER
+  - DLOCAL
+  - DUITNOW
+  - EASY_BANK_TRANSFER
+  - EPS
+  - FPS
+  - GIROPAY
+  - GOJEK
+  - GOOGLE_PAY
+  - HK_BANK_TRANSFER
+  - ID_BANK_TRANSFER
+  - IDEAL
+  - IN_BANK_TRANSFER
+  - INSTAPAY
+  - INTERAC
+  - JCB
+  - MAESTRO
+  - MASTERCARD
+  - NZ_BANK_TRANSFER
+  - OSKO
+  - PAY4FUN
+  - PAY_NOW
+  - PAYID
+  - PAYMAYA
+  - PIX
+  - POLI
+  - PROMPTPAY
+  - SCB_EASY_PAY
+  - SCB_MOBILE
+  - SEPA
+  - SEPA_INSTANT
+  - SOFORT
+  - TR_BANK_TRANSFER
+  - UBP
+  - UK_FASTER_PAYMENTS
+  - VIETTELPAY
+  - VISA
+  - ZA_BANK_TRANSFER
+security:
+  - ApiKeyAuth: []
+securitySchemes:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: Authorization
+    x-default: BASIC <Meld API Key>
+  BasicAuth:
+    type: http
+    scheme: basic
+servers:
+  - url: https://api-sb.meld.io
+    description: Meld API sandbox
+  - url: https://api.meld.io
+    description: Meld API production
+x-readme:
+  explorer-enabled: true
+  proxy-enabled: false
+  samples-enabled: true
+  headers:
+    - key: Meld-Version
+      value: script_will_set_the_version
+#
+# API Reference sections
+#
+# Some service-sections will have versions that only has `readme_oas` config.  For ex:
+#   "2022-07-19":  # <-- must explicity make it a string, o/w Python thinks it's a datetime obj
+#     readme_oas:
+#       - 62e3573b905fdb0087354cd5
+#
+# This indicates that version does NOT exist for the service-section.  Instead, we use it as a
+# placeholder to generate an OAS file for this versoin from the latest existing version, *but*
+# replacing the `Meld-Version` static header with that of the "non-existing" version's.
+# This is a convenience, to generate OAS files with the right `Meld-Version` values to be uploaded
+# to the respective API Reference version.
+# ----------------------------------------------------------------------
+# BANK LINKING
+# ----------------------------------------------------------------------
+aggregation-http:
+  BANK LINKING:
+    tags:
+      - name: Financial Account Connect
+      - name: Financial Account Transactions
+      - name: Financial Accounts
+      - name: Institutions
+    meld_oas: aggregation
+    versions:
+      unversioned:
+        readme_oas:
+          - 6181920cea40c6005aa44f82
+        paths_to_keep:
+          /bank-linking/connect/start:
+            methods:
+              - post
+            tags:
+              - Connect
+          /bank-linking/connect/repair:
+            methods:
+              - post
+            tags:
+              - Connect
+          /bank-linking/connections/{connectionId}:
+            methods:
+              - get
+              - delete
+            tags:
+              - Connections
+          /bank-linking/connections:
+            methods:
+              - get
+            tags:
+              - Connections
+          /bank-linking/connections/{connectionId}/update:
+            methods:
+              - post
+            tags:
+              - Connections
+          /bank-linking/connections/{connectionId}/refresh:
+            methods:
+              - post
+            tags:
+              - Connections
+          /bank-linking/connections/import:
+            methods:
+              - post
+            tags:
+              - Connections
+          /bank-linking/accounts/{financialAccountId}:
+            methods:
+              - get
+              # - patch
+            tags:
+              - Accounts
+          /bank-linking/accounts:
+            methods:
+              - get
+            tags:
+              - Accounts
+          /bank-linking/accounts/{financialAccountId}/processors/create-token:
+            methods:
+              - post
+            tags:
+              - Accounts
+          /bank-linking/transactions/{transactionId}:
+            methods:
+              - get
+            tags:
+              - Transactions
+          /bank-linking/transactions:
+            methods:
+              - get
+            tags:
+              - Transactions
+          /bank-linking/investments/holdings/{investmentHoldingId}:
+            methods:
+              - get
+            tags:
+              - Investments
+          /bank-linking/investments/holdings:
+            methods:
+              - get
+            tags:
+              - Investments
+          /bank-linking/investments/transactions/{investmentTransactionId}:
+            methods:
+              - get
+            tags:
+              - Investments
+          /bank-linking/investments/transactions:
+            methods:
+              - get
+            tags:
+              - Investments
+          /institutions/{institutionId}:
+            methods:
+              - get
+            tags:
+              - Institutions
+          /institutions:
+            methods:
+              - get
+            tags:
+              - Institutions
+        components_to_modify:
+          ConnectCompleteRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_banklinking_sp
+          ConnectProviderResponse:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_banklinking_sp
+          FinancialAccountProcessorCreateTokenRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_banklinking_sp
+          FinancialAccountProcessorCreateTokenResponse:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_banklinking_sp
+          ImportDetails:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_banklinking_sp
+          ImportPlaidDetails:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_banklinking_sp
+        components_defaults:
+          ConnectStartRequest:
+            - path: properties.externalCustomerId.default
+              value: "testUser"
+            - path: properties.products.default
+              value:
+                - "TRANSACTIONS"
+                - "IDENTIFIERS"
+                - "BALANCES"
+                - "OWNERS"
+      "2022-07-19":
+        readme_oas:
+          - 62e3573b905fdb0087354cd3
+        paths_to_keep:
+          /bank-linking/connect/start:
+            methods:
+              - post
+            tags:
+              - Connect
+      "2022-09-21":
+        readme_oas:
+          - 6346ee020f58df0f8949c112
+        paths_to_keep:
+          /bank-linking/accounts/{financialAccountId}:
+            methods:
+              - get
+              # - patch
+            tags:
+              - Accounts
+          /bank-linking/accounts:
+            methods:
+              - get
+            tags:
+              - Accounts
+      "2022-11-10":
+        readme_oas:
+          - 6377ffc3e0741a0070e424a2
+        paths_to_keep:
+          /bank-linking/connect/start:
+            methods:
+              - post
+            tags:
+              - Connect
+          /bank-linking/connections/{connectionId}/refresh:
+            methods:
+              - post
+            tags:
+              - Connections
+      "2023-09-11":
+        readme_oas:
+          - None # did not publish this version
+        paths_to_keep:
+          /bank-linking/connections:
+            methods:
+              - get
+            tags:
+              - Connections
+          /bank-linking/accounts:
+            methods:
+              - get
+            tags:
+              - Accounts
+          /bank-linking/transactions:
+            methods:
+              - get
+            tags:
+              - Transactions
+          /bank-linking/investments/holdings:
+            methods:
+              - get
+            tags:
+              - Investments
+          /bank-linking/investments/transactions:
+            methods:
+              - get
+            tags:
+              - Investments
+          /institutions:
+            methods:
+              - get
+            tags:
+              - Institutions
+      "2023-12-19":
+        readme_oas:
+          - 65cbfc32d44921001849483e
+      "2024-04-27":
+        readme_oas:
+          - 660f3d23f3a6d2002532dccb
+      "2025-03-04":
+        readme_oas:
+          - 682cb9beb99d430011b9782c
+      "2026-02-03":
+        readme_oas:
+          - None
+# ----------------------------------------------------------------------
+# CRYPTO
+# PAYMENTS
+# ----------------------------------------------------------------------
+payment-http:
+  CRYPTO:
+    tags:
+      - name: Retail Ramp
+        description: ""
+      - name: Virtual Account
+        description: ""
+      - name: Payment
+        description: ""
+      - name: Session
+        description: ""
+    meld_oas: payment
+    versions:
+      unversioned:
+        readme_oas:
+          - 61aa8af72e22ce04f2799631 # v1.0 (unversioned)
+        paths_to_keep:
+          /payments/crypto/quote:
+            methods:
+              - post
+            tags:
+              - Retail Ramp
+          /crypto/session/widget:
+            methods:
+              - post
+            tags:
+              - Retail Ramp
+          /payments/transactions/{id}:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/transactions:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/crypto/limits:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/virtual-account/quote:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/onramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/offramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+        components_to_modify:
+          CryptoQuote:
+            - path: properties.paymentMethodType.enum
+              replace_with: *supported_payment_method_types_crypto
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+          CryptoQuoteRequest:
+            - path: properties.paymentMethodType.enum
+              replace_with: *supported_payment_method_types_crypto
+            - path: properties.serviceProviders.items.enum
+              replace_with: *supported_crypto_sp
+          ExternalImportRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+          ExternalRefundRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+          # PaymentMethodInput:
+          #   - path: properties.type.enum
+          #     replace_with: *supported_payment_method_types_fiat
+          # PaymentTransactionOutput:
+          #   - path: properties.paymentMethodType.enum
+          #     replace_with: *supported_payment_method_types_fiat
+          PaymentTransactionRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+          PaymentTokenRequest:
+            - path: properties.serviceProviders.items.enum
+              replace_with: *supported_fiat_sp
+          SessionDataInput:
+            - path: properties.paymentMethodType.enum
+              replace_with: *supported_payment_method_types_crypto
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+          SessionDataOutput:
+            - path: properties.paymentMethodType.enum
+              replace_with: *supported_payment_method_types_crypto
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+        components_defaults:
+          CryptoQuoteRequest:
+            - path: properties.countryCode.default
+              value: "US"
+            - path: properties.destinationCurrencyCode.default
+              value: "BTC"
+            - path: properties.sourceAmount.default
+              value: 100
+            - path: properties.sourceCurrencyCode.default
+              value: "USD"
+          CryptoBuySessionData:
+            - path: properties.countryCode.default
+              value: "US"
+            - path: properties.destinationCurrencyCode.default
+              value: "BTC"
+            - path: properties.sourceAmount.default
+              value: "100"
+            - path: properties.sourceCurrencyCode.default
+              value: "USD"
+            - path: properties.serviceProvider.default
+              value: "TRANSAK"
+            - path: properties.walletAddress.default
+              value: "1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F"
+      "2022-07-19":
+        readme_oas:
+          - 62e3573b905fdb0087354cd4
+      "2022-09-21":
+        readme_oas:
+          - 6346ee020f58df0f8949c113
+      "2022-11-10":
+        readme_oas:
+          - 6377ffc3e0741a0070e424a3
+      "2023-04-01":
+        readme_oas:
+          - None # did not publish this version
+        paths_to_keep:
+          /payments/transactions:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/transactions/{id}:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/transactions/sessions/{sessionId}:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/virtual-account/quote:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/onramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/offramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+      "2023-09-11":
+        readme_oas:
+          - None # did not publish this version
+        paths_to_keep:
+          /payments/transactions:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+      "2023-12-19":
+        readme_oas:
+          - 65cbfc32d44921001849483f
+        paths_to_keep:
+          /crypto/session/widget:
+            methods:
+              - post
+            tags:
+              - Retail Ramp
+          /payments/virtual-account/quote:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/onramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/offramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+        paths_to_remove:
+          /payments/crypto/limits:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+        components_to_modify:
+          SessionDataInputV20231219:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+      "2024-04-27":
+        readme_oas:
+          - 660f3d23f3a6d2002532dccc
+      "2025-03-04":
+        readme_oas:
+          - 682cb9beb99d430011b9782d
+        paths_to_keep:
+          /payments/crypto/quote:
+            methods:
+              - post
+            tags:
+              - Retail Ramp
+          /crypto/session/widget:
+            methods:
+              - post
+            tags:
+              - Retail Ramp
+          /payments/transactions:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/transactions/{id}:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/transactions/sessions/{sessionId}:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/virtual-account/quote:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/onramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/offramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+        components_to_modify:
+          SessionDataInputV20231219:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+      "2026-02-03":
+        readme_oas:
+          - None # Create in ReadMe and set ID; quote response uses rampScore, institutionName removed
+        paths_to_keep:
+          /payments/crypto/quote:
+            methods:
+              - post
+            tags:
+              - Retail Ramp
+          /crypto/session/widget:
+            methods:
+              - post
+            tags:
+              - Retail Ramp
+          /payments/transactions:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/transactions/{id}:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/transactions/sessions/{sessionId}:
+            methods:
+              - get
+            tags:
+              - Retail Ramp
+          /payments/virtual-account/quote:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/onramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/offramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+        components_to_modify:
+          SessionDataInputV20231219:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+          CryptoQuote20260203:
+            - path: properties.paymentMethodType.enum
+              replace_with: *supported_payment_method_types_crypto
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+  PAYMENTS:
+    tags:
+      - name: Payment
+        description: ""
+    meld_oas: payment
+    versions:
+      unversioned:
+        readme_oas:
+          - 617c6328a9adab02e45abf22 # v1.0 (unversioned)
+        paths_to_keep:
+          /payments/tokens:
+            methods:
+              - post
+            tags:
+              - Transactions
+          /payments/transactions:
+            methods:
+              - post
+              - get
+            tags:
+              - Transactions
+          /payments/transactions/{id}/capture:
+            methods:
+              - post
+            tags:
+              - Transactions
+          /payments/transactions/{id}:
+            methods:
+              - get
+            tags:
+              - Transactions
+          /payments/transactions/{id}/refund:
+            methods:
+              - post
+            tags:
+              - Transactions
+          /payments/transactions/payout:
+            methods:
+              - post
+            tags:
+              - Transactions
+          /payments/external/import:
+            methods:
+              - post
+            tags:
+              - External Transactions
+          /payments/external/refund:
+            methods:
+              - post
+            tags:
+              - External Transactions
+          /payments/risk-analysis:
+            methods:
+              - post
+            tags:
+              - Risk
+        components_to_modify:
+          CryptoQuote:
+            - path: properties.paymentMethodType.enum
+              replace_with: *supported_payment_method_types_crypto
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_fiat_sp
+          CryptoQuoteRequest:
+            - path: properties.paymentMethodType.enum
+              replace_with: *supported_payment_method_types_crypto
+            - path: properties.serviceProviders.items.enum
+              replace_with: *supported_fiat_sp
+          ExternalImportRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_fiat_sp
+          ExternalRefundRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_fiat_sp
+          # PaymentMethodInput:
+          #   - path: properties.type.enum
+          #     replace_with: *supported_payment_method_types_fiat
+          # PaymentTransactionOutput:
+          #   - path: properties.paymentMethodType.enum
+          #     replace_with: *supported_payment_method_types_fiat
+          PaymentTransactionRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_fiat_sp
+          PaymentTokenRequest:
+            - path: properties.serviceProviders.items.enum
+              replace_with: *supported_fiat_sp
+          SessionDataInput:
+            - path: properties.paymentMethodType.enum
+              replace_with: *supported_payment_method_types_crypto
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+          SessionDataOutput:
+            - path: properties.paymentMethodType.enum
+              replace_with: *supported_payment_method_types_crypto
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+      "2022-07-19":
+        readme_oas:
+          - 62e3573b905fdb0087354cd2
+      "2022-09-21":
+        readme_oas:
+          - 6346ee020f58df0f8949c111
+      "2022-11-10":
+        readme_oas:
+          - 6377ffc3e0741a0070e424a1
+      "2023-04-01":
+        readme_oas:
+          - None # did not publish this version
+        paths_to_keep:
+          /payments/transactions:
+            methods:
+              - get
+            tags:
+              - Transactions
+          /payments/transactions/{id}:
+            methods:
+              - get
+            tags:
+              - Transactions
+      "2023-09-11":
+        readme_oas:
+          - None # did not publish this version
+        paths_to_keep:
+          /payments/transactions:
+            methods:
+              - get
+            tags:
+              - Transactions
+      "2023-12-19":
+        readme_oas:
+          - 65cbfc32d44921001849483d
+      "2024-04-27":
+        readme_oas:
+          - 660f3d23f3a6d2002532dcca
+      "2025-03-04":
+        readme_oas:
+          - 682cb9beb99d430011b9782b
+        paths_to_keep:
+          /payments/transactions:
+            methods:
+              - get
+            tags:
+              - Transactions
+          /payments/transactions/{id}:
+            methods:
+              - get
+            tags:
+              - Transactions
+      "2026-02-03":
+        readme_oas:
+          - None
+        paths_to_keep:
+          /payments/transactions:
+            methods:
+              - get
+            tags:
+              - Transactions
+          /payments/transactions/{id}:
+            methods:
+              - get
+            tags:
+              - Transactions
+# ----------------------------------------------------------------------
+# VIRTUAL ACCOUNT
+# CUSTOMER
+# ----------------------------------------------------------------------
+account-http:
+  CUSTOMER:
+    tags:
+      - name: Virtual Account
+        description: ""
+      - name: Customers
+    meld_oas: account
+    versions:
+      unversioned:
+        readme_oas:
+          - 62a0de20468bb0002f3968c5 # v1.0 (unversioned)
+        paths_to_keep:
+          /accounts/customers:
+            methods:
+              - post
+              - get
+            tags:
+              - Customers
+          /accounts/customers/{customerId}:
+            methods:
+              - patch
+              - delete
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/addresses:
+            methods:
+              - post
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/kyc/initiate:
+            methods:
+              - post
+            tags:
+              - Customers
+        components_to_modify:
+          CreateServiceProviderAccessProfileRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          CreateServiceProviderCustomerRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          ServiceProviderAccessProfile:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          ServiceProviderCustomer:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          UpdateServiceProviderAccessProfileRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+      "2022-07-19":
+        readme_oas:
+          - 62e3573b905fdb0087354cd8
+      "2022-09-21":
+        readme_oas:
+          - 6346ee020f58df0f8949c117
+      "2022-11-10":
+        readme_oas:
+          - 6377ffc3e0741a0070e424a7
+      "2023-04-01":
+        readme_oas:
+          - None
+        paths_to_keep:
+          /accounts/customers:
+            methods:
+              - post
+              - get
+            tags:
+              - Customers
+          /accounts/customers/{customerId}:
+            methods:
+              - patch
+            tags:
+              - Customers
+      "2023-09-11":
+        readme_oas:
+          - None # did not publish this version
+        paths_to_keep:
+          /accounts/customers:
+            methods:
+              - get
+            tags:
+              - Customers
+      "2023-12-19":
+        readme_oas:
+          - 65cbfc32d449210018494843
+      "2024-04-27":
+        readme_oas:
+          - 660f3d23f3a6d2002532dcd0
+      "2025-03-04":
+        readme_oas:
+          - 682cb9beb99d430011b9782e
+        paths_to_keep:
+          /accounts/customers:
+            methods:
+              - post
+              - get
+            tags:
+              - Customers
+          /accounts/customers/{customerId}:
+            methods:
+              - patch
+              - delete
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/addresses:
+            methods:
+              - post
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/kyc/initiate:
+            methods:
+              - post
+            tags:
+              - Customers
+          /accounts/sub-accounts:
+            methods:
+              - post
+              - get
+            tags:
+              - Virtual Account
+          /accounts/sub-accounts/{subAccountId}:
+            methods:
+              - get
+            tags:
+              - Virtual Account
+        components_to_modify:
+          CreateServiceProviderAccessProfileRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          CreateServiceProviderCustomerRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          ServiceProviderAccessProfile:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          ServiceProviderCustomer:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          UpdateServiceProviderAccessProfileRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          CreateSubAccountRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_virtual_account_sp
+      "2026-02-03":
+        readme_oas:
+          - None
+        paths_to_keep:
+          /accounts/customers:
+            methods:
+              - post
+              - get
+            tags:
+              - Customers
+          /accounts/customers/{customerId}:
+            methods:
+              - patch
+              - delete
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/addresses:
+            methods:
+              - post
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/kyc/initiate:
+            methods:
+              - post
+            tags:
+              - Customers
+          /accounts/sub-accounts:
+            methods:
+              - post
+              - get
+            tags:
+              - Virtual Account
+          /accounts/sub-accounts/{subAccountId}:
+            methods:
+              - get
+            tags:
+              - Virtual Account
+        components_to_modify:
+          CreateServiceProviderAccessProfileRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          CreateServiceProviderCustomerRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          ServiceProviderAccessProfile:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          ServiceProviderCustomer:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          UpdateServiceProviderAccessProfileRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_all_sp
+          CreateSubAccountRequest:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_virtual_account_sp
+# ----------------------------------------------------------------------
+# ROUTING
+# SERVICE PROVIDERS
+# ----------------------------------------------------------------------
+service-provider-http:
+  # ROUTING:
+  #   tags:
+  #     - name: Routing
+  #   meld_oas: serviceprovider
+  #   versions:
+  #     unversioned:
+  #       readme_oas: 628192bcaea1be00210355a9
+  #       paths_to_keep:
+  #         /service-providers/routing/options:
+  #           methods:
+  #             - post
+  #           tags:
+  #             - Routing
+  #         /service-providers/routing/preferred:
+  #           methods:
+  #             - post
+  #           tags:
+  #             - Routing
+  #         /service-providers/routing/rules:
+  #           methods:
+  #             - get
+  #             - post
+  #           tags:
+  #             - Routing
+  #         /service-providers/routing/rules/{ruleId}:
+  #           methods:
+  #             - get
+  #             - delete
+  #             - patch
+  #           tags:
+  #             - Routing
+  #       components_to_modify:
+  #         PaymentMethod20220815:
+  #           - path: properties.paymentType.enum
+  #             replace_with: *supported_payment_method_types
+  #         Route:
+  #           - path: properties.serviceProvider.enum
+  #             replace_with: *supported_all_sp
+  #         ServiceProviderCountryPropertiesPaymentMethod:
+  #           - path: properties.type.enum
+  #             replace_with: *supported_payment_method_types
+  #         Signals:
+  #           - path: properties.serviceProviders.items.enum
+  #             replace_with: *supported_all_sp
+  SERVICE PROVIDERS:
+    tags:
+      - name: Service Provider
+    meld_oas: serviceprovider
+    versions:
+      unversioned:
+        readme_oas:
+          - 625a3056c523a80038e31192 # v1.0 (unversioned)
+        paths_to_keep:
+          /service-providers:
+            methods:
+              - get
+            tags:
+              - Service Provider
+          /service-providers/properties/countries:
+            methods:
+              - get
+            tags:
+              - Service Provider
+          /service-providers/properties/crypto-currencies:
+            methods:
+              - get
+            tags:
+              - Service Provider
+          /service-providers/properties/defaults/by-country:
+            methods:
+              - get
+            tags:
+              - Service Provider
+          /service-providers/properties/fiat-currencies:
+            methods:
+              - get
+            tags:
+              - Service Provider
+          /service-providers/properties/payment-methods:
+            methods:
+              - get
+            tags:
+              - Service Provider
+          /service-providers/limits/crypto-currency-sells:
+            methods:
+              - get
+            tags:
+              - Service Provider
+          /service-providers/limits/fiat-currency-purchases:
+            methods:
+              - get
+            tags:
+              - Service Provider
+          /service-providers/limits/kyc-fiat-levels:
+            methods:
+              - get
+            tags:
+              - Service Provider
+
+        components_to_modify:
+          Route:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_sp
+          Signals:
+            - path: properties.serviceProviders.items.enum
+              replace_with: *supported_crypto_sp
+      "2022-07-19":
+        readme_oas:
+          - 62e3573b905fdb0087354cd6
+      "2022-09-21":
+        readme_oas:
+          - 6346ee020f58df0f8949c115
+      "2022-11-10":
+        readme_oas:
+          - 6377ffc3e0741a0070e424a5
+      "2023-11-22":
+        readme_oas:
+          - None # did not publish this version
+      "2023-12-19":
+        readme_oas:
+          - 65cbfc32d449210018494841
+      "2024-04-27":
+        readme_oas:
+          - 660f3d23f3a6d2002532dcce
+        paths_to_keep:
+          /service-providers/properties/payment-methods:
+            methods:
+              - get
+            tags:
+              - Service Provider
+        components_to_modify:
+          PaymentMethod20240427:
+            - path: properties.paymentType.enum
+              replace_with: *supported_payment_method_types
+      "2025-03-04":
+        readme_oas:
+          - 682cb9beb99d430011b9782f
+      "2026-02-03":
+        readme_oas:
+          - None
+# ----------------------------------------------------------------------
+# WEBHOOKS & NOTIFICATION
+# ----------------------------------------------------------------------
+notification-http:
+  WEBHOOKS:
+    tags:
+      - name: Settings
+    meld_oas: notification
+    versions:
+      unversioned:
+        readme_oas:
+          - 61b26ca85836b2001895585c # v1.0 (unversioned)
+        paths_to_keep:
+          /notifications/webhooks:
+            methods:
+              - post
+              - get
+            tags:
+              - Profile
+          /notifications/webhooks/event-types:
+            methods:
+              - get
+            tags:
+              - Profile
+          /notifications/webhooks/{webhookProfileId}:
+            methods:
+              - get
+              - patch
+            tags:
+              - Profile
+          /notifications/webhooks/{webhookProfileId}/test:
+            methods:
+              - post
+            tags:
+              - Profile
+      "2022-07-19":
+        readme_oas:
+          - 62e3573b905fdb0087354cd5
+      "2022-09-21":
+        readme_oas:
+          - 6346ee020f58df0f8949c114
+      "2022-11-10":
+        readme_oas:
+          - 6377ffc3e0741a0070e424a4
+      "2023-12-19":
+        readme_oas:
+          - 65cbfc32d449210018494840
+      "2024-04-27":
+        readme_oas:
+          - 660f3d23f3a6d2002532dccd
+      "2025-03-04":
+        readme_oas:
+          - 682cb9beb99d430011b97830
+      "2026-02-03":
+        readme_oas:
+          - None
+# ----------------------------------------------------------------------
+# METRIC & ACTIVITY LOG
+# ----------------------------------------------------------------------
+metric-http:
+  BETA:
+    tags:
+      - name: Activity Log
+    meld_oas: metric
+    versions:
+      unversioned:
+        readme_oas:
+          - 6516151914ff2c002a486461 # v1.0 (unversioned)
+        paths_to_keep:
+          /activity-log:
+            methods:
+              - get
+            tags:
+              - Activity Log
+          /activity-log/details:
+            methods:
+              - get
+            tags:
+              - Activity Log
+      "2022-07-19":
+        readme_oas:
+          - 651615c6efe894004d9af7bc
+      "2022-09-21":
+        readme_oas:
+          - 651615ae29c9ce090f07ad12
+      "2022-11-10":
+        readme_oas:
+          - 6516158fb56cf400377ab7a1
+      "2023-12-19":
+        readme_oas:
+          - 65cbfc32d449210018494844
+      "2024-04-27":
+        readme_oas:
+          - 660f3d23f3a6d2002532dcd1
+      "2025-03-04":
+        readme_oas:
+          - 682cb9beb99d430011b97831
+      "2026-02-03":
+        readme_oas:
+          - None

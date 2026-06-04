@@ -7,7 +7,7 @@ The Activity Log is Meld's searchable audit trail of every request, webhook, and
 
 <Info>The Activity Log is currently in beta. Behavior and search parameters may change.</Info>
 
-One powerful tool to help you debug potential issues or see the paper trail is Meld's [Activity Log](/api-reference/bank-linking/activity-log-search). The activity log registers all activities performed by you or performed by Meld on behalf of you and presents them in an easy to trace manner.
+One powerful tool to help you debug potential issues or see the paper trail is Meld's [Activity Log](/api-reference/beta/activity-log/activity-log-search). The activity log registers all activities performed by you or performed by Meld on behalf of you and presents them in an easy to trace manner.
 
 Some of the major types of activities captured by the activity log are:
 
@@ -21,11 +21,11 @@ Some of the major types of activities captured by the activity log are:
 You can interact with the Activity Log in two ways:
 
 * **Meld dashboard** — log in to your Meld dashboard and navigate to the Activity Log section to browse recent activity in the UI.
-* **API** — call the [Activity Log Search](/api-reference/bank-linking/activity-log-search) and [Activity Log Details](/api-reference/bank-linking/activity-log-details-get) endpoints to query programmatically.
+* **API** — call the [Activity Log Search](/api-reference/beta/activity-log/activity-log-search) and [Activity Log Details](/api-reference/beta/activity-log/activity-log-details-get) endpoints to query programmatically.
 
 # How to Use the Activity Log
 
-1. Start by hitting Meld's [Activity Log endpoint](/api-reference/bank-linking/activity-log-search) with whatever search parameters you would like. The date params (`start` and `end`) are required but all other params are optional. The activities are ordered chronologically with the most recent at the top, and every activity has a timestamp. You should typically filter using an `actions` and either a `connectionId` or `financialAccountId`. If you don't have either of those, then a `customerId` or `externalCustomerId` can work as well, but those searches will take longer.
+1. Start by hitting Meld's [Activity Log endpoint](/api-reference/beta/activity-log/activity-log-search) with whatever search parameters you would like. The date params (`start` and `end`) are required but all other params are optional. The activities are ordered chronologically with the most recent at the top, and every activity has a timestamp. You should typically filter using an `actions` and either a `connectionId` or `financialAccountId`. If you don't have either of those, then a `customerId` or `externalCustomerId` can work as well, but those searches will take longer.
 
 Examples of `actions` you should filter by are:
 
@@ -37,7 +37,7 @@ Examples of `actions` you should filter by are:
 | `OUTBOUND_REQUEST_WEBHOOK` | A webhook that Meld sent to you |
 | `INSTITUTION_CONNECTION_IMPORT_FAILED` | A notification that an import for a particular connection has failed |
 
-2. Once you find a particular activity that you would like more information about, grab the key of the activity and head to Meld's [Activity Log Details endpoint](/api-reference/bank-linking/activity-log-details-get). Pass in the key as a query param and you will now see all the details for that particular activity. These details include the request and response headers, the request and response body, the response code, and more. You can also see the raw response Meld received from a particular service provider here. This can help debug if for example data that looks suspicious is due to Meld's transformation or is the exact data that Meld received from the provider.
+2. Once you find a particular activity that you would like more information about, grab the key of the activity and head to Meld's [Activity Log Details endpoint](/api-reference/beta/activity-log/activity-log-details-get). Pass in the key as a query param and you will now see all the details for that particular activity. These details include the request and response headers, the request and response body, the response code, and more. You can also see the raw response Meld received from a particular service provider here. This can help debug if for example data that looks suspicious is due to Meld's transformation or is the exact data that Meld received from the provider.
 
 # Use Cases
 

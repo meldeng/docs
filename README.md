@@ -44,6 +44,18 @@ View your local preview at `http://localhost:3000`.
 
 Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
 
+## Versioned API reference
+
+The Mintlify API reference is generated at deploy time from OpenAPI specs in git (not from committed endpoint MDX).
+
+- `docs.template.json` — shared site config and Documentation tab
+- `openapi/*.json` — one spec per service per **published** API version (`2026-02-03`, `2025-03-04`, `2023-12-19`)
+- `docs.json` — generated navigation (`python3 update_docs_json.py`)
+
+After changing specs, run `python3 normalize_openapi.py openapi` to apply Mintlify hrefs and required-only Try it examples.
+
+To refresh specs from the backend, run the **Sync API Reference** GitHub Action (opens a PR; does not push directly to `main`).
+
 ## Need help?
 
 ### Troubleshooting

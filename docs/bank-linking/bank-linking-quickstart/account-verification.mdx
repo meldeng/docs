@@ -2,7 +2,7 @@
 title: "Account Verification"
 ---
 
-Account verification confirms that a user owns and has access to a specific bank account. Developers use it most commonly before initiating an [ACH transaction](/docs/payments/making-ach-payments) so that they know the user is authorized to move money from the bank account in question.
+Account verification confirms that a user owns and has access to a specific bank account. Developers use it most commonly before initiating an ACH transaction so that they know the user is authorized to move money from the bank account in question.
 
 ## How it works
 
@@ -14,5 +14,5 @@ Account verification involves creating a connection that requests the [OWNERS](/
 Once the connection completes, you have verified the user's identity and access to the bank account and can perform an ACH transaction.
 
 <Tip>
-Every bank linking connection has a Meld `customerId` associated with it. Use that same `customerId` when [creating a payments customer](/docs/payments/creating-a-payments-customer) so that the bank account and payments customer are linked.
+Every bank linking connection has a Meld `customerId` associated with it. Use that same `customerId` when creating a payments customer so that the bank account and payments customer are linked.
 </Tip>
