@@ -1221,6 +1221,10 @@
             "type": "string",
             "description": "External customer id of the individual initiating the order"
           },
+          "externalSessionId": {
+            "type": "string",
+            "description": "Optional integrator-supplied session identifier. When provided, it's persisted on the underlying order row and surfaced on the resulting payment_transaction's externalReferenceId, matching the behavior of the headless POST /crypto/order/headless endpoint. Use the same value across retries / webhook joins / customer-side polling to correlate. Optional for back-compat; existing callers omitting the field continue to behave as before (no session correlation)."
+          },
           "externalSubaccountCustomerId": {
             "type": "string",
             "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
@@ -1539,12 +1543,12 @@
             "type": "string",
             "description": "State"
           },
-          "street_line_1": {
+          "streetLineOne": {
             "type": "string",
             "description": "Street line 1",
             "minLength": 1
           },
-          "street_line_2": {
+          "streetLineTwo": {
             "type": "string",
             "description": "Street line 2"
           }
@@ -1553,7 +1557,7 @@
           "city",
           "country",
           "postalCode",
-          "street_line_1"
+          "streetLineOne"
         ]
       },
       "PaymentMethod": {
@@ -4211,6 +4215,10 @@
         "type": "object",
         "description": "Request to create a headless onramp order",
         "properties": {
+          "clientIpAddress": {
+            "type": "string",
+            "description": "The end-user's IP address. Required by some service providers."
+          },
           "countryCode": {
             "type": "string",
             "description": "Country code (ISO 3166-1 alpha-2)",
@@ -4240,7 +4248,7 @@
             "type": "string",
             "description": "Caller's external customer id (one of customerId / externalCustomerId is required)"
           },
-          "externalSessionId": {
+          "externalOrderId": {
             "type": "string",
             "description": "Caller's reference for the order; unique per account when provided"
           },
@@ -4343,10 +4351,11 @@
           },
           "sessionType": {
             "type": "string",
-            "description": "Direction of the order",
+            "description": "Direction of the order. Phase 1 accepts BUY only; SELL ships in Phase 3. TRANSFER (peer-to-peer crypto move) is widget-only and rejected here.",
             "enum": [
               "BUY",
-              "SELL"
+              "SELL",
+              "TRANSFER"
             ]
           },
           "sourceAmount": {
@@ -4416,14 +4425,18 @@
           {
             "type": "object",
             "properties": {
-              "serviceProviderWidgetUrl": {
+              "sessionToken": {
                 "type": "string",
-                "description": "Short-TTL provider URL; caller opens at user tap"
+                "description": "Session JWT used to authenticate the /crypto/session/* Apple Pay endpoints"
+              },
+              "merchantTransactionId": {
+                "type": "string",
+                "description": "Merchant transaction id to pass into /apple-pay/process; equals the session id"
               }
             }
           }
         ],
-        "description": "Apple Pay response \u2014 present when paymentMethodType == APPLE_PAY"
+        "description": "Apple Pay response \u2014 present when paymentMethodType == APPLE_PAY. Native (non-widget) flow: the caller renders the Apple Pay sheet on its own surface, then drives the existing session-token endpoints (GET /crypto/session/applepay/paymentsession, POST /crypto/session/mercuryo/apple-pay/validate-merchant, POST /crypto/session/mercuryo/apple-pay/process) authenticated with sessionToken. There is no provider-hosted widget URL."
       },
       "BankTransferOrder": {
         "allOf": [
@@ -4435,32 +4448,32 @@
             "properties": {
               "accountNumber": {
                 "type": "string",
-                "description": "ACH account number"
+                "description": "Bank account number; populated for ACH"
               },
               "routingNumber": {
                 "type": "string",
-                "description": "ACH routing number"
+                "description": "Bank routing number; populated for ACH"
               },
               "iban": {
                 "type": "string",
-                "description": "SEPA IBAN"
+                "description": "IBAN; populated for SEPA"
               },
               "bic": {
                 "type": "string",
-                "description": "SEPA / wire BIC"
+                "description": "BIC / SWIFT code; populated for SEPA and wire"
               },
               "pixKey": {
                 "type": "string",
-                "description": "PIX key"
+                "description": "PIX key; populated for PIX"
               },
               "mobileMoneyReference": {
                 "type": "string",
-                "description": "Mobile money reference"
+                "description": "Mobile money reference; populated for MOBILE_MONEY"
               }
             }
           }
         ],
-        "description": "Bank-transfer response \u2014 present for ACH, SEPA, PIX, MOBILE_MONEY"
+        "description": "Bank-transfer response \u2014 present for ACH, SEPA, PIX, MOBILE_MONEY. Only the rail-relevant fields are populated per response; the others are null."
       },
       "CardOrder": {
         "allOf": [
@@ -4499,9 +4512,9 @@
             "type": "string",
             "description": "Caller's external customer id"
           },
-          "externalSessionId": {
+          "externalOrderId": {
             "type": "string",
-            "description": "Caller's external session id"
+            "description": "Caller's external order id"
           },
           "id": {
             "type": "string",
@@ -4878,27 +4891,6 @@
           },
           "status": {
             "type": "string"
-          }
-        }
-      },
-      "CryptoLimit": {
-        "type": "object",
-        "properties": {
-          "currencyCode": {
-            "type": "string",
-            "description": "The fiat currency\u2019s 3 letter code."
-          },
-          "defaultAmount": {
-            "type": "number",
-            "description": "The default amount the crypto wizard shows for the fiat currency."
-          },
-          "maxAmount": {
-            "type": "number",
-            "description": "The maximum amount a quote can be requested for, regardless of cryptocurrency."
-          },
-          "minAmount": {
-            "type": "number",
-            "description": "The minimum amount a quote can be requested for, regardless of cryptocurrency."
           }
         }
       },

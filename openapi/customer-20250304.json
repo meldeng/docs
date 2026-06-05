@@ -1674,6 +1674,9 @@
             "properties": {
               "apiKey": {
                 "type": "string"
+              },
+              "webhookPublicKey": {
+                "type": "string"
               }
             }
           }
@@ -3470,6 +3473,10 @@
             "type": "boolean",
             "description": "Whether to enable the Meld crypto wizard functionality. If a value is not set, it defaults to false."
           },
+          "headlessOnrampsEnabled": {
+            "type": "boolean",
+            "description": "Account-wide gate for the headless onramp endpoint (POST /crypto/order/headless). When true, the validator's WHITELABEL_NOT_ENABLED gate passes for any headless-eligible provider the account is provisioned for. If a value is not set, it is assumed to be false (default-deny)."
+          },
           "hideBackButton": {
             "type": "boolean",
             "description": "Whether to hide the back button in the crypto widget. If a value is not set, it is assumed to be false."
@@ -3883,19 +3890,22 @@
             "type": "string",
             "description": "Full name of the person",
             "example": "John Doe",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^(?=.{1,100}$)[\\p{L}\\p{M}]+([ '-][\\p{L}\\p{M}]+)*$"
           },
           "reasonName": {
             "type": "string",
             "description": "Reason name(s) - can be a single reason or multiple comma-separated reasons (must be valid reasons from reference table)",
             "example": "TRADITIONAL_RAMPS,VIRTUAL_ACCOUNTS",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_,\\s\\-]+$"
           },
           "roleName": {
             "type": "string",
             "description": "Role name (must be valid role from reference table)",
             "example": "ENGINEER",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_\\-]+$"
           }
         },
         "required": [
