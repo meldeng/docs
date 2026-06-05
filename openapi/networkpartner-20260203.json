@@ -1,0 +1,1567 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Network Partners",
+    "version": "2026-02-03"
+  },
+  "servers": [
+    {
+      "url": "https://api.meld.io"
+    }
+  ],
+  "paths": {
+    "/network-partner/supported/countries": {
+      "get": {
+        "summary": "List supported countries",
+        "description": "Returns countries supported across live providers with flag URLs and supported subdivision codes, optionally filtered by category and partners. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "description": "Provider category",
+            "example": "CRYPTO_ONRAMP",
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          {
+            "description": "Comma-separated partner ids",
+            "example": "BANXA,MOONPAY",
+            "name": "partners",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Supported country list",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "supportedCountries": {
+                    "summary": "Matching supported countries",
+                    "value": {
+                      "countries": [
+                        {
+                          "countryCode": "US",
+                          "name": "United States",
+                          "flag": "https://cdn.meld.io/images-country/US/flag.svg",
+                          "subdivisions": [
+                            "US-CA",
+                            "US-NY"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "scopedSupportedCountries": {
+                    "summary": "Account-scoped request returning only countries served by the account's providers",
+                    "value": {
+                      "countries": [
+                        {
+                          "countryCode": "GB",
+                          "name": "United Kingdom",
+                          "flag": "https://cdn.meld.io/images-country/GB/flag.svg",
+                          "subdivisions": []
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CountryResponse"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "list-supported-countries",
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/list-supported-countries"
+        }
+      }
+    },
+    "/network-partner/supported/currencies": {
+      "get": {
+        "summary": "Search supported currencies",
+        "description": "Searches currencies supported across providers and returns canonical currency metadata including symbol image URLs. Defaults to `type=CRYPTO`; use `type=FIAT` to search fiat support. `network` is only valid for crypto searches. `providerCurrencyCode` can filter both crypto and fiat provider-specific codes. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partner` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "description": "Provider category",
+            "example": "CRYPTO_ONRAMP",
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          {
+            "description": "Country code",
+            "example": "US",
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Network code. Only valid for crypto searches.",
+            "example": "ETH",
+            "name": "network",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Partner identifier",
+            "example": "BANXA",
+            "name": "partner",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Payment method type supported for the route.",
+            "example": "CARD",
+            "name": "paymentType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PaymentType"
+            }
+          },
+          {
+            "description": "Provider-specific currency code. Valid for both crypto and fiat searches.",
+            "example": "BTC",
+            "name": "providerCurrencyCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Country subdivision code. Supported for US and CA only.",
+            "example": "US-NY",
+            "name": "subdivision",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Currency type. Defaults to `CRYPTO`.",
+            "example": "CRYPTO",
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/CurrencyType"
+                },
+                {
+                  "default": "CRYPTO"
+                }
+              ]
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Supported currency list",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "supportedCurrencies": {
+                    "summary": "Matching supported currencies",
+                    "value": {
+                      "currencies": [
+                        {
+                          "currencyCode": "USDC",
+                          "name": "USD Coin",
+                          "decimalPlaces": 6,
+                          "type": "CRYPTO",
+                          "chainCode": "ETH",
+                          "contract": "0x1234...",
+                          "symbol": "https://cdn.meld.io/images-currency/crypto/USDC/symbol.png"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyResponse1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter combination",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalidFiatFilters": {
+                    "summary": "Crypto-only filters supplied for a fiat search",
+                    "value": "network is only supported for CRYPTO searches"
+                  }
+                },
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "search-supported-currencies",
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/search-supported-currencies"
+        }
+      }
+    },
+    "/network-partner/supported/fiat-limits": {
+      "get": {
+        "summary": "Search supported provider fiat limits",
+        "description": "Searches provider-supplied fiat amount limits across live providers. Returns only loaded provider fiat limit rows; default currency fallback limits are not included. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "description": "Provider category",
+            "example": "CRYPTO_ONRAMP",
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          {
+            "description": "Country code",
+            "example": "US",
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Fiat currency code",
+            "example": "USD",
+            "name": "currencyCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated partner ids",
+            "example": "BANXA,MOONPAY",
+            "name": "partners",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Canonical payment method code",
+            "example": "CREDIT_DEBIT_CARD",
+            "name": "paymentMethod",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Payment method type",
+            "example": "CARD",
+            "name": "paymentType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PaymentType"
+            }
+          },
+          {
+            "description": "Country subdivision code used as a filter only. Supported for US and CA only.",
+            "example": "US-NY",
+            "name": "subdivision",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider fiat limits",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "supportedProviderFiatLimits": {
+                    "summary": "Matching provider fiat limits",
+                    "value": {
+                      "fiatLimits": [
+                        {
+                          "provider": "BANXA",
+                          "category": "CRYPTO_ONRAMP",
+                          "countryCode": "US",
+                          "currencyCode": "USD",
+                          "paymentMethod": "CREDIT_DEBIT_CARD",
+                          "min": 10.0,
+                          "max": 10000.0
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "list-supported-fiat-limits",
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/list-supported-fiat-limits"
+        }
+      }
+    },
+    "/network-partner/supported/kyc-limits": {
+      "get": {
+        "summary": "Search supported provider KYC limits",
+        "description": "Searches admin-curated provider KYC limits across live providers. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "description": "Provider category",
+            "example": "CRYPTO_ONRAMP",
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          {
+            "description": "Country code",
+            "example": "US",
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Currency code",
+            "example": "USD",
+            "name": "currencyCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Limit window",
+            "example": "DAILY",
+            "name": "limitType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LimitType"
+            }
+          },
+          {
+            "description": "Comma-separated partner ids",
+            "example": "BANXA,MOONPAY",
+            "name": "partners",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider KYC limits",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "supportedProviderKycLimits": {
+                    "summary": "Matching provider KYC limits",
+                    "value": {
+                      "kycLimits": [
+                        {
+                          "provider": "BANXA",
+                          "category": "CRYPTO_ONRAMP",
+                          "countryCode": "US",
+                          "limitType": "DAILY",
+                          "currencyCode": "USD",
+                          "level1": 1000,
+                          "level2": 10000,
+                          "level3": 50000
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Response1"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "list-supported-kyc-limits",
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/list-supported-kyc-limits"
+        }
+      }
+    },
+    "/network-partner/supported/partners": {
+      "get": {
+        "summary": "List live partners supporting a route",
+        "description": "Searches live partners that support a route defined by category, country, optional subdivision, fiat currency, crypto currency, and payment method or payment type. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partner` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "description": "Provider category",
+            "example": "CRYPTO_ONRAMP",
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          {
+            "description": "Country code",
+            "example": "US",
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Crypto currency code",
+            "example": "BTC",
+            "name": "cryptoCurrency",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Fiat currency code",
+            "example": "USD",
+            "name": "fiatCurrency",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Partner id",
+            "example": "BANXA",
+            "name": "partner",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Canonical payment method code",
+            "example": "CREDIT_DEBIT_CARD",
+            "name": "paymentMethod",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Payment method type",
+            "example": "CARD",
+            "name": "paymentType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PaymentType"
+            }
+          },
+          {
+            "description": "Country subdivision code. Supported for US and CA only.",
+            "example": "US-NY",
+            "name": "subdivision",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Partner details",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "supportedPartners": {
+                    "summary": "Matching live partners",
+                    "value": [
+                      {
+                        "serviceProvider": "BANXA",
+                        "name": "Banxa",
+                        "status": "LIVE",
+                        "categories": [
+                          "CRYPTO_ONRAMP"
+                        ],
+                        "capabilities": [
+                          {
+                            "category": "CRYPTO_ONRAMP",
+                            "domains": [
+                              "PAYMENT"
+                            ],
+                            "status": "LIVE"
+                          }
+                        ],
+                        "url": "https://banxa.com",
+                        "logo": {
+                          "dark": "https://cdn.meld.io/images-serviceprovider/BANXA/logo_dark.png",
+                          "light": "https://cdn.meld.io/images-serviceprovider/BANXA/logo_light.png",
+                          "darkShort": "https://cdn.meld.io/images-serviceprovider/BANXA/short_logo_dark.png",
+                          "lightShort": "https://cdn.meld.io/images-serviceprovider/BANXA/short_logo_light.png"
+                        },
+                        "headless": {
+                          "supported": false,
+                          "kycMode": "NONE",
+                          "uiCustomization": false
+                        }
+                      }
+                    ]
+                  },
+                  "emptyScopedSupportedPartners": {
+                    "summary": "Scope intersection removes all matching partners",
+                    "value": []
+                  }
+                },
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NetworkPartnerInfo"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "list-supported-partners",
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/list-supported-partners"
+        }
+      }
+    },
+    "/network-partner/supported/payment-methods": {
+      "get": {
+        "summary": "Search supported payment methods",
+        "description": "Searches payment methods supported across providers. Results are deduplicated across providers and returned as canonical payment-method entries with logo URLs for the requested filters. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "description": "Provider category",
+            "example": "CRYPTO_ONRAMP",
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          {
+            "description": "Country code",
+            "example": "US",
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Currency code",
+            "example": "EUR",
+            "name": "currencyCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated partner ids",
+            "example": "BANXA,MOONPAY",
+            "name": "partners",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Payment method type",
+            "example": "CARD",
+            "name": "paymentType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PaymentType"
+            }
+          },
+          {
+            "description": "Country subdivision code. Supported for US and CA only.",
+            "example": "US-NY",
+            "name": "subdivision",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Supported payment method list",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "supportedPaymentMethods": {
+                    "summary": "Matching supported payment methods",
+                    "value": [
+                      {
+                        "countryCode": "US",
+                        "providerMethod": "CARD",
+                        "method": "CREDIT_DEBIT_CARD",
+                        "name": "Credit or debit card",
+                        "type": "CARD",
+                        "logo": {
+                          "dark": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png",
+                          "light": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_light.png"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupportedPaymentMethod"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "list-supported-payment-methods",
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/list-supported-payment-methods"
+        }
+      }
+    },
+    "/network-partner/supported/routes/{category}/{countryCode}/{sourceCurrencyCode}/{destinationCurrencyCode}": {
+      "get": {
+        "summary": "List supported routes",
+        "description": "Searches supported partner routes by category, country, optional subdivision, source currency, destination currency, and payment method or payment type. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "description": "Provider category",
+            "example": "CRYPTO_ONRAMP",
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          {
+            "description": "Country code",
+            "example": "US",
+            "name": "countryCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Destination currency code",
+            "example": "BTC",
+            "name": "destinationCurrencyCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Source currency code",
+            "example": "USD",
+            "name": "sourceCurrencyCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated partner ids",
+            "example": "PAYBIS,BANXA",
+            "name": "partners",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Canonical payment method code",
+            "example": "CREDIT_DEBIT_CARD",
+            "name": "paymentMethod",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Payment method type",
+            "example": "CARD",
+            "name": "paymentType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PaymentType"
+            }
+          },
+          {
+            "description": "Country subdivision code. Supported for US and CA only. Use either full ISO 3166-2 code or local code.",
+            "example": "US-NY",
+            "name": "subdivision",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Supported routes",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "supportedRoutes": {
+                    "summary": "Matching supported routes",
+                    "value": [
+                      {
+                        "partner": "BANXA",
+                        "source": "USD",
+                        "destination": "BTC",
+                        "paymentMethods": [
+                          {
+                            "paymentType": "CARD",
+                            "name": "CREDIT_DEBIT_CARD",
+                            "partnerMethodName": "card",
+                            "limits": {
+                              "currencyCode": "USD",
+                              "min": 10.0,
+                              "max": 10000.0
+                            },
+                            "logo": {
+                              "dark": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png",
+                              "light": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_light.png"
+                            }
+                          }
+                        ],
+                        "kycLimits": [
+                          {
+                            "provider": "BANXA",
+                            "category": "CRYPTO_ONRAMP",
+                            "countryCode": "US",
+                            "limitType": "DAILY",
+                            "currencyCode": "USD",
+                            "level1": 1000,
+                            "level2": 10000,
+                            "level3": 50000
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupportedRoute"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "find-supported-routes",
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/find-supported-routes"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CardRenderMode": {
+        "type": "string",
+        "enum": [
+          "IFRAME",
+          "REDIRECT"
+        ],
+        "description": "Render mode for CREDIT_DEBIT_CARD payment method in headless flows"
+      },
+      "Category": {
+        "type": "string",
+        "enum": [
+          "CRYPTO_ONRAMP",
+          "CRYPTO_OFFRAMP",
+          "CRYPTO_TRANSFER",
+          "BANK_LINKING",
+          "FIAT_PAYMENTS",
+          "CRYPTO_VIRTUAL_ACCOUNT_ONRAMP",
+          "CRYPTO_VIRTUAL_ACCOUNT_OFFRAMP",
+          "CUSTOMER_KYC",
+          "CRYPTO_ONRAMP_SWAP",
+          "CRYPTO_OFFRAMP_SWAP"
+        ],
+        "description": "Categories of functionality offered by a service provider"
+      },
+      "Country": {
+        "type": "object",
+        "description": "Country representation used in country and supported-country lists",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "examples": [
+              "US"
+            ],
+            "description": "ISO 3166-1 alpha-2 country code"
+          },
+          "name": {
+            "type": "string",
+            "examples": [
+              "United States"
+            ],
+            "description": "Country display name"
+          },
+          "flag": {
+            "type": "string",
+            "examples": [
+              "https://cdn.meld.io/images-country/US/flag.svg"
+            ],
+            "description": "Country flag URL"
+          },
+          "subdivisions": {
+            "type": "array",
+            "examples": [
+              [
+                "US-CA",
+                "US-NY"
+              ]
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "ISO 3166-2 subdivision codes supported for this country"
+          }
+        }
+      },
+      "CountryResponse": {
+        "type": "object",
+        "description": "Response wrapper for countries",
+        "properties": {
+          "countries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Country"
+            },
+            "description": "List of countries"
+          }
+        }
+      },
+      "Currency": {
+        "type": "object",
+        "description": "Currency representation",
+        "properties": {
+          "currencyCode": {
+            "type": "string",
+            "examples": [
+              "USD"
+            ],
+            "description": "Currency code"
+          },
+          "name": {
+            "type": "string",
+            "examples": [
+              "US Dollar"
+            ],
+            "description": "Currency name"
+          },
+          "decimalPlaces": {
+            "type": "integer",
+            "format": "int32",
+            "examples": [
+              2
+            ],
+            "description": "Number of decimal places"
+          },
+          "type": {
+            "type": "string",
+            "examples": [
+              "FIAT"
+            ],
+            "description": "Currency type"
+          },
+          "chainCode": {
+            "type": "string",
+            "examples": [
+              "ETH"
+            ],
+            "description": "Chain code for crypto currencies"
+          },
+          "contract": {
+            "type": "string",
+            "examples": [
+              "0x1234..."
+            ],
+            "description": "Contract address for token"
+          },
+          "symbol": {
+            "type": "string",
+            "examples": [
+              "https://cdn.meld.io/images-currency/crypto/BTC/symbol.png"
+            ],
+            "description": "Currency symbol image URL generated from currency type and code"
+          }
+        }
+      },
+      "CurrencyResponse1": {
+        "type": "object",
+        "description": "Response wrapper for currencies",
+        "properties": {
+          "currencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Currency"
+            },
+            "description": "List of currencies"
+          }
+        }
+      },
+      "CurrencyType": {
+        "type": "string",
+        "enum": [
+          "FIAT",
+          "CRYPTO"
+        ],
+        "description": "Identifies whether a currency is fiat or crypto"
+      },
+      "DomainType": {
+        "type": "string",
+        "enum": [
+          "PAYMENT",
+          "FINANCIAL_ACCOUNT"
+        ],
+        "description": "The domain in which a service provider operates"
+      },
+      "KycMode": {
+        "type": "string",
+        "enum": [
+          "ASYNC",
+          "SYNC",
+          "NONE"
+        ],
+        "description": "How a provider expects KYC to be supplied for headless onramp orders"
+      },
+      "Limit": {
+        "type": "object",
+        "description": "Limits for a supported route",
+        "properties": {
+          "currencyCode": {
+            "type": "string",
+            "examples": [
+              "USD"
+            ],
+            "description": "Currency code"
+          },
+          "min": {
+            "type": "number",
+            "examples": [
+              10
+            ],
+            "description": "Minimum amount"
+          },
+          "max": {
+            "type": "number",
+            "examples": [
+              10000
+            ],
+            "description": "Maximum amount"
+          }
+        }
+      },
+      "LimitType": {
+        "type": "string",
+        "enum": [
+          "TRANSACTION",
+          "DAILY",
+          "WEEKLY",
+          "MONTHLY",
+          "YEARLY"
+        ],
+        "description": "Limit windows applied to transaction limits"
+      },
+      "NetworkPartnerCapability": {
+        "type": "object",
+        "description": "Category-scoped capability metadata for a network partner",
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/Category",
+            "type": "string",
+            "examples": [
+              "CRYPTO_ONRAMP"
+            ],
+            "description": "Supported category"
+          },
+          "domains": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DomainType"
+            },
+            "description": "Supported domains for this category"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProviderStatus",
+            "type": "string",
+            "examples": [
+              "LIVE"
+            ],
+            "description": "Capability status"
+          }
+        }
+      },
+      "NetworkPartnerInfo": {
+        "type": "object",
+        "description": "Network partner detail representation",
+        "properties": {
+          "serviceProvider": {
+            "type": "string",
+            "examples": [
+              "BANXA"
+            ],
+            "description": "Service provider identifier"
+          },
+          "name": {
+            "type": "string",
+            "examples": [
+              "Banxa"
+            ],
+            "description": "Provider name"
+          },
+          "status": {
+            "type": "string",
+            "examples": [
+              "LIVE"
+            ],
+            "description": "Provider status"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "description": "Supported categories"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NetworkPartnerCapability"
+            },
+            "description": "Category-scoped capability metadata"
+          },
+          "url": {
+            "type": "string",
+            "examples": [
+              "https://example.com"
+            ],
+            "description": "Provider website"
+          },
+          "logo": {
+            "$ref": "#/components/schemas/PartnerLogo",
+            "type": "object",
+            "description": "Provider logo variants"
+          },
+          "headless": {
+            "$ref": "#/components/schemas/ProviderHeadlessSupport",
+            "type": "object",
+            "description": "Provider-level headless integration capability"
+          }
+        }
+      },
+      "PartnerLogo": {
+        "type": "object",
+        "description": "Provider logo variants",
+        "properties": {
+          "dark": {
+            "type": "string",
+            "examples": [
+              "https://cdn.meld.io/images-serviceprovider/BANXA/logo_dark.png"
+            ],
+            "description": "Dark full logo URL"
+          },
+          "light": {
+            "type": "string",
+            "examples": [
+              "https://cdn.meld.io/images-serviceprovider/BANXA/logo_light.png"
+            ],
+            "description": "Light full logo URL"
+          },
+          "darkShort": {
+            "type": "string",
+            "examples": [
+              "https://cdn.meld.io/images-serviceprovider/BANXA/short_logo_dark.png"
+            ],
+            "description": "Dark short logo URL"
+          },
+          "lightShort": {
+            "type": "string",
+            "examples": [
+              "https://cdn.meld.io/images-serviceprovider/BANXA/short_logo_light.png"
+            ],
+            "description": "Light short logo URL"
+          }
+        }
+      },
+      "PaymentMethod2": {
+        "type": "object",
+        "description": "Payment method details for a supported route",
+        "properties": {
+          "paymentType": {
+            "$ref": "#/components/schemas/PaymentType",
+            "type": "string",
+            "examples": [
+              "CARD"
+            ],
+            "description": "Payment type"
+          },
+          "name": {
+            "type": "string",
+            "examples": [
+              "CREDIT_DEBIT_CARD"
+            ],
+            "description": "Canonical payment method code"
+          },
+          "partnerMethodName": {
+            "type": "string",
+            "examples": [
+              "card"
+            ],
+            "description": "Partner-specific payment method identifier"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/Limit",
+            "type": "object",
+            "description": "Limits for this payment method. Null when limits are not available."
+          },
+          "logo": {
+            "$ref": "#/components/schemas/PaymentMethodLogo",
+            "type": "object",
+            "description": "Payment method logo variants"
+          },
+          "headlessSupported": {
+            "type": "boolean",
+            "description": "Whether this provider payment method is enabled for headless flows"
+          },
+          "cardRenderMode": {
+            "$ref": "#/components/schemas/CardRenderMode",
+            "type": "string",
+            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported"
+          }
+        }
+      },
+      "PaymentMethodLogo": {
+        "type": "object",
+        "description": "Payment method logo variants",
+        "properties": {
+          "dark": {
+            "type": "string",
+            "examples": [
+              "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png"
+            ],
+            "description": "Dark logo URL"
+          },
+          "light": {
+            "type": "string",
+            "examples": [
+              "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_light.png"
+            ],
+            "description": "Light logo URL"
+          }
+        }
+      },
+      "PaymentType": {
+        "type": "string",
+        "enum": [
+          "BANK_TRANSFER",
+          "CARD",
+          "CASH",
+          "EXCHANGE",
+          "LOCAL",
+          "MOBILE_WALLET"
+        ],
+        "description": "Enumeration of payment method types supported by the platform"
+      },
+      "ProviderFiatLimit": {
+        "type": "object",
+        "description": "Provider fiat amount limits for a payment method",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "examples": [
+              "BANXA"
+            ],
+            "description": "Provider identifier"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category",
+            "type": "string",
+            "examples": [
+              "CRYPTO_ONRAMP"
+            ],
+            "description": "Provider category"
+          },
+          "countryCode": {
+            "type": "string",
+            "examples": [
+              "US"
+            ],
+            "description": "Country code"
+          },
+          "currencyCode": {
+            "type": "string",
+            "examples": [
+              "USD"
+            ],
+            "description": "Fiat currency code"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "examples": [
+              "CREDIT_DEBIT_CARD"
+            ],
+            "description": "Canonical payment method code"
+          },
+          "min": {
+            "type": "number",
+            "examples": [
+              10.0
+            ],
+            "description": "Minimum amount"
+          },
+          "max": {
+            "type": "number",
+            "examples": [
+              10000.0
+            ],
+            "description": "Maximum amount"
+          }
+        }
+      },
+      "ProviderHeadlessSupport": {
+        "type": "object",
+        "description": "Provider-level headless integration capability",
+        "properties": {
+          "supported": {
+            "type": "boolean",
+            "description": "Whether the provider supports headless flows"
+          },
+          "kycMode": {
+            "$ref": "#/components/schemas/KycMode",
+            "type": "string",
+            "description": "How the provider expects KYC to be supplied for headless flows"
+          },
+          "uiCustomization": {
+            "type": "boolean",
+            "description": "Whether the provider exposes UI-customisable headless surfaces"
+          }
+        }
+      },
+      "ProviderKycLimit": {
+        "type": "object",
+        "description": "Provider KYC limits for a currency and limit window",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "examples": [
+              "BANXA"
+            ],
+            "description": "Provider identifier"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category",
+            "type": "string",
+            "examples": [
+              "CRYPTO_ONRAMP"
+            ],
+            "description": "Provider category"
+          },
+          "countryCode": {
+            "type": "string",
+            "examples": [
+              "US"
+            ],
+            "description": "Country code"
+          },
+          "limitType": {
+            "$ref": "#/components/schemas/LimitType",
+            "type": "string",
+            "examples": [
+              "DAILY"
+            ],
+            "description": "Limit window"
+          },
+          "currencyCode": {
+            "type": "string",
+            "examples": [
+              "USD"
+            ],
+            "description": "Currency code"
+          },
+          "level1": {
+            "type": "number",
+            "examples": [
+              1000.0
+            ],
+            "description": "KYC level 1 amount"
+          },
+          "level2": {
+            "type": "number",
+            "examples": [
+              10000.0
+            ],
+            "description": "KYC level 2 amount"
+          },
+          "level3": {
+            "type": "number",
+            "examples": [
+              50000.0
+            ],
+            "description": "KYC level 3 amount"
+          }
+        }
+      },
+      "ProviderStatus": {
+        "type": "string",
+        "enum": [
+          "LIVE",
+          "RECENTLY_ADDED",
+          "BUILDING",
+          "DEPRECATED"
+        ],
+        "description": "Integration status for a service provider"
+      },
+      "Response": {
+        "type": "object",
+        "description": "Provider fiat limit response",
+        "properties": {
+          "fiatLimits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderFiatLimit"
+            },
+            "description": "List of provider fiat limits"
+          }
+        }
+      },
+      "Response1": {
+        "type": "object",
+        "description": "Provider KYC limit response",
+        "properties": {
+          "kycLimits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderKycLimit"
+            },
+            "description": "List of provider KYC limits"
+          }
+        }
+      },
+      "SupportedPaymentMethod": {
+        "type": "object",
+        "description": "Supported payment method representation",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "examples": [
+              "US"
+            ],
+            "description": "Country code"
+          },
+          "providerMethod": {
+            "type": "string",
+            "examples": [
+              "CARD"
+            ],
+            "description": "Provider payment method code"
+          },
+          "method": {
+            "type": "string",
+            "examples": [
+              "CREDIT_DEBIT_CARD"
+            ],
+            "description": "Payment method code"
+          },
+          "name": {
+            "type": "string",
+            "examples": [
+              "Credit or debit card"
+            ],
+            "description": "Payment method name"
+          },
+          "type": {
+            "type": "string",
+            "examples": [
+              "CARD"
+            ],
+            "description": "Payment method type"
+          },
+          "logo": {
+            "$ref": "#/components/schemas/PaymentMethodLogo",
+            "type": "object",
+            "description": "Payment method logo variants"
+          },
+          "headlessSupported": {
+            "type": "boolean",
+            "description": "Whether this method is enabled for headless flows in the response context. For multi-provider search, true when any matching provider supports it headlessly."
+          },
+          "cardRenderMode": {
+            "$ref": "#/components/schemas/CardRenderMode",
+            "type": "string",
+            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported"
+          }
+        }
+      },
+      "SupportedRoute": {
+        "type": "object",
+        "description": "Supported route details for a specific source and destination currency pair",
+        "properties": {
+          "partner": {
+            "type": "string",
+            "examples": [
+              "BANXA"
+            ],
+            "description": "Partner identifier"
+          },
+          "source": {
+            "type": "string",
+            "examples": [
+              "USD"
+            ],
+            "description": "Source currency code"
+          },
+          "destination": {
+            "type": "string",
+            "examples": [
+              "BTC"
+            ],
+            "description": "Destination currency code"
+          },
+          "paymentMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentMethod2"
+            },
+            "description": "Payment methods for the route. Empty for swap routes without payment methods."
+          },
+          "kycLimits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderKycLimit"
+            },
+            "description": "Provider KYC limits for this route. Empty when limits are not available."
+          }
+        }
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "key": "Meld-Version",
+        "value": "2026-02-03"
+      }
+    ]
+  }
+}

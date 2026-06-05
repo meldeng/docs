@@ -436,6 +436,13 @@
                   "source": "openapi/beta-20260203.json",
                   "directory": "api-reference/beta"
                 }
+              },
+              {
+                "group": "Network Partners",
+                "openapi": {
+                  "source": "openapi/networkpartner-20260203.json",
+                  "directory": "api-reference/network-partners"
+                }
               }
             ]
           }
