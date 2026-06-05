@@ -373,7 +373,13 @@ def order_meld_oas_file(meld_oas_file, configs):
 
 def purge_prev_oas_file(prev_oas_file, configs):
     for path in configs['paths_to_remove'].keys():
+        if path not in prev_oas_file['paths']:
+            print(f"WARN: purge skipped — path '{path}' not in prev OAS file")
+            continue
         for method in configs['paths_to_remove'][path]['methods']:
+            if method not in prev_oas_file['paths'][path]:
+                print(f"WARN: purge skipped — method '{method}' not in '{path}' in prev OAS file")
+                continue
             del prev_oas_file['paths'][path][method]
 
         # If we deleted all the path's methods
