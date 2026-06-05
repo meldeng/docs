@@ -16,6 +16,7 @@ SERVICE_ROUTE_SEGMENTS = {
     "serviceproviders": "service-providers",
     "webhooks": "webhooks",
     "beta": "beta",
+    "networkpartner": "network-partners",
 }
 
 HTTP_METHODS = {"get", "post", "put", "patch", "delete", "options", "head", "trace"}

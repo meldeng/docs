@@ -20,9 +20,16 @@ PUBLIC_SERVICES = [
     "serviceproviders",
     "webhooks",
     "beta",
+    "networkpartner",
 ]
 
-SECTIONS_BY_VERSION = {version: PUBLIC_SERVICES for version in PUBLIC_VERSION_ORDER}
+SERVICES_BY_VERSION = {
+    "20260203": PUBLIC_SERVICES,
+    "20250304": [s for s in PUBLIC_SERVICES if s != "networkpartner"],
+    "20231219": [s for s in PUBLIC_SERVICES if s != "networkpartner"],
+}
+
+SECTIONS_BY_VERSION = SERVICES_BY_VERSION
 
 TAB_LABELS = {
     "crypto": "Crypto",
@@ -32,6 +39,7 @@ TAB_LABELS = {
     "serviceproviders": "Service Providers",
     "webhooks": "Webhooks",
     "beta": "Beta",
+    "networkpartner": "Network Partners",
 }
 
 SERVICE_ROUTE_SEGMENTS = {
@@ -42,6 +50,7 @@ SERVICE_ROUTE_SEGMENTS = {
     "serviceproviders": "service-providers",
     "webhooks": "webhooks",
     "beta": "beta",
+    "networkpartner": "network-partners",
 }
 
 
@@ -104,7 +113,7 @@ def build_version_entry(version_key: str, docs_tab: dict, is_default: bool) -> d
 def validate_openapi_sources(repo_root: Path):
     missing = []
     for version_key in PUBLIC_VERSION_ORDER:
-        for service in PUBLIC_SERVICES:
+        for service in SECTIONS_BY_VERSION[version_key]:
             path = repo_root / f"openapi/{service}-{version_key}.json"
             if not path.exists():
                 missing.append(path)
