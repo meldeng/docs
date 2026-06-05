@@ -14,13 +14,13 @@ PUBLIC_VERSION_ORDER = [
 
 PUBLIC_SERVICES = [
     "crypto",
+    "networkpartner",
     "banklinking",
     "payments",
     "customer",
     "serviceproviders",
     "webhooks",
     "beta",
-    "networkpartner",
 ]
 
 SERVICES_BY_VERSION = {
