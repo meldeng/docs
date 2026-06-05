@@ -5,7 +5,7 @@ noindex: true
 
 The NFT checkout flow is when a user wants to buy an NFT and have it sent to their wallet address.
 
-Meld's All in One Wizard does not support NFT Checkouts. Instead, please use [Meld's White Label Widget](https://docs.meld.io/docs/crypto-widget) instead.
+Meld's All in One Wizard does not support NFT Checkouts. Instead, please use [Meld's White Label Widget](/docs/old-crypto/integration-options-old/crypto-widget) instead.
 
 ## Prerequisites
 
@@ -25,13 +25,13 @@ Before a user can buy an NFT, you should know the following information:
 
 * The onramp the user will buy the NFT on
 
-You should use Meld's [service provider endpoints](https://docs.meld.io/reference/service-provider) to know which countries / payment methods / fiat currencies / tokens the onramps you have enabled support.
+You should use Meld's [service provider endpoints](/api-reference/service-providers) to know which countries / payment methods / fiat currencies / tokens the onramps you have enabled support.
 
 ## Steps to User Buying an NFT
 
 Once you have the above information, you can complete the following steps, in order:
 
-1. You will choose an onramp and launch the onramp's [widget](https://docs.meld.io/docs/crypto-widget-object). In this case the user isn't choosing the onramp because a particular NFT will typically only be available on a particular onramp, unlike crypto tokens which are found on multiple onramps. The user completes the transaction using the widget. This entails the user paying for the NFT and the onramp sending the NFT to the user's wallet address.
-2. Get transaction data. For more information on how to do this see [here](https://docs.meld.io/docs/fetch-transaction-information).
+1. You will choose an onramp and launch the onramp's [widget](/docs/old-crypto/integration-options-old/crypto-widget). In this case the user isn't choosing the onramp because a particular NFT will typically only be available on a particular onramp, unlike crypto tokens which are found on multiple onramps. The user completes the transaction using the widget. This entails the user paying for the NFT and the onramp sending the NFT to the user's wallet address.
+2. Get transaction data. For more information on how to do this see [here](/docs/old-crypto/integration-options-old/crypto-widget/fetch-transaction-information).
 
 Note that the NFT checkout flow does not include quotes.

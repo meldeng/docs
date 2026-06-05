@@ -5,9 +5,9 @@ noindex: true
 
 The sell flow aka offramping is how users can trade their crypto back for fiat currency.
 
-If you would like to use Meld's UI for the entire flow, Meld recommends using the [All in One Wizard](https://docs.meld.io/docs/crypto-widget) which follows the below standard flow. If you use the wizard you do not need to read any of the information below.
+If you would like to use Meld's UI for the entire flow, Meld recommends using the [All in One Wizard](/docs/old-crypto/integration-options-old/crypto-widget) which follows the below standard flow. If you use the wizard you do not need to read any of the information below.
 
-The below information applies only if you are planning to use the Meld [White Label Widget](https://docs.meld.io/docs/crypto-widget).
+The below information applies only if you are planning to use the Meld [White Label Widget](/docs/old-crypto/integration-options-old/crypto-widget).
 
 ## Prerequisites
 
@@ -27,7 +27,7 @@ You can either collect this information through your own UI, or use the Meld Cry
 
 ## Steps to Users Selling Crypto
 
-If you are using your own UI to collect this information, you should use Meld's [service provider endpoints](https://docs.meld.io/reference/service-provider) to know which countries / payment methods / fiat currencies / tokens the onramps you have enabled support.
+If you are using your own UI to collect this information, you should use Meld's [service provider endpoints](/api-reference/service-providers) to know which countries / payment methods / fiat currencies / tokens the onramps you have enabled support.
 
 Once you have the above information, there are 2 possible flows, depending on what the offramp supports.
 
@@ -35,19 +35,19 @@ Once you have the above information, there are 2 possible flows, depending on wh
 
 Complete the following steps, in order:
 
-1. Get a [crypto quote](https://docs.meld.io/docs/crypto-quotes) from Meld for each provider. This involves gathering the parameters for what kind of quote the user wants and passing them in to the [crypto quote ](https://docs.meld.io/reference/crypto-quote-get)endpoint. Meld recommends sorting by the highest `destinationAmount` (which is the amount of fiat the user will receive).
-2. The user will select an offramp based on the quotes (or you can select one for them) and launch the onramp's [widget](https://docs.meld.io/docs/crypto-widget). The user completes the transaction using the widget. This entails the user sending crypto to the offramp and the offramp sending the fiat currency to the payment method they provided (typically bank account or card). You can pass in a redirectUrl so that the user gets redirected to it after they submit a transaction on the onramp.
-3. Wait and listen for webhooks, and use them as triggers to fetch transaction data. For more information on how to do this see [here](https://docs.meld.io/docs/fetch-transaction-information). Once you have transaction data, you can choose how you would like to display it to the user.
+1. Get a [crypto quote](/docs/old-crypto/integration-options-old/crypto-widget/crypto-quotes) from Meld for each provider. This involves gathering the parameters for what kind of quote the user wants and passing them in to the [crypto quote ](/api-reference/crypto/retail-ramp/crypto-quote-get)endpoint. Meld recommends sorting by the highest `destinationAmount` (which is the amount of fiat the user will receive).
+2. The user will select an offramp based on the quotes (or you can select one for them) and launch the onramp's [widget](/docs/old-crypto/integration-options-old/crypto-widget). The user completes the transaction using the widget. This entails the user sending crypto to the offramp and the offramp sending the fiat currency to the payment method they provided (typically bank account or card). You can pass in a redirectUrl so that the user gets redirected to it after they submit a transaction on the onramp.
+3. Wait and listen for webhooks, and use them as triggers to fetch transaction data. For more information on how to do this see [here](/docs/old-crypto/integration-options-old/crypto-widget/fetch-transaction-information). Once you have transaction data, you can choose how you would like to display it to the user.
 
 ### Preferred Flow
 
 This flow is similar to the one above, however leads to a smoother user experience and therefore higher conversion. Meld recommends using this flow as more offramps start to support it.
 
-1. Get a [crypto quote](https://docs.meld.io/docs/crypto-quotes) from Meld for each provider. This involves gathering the parameters for what kind of quote the user wants and passing them in to the [crypto quote ](https://docs.meld.io/reference/crypto-quote-get)endpoint. Meld recommends sorting by the highest `destinationAmount` (which is the amount of fiat the user will receive).
-2. The user will select an offramp based on the quotes (or you can select one for them) and launch the onramp's [widget](https://docs.meld.io/docs/crypto-widget-object). To trigger the preferred flow, make sure you pass in `"redirectFlow": true` in the body of the request (within `sessionData`). The user completes KYC and confirms the quote in the widget, however they don't complete the transaction there. Instead they are redirected back to your UI.
-3. Using the redirection to your UI as a trigger, call meld's [force fetch transaction endpoint](https://docs.meld.io/reference/payments-transactions-sessions-get). to fetch the token (`sourceCurrencyCode`), amount (`sourceAmount`), and the wallet address for the user to send crypto to (`cryptoDetails.destinationWalletAddress`). Using these, queue up a transfer of that amount of that token to that wallet address, and simply ask the user to confirm the transfer. Once they do, commence the transfer.
+1. Get a [crypto quote](/docs/old-crypto/integration-options-old/crypto-widget/crypto-quotes) from Meld for each provider. This involves gathering the parameters for what kind of quote the user wants and passing them in to the [crypto quote ](/api-reference/crypto/retail-ramp/crypto-quote-get)endpoint. Meld recommends sorting by the highest `destinationAmount` (which is the amount of fiat the user will receive).
+2. The user will select an offramp based on the quotes (or you can select one for them) and launch the onramp's [widget](/docs/old-crypto/integration-options-old/crypto-widget). To trigger the preferred flow, make sure you pass in `"redirectFlow": true` in the body of the request (within `sessionData`). The user completes KYC and confirms the quote in the widget, however they don't complete the transaction there. Instead they are redirected back to your UI.
+3. Using the redirection to your UI as a trigger, call meld's [force fetch transaction endpoint](/api-reference/crypto/retail-ramp/payments-transactions-sessions-get). to fetch the token (`sourceCurrencyCode`), amount (`sourceAmount`), and the wallet address for the user to send crypto to (`cryptoDetails.destinationWalletAddress`). Using these, queue up a transfer of that amount of that token to that wallet address, and simply ask the user to confirm the transfer. Once they do, commence the transfer.
 4. Once the offramp receives the token, they will send the fiat currency to the payment method they provided (typically bank account or card). You can show the user a transaction status page while they wait for the transaction to complete. 
-5. Wait and listen for webhooks, and use them as triggers to fetch transaction data from the [/transactions endpoint](https://docs.meld.io/reference/payments-transactions-get-1). For more information on how to do this see [here](https://docs.meld.io/docs/fetch-transaction-information). Once you have transaction data, you can choose how you would like to display it to the user.
+5. Wait and listen for webhooks, and use them as triggers to fetch transaction data from the [/transactions endpoint](/api-reference/crypto/retail-ramp/payments-transactions-get). For more information on how to do this see [here](/docs/old-crypto/integration-options-old/crypto-widget/fetch-transaction-information). Once you have transaction data, you can choose how you would like to display it to the user.
 
 Note that in both flows while Step 1, getting a quote, will lead to the best user experience, it is not a required step. You can just launch an offramp's widget without asking for a quote beforehand.
 
@@ -58,7 +58,7 @@ Note that in both flows while Step 1, getting a quote, will lead to the best use
 
 ## Quote
 
-Here is an example of a call to [/quotes](https://docs.meld.io/reference/crypto-quote-get🔗) when selling cryptocurrency (note that passing in serviceProviders is optional here):
+Here is an example of a call to [/quotes](/api-reference/crypto/retail-ramp/crypto-quote-get) when selling cryptocurrency (note that passing in serviceProviders is optional here):
 
 ```json
 {
@@ -121,7 +121,7 @@ Unlike the Buy flow, currently there are no customerScore values returned for th
 
 ## Widget
 
-Here is an example of the corresponding call to [/widget](https://docs.meld.io/reference/crypto-session-widget-create) when selling cryptocurrency (note that unlike the Buy call, the wallet address shouldn't be passed here):
+Here is an example of the corresponding call to [/widget](/api-reference/crypto/retail-ramp/crypto-session-widget-create) when selling cryptocurrency (note that unlike the Buy call, the wallet address shouldn't be passed here):
 
 ```json
 {
@@ -153,7 +153,7 @@ And here's a sample response:
 
 ## Webhooks
 
-Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first webhook you will receive for any transaction. See more about the various webhooks [here](https://docs.meld.io/docs/webhook-events-crypto).
+Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first webhook you will receive for any transaction. See more about the various webhooks [here](/docs/old-crypto/webhook-events-crypto).
 
 ```json
 {
@@ -175,7 +175,7 @@ Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first w
 
 ## Transaction Data
 
-Once you call the [/transactions](https://docs.meld.io/reference/payments-transactions-get-1) with a transactionId (the `paymentTransactionId` in the webhook above), this is a sample response:
+Once you call the [/transactions](/api-reference/crypto/retail-ramp/payments-transactions-get) with a transactionId (the `paymentTransactionId` in the webhook above), this is a sample response:
 
 ```json
 {

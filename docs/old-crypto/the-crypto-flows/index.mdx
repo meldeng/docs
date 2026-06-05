@@ -5,9 +5,9 @@ noindex: true
 
 There are 4 main crypto flows that Meld supports, and this section will explain each of them in detail.
 
-1. [Buy Flow](https://docs.meld.io/docs/buy-flow): Also known as onramping, this is when a user purchases crypto and sends it to a wallet address of their choice, in a single transaction.
-2. [Sell Flow](https://docs.meld.io/docs/sell-flow): Also known as offramping, this is when a user sells crypto and gets paid for it via a payment method of their choice.
-3. [Transfer Flow](https://docs.meld.io/docs/transfer-flow): This is when a user transfers crypto from a wallet they have on an exchange to another wallet address (custodial or non custodial) of their choice.
-4. [NFT Checkout](https://docs.meld.io/docs/nft-checkout-flow): This is when a user purchases an NFT.
+1. [Buy Flow](/docs/old-crypto/the-crypto-flows/buy-flow-old): Also known as onramping, this is when a user purchases crypto and sends it to a wallet address of their choice, in a single transaction.
+2. [Sell Flow](/docs/old-crypto/the-crypto-flows/sell-flow-old): Also known as offramping, this is when a user sells crypto and gets paid for it via a payment method of their choice.
+3. [Transfer Flow](/docs/old-crypto/the-crypto-flows/transfer-flow-old): This is when a user transfers crypto from a wallet they have on an exchange to another wallet address (custodial or non custodial) of their choice.
+4. [NFT Checkout](/docs/old-crypto/the-crypto-flows/nft-checkout-flow): This is when a user purchases an NFT.
 
-Note that all flows 4 essentially use the same endpoints. They all use the [widget endpoint](https://docs.meld.io/reference/crypto-session-widget-create), the get [transaction endpoint](https://docs.meld.io/reference/payments-transactions-get-1), and the buy and sell flow additionally use the [quote endpoint](https://docs.meld.io/reference/crypto-quote-get). Since they all use the same endpoints, the transaction type is determined by the params passed in.
+Note that all flows 4 essentially use the same endpoints. They all use the [widget endpoint](/api-reference/crypto/retail-ramp/crypto-session-widget-create), the get [transaction endpoint](/api-reference/crypto/retail-ramp/payments-transactions-get), and the buy and sell flow additionally use the [quote endpoint](/api-reference/crypto/retail-ramp/crypto-quote-get). Since they all use the same endpoints, the transaction type is determined by the params passed in.

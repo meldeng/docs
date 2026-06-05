@@ -5,7 +5,7 @@ noindex: true
 
 The transfer flow is for when a user wants to transfer crypto from a wallet on one exchange to another wallet address .
 
-Meld's All in One Wizard does not currently support transfers, but will soon. In the meantime, use [Meld's White Label Widget](https://docs.meld.io/docs/crypto-widget) instead.
+Meld's All in One Wizard does not currently support transfers, but will soon. In the meantime, use [Meld's White Label Widget](/docs/old-crypto/integration-options-old/crypto-widget) instead.
 
 ## Prerequisites
 
@@ -21,14 +21,14 @@ Before a user can transfer crypto, you should know the following information:
 
 * The country the user's billing address is in
 
-You should use Meld's [service provider endpoints](https://docs.meld.io/reference/service-provider) to know which countries / tokens the exchanges you have enabled support.
+You should use Meld's [service provider endpoints](/api-reference/service-providers) to know which countries / tokens the exchanges you have enabled support.
 
 ## Steps to Users Transferring Crypto
 
 Once you have the above information, you can complete the following steps, in order:
 
-1. The user will select an exchange and launch the exchange's [widget](https://docs.meld.io/docs/crypto-widget-object). The user completes the transaction using the widget. This entails the user agreeing to the fees and confirming the amount of crypto they would like to send to another wallet. You can pass in a redirectUrl so that the user gets redirected to it after they submit a transfer on the exchange.
-2. Wait and listen for webhooks, and use them as triggers to fetch transaction data. For more information on how to do this see [here](https://docs.meld.io/docs/fetch-transaction-information). Once you have transaction data, you can choose how you would like to display it to the user.
+1. The user will select an exchange and launch the exchange's [widget](/docs/old-crypto/integration-options-old/crypto-widget). The user completes the transaction using the widget. This entails the user agreeing to the fees and confirming the amount of crypto they would like to send to another wallet. You can pass in a redirectUrl so that the user gets redirected to it after they submit a transfer on the exchange.
+2. Wait and listen for webhooks, and use them as triggers to fetch transaction data. For more information on how to do this see [here](/docs/old-crypto/integration-options-old/crypto-widget/fetch-transaction-information). Once you have transaction data, you can choose how you would like to display it to the user.
 
 Note that the transfer flow does not include quotes. There are still fees for a transfer, which are typically the network / gas fee and the partner / affiliate fee. A transfer can go to any wallet address but can only originate from an exchange that Meld supports.
 
@@ -41,7 +41,7 @@ Note that the transfer flow does not include quotes. There are still fees for a 
 
 Transfers do not have quotes.
 
-Here is an example of a call to [/widget](https://docs.meld.io/reference/crypto-session-widget-create) when transferring cryptocurrency (note that unlike the Buy call, there is no destinationCurrencyCode here). This call is to transfer a single token and therefore includes the amount:
+Here is an example of a call to [/widget](/api-reference/crypto/retail-ramp/crypto-session-widget-create) when transferring cryptocurrency (note that unlike the Buy call, there is no destinationCurrencyCode here). This call is to transfer a single token and therefore includes the amount:
 
 ```json
 {
@@ -59,7 +59,7 @@ Here is an example of a call to [/widget](https://docs.meld.io/reference/crypto-
 }
 ```
 
-Here is an example of a call to [/widget](https://docs.meld.io/reference/crypto-session-widget-create), except this one has multiple tokens, and the user will select which one to transfer after logging into the exchange and viewing their holdings. As a result, since there are multiple tokens, there is no sourceAmount passed in here. There is still only one wallet address passed in so all tokens passed in must share a wallet address:
+Here is an example of a call to [/widget](/api-reference/crypto/retail-ramp/crypto-session-widget-create), except this one has multiple tokens, and the user will select which one to transfer after logging into the exchange and viewing their holdings. As a result, since there are multiple tokens, there is no sourceAmount passed in here. There is still only one wallet address passed in so all tokens passed in must share a wallet address:
 
 ```json
 {
@@ -76,7 +76,7 @@ Here is an example of a call to [/widget](https://docs.meld.io/reference/crypto-
 }
 ```
 
-Passing in the institutionId above will skip the picker screen and go straight into the flow for that specific institution. For example the Id in the request above is for Coinbase, so instead of selecting Coinbase from a list of wallets you will go straight to the Coinbase login screen. This functionality only works for Mesh. You can get the institutionId from the [/institutions endpoint](https://docs.meld.io/reference/bank-linking-institutions-search).
+Passing in the institutionId above will skip the picker screen and go straight into the flow for that specific institution. For example the Id in the request above is for Coinbase, so instead of selecting Coinbase from a list of wallets you will go straight to the Coinbase login screen. This functionality only works for Mesh. You can get the institutionId from the [/institutions endpoint](/api-reference/bank-linking/institutions/bank-linking-institutions-search).
 
 And here's a sample response:
 
@@ -93,7 +93,7 @@ And here's a sample response:
 
 ## Webhooks
 
-Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first webhook you will receive for any transaction. See more about the various webhooks [here](https://docs.meld.io/docs/webhook-events-crypto).
+Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first webhook you will receive for any transaction. See more about the various webhooks [here](/docs/old-crypto/webhook-events-crypto).
 
 ```json
 {
@@ -115,7 +115,7 @@ Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first w
 
 ## Transaction Data
 
-Once you call the [/transactions](https://docs.meld.io/reference/payments-transactions-get-1) with a transactionId (the `paymentTransactionId` in the webhook above), this is a sample response:
+Once you call the [/transactions](/api-reference/crypto/retail-ramp/payments-transactions-get) with a transactionId (the `paymentTransactionId` in the webhook above), this is a sample response:
 
 ```json
 {

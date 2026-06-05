@@ -5,29 +5,29 @@ noindex: true
 
 # Questions
 
-[Q1: How do I know which countries / payment methods / fiat currencies / tokens can be used for a crypto transaction?](https://docs.meld.io/docs/crypto-faq#q1-how-do-i-know-which-countries--payment-methods--fiat-currencies--tokens-can-be-used-for-a-crypto-transaction)
+[Q1: How do I know which countries / payment methods / fiat currencies / tokens can be used for a crypto transaction?](/docs/old-crypto/crypto-faq#q1-how-do-i-know-which-countries--payment-methods--fiat-currencies--tokens-can-be-used-for-a-crypto-transaction)
 
-[Q2: What is the difference between Meld's Widget and Wizard? Which should I use?](https://docs.meld.io/docs/crypto-faq#q2-what-is-the-difference-between-melds-widget-and-wizard-which-should-i-use)
+[Q2: What is the difference between Meld's Widget and Wizard? Which should I use?](/docs/old-crypto/crypto-faq#q2-what-is-the-difference-between-melds-widget-and-wizard-which-should-i-use)
 
-[Q3: Should I poll or use webhooks to get transaction status updates?](https://docs.meld.io/docs/crypto-faq#q3-should-i-poll-or-use-webhooks-to-get-transaction-status-updates)
+[Q3: Should I poll or use webhooks to get transaction status updates?](/docs/old-crypto/crypto-faq#q3-should-i-poll-or-use-webhooks-to-get-transaction-status-updates)
 
-[Q4: A user is having an issue with a transaction, who should I reach out to for customer support? Meld or the onramp?](https://docs.meld.io/docs/crypto-faq#q4-a-user-is-having-an-issue-with-a-transaction-who-should-i-reach-out-to-for-customer-support-meld-or-the-onramp)
+[Q4: A user is having an issue with a transaction, who should I reach out to for customer support? Meld or the onramp?](/docs/old-crypto/crypto-faq#q4-a-user-is-having-an-issue-with-a-transaction-who-should-i-reach-out-to-for-customer-support-meld-or-the-onramp)
 
-[Q5: Do I have to fetch and store transaction information from Meld?](https://docs.meld.io/docs/crypto-faq#q5-do-i-have-to-fetch-and-store-transaction-information-from-meld)
+[Q5: Do I have to fetch and store transaction information from Meld?](/docs/old-crypto/crypto-faq#q5-do-i-have-to-fetch-and-store-transaction-information-from-meld)
 
 # Answers
 
 ## **Q1:** How do I know which countries / payment methods / fiat currencies / tokens can be used for a crypto transaction?
 
-**A:** Use Meld's [service provider properties endpoints](https://docs.meld.io/reference/service-providers-search) to find this information. You can pass in a particular onramp or set of onramps, or use the query param `accountFilter=true` to only return back data for the onramps your account has enabled.
+**A:** Use Meld's [service provider properties endpoints](/api-reference/service-providers/service-provider/service-providers-search) to find this information. You can pass in a particular onramp or set of onramps, or use the query param `accountFilter=true` to only return back data for the onramps your account has enabled.
 
 ## **Q2:** What is the difference between Meld's Widget and Wizard? Which should I use?
 
-**A:** You can find more information on this subject [here](https://docs.meld.io/docs/integrations-options-widget-vs-wizard). There are 2 parts of a transaction, gathering the details of the transaction (such as how much crypto to buy, which token, which wallet address etc) and actually executing the transaction. Meld's wizard has a UI that handles both parts. Meld's widget handles only the second part, so if you use it you will have to use your own UI to gather the details of the transaction.
+**A:** You can find more information on this subject [here](/docs/old-crypto/integration-options-old). There are 2 parts of a transaction, gathering the details of the transaction (such as how much crypto to buy, which token, which wallet address etc) and actually executing the transaction. Meld's wizard has a UI that handles both parts. Meld's widget handles only the second part, so if you use it you will have to use your own UI to gather the details of the transaction.
 
 ## **Q3:** Should I poll or use webhooks to get transaction status updates?
 
-**A:** You should use webhooks, they have much lower latency and are less of a strain on your infrastructure. Meld highly recommends using webhooks over polling, but having an infrequent (every 6 hours or more) poller as a backup to webhooks is fine. Read more about this [here](https://docs.meld.io/docs/how-to-fetch-transaction-information).
+**A:** You should use webhooks, they have much lower latency and are less of a strain on your infrastructure. Meld highly recommends using webhooks over polling, but having an infrequent (every 6 hours or more) poller as a backup to webhooks is fine. Read more about this [here](/docs/old-crypto/integration-options-old/crypto-widget/fetch-transaction-information).
 
 ## **Q4:** A user is having an issue with a transaction, who should I reach out to for customer support? Meld or the onramp?
 
@@ -35,4 +35,4 @@ noindex: true
 
 ## **Q5:** Do I have to fetch and store transaction information from Meld?
 
-**A:** Regardless of whether you are using Meld's white label widget experience or all in one wizard, whether you want to fetch and store transaction data is your choice. You can find your transactions in the Meld dashboard and can always simply export them from there. See [here](https://docs.meld.io/docs/transaction-data-in-dashboard) for more details.
+**A:** Regardless of whether you are using Meld's white label widget experience or all in one wizard, whether you want to fetch and store transaction data is your choice. You can find your transactions in the Meld dashboard and can always simply export them from there. See [here](/docs/old-crypto/transaction-data-in-dashboard) for more details.

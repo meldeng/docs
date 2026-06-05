@@ -2,7 +2,7 @@
 title: "Plaid Transactions Mapping"
 ---
 
-This data comes from Plaid's [/transactions/get](https://plaid.com/docs/api/products/#transactions-get-response-transactions-amount) endpoint and is returned from Meld's [/bank-linking/transactions](/api-reference/bank-linking/transactions/bank-linking-transactions-search) endpoint.
+This data comes from Plaid's [/transactions/get](https://plaid.com/docs/api/products/transactions/) endpoint and is returned from Meld's [/bank-linking/transactions](/api-reference/bank-linking/transactions/bank-linking-transactions-search) endpoint.
 
 <Note>
   Example: a Plaid transaction with `amount: 89.40`, `iso_currency_code: "USD"`, `name: "Uber 063015 SF**POOL**"`, `pending: false`, `date: "2024-01-15"` maps to Meld `amount: 89.40`, `currency: "USD"`, `description: "Uber 063015 SF**POOL**"`, `status: "POSTED"`, `postedDate: "2024-01-15"`.

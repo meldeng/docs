@@ -14,7 +14,7 @@ All webhook events have the same attributes.
 | `timestamp`       | OffsetDateTime | The date and time the event was created                                                                |
 | `accountId`       | String         | Account id                                                                                             |
 | `profileId`       | String         | Id of the webhook profile responsible for this event to be sent                                        |
-| `version`         | Date           | [Version](versioning)                                                                                  |
+| `version`         | Date           | The Meld API version for this event payload.                                                           |
 | `payload`         | Object         | An object containing additional information of the event depending on the event type                   |
 | `transactionType` | String         | The type of transaction, where the options are `CRYPTO_PURCHASE`, `CRYPTO_SELL`, and `CRYPTO_TRANSFER` |
 
@@ -28,8 +28,8 @@ Note that if the transaction status is `PENDING_CREATED`, the sessionId and the 
 | :------------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `accountId`                | String | Meld's unique identifier for the account                                                                                                                                  |
 | `customerId`               | String | Meld's unique identifier for the customer                                                                                                                                 |
-| `externalCustomerId`       | String | Your customer unique identifier. This is only returned if you pass it in when calling the [widget endpoint](https://docs.meld.io/reference/crypto-session-widget-create). |
-| `externalSessionId`        | String | Your session unique identifier. This is only returned if you pass it in when calling the [widget endpoint](https://docs.meld.io/reference/crypto-session-widget-create).  |
+| `externalCustomerId`       | String | Your customer unique identifier. This is only returned if you pass it in when calling the [widget endpoint](/api-reference/crypto/retail-ramp/crypto-session-widget-create). |
+| `externalSessionId`        | String | Your session unique identifier. This is only returned if you pass it in when calling the [widget endpoint](/api-reference/crypto/retail-ramp/crypto-session-widget-create).  |
 | `paymentTransactionId`     | String | Meld's unique identifier for the transaction                                                                                                                              |
 | `paymentTransactionStatus` | String | Status of the transaction                                                                                                                                                 |
 

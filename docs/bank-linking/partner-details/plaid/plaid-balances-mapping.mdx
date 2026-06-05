@@ -2,7 +2,7 @@
 title: "Plaid Balances Mapping"
 ---
 
-This data comes from Plaid's [/accounts/balance/get](https://plaid.com/docs/api/products/balance/#accounts-balance-get-response-accounts-balances-iso-currency-code) endpoint and is returned from Meld's [/bank-linking/accounts](/api-reference/bank-linking/accounts/bank-linking-accounts-search) endpoint.
+This data comes from Plaid's [/accounts/balance/get](https://plaid.com/docs/api/accounts/) endpoint and is returned from Meld's [/bank-linking/accounts](/api-reference/bank-linking/accounts/bank-linking-accounts-search) endpoint.
 
 <Note>
   Example: a Plaid `accounts.balances.iso_currency_code` of `"USD"` maps to Meld `currency: "USD"`. A Plaid `accounts.balances.current` of `1203.45` maps to Meld `currentAmount: 1203.45`.

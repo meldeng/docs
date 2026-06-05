@@ -5,9 +5,9 @@ noindex: true
 
 The buy flow aka onramping is the most common crypto flow.
 
-If you would like to use Meld's UI for the entire flow, Meld recommends using the [All in One Wizard](https://docs.meld.io/docs/crypto-widget) which follows the above flow. If you use the wizard you do not need to read any of the information below.
+If you would like to use Meld's UI for the entire flow, Meld recommends using the [All in One Wizard](/docs/old-crypto/integration-options-old/crypto-widget) which follows the above flow. If you use the wizard you do not need to read any of the information below.
 
-The below information applies only if you are planning to use the Meld [White Label Widget](https://docs.meld.io/docs/crypto-widget).
+The below information applies only if you are planning to use the Meld [White Label Widget](/docs/old-crypto/integration-options-old/crypto-widget).
 
 ## Prerequisites
 
@@ -27,15 +27,15 @@ Before a user can buy crypto, you should know the following information:
 
 You can either collect this information through your own UI, or use the Meld Crypto Wizard for an all-in-one UI that collects this information then allows the user to make purchase.
 
-If you are using your own UI to collect this information, you should use Meld's [service provider endpoints](https://docs.meld.io/reference/service-provider) to know which countries / payment methods / fiat currencies / tokens the onramps you have enabled support.
+If you are using your own UI to collect this information, you should use Meld's [service provider endpoints](/api-reference/service-providers) to know which countries / payment methods / fiat currencies / tokens the onramps you have enabled support.
 
 ## Steps to Users Buying Crypto
 
 Once you have the above information, you can complete the following steps, in order:
 
-1. Get a [crypto quote](https://docs.meld.io/docs/crypto-widget) from Meld for each provider. This involves gathering the parameters for what kind of quote the user wants and passing them in to the [crypto quote ](https://docs.meld.io/reference/crypto-quote-get)endpoint. Either select a quote for the user or show the user a list of quotes. Meld recommends sorting by quotes by the highest `customerScore`, or by the highest `destinationAmount` (which is the amount of crypto the user will receive).
-2. The user will select an onramp based on the quotes (or you can select one for them) and launch the onramp's [widget](https://docs.meld.io/reference/crypto-session-widget-create). The user completes the transaction using the widget. This entails the user making a payment to the onramp and the onramp sending the user crypto to the wallet address they provided. You can pass in a redirectUrl so that the user gets redirected to it after they submit a transaction on the onramp.
-3. Wait and listen for webhooks, and use them as triggers to fetch transaction data. For more information on how to do this see [here](https://docs.meld.io/docs/fetch-transaction-information). Once you have transaction data, you can choose how you would like to display it to the user.
+1. Get a [crypto quote](/docs/old-crypto/integration-options-old/crypto-widget) from Meld for each provider. This involves gathering the parameters for what kind of quote the user wants and passing them in to the [crypto quote ](/api-reference/crypto/retail-ramp/crypto-quote-get)endpoint. Either select a quote for the user or show the user a list of quotes. Meld recommends sorting by quotes by the highest `customerScore`, or by the highest `destinationAmount` (which is the amount of crypto the user will receive).
+2. The user will select an onramp based on the quotes (or you can select one for them) and launch the onramp's [widget](/api-reference/crypto/retail-ramp/crypto-session-widget-create). The user completes the transaction using the widget. This entails the user making a payment to the onramp and the onramp sending the user crypto to the wallet address they provided. You can pass in a redirectUrl so that the user gets redirected to it after they submit a transaction on the onramp.
+3. Wait and listen for webhooks, and use them as triggers to fetch transaction data. For more information on how to do this see [here](/docs/old-crypto/integration-options-old/crypto-widget/fetch-transaction-information). Once you have transaction data, you can choose how you would like to display it to the user.
 
 Note that while Step 1, getting a quote, will lead to the best user experience, it is not a required step. You can just launch an onramp's widget without asking for a quote beforehand.
 
@@ -46,7 +46,7 @@ Note that while Step 1, getting a quote, will lead to the best user experience, 
 
 ## Quote
 
-Here is an example of a call to [/quotes](https://docs.meld.io/reference/crypto-quote-get🔗) when buying cryptocurrency (note that passing in serviceProviders is optional here):
+Here is an example of a call to [/quotes](/api-reference/crypto/retail-ramp/crypto-quote-get) when buying cryptocurrency (note that passing in serviceProviders is optional here):
 
 ```json
 {
@@ -122,13 +122,13 @@ And here's a sample response:
 
 ```
 
-Note that the customer scores returned are Meld's recommendation of onramp with which the user is most likely to succeed in buying crypto, with a higher customer score being better. Learn more about customerScore [here](https://docs.meld.io/docs/crypto-quotes#customer-score). 
+Note that the customer scores returned are Meld's recommendation of onramp with which the user is most likely to succeed in buying crypto, with a higher customer score being better. Learn more about customerScore [here](/docs/old-crypto/integration-options-old/crypto-widget/crypto-quotes#ranking-quotes). 
 
 **Redirect Url** -- Most onramps have a button that a user can click on to redirect to a particular url after a transaction is submitted. Meld can set a default value for you but the recommended behavior is to pass your redirect url in as part of the call to the /widget endpoint (using the param redirectUrl), as shown below, because this way if you'd like you can pass in a different url per widget session. One example for why this is useful is if the url has your order number each time, or if you have a deeplink vs a normal url for app vs browser..
 
 ## Widget
 
-Here is an example of the corresponding call to [/widget](https://docs.meld.io/reference/crypto-session-widget-create) when buying cryptocurrency:
+Here is an example of the corresponding call to [/widget](/api-reference/crypto/retail-ramp/crypto-session-widget-create) when buying cryptocurrency:
 
 ```json
 {
@@ -163,7 +163,7 @@ And here's a sample response:
 
 ## Webhooks
 
-Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first webhook you will receive for any transaction. See more about the various webhooks [here](https://docs.meld.io/docs/webhook-events-crypto).
+Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first webhook you will receive for any transaction. See more about the various webhooks [here](/docs/old-crypto/webhook-events-crypto).
 
 ```json
 {
@@ -185,7 +185,7 @@ Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first w
 
 ## Transaction Data
 
-Once you call the [/transactions](https://docs.meld.io/reference/payments-transactions-get-1) with a transactionId (the `paymentTransactionId` in the webhook above), this is a sample response:
+Once you call the [/transactions](/api-reference/crypto/retail-ramp/payments-transactions-get) with a transactionId (the `paymentTransactionId` in the webhook above), this is a sample response:
 
 ```json
 {

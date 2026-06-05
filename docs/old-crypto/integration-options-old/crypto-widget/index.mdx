@@ -9,9 +9,9 @@ You can see Meld's white label widget experience being used [here](https://portf
 
 # Launching a Crypto Ramp Widget
 
-You can request a widget session, which launches the selected service provider for your customer to interact with. To do so, see the [create crypto widget](https://docs.meld.io/reference/crypto-session-widget-create) endpoint. We return a fully formatted URL for you to route your customer to.
+You can request a widget session, which launches the selected service provider for your customer to interact with. To do so, see the [create crypto widget](/api-reference/crypto/retail-ramp/crypto-session-widget-create) endpoint. We return a fully formatted URL for you to route your customer to.
 
-Before you launch a crypto widget, make sure you have [whitelisted](https://docs.meld.io/docs/whitelisting) Meld's urls and IP addresses.
+Before you launch a crypto widget, make sure you have [whitelisted](/docs/old-crypto/integration-options-old/crypto-widget/recommended-white-label-flow) Meld's urls and IP addresses.
 
 # Setup
 
@@ -39,11 +39,11 @@ The typical sell flow contains a quote screen, which allows the user to see and 
 
 If you subscribe to webhooks you will get alerts whenever any transaction status changes for all service providers. You may also poll our transaction status endpoint.
 
-Information on how to test the crypto wizard can be found in the [crypto testing guide](https://docs.meld.io/docs/crypto-testing-guide).
+Information on how to test the crypto wizard can be found in the [crypto testing guide](/docs/old-crypto/crypto-testing-guide).
 
 ## Locking fields
 
-Some service providers support locking the cryptocurrency and wallet address fields within their widgets. To do this, simply pass in the lockFields param to the [widget endpoint](https://docs.meld.io/reference/crypto-session-widget-create) with the values of `destinationCurrencyCode`/`sourceCurrencyCode` (depending on buy vs sell flow), `walletAddress`, or both. Here are the service providers that support locking those fields in their widgets:
+Some service providers support locking the cryptocurrency and wallet address fields within their widgets. To do this, simply pass in the lockFields param to the [widget endpoint](/api-reference/crypto/retail-ramp/crypto-session-widget-create) with the values of `destinationCurrencyCode`/`sourceCurrencyCode` (depending on buy vs sell flow), `walletAddress`, or both. Here are the service providers that support locking those fields in their widgets:
 
 |                  | <div style={{ textAlign: "center" }}>Locking cryptocurrency<br /></div>    | <div style={{ textAlign: "center" }}>Locking wallet address<br /></div>     |
 | :--------------- | :------------------------------------------------------------------ | :------------------------------------------------------------------- |
@@ -94,6 +94,6 @@ Here's a sample buy request with both the cryptoCurrency and walletAddress field
 
 # Embedding the Widget
 
-Meld supports embedding the crypto widget within an iframe. For information on the recommended iframe size, see [Embedding the Wizard](https://docs.meld.io/docs/crypto-wizard#embedding-the-wizard).
+Meld supports embedding the crypto widget within an iframe. For information on the recommended iframe size, see [Embedding the Wizard](/docs/old-crypto/integration-options-old/crypto-wizard#embedding-the-wizard).
 
 <br />

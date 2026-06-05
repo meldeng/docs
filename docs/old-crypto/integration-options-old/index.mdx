@@ -7,18 +7,18 @@ Your 2 integration options for Meld's crypto product are to either use the white
 
 Keep in mind that both the wizard and widget support buying and selling crypto, but as of now only the widget supports transferring crypto and NFT checkouts.
 
-## [White Label Widget Experience](https://docs.meld.io/docs/crypto-widget)
+## [White Label Widget Experience](/docs/old-crypto/integration-options-old/crypto-widget)
 
 Here are the steps for the widget flow:
 
 1. In your own UI, figure out what kind of transaction the user wants to make (buy, sell, transfer, NFT checkout).
 2. Call Meld's service provider properties endpoints to find out the list of tokens, fiat currencies, payment methods, etc supported for the specific flow.
-3. In your own UI, figure out the details of the transaction. For example, the user enters that they would like to buy $100 of Bitcoin to wallet address `ABCD` using a credit card. You can see which fields are required for each transaction type [here](https://docs.meld.io/reference/crypto-session-widget-create).
-4. If the flow is a buy or sell flow, hit Meld's [quote endpoint](https://docs.meld.io/reference/crypto-quote-get) to get a list of quotes from various onramps that can support the transaction. If the user is doing a transfer or NFT checkout, this step is skipped.
-5. Call Meld's [widget endpoint](https://docs.meld.io/reference/crypto-session-widget-create). The widget endpoint will return a url, which you can either open as a popup, embedded in your own page, or fully redirect to. This url will have the onramp's UI, which the user will go through to complete the transaction in the widget.
-6. Once you receive webhooks that a transaction has been created, you can fetch the transaction details from the [transactions endpoint](https://docs.meld.io/reference/payments-transactions-get-1).
+3. In your own UI, figure out the details of the transaction. For example, the user enters that they would like to buy $100 of Bitcoin to wallet address `ABCD` using a credit card. You can see which fields are required for each transaction type [here](/api-reference/crypto/retail-ramp/crypto-session-widget-create).
+4. If the flow is a buy or sell flow, hit Meld's [quote endpoint](/api-reference/crypto/retail-ramp/crypto-quote-get) to get a list of quotes from various onramps that can support the transaction. If the user is doing a transfer or NFT checkout, this step is skipped.
+5. Call Meld's [widget endpoint](/api-reference/crypto/retail-ramp/crypto-session-widget-create). The widget endpoint will return a url, which you can either open as a popup, embedded in your own page, or fully redirect to. This url will have the onramp's UI, which the user will go through to complete the transaction in the widget.
+6. Once you receive webhooks that a transaction has been created, you can fetch the transaction details from the [transactions endpoint](/api-reference/crypto/retail-ramp/payments-transactions-get).
 
-## [All in One Wizard](https://docs.meld.io/docs/crypto-wizard)
+## [All in One Wizard](/docs/old-crypto/integration-options-old/crypto-wizard)
 
 The wizard flow is similar to the widget flow, except that everything is completed in Meld and the onramp's UI rather than your own.
 

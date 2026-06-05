@@ -6,7 +6,7 @@ This data comes from Finicity's [/aggregation/v3/customers /`{customerId}`/accou
 
 To fetch transaction data, Meld calls [GetCustomerAccountTransactions](https://developer.mastercard.com/open-banking-us/documentation/api-reference/?view=api#GetCustomerAccountTransactions) the vast majority of the time, Meld only uses the paid endpoint [LoadHistoricTransactionsForCustomerAccount](https://developer.mastercard.com/open-banking-us/documentation/api-reference/?view=api#LoadHistoricTransactionsForCustomerAccount) for historical transactions (1 time per connection on the initial load). Forced refreshes are done via [RefreshCustomerAccountsByInstitutionLogin](https://developer.mastercard.com/open-banking-us/documentation/api-reference/?view=api#RefreshCustomerAccountsByInstitutionLogin).
 
-Finicity's transaction signs (positive and negative) are inverted when mapped to make the behavior consistent with other providers. You can find more information on signage [here](/docs/bank-linking/bank-linking-quickstart/bank-linking-products/account-transactions#signage).
+Finicity's transaction signs (positive and negative) are inverted when mapped to make the behavior consistent with other providers. You can find more information on signage [here](/docs/bank-linking/bank-linking-quickstart/bank-linking-products/account-transactions#data-normalization).
 
 <Note>
   Example values: `amount: -42.50`, `currency: "USD"`, `description: "STARBUCKS #1234"`, `status: "POSTED"`, `transactionDate: "2024-08-10"`, `postedDate: "2024-08-11"`.

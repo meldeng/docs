@@ -11,11 +11,61 @@ If your use case involves supporting multiple downstream partners / applications
 
 In both approaches, you should pass in an `externalCustomerId` that corresponds to the end user making the transaction. This is just a reference id you provide, and can have any `string` value.
 
+## Option 1: A single Meld account
+
 Can your downstream applications use the same set of onramps with the same fee set by you? If so, then the easiest way to support this is to use a single Meld account.
 
-* Meld (and you) will still need to know which application is responsible for each transaction. When you call `POST /crypto/session/widget`, use the `externalSubAccountCustomerId` field to pass in an identifier corresponding to the application that made the call. The `externalSubAccountCustomerId` you pass in will be tied to the transaction the user ends up making. This is useful for compliance, metrics, and revenue calculation.
+* Meld (and you) will still need to know which application is responsible for each transaction. When you call `POST /crypto/session/widget`, use the `externalSubaccountCustomerId` field to pass in an identifier corresponding to the application that made the call. The `externalSubaccountCustomerId` you pass in will be tied to the transaction the user ends up making. This is useful for compliance, metrics, and revenue calculation.
 * Several providers require whitelisting the domains that users will get redirected to after completing a transaction. If you will have many applications, it may not make sense to whitelist each new domain with the provider. In this case, it would make sense for you to have an intermediary redirect url with a domain that you whitelist, that then automatically redirects to the actual target url. An example would be [https://yourcompanyurl.com/?redirectUrl=https://yourapplicationurl.com](https://yourcompanyurl.com/?redirectUrl=https://yourapplicationurl.com). Here you would only have to whitelist [https://yourcompanyurl.com](https://yourcompanyurl.com), but you would build an automatic redirect so that the above redirect sends the user to [https://yourapplicationurl.com](https://yourapplicationurl.com).
 
-If your downstream applications need different sets of service provider and want to charge different partner fees, you may need multiple Meld accounts. Meld will need to create each account for you. Contact Meld about this. If you use 1 Meld account per downstream application, you do not need to pass in a `externalSubAccountCustomerId`.
+## Option 2: Multiple Meld accounts
 
-The `externalSubAccountCustomerId` will be returned in the transaction webhooks and you can also query `GET /payments/transactions` with this value. This allows you to see all transactions made by a particular downstream application.
+If your downstream applications need different sets of service provider and want to charge different partner fees, you may need multiple Meld accounts. Meld will need to create each account for you. Contact Meld about this. If you use 1 Meld account per downstream application, you do not need to pass in an `externalSubaccountCustomerId`.
+
+<Note>
+The `externalSubaccountCustomerId` will be returned in the transaction webhooks and you can also query `GET /payments/transactions` with this value. This allows you to see all transactions made by a particular downstream application.
+</Note>
+
+## Implementation Instructions
+
+Steps to using `externalSubaccountCustomerId`:
+
+<Steps>
+  <Step title="Create a sub-account customer">
+    First, create a customer with `POST /accounts/customers`, using the string value as the `externalId`. A sub-account customer must be created before it can be referenced on a widget session.
+
+    Sample request:
+
+    ```json
+    {
+        "externalId": "business1",
+        "type": "BUSINESS"
+    }
+    ```
+  </Step>
+
+  <Step title="Pass the identifier when creating a widget session">
+    When you call `POST /crypto/session/widget`, pass in the `externalSubaccountCustomerId` corresponding to the downstream app in the body of the call.
+
+    Sample request:
+
+    ```json
+    {
+        "sessionData": {
+            "walletAddress": "2N3oefVeg6stiTb5Kh3ozCSkaqmx91FDbsm",
+            "countryCode": "US",
+            "sourceCurrencyCode": "USD",
+            "sourceAmount": "100",
+            "destinationCurrencyCode": "USDC",
+            "serviceProvider": "TRANSAK"
+        },
+        "externalCustomerId": "user1",
+        "externalSubaccountCustomerId": "business1"
+    }
+    ```
+  </Step>
+
+  <Step title="Track transactions by sub-account">
+    Track which transaction was made by which `externalSubaccountCustomerId` by reading that value in the webhooks, the `GET /payments/transactions` response, and the dashboard CSV export.
+  </Step>
+</Steps>
