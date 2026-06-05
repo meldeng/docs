@@ -139,7 +139,8 @@
                       "docs/stablecoins/unified-kyc/index",
                       "docs/stablecoins/unified-kyc/you-kyc-the-user",
                       "docs/stablecoins/unified-kyc/meld-kyces-the-user"
-                    ]
+                    ],
+                    "hidden": true
                   },
                   {
                     "group": "Sandbox Testing Guide",
