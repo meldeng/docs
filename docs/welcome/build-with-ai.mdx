@@ -11,13 +11,13 @@ This page covers four ways to bring Meld docs into your AI workflow:
   <Card title="MCP server" icon="plug" href="#mcp-server">
     Connect Claude, Cursor, and other tools to a live, searchable index of the docs.
   </Card>
-  <Card title="llms.txt" icon="file-lines" href="#llms-txt">
+  <Card title="llms.txt" icon="file-lines" href="#llmstxt">
     Drop-in context files that summarize or inline the entire docs site.
   </Card>
   <Card title="Markdown export" icon="markdown" href="#markdown-export">
     Get any page as clean Markdown by appending `.md` to its URL.
   </Card>
-  <Card title="skill.md" icon="robot" href="#skill-md">
+  <Card title="skill.md" icon="robot" href="#skillmd">
     Machine-readable capability file for agents that act on Meld's APIs.
   </Card>
 </CardGroup>
@@ -33,7 +33,7 @@ The Meld docs are exposed as a hosted [Model Context Protocol](https://modelcont
 **Server URL**
 
 ```
-https://meld-e276f676.mintlify.app/mcp
+https://docs.meld.io/mcp
 ```
 
 **Tools the server exposes**
@@ -48,7 +48,7 @@ https://meld-e276f676.mintlify.app/mcp
     Run from your project:
 
     ```bash
-    claude mcp add --transport http meld-docs https://meld-e276f676.mintlify.app/mcp
+    claude mcp add --transport http meld-docs https://docs.meld.io/mcp
     ```
 
     Then in a session, ask: *"Use the meld-docs MCP to find the White-Label API quickstart and summarize the request payload."*
@@ -61,7 +61,7 @@ https://meld-e276f676.mintlify.app/mcp
       "mcpServers": {
         "meld-docs": {
           "type": "http",
-          "url": "https://meld-e276f676.mintlify.app/mcp"
+          "url": "https://docs.meld.io/mcp"
         }
       }
     }
@@ -76,7 +76,7 @@ https://meld-e276f676.mintlify.app/mcp
     {
       "mcpServers": {
         "meld-docs": {
-          "url": "https://meld-e276f676.mintlify.app/mcp"
+          "url": "https://docs.meld.io/mcp"
         }
       }
     }
@@ -90,7 +90,7 @@ https://meld-e276f676.mintlify.app/mcp
       "servers": {
         "meld-docs": {
           "type": "http",
-          "url": "https://meld-e276f676.mintlify.app/mcp"
+          "url": "https://docs.meld.io/mcp"
         }
       }
     }
@@ -100,7 +100,7 @@ https://meld-e276f676.mintlify.app/mcp
     Open a chat and attach the Meld docs MCP under **Connectors → Add connector** (available on Plus, Pro, Business, and Enterprise). Use:
 
     ```
-    https://meld-e276f676.mintlify.app/mcp
+    https://docs.meld.io/mcp
     ```
 
     No auth required.
@@ -108,7 +108,7 @@ https://meld-e276f676.mintlify.app/mcp
 </Tabs>
 
 <Tip>
-  A discovery endpoint is published at `https://meld-e276f676.mintlify.app/.well-known/mcp` so MCP-aware tools can find the server automatically.
+  A discovery endpoint is published at `https://docs.meld.io/.well-known/mcp` so MCP-aware tools can find the server automatically.
 </Tip>
 
 ## llms.txt
@@ -117,19 +117,19 @@ The docs are also published as flat text files designed for direct LLM consumpti
 
 | File | Use it when |
 | --- | --- |
-| [`https://meld-e276f676.mintlify.app/llms.txt`](https://meld-e276f676.mintlify.app/llms.txt) | You want a structured index of every page with descriptions. |
-| [`https://meld-e276f676.mintlify.app/llms-full.txt`](https://meld-e276f676.mintlify.app/llms-full.txt) | You want the entire docs site inlined as one Markdown file. |
+| [`https://docs.meld.io/llms.txt`](https://docs.meld.io/llms.txt) | You want a structured index of every page with descriptions. |
+| [`https://docs.meld.io/llms-full.txt`](https://docs.meld.io/llms-full.txt) | You want the entire docs site inlined as one Markdown file. |
 
 **Example — load the full docs into a Claude API request:**
 
 ```python
 import anthropic, urllib.request
 
-docs = urllib.request.urlopen("https://meld-e276f676.mintlify.app/llms-full.txt").read().decode()
+docs = urllib.request.urlopen("https://docs.meld.io/llms-full.txt").read().decode()
 
 client = anthropic.Anthropic()
 msg = client.messages.create(
-    model="claude-opus-4-7",
+    model="claude-opus-4-8",
     max_tokens=1024,
     system=[
         {"type": "text", "text": "You are a Meld integration assistant."},
@@ -137,7 +137,7 @@ msg = client.messages.create(
     ],
     messages=[{"role": "user", "content": "How do I create a crypto quote for a USD → USDC buy?"}],
 )
-print(msg.content[0].text)
+print(next((b.text for b in msg.content if b.type == "text"), ""))
 ```
 
 <Tip>
@@ -146,14 +146,14 @@ print(msg.content[0].text)
 
 ## Markdown export
 
-Any page on `meld-e276f676.mintlify.app` can be fetched as raw Markdown — no HTML, no nav chrome — by appending `.md` to its URL.
+Any page on `docs.meld.io` can be fetched as raw Markdown — no HTML, no nav chrome — by appending `.md` to its URL.
 
 **Examples**
 
 ```
-https://meld-e276f676.mintlify.app/docs/stablecoins/crypto-overview_/quickstart.md
-https://meld-e276f676.mintlify.app/docs/stablecoins/white-label-api-integration/whitelabel-quickstart.md
-https://meld-e276f676.mintlify.app/api-reference/crypto/retail-ramp/crypto-quote-get.md
+https://docs.meld.io/docs/stablecoins/crypto-overview_/quickstart.md
+https://docs.meld.io/docs/stablecoins/white-label-api-integration/whitelabel-quickstart.md
+https://docs.meld.io/api-reference/crypto/retail-ramp/crypto-quote-get.md
 ```
 
 You can also:
@@ -169,27 +169,27 @@ API reference pages include the full OpenAPI operation in the Markdown export, w
 For agents that *act* on Meld (not just read about it), the docs publish an [agentskills.io](https://agentskills.io/specification)–compatible capability file:
 
 ```
-https://meld-e276f676.mintlify.app/skill.md
+https://docs.meld.io/skill.md
 ```
 
 It describes what an agent can accomplish with the Meld API, the inputs each capability needs, and the constraints that apply. MCP-connected agents discover it automatically as a resource on the server above; you can also add it manually:
 
 ```bash
-npx skills add https://meld-e276f676.mintlify.app
+npx skills add https://docs.meld.io
 ```
 
 ## Recommended setup for crypto integrations
 
 <Steps>
   <Step title="Connect the MCP server">
-    Add `https://meld-e276f676.mintlify.app/mcp` to your editor or chat tool. This is the single best upgrade — your assistant can now look up exact request shapes, status codes, and webhook payloads on demand.
+    Add `https://docs.meld.io/mcp` to your editor or chat tool. This is the single best upgrade — your assistant can now look up exact request shapes, status codes, and webhook payloads on demand.
   </Step>
   <Step title="Pin the right starting points">
     Bookmark these Markdown URLs and feed them to your agent at the start of a session:
 
-    - `https://meld-e276f676.mintlify.app/docs/stablecoins/crypto-overview_/index.md` — product overview and which integration to pick
-    - `https://meld-e276f676.mintlify.app/docs/stablecoins/crypto-overview_/quickstart.md` — first API call
-    - `https://meld-e276f676.mintlify.app/docs/stablecoins/for-all-products/webhook-events.md` — webhook event catalog
+    - `https://docs.meld.io/docs/stablecoins/crypto-overview_/index.md` — product overview and which integration to pick
+    - `https://docs.meld.io/docs/stablecoins/crypto-overview_/quickstart.md` — first API call
+    - `https://docs.meld.io/docs/stablecoins/for-all-products/webhook-events.md` — webhook event catalog
   </Step>
   <Step title="Use llms-full.txt for one-shot tasks">
     When you want a clean-slate model (no MCP) to do something self-contained — a one-off script, a code review, a migration — paste `llms-full.txt` into context with caching enabled.
