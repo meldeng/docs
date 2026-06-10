@@ -160,7 +160,8 @@
                       "docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
                       "docs/stablecoins/digital-asset-coverage/supported-payment-methods",
                       "docs/stablecoins/digital-asset-coverage/supported-network-partners"
-                    ]
+                    ],
+                    "hidden": true
                   },
                   {
                     "group": "Additional Information",
