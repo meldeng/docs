@@ -7,16 +7,16 @@ This guide is for developers who want Meld to host the KYC flow. You'll call Mel
 
 ## Before you begin
 
-* Sumsub must be enabled on your Meld account — contact your account manager
-* You can store the Meld `customerId` against each of your users
-* You have a webhook endpoint configured to receive `CUSTOMER_KYC_STATUS_CHANGE` events (or you plan to poll)
+- Sumsub must be enabled on your Meld account — contact your account manager
+- You can store the Meld `customerId` against each of your users
+- You have a webhook endpoint configured to receive `CUSTOMER_KYC_STATUS_CHANGE` events (or you plan to poll)
 
 <Note>
-To test this flow in Meld's sandbox, see [KYC testing](/docs/stablecoins/sandbox-guide/kyc-testing).
+  To test this flow in Meld's sandbox, see [KYC testing](/docs/stablecoins/sandbox-guide/kyc-testing).
 </Note>
 
 <Warning>
-If the user's KYC status ends in `REJECTED`, the user has failed KYC. They can retry once, but a user who fails KYC here will very likely also fail directly with any onramp.
+  If the user's KYC status ends in `REJECTED`, the user has failed KYC. They can retry once, but a user who fails KYC here will very likely also fail directly with any onramp.
 </Warning>
 
 To enable this flow, do the following:
@@ -185,7 +185,8 @@ The response will look like this:
 }
 ```
 
-If you executed every step correctly, then when you open either the `widgetUrl` or `serviceProviderWidgetUrl`, then the user go straight to the Mercuryo payment screen, as seen in this demo video:
+If you executed every step correctly, then when you open either the `widgetUrl` or `serviceProviderWidgetUrl`, then the user go straight to the Mercuryo payment screen, as seen in this demo video.
 
+<iframe src="https://www.youtube.com/embed/D1_sUa79Jik" title="YouTube video player" frameborder="0" className="w-full aspect-video rounded-xl" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen />
 
 And that's it! Congrats, you are now using Meld's Unified KYC product to enhance your users' experience!
