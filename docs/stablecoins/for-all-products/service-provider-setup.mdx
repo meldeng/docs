@@ -4,19 +4,17 @@ title: "Adding Onramps"
 
 This page is for developers and operators connecting additional onramp providers (Stripe, Transak, Mercuryo, etc.) to their Meld account. Onramps are the payment processors that handle the actual crypto transactions. To enable transactions through specific providers, you need to set up credentials and webhooks in your Meld dashboard.
 
-For each onramp you would like to enable, either Meld can set it up for you, or you can set it up yourself using the Meld dashboard. 
+For each onramp you would like to enable, either Meld can set it up for you, or you can set it up yourself using the Meld dashboard.
 
 When testing in sandbox, Meld will automatically enable several onramps for you for testing purposes. In production, the Meld team will work with you to select which onramps to enable to best suit your needs, based on coverage, conversion, and pricing.
 
 <Note>
-**Sandbox vs production webhooks:** Webhook URLs differ between sandbox and production — generate each from the corresponding Meld dashboard's **Integrations → \[Provider]** screen, and configure them separately in each provider's developer dashboard.
+  **Sandbox vs production webhooks:** Webhook URLs differ between sandbox and production — generate each from the corresponding Meld dashboard's **Integrations → \[Provider\]** screen, and configure them separately in each provider's developer dashboard.
 </Note>
-
 
 <Note>
-### **Note**: If Meld is handling service provider setup for you, you can skip this page.
+  ### **Note**: If Meld is handling service provider setup for you, you can skip this page.
 </Note>
-
 
 # Service Provider Setup
 
@@ -24,25 +22,25 @@ When testing in sandbox, Meld will automatically enable several onramps for you 
 
 Before starting, ensure you have:
 
-* **Meld Dashboard Access**: Admin access to your Meld account
-* **Provider Account**: Active account with the service provider
-* **API Credentials**: From the provider's developer dashboard or account manager
-* **Password Manager**: To securely store credentials
+- **Meld Dashboard Access**: Admin access to your Meld account
+- **Provider Account**: Active account with the service provider
+- **API Credentials**: From the provider's developer dashboard or account manager
+- **Password Manager**: To securely store credentials
 
 ## What You'll Need from Each Provider
 
 Different providers require different credentials, one example is:
 
-* **API Key**: Your unique identifier
-* **API Secret**: Private key for authentication
-* **Webhook Secret**: For securing webhook communications
-* **Client ID**: Additional identifier (some providers)
+- **API Key**: Your unique identifier
+- **API Secret**: Private key for authentication
+- **Webhook Secret**: For securing webhook communications
+- **Client ID**: Additional identifier (some providers)
 
 **Where to Find Credentials:**
 
-* Provider's dashboard → Developer section or API settings
-* Contact your provider's account manager
-* Check provider's documentation for credential location
+- Provider's dashboard → Developer section or API settings
+- Contact your provider's account manager
+- Check provider's documentation for credential location
 
 ## Setup Process
 
@@ -64,25 +62,22 @@ Different providers require different credentials, one example is:
 
 ### Step 3: Configure Webhooks
 
-
 <Warning>
-**Skip for**: Coinbase, Robinhood, and PayPal (webhook setup not required)
+  **Skip for**: Coinbase, Robinhood, and PayPal (webhook setup not required)
 </Warning>
-
 
 1. After adding credentials, the page will refresh
 2. Click the **gear icon** next to your newly configured provider
 3. Copy the **webhook URL** that appears
 
-   
 <Note>
-### **Note**: Sometimes there may be a delay before the webhook URL appears after adding credentials. If you don't see it immediately, wait a few minutes and refresh the page.
+  ### **Note**: Sometimes there may be a delay before the webhook URL appears after adding credentials. If you don't see it immediately, wait a few minutes and refresh the page.
 </Note>
 
 4. In your provider's dashboard, configure webhooks:
-   * Set the webhook URL to the copied Meld URL
-   * **Event Selection**: Choose all available events
-   * **Webhook Version**: Select the latest version available
+   - Set the webhook URL to the copied Meld URL
+   - **Event Selection**: Choose all available events
+   - **Webhook Version**: Select the latest version available
 5. Save your webhook configuration
 
 ## Validation
@@ -96,41 +91,40 @@ Verify your setup is working:
 
 ### Credential Problems
 
-* **Invalid API Key**: Verify credentials are copied correctly
-* **Expired Credentials**: Check if credentials need renewal
-* **Wrong Environment**: Ensure using production (not sandbox) credentials
+- **Invalid API Key**: Verify credentials are copied correctly
+- **Expired Credentials**: Check if credentials need renewal
+- **Wrong Environment**: Ensure using production (not sandbox) credentials
 
 ### Webhook Issues
 
-* **URL Not Reachable**: Verify the webhook URL was copied correctly
-* **Authentication Errors**: Confirm webhook secret matches
-* **Missing Events**: Ensure all webhook events are enabled
+- **URL Not Reachable**: Verify the webhook URL was copied correctly
+- **Authentication Errors**: Confirm webhook secret matches
+- **Missing Events**: Ensure all webhook events are enabled
 
 ## Security Best Practices
 
-* **Store Securely**: Use password managers, never commit credentials to code
-* **Regular Rotation**: Update credentials periodically
-* **Monitor Access**: Review provider access logs regularly
+- **Store Securely**: Use password managers, never commit credentials to code
+- **Regular Rotation**: Update credentials periodically
+- **Monitor Access**: Review provider access logs regularly
 
-***
+---
 
 # Service Provider–Specific Configuration
 
 ### Stripe
 
-<Columns layout="auto">
+<Columns>
   <Column>
     **Recommended Stripe API Version:**
 
-    ```
+    ```text
     2023-10-16
     ```
   </Column>
-
   <Column>
     **Recommended Webhook Event:**
 
-    ```
+    ```text
     crypto.onramp_session.updated
     ```
   </Column>
@@ -140,9 +134,9 @@ Verify your setup is working:
 
 Once setup is complete, you can:
 
-* Fetch quotes including your configured provider
-* Create widget sessions using the provider
-* Receive real-time transaction updates via webhooks
-* Monitor transaction performance in your dashboard
+- Fetch quotes including your configured provider
+- Create widget sessions using the provider
+- Receive real-time transaction updates via webhooks
+- Monitor transaction performance in your dashboard
 
-***
+---
