@@ -1,0 +1,75 @@
+---
+title: "Headless Apple Pay"
+---
+
+Meld supports headless Apple Pay, where you can launch the Apple Pay card of the provider directly in your application. This is great for first time users to be able to buy crypto as easily as possible.
+
+Right now, this is supported only for Mercuryo, although Meld will be adding more providers. Note that users can make transactions up to \$700 (total) using headless Apple Pay with Mercuryo without having to KYC. After this threshold, users will have to KYC with Mercuryo in order to continue buying crypto.
+
+Here is a demo [video](https://drive.google.com/file/d/1XUdDOjzUDyi1Po0ffI3xx7xjBJARZIvf/view) of how the headless Apple Pay flow works. This video is recorded in the Meld Checkout, which is Meld's UI.
+
+If you would like to use headless Apple Pay via the Meld Checkout, all you have to do is make sure Mercuryo is enabled for your account.
+
+If you have built your own UI and would like to enable headless Apple Pay, you must follow these setup steps:
+
+### Phase 1 — Domain registration (one-time, with Meld)
+
+1. **Pick the domain** where the Apple Pay sheet will run (e.g., pay.yourcompany.com). It must be HTTPS with a valid certificate. Subdomains are fine, but each one is registered separately.
+2. **Send the domain to Meld** via your integration contact.
+3. **Meld adds your domain to our Apple Pay Merchant ID** (merchant.io.meld.cryptowidget) in Apple Developer.
+4. **Meld sends you the domain association file** — a small binary blob Apple issues for your specific domain.
+5. **You host the file** at the exact path:
+   ```text
+   https://pay.yourcompany.com/.well-known/apple-developer-merchantid-domain-association
+   ```
+   Requirements:
+   - HTTP 200, no redirects.
+   - Bytes returned must be byte-for-byte identical to the file we sent — no minification, no whitespace tweaks, no transformation.
+   - Content-Type doesn't strictly matter but text/plain or application/octet-stream is safe.
+   - Publicly reachable (no auth, no IP restrictions).
+6. **Confirm with Meld** the file is live. Meld clicks **Verify** in Apple Developer → status goes from Pending to Verified.
+7. **Meld asks Mercuryo to add your domain** to the NAP widget's Additional URL list. (Once.)
+
+After Phase 1, your domain is set up for life (Apple's verification typically lasts ~6 months and re-verifies automatically as long as the file stays live).
+
+### Phase 2 — Implement Apple Pay on your domain (one-time, in your frontend)
+
+1. **Call our session endpoint** when the user is ready to pay:
+   ```text
+   POST https://api.meld.io/crypto/session/widget
+   ```
+   In the response, check isNativeApplePaySupported (or equivalently look at whether serviceProviderWidgetUrl points at meldcrypto.com vs exchange.mercuryo.io).
+2. **If** isNativeApplePaySupported: true — your page implements Apple Pay JS:
+   - From a user click handler, construct new ApplePaySession(version, paymentRequest).
+   - Implement onmerchantvalidation:
+     - POST the validationURL (Apple gives you in the event) to our endpoint:
+       ```text
+       POST https://api.meld.io/crypto/session/mercuryo/apple-pay/validate-merchant
+       Body: { "validationURL": "<the URL Apple gave you>" }
+       Header: X-Crypto-Session-Token: <session token from step 1>
+       ```
+     - Pass the returned merchantSession to session.completeMerchantValidation(merchantSession).
+   - Implement onpaymentauthorized:
+     - POST the encrypted Apple Pay token \+ buyer info to:
+       ```text
+       POST https://api.meld.io/crypto/session/mercuryo/apple-pay/process
+       Body: { payToken, buyToken, email, firstName, lastName, billingAddress, address, ip, merchantTransactionId }
+       Header: X-Crypto-Session-Token: <session token>
+       ```
+     - On success (status is pending / paid / completed) → call session.completePayment(ApplePaySession.STATUS\_SUCCESS).
+     - If response includes redirect\_url → call session.completePayment(ApplePaySession.STATUS\_FAILURE) and redirect the user to that URL (Mercuryo's hosted widget, where they finish the payment).
+     - On any other failure → STATUS\_FAILURE and show an error.
+3. **If** isNativeApplePaySupported: false — no Apple Pay JS needed. Just open the serviceProviderWidgetUrl from the session response (it'll point to Mercuryo's hosted widget). User completes the payment there.
+
+### What Meld handles for you (so you don't have to)
+
+- mTLS to Apple's startSession endpoint (your onmerchantvalidation POSTs to us, we do the secure call to Apple, we return merchantSession).
+- Forwarding the Apple Pay token to Mercuryo's /native-mobile-pay endpoint.
+- Handling Mercuryo's response shape (success vs redirect\_url).
+- Renewing the Merchant Identity cert and Apple's annual cert chain rotations.
+
+You only need to: serve the well-known file, and implement the Apple Pay JS event handlers that proxy through our two endpoints.
+
+### Why not just iframe meldcrypto.com?
+
+Apple Pay has strict restrictions on iframe origins — the sheet checks the _parent_ frame's domain. So even if you iframe our hosted widget, Apple still validates against your domain, and you'd still need the same Phase 1 work. There's no shortcut.
