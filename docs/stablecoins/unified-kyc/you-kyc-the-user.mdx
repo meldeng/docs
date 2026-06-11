@@ -7,16 +7,16 @@ This guide is for developers who already KYC their users with Sumsub and want to
 
 ## Before you begin
 
-* You have a Sumsub account and have integrated their KYC flow
-* You have requested Meld enable Sumsub token sharing for your account
-* You can obtain the Sumsub KYC token for each user
-* The onramp you plan to route to supports Sumsub token sharing (currently Mercuryo)
+- You have a Sumsub account and have integrated their KYC flow
+- You have requested Meld enable Sumsub token sharing for your account
+- You can obtain the Sumsub KYC token for each user
+- The onramp you plan to route to supports Sumsub token sharing (currently Mercuryo and Topper)
 
 <Note>
-For sandbox testing details, see [KYC testing](/docs/stablecoins/sandbox-guide/kyc-testing).
+  For sandbox testing details, see [KYC testing](/docs/stablecoins/sandbox-guide/kyc-testing).
 </Note>
 
-**This flow works if you KYC the user via Sumsub and send them to the onramp Mercuryo.**
+**This flow works if you KYC the user via Sumsub and send them to the onramp Mercuryo or Topper.**
 
 To enable this flow, do the following:
 
@@ -28,7 +28,7 @@ This requires you to integrate [Sumsub](https://docs.sumsub.com/reference/about-
 
 [See Sumsub requirements for importing the applicant](https://docs.sumsub.com/docs/copy-applicant#how-to-enable-copy-applicant).
 
-You will need to pass the Sumsub KYC token, generated for client id **meld.io_75082**. This is done in the Sumsub dashboard, as shown below.
+You will need to pass the Sumsub KYC token, generated for client id **meld.io\_75082**. This is done in the Sumsub dashboard, as shown below.
 
 ![](https://files.readme.io/2f594cd4940eca8be7c5a7e543a85ff06f8fda33c2fda70abc9e801fdc695d8d-image.png)
 
@@ -36,14 +36,14 @@ You will need to pass the Sumsub KYC token, generated for client id **meld.io_75
 
 In order for your user to not be asked for any additional KYC information by the onramp, you must collect, at minimum,
 
-* **First name**
-* **Last name**
-* **Date of birth**
-* **ID picture**
-* **Phone number**
-* **Email address**
-* **Address**
-* **Country**
+- **First name**
+- **Last name**
+- **Date of birth**
+- **ID picture**
+- **Phone number**
+- **Email address**
+- **Address**
+- **Country**
 
 You will have to fetch the KYC token of the user from Sumsub.
 
@@ -123,8 +123,9 @@ The response will look like this:
 }
 ```
 
-If you executed every step correctly, then when you open either the `widgetUrl` or `serviceProviderWidgetUrl`, then the user go straight to the Mercuryo payment screen, as seen in this demo video:
+If you executed every step correctly, then when you open either the `widgetUrl` or `serviceProviderWidgetUrl`, then the user goes straight to the Mercuryo payment screen, as seen in this demo video.
 
+<iframe src="https://www.youtube.com/embed/D1_sUa79Jik" title="YouTube video player" frameborder="0" className="w-full aspect-video rounded-xl" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen />
 
 And that's it! Congrats, you are now using Meld's Unified KYC product to enhance your users' experience!
 
