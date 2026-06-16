@@ -68,7 +68,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/webhooks/profile/webhooks-profiles-create"
+          "href": "/api-reference/webhooks/2023-12-19/profile/webhooks-profiles-create"
         }
       },
       "get": {
@@ -138,7 +138,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/webhooks/profile/webhooks-profiles-search"
+          "href": "/api-reference/webhooks/2023-12-19/profile/webhooks-profiles-search"
         }
       }
     },
@@ -182,7 +182,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/webhooks/profile/webhooks-events-get"
+          "href": "/api-reference/webhooks/2023-12-19/profile/webhooks-events-get"
         }
       }
     },
@@ -244,7 +244,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/webhooks/profile/webhooks-profiles-get"
+          "href": "/api-reference/webhooks/2023-12-19/profile/webhooks-profiles-get"
         }
       },
       "patch": {
@@ -314,7 +314,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/webhooks/profile/webhooks-profiles-update"
+          "href": "/api-reference/webhooks/2023-12-19/profile/webhooks-profiles-update"
         }
       }
     },
@@ -377,7 +377,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/webhooks/profile/webhooks-profiles-test"
+          "href": "/api-reference/webhooks/2023-12-19/profile/webhooks-profiles-test"
         }
       }
     }

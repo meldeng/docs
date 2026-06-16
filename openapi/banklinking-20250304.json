@@ -72,7 +72,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/connect/bank-linking-connect-create"
+          "href": "/api-reference/bank-linking/2025-03-04/connect/bank-linking-connect-create"
         }
       }
     },
@@ -124,7 +124,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/connect/bank-linking-connect-repair"
+          "href": "/api-reference/bank-linking/2025-03-04/connect/bank-linking-connect-repair"
         }
       }
     },
@@ -187,7 +187,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/connections/bank-linking-connections-get"
+          "href": "/api-reference/bank-linking/2025-03-04/connections/bank-linking-connections-get"
         }
       },
       "delete": {
@@ -241,7 +241,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/connections/bank-linking-connections-delete"
+          "href": "/api-reference/bank-linking/2025-03-04/connections/bank-linking-connections-delete"
         }
       }
     },
@@ -387,7 +387,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/connections/bank-linking-connections-search"
+          "href": "/api-reference/bank-linking/2025-03-04/connections/bank-linking-connections-search"
         }
       }
     },
@@ -463,7 +463,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/connections/bank-linking-connection-update"
+          "href": "/api-reference/bank-linking/2025-03-04/connections/bank-linking-connection-update"
         }
       }
     },
@@ -536,7 +536,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/connections/bank-linking-connections-refresh"
+          "href": "/api-reference/bank-linking/2025-03-04/connections/bank-linking-connections-refresh"
         }
       }
     },
@@ -591,7 +591,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/connections/bank-linking-connections-import"
+          "href": "/api-reference/bank-linking/2025-03-04/connections/bank-linking-connections-import"
         }
       }
     },
@@ -654,7 +654,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/accounts/bank-linking-accounts-get"
+          "href": "/api-reference/bank-linking/2025-03-04/accounts/bank-linking-accounts-get"
         }
       }
     },
@@ -762,7 +762,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/accounts/bank-linking-accounts-search"
+          "href": "/api-reference/bank-linking/2025-03-04/accounts/bank-linking-accounts-search"
         }
       }
     },
@@ -838,7 +838,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/accounts/bank-linking-accounts-create-processor-token"
+          "href": "/api-reference/bank-linking/2025-03-04/accounts/bank-linking-accounts-create-processor-token"
         }
       }
     },
@@ -901,7 +901,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/transactions/bank-linking-transactions-get"
+          "href": "/api-reference/bank-linking/2025-03-04/transactions/bank-linking-transactions-get"
         }
       }
     },
@@ -1051,7 +1051,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/transactions/bank-linking-transactions-search"
+          "href": "/api-reference/bank-linking/2025-03-04/transactions/bank-linking-transactions-search"
         }
       }
     },
@@ -1114,7 +1114,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/investments/bank-linking-investment-holdings-get"
+          "href": "/api-reference/bank-linking/2025-03-04/investments/bank-linking-investment-holdings-get"
         }
       }
     },
@@ -1222,7 +1222,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/investments/bank-linking-investment-holdings-search"
+          "href": "/api-reference/bank-linking/2025-03-04/investments/bank-linking-investment-holdings-search"
         }
       }
     },
@@ -1285,7 +1285,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/investments/bank-linking-investment-transactions-get"
+          "href": "/api-reference/bank-linking/2025-03-04/investments/bank-linking-investment-transactions-get"
         }
       }
     },
@@ -1426,7 +1426,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/investments/bank-linking-investment-transactions-search"
+          "href": "/api-reference/bank-linking/2025-03-04/investments/bank-linking-investment-transactions-search"
         }
       }
     },
@@ -1489,7 +1489,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/institutions/bank-linking-institutions-get"
+          "href": "/api-reference/bank-linking/2025-03-04/institutions/bank-linking-institutions-get"
         }
       }
     },
@@ -1597,7 +1597,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/bank-linking/institutions/bank-linking-institutions-search"
+          "href": "/api-reference/bank-linking/2025-03-04/institutions/bank-linking-institutions-search"
         }
       }
     }
@@ -1758,8 +1758,12 @@
             "description": "Institution's Meld Id"
           },
           "images": {
-            "$ref": "#/components/schemas/Images",
-            "description": "Images"
+            "description": "Images",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Images"
+              }
+            ]
           },
           "isTest": {
             "type": "boolean",
@@ -1873,8 +1877,12 @@
         "type": "object",
         "properties": {
           "customerDetails": {
-            "$ref": "#/components/schemas/CustomerDetails",
-            "description": "Details about the customer; required for report generation. If a report already exists for the customer, then it is optional to provide for future report generations."
+            "description": "Details about the customer; required for report generation. If a report already exists for the customer, then it is optional to provide for future report generations.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerDetails"
+              }
+            ]
           },
           "customerId": {
             "type": "string",
@@ -1904,8 +1912,12 @@
             "minLength": 1
           },
           "birthday": {
-            "$ref": "#/components/schemas/Birthday",
-            "description": "The customer's birthday"
+            "description": "The customer's birthday",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Birthday"
+              }
+            ]
           },
           "city": {
             "type": "string",
@@ -2200,8 +2212,12 @@
                 "uniqueItems": true
               },
               "authenticationBypassDetails": {
-                "$ref": "#/components/schemas/AuthenticationBypassDetails",
-                "description": "Details of the previously authenticated crypto session that will be used to import the connection. Only required if importType is MELD_AUTHENTICATED."
+                "description": "Details of the previously authenticated crypto session that will be used to import the connection. Only required if importType is MELD_AUTHENTICATED.",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AuthenticationBypassDetails"
+                  }
+                ]
               }
             }
           }
@@ -2353,8 +2369,12 @@
         "type": "object",
         "properties": {
           "accountPreferenceOverride": {
-            "$ref": "#/components/schemas/BankLinkingPreference",
-            "description": "The account preference overrides for this connection"
+            "description": "The account preference overrides for this connection",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BankLinkingPreference"
+              }
+            ]
           },
           "allowRedirect": {
             "type": "boolean",
@@ -2451,8 +2471,12 @@
         "type": "object",
         "properties": {
           "accountPreferenceOverride": {
-            "$ref": "#/components/schemas/BankLinkingPreference",
-            "description": "The account preference overrides for this connection"
+            "description": "The account preference overrides for this connection",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BankLinkingPreference"
+              }
+            ]
           },
           "allowRedirect": {
             "type": "boolean",
@@ -2889,8 +2913,12 @@
             "description": "The unique identifier of your account with Meld. This id will be the same for all calls to Meld endpoints made from this account."
           },
           "accountPreference": {
-            "$ref": "#/components/schemas/BankLinkingPreference",
-            "description": "The account preference for this account"
+            "description": "The account preference for this account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BankLinkingPreference"
+              }
+            ]
           },
           "algoliaIndexUrl": {
             "type": "string",
@@ -4023,8 +4051,12 @@
         "type": "object",
         "properties": {
           "data": {
-            "$ref": "#/components/schemas/AddressData",
-            "description": "The details of this address"
+            "description": "The details of this address",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AddressData"
+              }
+            ]
           },
           "primary": {
             "type": "string",
@@ -4132,8 +4164,12 @@
             "description": "The unique identifier of your account with Meld. This id will be the same for all calls to Meld endpoints made from this account."
           },
           "balance": {
-            "$ref": "#/components/schemas/FinancialAccountBalances",
-            "description": "Financial account balance"
+            "description": "Financial account balance",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FinancialAccountBalances"
+              }
+            ]
           },
           "connectionIds": {
             "type": "array",
@@ -4159,8 +4195,12 @@
             "description": "The id of the financial account"
           },
           "identifiers": {
-            "$ref": "#/components/schemas/FinancialAccountIdentifiers",
-            "description": "Identifiers for the financial account"
+            "description": "Identifiers for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FinancialAccountIdentifiers"
+              }
+            ]
           },
           "institutionId": {
             "type": "string",
@@ -4343,20 +4383,36 @@
         "type": "object",
         "properties": {
           "ach": {
-            "$ref": "#/components/schemas/Ach",
-            "description": "ACH details for the financial account"
+            "description": "ACH details for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Ach"
+              }
+            ]
           },
           "bacs": {
-            "$ref": "#/components/schemas/Bacs",
-            "description": "BACS details for the financial account"
+            "description": "BACS details for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Bacs"
+              }
+            ]
           },
           "eft": {
-            "$ref": "#/components/schemas/Eft",
-            "description": "EFT details for the financial account"
+            "description": "EFT details for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Eft"
+              }
+            ]
           },
           "international": {
-            "$ref": "#/components/schemas/International",
-            "description": "International details for the financial account"
+            "description": "International details for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/International"
+              }
+            ]
           },
           "name": {
             "type": "string",
@@ -4474,8 +4530,12 @@
         "type": "object",
         "properties": {
           "accountPreferenceOverride": {
-            "$ref": "#/components/schemas/BankLinkingPreference",
-            "description": "The account preference overrides for this connection"
+            "description": "The account preference overrides for this connection",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BankLinkingPreference"
+              }
+            ]
           },
           "allowRedirect": {
             "type": "boolean",
@@ -4547,20 +4607,36 @@
         "type": "object",
         "properties": {
           "ach": {
-            "$ref": "#/components/schemas/Ach",
-            "description": "ACH details for the financial account"
+            "description": "ACH details for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Ach"
+              }
+            ]
           },
           "bacs": {
-            "$ref": "#/components/schemas/Bacs",
-            "description": "BACS details for the financial account"
+            "description": "BACS details for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Bacs"
+              }
+            ]
           },
           "eft": {
-            "$ref": "#/components/schemas/Eft",
-            "description": "EFT details for the financial account"
+            "description": "EFT details for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Eft"
+              }
+            ]
           },
           "international": {
-            "$ref": "#/components/schemas/International",
-            "description": "International details for the financial account"
+            "description": "International details for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/International"
+              }
+            ]
           }
         }
       },
@@ -4594,8 +4670,12 @@
             "description": "The unique identifier of your account with Meld. This id will be the same for all calls to Meld endpoints made from this account."
           },
           "balances": {
-            "$ref": "#/components/schemas/FinancialAccountBalances",
-            "description": "Financial account balance"
+            "description": "Financial account balance",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FinancialAccountBalances"
+              }
+            ]
           },
           "connectionIds": {
             "type": "array",
@@ -4621,8 +4701,12 @@
             "description": "The id of the financial account"
           },
           "identifiers": {
-            "$ref": "#/components/schemas/FinancialAccountIdentifiers_2022_09_21",
-            "description": "Identifiers for the financial account"
+            "description": "Identifiers for the financial account",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FinancialAccountIdentifiers_2022_09_21"
+              }
+            ]
           },
           "institutionId": {
             "type": "string",

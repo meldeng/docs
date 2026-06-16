@@ -147,7 +147,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-search"
         }
       }
     },
@@ -287,7 +287,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-country-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-country-search"
         }
       }
     },
@@ -427,7 +427,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-crypto-currency-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-crypto-currency-search"
         }
       }
     },
@@ -502,7 +502,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-defaults-by-country-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-defaults-by-country-search"
         }
       }
     },
@@ -642,7 +642,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-fiat-currency-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-fiat-currency-search"
         }
       }
     },
@@ -782,7 +782,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-payment-method-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-payment-method-search"
         }
       }
     },
@@ -922,7 +922,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-limits-crypto-currency-sells-get"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-limits-crypto-currency-sells-get"
         }
       }
     },
@@ -1062,7 +1062,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-limits-fiat-currency-purchase-get"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-limits-fiat-currency-purchase-get"
         }
       }
     },
@@ -1202,7 +1202,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-limits-kyc-fiat-level-get"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-limits-kyc-fiat-level-get"
         }
       }
     }
@@ -1763,8 +1763,12 @@
             "description": "Date and time created"
           },
           "definition": {
-            "$ref": "#/components/schemas/RoutingDefinition",
-            "description": "Routing definition"
+            "description": "Routing definition",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoutingDefinition"
+              }
+            ]
           },
           "deletedAt": {
             "type": "string",
@@ -1799,8 +1803,12 @@
             ]
           },
           "signals": {
-            "$ref": "#/components/schemas/Signals",
-            "description": "Signals available at time of request to determine availability and score of routes."
+            "description": "Signals available at time of request to determine availability and score of routes.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Signals"
+              }
+            ]
           }
         },
         "required": [
@@ -2018,8 +2026,12 @@
             ]
           },
           "signals": {
-            "$ref": "#/components/schemas/Signals",
-            "description": "Signals used to determine availability and score"
+            "description": "Signals used to determine availability and score",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Signals"
+              }
+            ]
           }
         }
       },
@@ -2059,8 +2071,12 @@
             "description": "The customer support url for the provider."
           },
           "logos": {
-            "$ref": "#/components/schemas/ServiceProvider20231122Logos",
-            "description": "The logo URLs for the Service Provider."
+            "description": "The logo URLs for the Service Provider.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServiceProvider20231122Logos"
+              }
+            ]
           },
           "name": {
             "type": "string",
@@ -2193,8 +2209,12 @@
         "description": "Payment Method details.",
         "properties": {
           "logos": {
-            "$ref": "#/components/schemas/PaymentMethod20231122Logos",
-            "description": "The logo URLs for the Payment Method."
+            "description": "The logo URLs for the Payment Method.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod20231122Logos"
+              }
+            ]
           },
           "name": {
             "type": "string",
@@ -2435,16 +2455,28 @@
             "description": "The currency code for these KYC Fiat Level limits."
           },
           "level1": {
-            "$ref": "#/components/schemas/Level",
-            "description": "KYC Level 1 limits, level 1 means no document upload is required. Typical information asked for in level 1 include phone number, email address, and SSN (or international equivalent)"
+            "description": "KYC Level 1 limits, level 1 means no document upload is required. Typical information asked for in level 1 include phone number, email address, and SSN (or international equivalent)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Level"
+              }
+            ]
           },
           "level2": {
-            "$ref": "#/components/schemas/Level",
-            "description": "KYC Level 2 limits, level 2 means document upload is required. Typical information asked for in level 2 include passport and drivers license (or international equivalent)."
+            "description": "KYC Level 2 limits, level 2 means document upload is required. Typical information asked for in level 2 include passport and drivers license (or international equivalent).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Level"
+              }
+            ]
           },
           "level3": {
-            "$ref": "#/components/schemas/Level",
-            "description": "KYC Level 3 limits, level 3 means proof of funds is required. This is for very large purposes, and may involve connecting a user's bank account to show proof of funds."
+            "description": "KYC Level 3 limits, level 3 means proof of funds is required. This is for very large purposes, and may involve connecting a user's bank account to show proof of funds.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Level"
+              }
+            ]
           },
           "serviceProviderDetails": {
             "type": "object",
@@ -2460,16 +2492,28 @@
         "description": "KYC Fiat Level limit details.",
         "properties": {
           "level1": {
-            "$ref": "#/components/schemas/Level",
-            "description": "The level 1 values."
+            "description": "The level 1 values.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Level"
+              }
+            ]
           },
           "level2": {
-            "$ref": "#/components/schemas/Level",
-            "description": "The level 2 values."
+            "description": "The level 2 values.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Level"
+              }
+            ]
           },
           "level3": {
-            "$ref": "#/components/schemas/Level",
-            "description": "The level 3 values."
+            "description": "The level 3 values.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Level"
+              }
+            ]
           }
         }
       },
@@ -2522,8 +2566,12 @@
             "description": "The maximum purchase amount."
           },
           "meldDetails": {
-            "$ref": "#/components/schemas/FiatCurrencyPurchaseLimit20231122LimitDetails",
-            "description": "The Meld limits. Only present when includeDetails request parameter is set to true."
+            "description": "The Meld limits. Only present when includeDetails request parameter is set to true.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FiatCurrencyPurchaseLimit20231122LimitDetails"
+              }
+            ]
           },
           "minimumAmount": {
             "type": "number",
@@ -2584,8 +2632,12 @@
             "description": "The maximum sell amount."
           },
           "meldDetails": {
-            "$ref": "#/components/schemas/CryptoCurrencySellLimit20241212LimitDetails",
-            "description": "The Meld limits. Only present when includeDetails request parameter is set to true."
+            "description": "The Meld limits. Only present when includeDetails request parameter is set to true.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoCurrencySellLimit20241212LimitDetails"
+              }
+            ]
           },
           "minimumAmount": {
             "type": "number",

@@ -371,6 +371,35 @@ def inject_required_only_request_examples(payload: dict) -> int:
     return updated
 
 
+def wrap_ref_siblings(value) -> int:
+    """Mintlify drops schema properties shaped as ``{$ref, ...siblings}`` (e.g. a $ref next to
+    a description). OpenAPI 3.1 allows the siblings, but the renderer ignores the property.
+    Rewrite such nodes into the ``allOf`` form Mintlify does render, scoped to schema refs so
+    path-level response/parameter refs are left untouched."""
+    updated = 0
+    if isinstance(value, dict):
+        ref = value.get("$ref")
+        siblings = [key for key in value if key != "$ref"]
+        if (
+            isinstance(ref, str)
+            and ref.startswith("#/components/schemas/")
+            and siblings
+        ):
+            del value["$ref"]
+            all_of = value.get("allOf")
+            if isinstance(all_of, list):
+                all_of.append({"$ref": ref})
+            else:
+                value["allOf"] = [{"$ref": ref}]
+            updated += 1
+        for child in value.values():
+            updated += wrap_ref_siblings(child)
+    elif isinstance(value, list):
+        for child in value:
+            updated += wrap_ref_siblings(child)
+    return updated
+
+
 def reorder_paths(payload: dict, service: str) -> int:
     path_priority = PATH_PRIORITY_BY_SERVICE.get(service)
     paths = payload.get("paths")
@@ -390,7 +419,7 @@ def reorder_paths(payload: dict, service: str) -> int:
     return 1
 
 
-def normalize_spec(spec_path: Path) -> int:
+def normalize_spec(spec_path: Path, is_latest: bool = True) -> int:
     service = spec_path.stem.rsplit("-", 1)[0]
     service_route = SERVICE_ROUTE_SEGMENTS.get(service)
     if not service_route:
@@ -404,6 +433,7 @@ def normalize_spec(spec_path: Path) -> int:
     updated += normalize_descriptions(payload)
     updated += sanitize_component_schemas(payload)
     updated += inject_required_only_request_examples(payload)
+    updated += wrap_ref_siblings(payload)
     updated += reorder_paths(payload, service)
 
     for path_name, operations in payload.get("paths", {}).items():
@@ -415,7 +445,16 @@ def normalize_spec(spec_path: Path) -> int:
             operation_slug = (operation.get("operationId") or "").strip("/")
             if not operation_slug:
                 operation_slug = fallback_operation_slug(method.lower(), path_name)
-            href = f"/api-reference/{service_route}/{tag_slug}/{operation_slug}"
+            # UpdateReadMeOAS strips the date suffix from operationIds, so every version's
+            # operation collapses to the same slug. Without disambiguation each version's
+            # operation pins the same absolute href and they collide — Mintlify then serves a
+            # single (often older) spec at that URL, dropping fields added in newer versions.
+            # The latest/default version keeps the canonical clean URL; older versions get a
+            # version-scoped route so the canonical URL is owned solely by the latest spec.
+            if is_latest or not version_key:
+                href = f"/api-reference/{service_route}/{tag_slug}/{operation_slug}"
+            else:
+                href = f"/api-reference/{service_route}/{version_display(version_key)}/{tag_slug}/{operation_slug}"
             mint_config = operation.setdefault("x-mint", {})
             if mint_config.get("href") != href:
                 mint_config["href"] = href
@@ -431,9 +470,21 @@ def main():
     args = parser.parse_args()
 
     root = Path(args.directory)
+
+    # Determine the latest version per service so only it owns the canonical clean href.
+    latest_version_by_service: dict[str, str] = {}
+    for spec_path in root.glob("*.json"):
+        service = spec_path.stem.rsplit("-", 1)[0]
+        version_key = version_key_from_spec_path(spec_path)
+        if version_key and version_key > latest_version_by_service.get(service, ""):
+            latest_version_by_service[service] = version_key
+
     total = 0
     for spec_path in sorted(root.glob("*.json")):
-        total += normalize_spec(spec_path)
+        service = spec_path.stem.rsplit("-", 1)[0]
+        version_key = version_key_from_spec_path(spec_path)
+        is_latest = version_key is None or version_key == latest_version_by_service.get(service)
+        total += normalize_spec(spec_path, is_latest=is_latest)
     print(f"Updated {total} OpenAPI operations in {root}")
 
 

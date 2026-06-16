@@ -1674,6 +1674,9 @@
             "properties": {
               "apiKey": {
                 "type": "string"
+              },
+              "webhookPublicKey": {
+                "type": "string"
               }
             }
           }
@@ -3470,6 +3473,10 @@
             "type": "boolean",
             "description": "Whether to enable the Meld crypto wizard functionality. If a value is not set, it defaults to false."
           },
+          "headlessOnrampsEnabled": {
+            "type": "boolean",
+            "description": "Account-wide gate for the headless onramp endpoint (POST /crypto/order/headless). When true, the validator's WHITELABEL_NOT_ENABLED gate passes for any headless-eligible provider the account is provisioned for. If a value is not set, it is assumed to be false (default-deny)."
+          },
           "hideBackButton": {
             "type": "boolean",
             "description": "Whether to hide the back button in the crypto widget. If a value is not set, it is assumed to be false."
@@ -3883,19 +3890,22 @@
             "type": "string",
             "description": "Full name of the person",
             "example": "John Doe",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^(?=.{1,100}$)[\\p{L}\\p{M}]+([ '-][\\p{L}\\p{M}]+)*$"
           },
           "reasonName": {
             "type": "string",
             "description": "Reason name(s) - can be a single reason or multiple comma-separated reasons (must be valid reasons from reference table)",
             "example": "TRADITIONAL_RAMPS,VIRTUAL_ACCOUNTS",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_,\\s\\-]+$"
           },
           "roleName": {
             "type": "string",
             "description": "Role name (must be valid role from reference table)",
             "example": "ENGINEER",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_\\-]+$"
           }
         },
         "required": [
@@ -4064,8 +4074,12 @@
             "description": "Customer's external id"
           },
           "name": {
-            "$ref": "#/components/schemas/CustomerName",
-            "description": "Customer's name"
+            "description": "Customer's name",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerName"
+              }
+            ]
           },
           "phone": {
             "type": "string",
@@ -4125,8 +4139,12 @@
             "description": "Unique identifier for this customer"
           },
           "name": {
-            "$ref": "#/components/schemas/CustomerName",
-            "description": "Customer name"
+            "description": "Customer name",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerName"
+              }
+            ]
           },
           "phone": {
             "type": "string",
@@ -4162,8 +4180,12 @@
         "description": "Customer address",
         "properties": {
           "addressDetails": {
-            "$ref": "#/components/schemas/CustomerAddressDetails",
-            "description": "Address details."
+            "description": "Address details.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerAddressDetails"
+              }
+            ]
           },
           "customerId": {
             "type": "string",
@@ -4329,8 +4351,12 @@
             "description": "Provider-specific data returned when KYC was shared (e.g. hosted onboarding URL)"
           },
           "onboardingMethod": {
-            "$ref": "#/components/schemas/OnboardingMethod",
-            "description": "Onboarding method used to initiate the KYC share"
+            "description": "Onboarding method used to initiate the KYC share",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnboardingMethod"
+              }
+            ]
           },
           "status": {
             "type": "string",
@@ -4490,12 +4516,20 @@
         "type": "object",
         "properties": {
           "details": {
-            "$ref": "#/components/schemas/CustomerServiceProviderAuthDetails",
-            "description": "The service provider specific authentication details"
+            "description": "The service provider specific authentication details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerServiceProviderAuthDetails"
+              }
+            ]
           },
           "scope": {
-            "$ref": "#/components/schemas/CustomerServiceProviderAuthScope",
-            "description": "The scope the authentication details are confined to"
+            "description": "The scope the authentication details are confined to",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerServiceProviderAuthScope"
+              }
+            ]
           },
           "serviceProvider": {
             "type": "string",
@@ -4701,8 +4735,12 @@
             "minLength": 1
           },
           "details": {
-            "$ref": "#/components/schemas/CustomerServiceProviderAuthDetails",
-            "description": "The authentication details"
+            "description": "The authentication details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerServiceProviderAuthDetails"
+              }
+            ]
           },
           "id": {
             "type": "string",
@@ -4710,8 +4748,12 @@
             "minLength": 1
           },
           "scope": {
-            "$ref": "#/components/schemas/CustomerServiceProviderAuthScope",
-            "description": "The scope the authentication details are confined to"
+            "description": "The scope the authentication details are confined to",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerServiceProviderAuthScope"
+              }
+            ]
           },
           "serviceProvider": {
             "type": "string",
@@ -4922,8 +4964,12 @@
             "minLength": 1
           },
           "serviceProviderDetails": {
-            "$ref": "#/components/schemas/KycServiceProviderDetails",
-            "description": "Provider-specific details required for the selected mode. Required when mode is TOKEN_IMPORT, null for HOSTED_URL"
+            "description": "Provider-specific details required for the selected mode. Required when mode is TOKEN_IMPORT, null for HOSTED_URL",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycServiceProviderDetails"
+              }
+            ]
           }
         },
         "required": [
@@ -5675,8 +5721,12 @@
         "type": "object",
         "properties": {
           "details": {
-            "$ref": "#/components/schemas/CustomerServiceProviderAuthDetails",
-            "description": "The updated auth details to replace the existing auth details"
+            "description": "The updated auth details to replace the existing auth details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerServiceProviderAuthDetails"
+              }
+            ]
           },
           "status": {
             "type": "string",
@@ -6420,8 +6470,12 @@
             "description": "Customer's external id"
           },
           "name": {
-            "$ref": "#/components/schemas/CustomerName",
-            "description": "Customer's name"
+            "description": "Customer's name",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerName"
+              }
+            ]
           },
           "phone": {
             "type": "string",
@@ -6472,8 +6526,12 @@
             "description": "When this customer is part of a paginated list, this key represents its position in the list."
           },
           "name": {
-            "$ref": "#/components/schemas/CustomerName",
-            "description": "Customer name"
+            "description": "Customer name",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerName"
+              }
+            ]
           },
           "phone": {
             "type": "string",
@@ -6612,8 +6670,12 @@
             "description": "Customer's external id"
           },
           "name": {
-            "$ref": "#/components/schemas/CustomerName",
-            "description": "Customer's name"
+            "description": "Customer's name",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerName"
+              }
+            ]
           },
           "phone": {
             "type": "string",

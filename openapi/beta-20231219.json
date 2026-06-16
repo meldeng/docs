@@ -172,7 +172,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/beta/activity-log/activity-log-search"
+          "href": "/api-reference/beta/2023-12-19/activity-log/activity-log-search"
         }
       }
     },
@@ -227,7 +227,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/beta/activity-log/activity-log-details-get"
+          "href": "/api-reference/beta/2023-12-19/activity-log/activity-log-details-get"
         }
       }
     }
@@ -483,8 +483,12 @@
             ]
           },
           "actor": {
-            "$ref": "#/components/schemas/Actor",
-            "description": "Who did it"
+            "description": "Who did it",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Actor"
+              }
+            ]
           },
           "attributes": {
             "type": "object",
@@ -495,8 +499,12 @@
             "description": "Details about this activity (depends on the action)"
           },
           "entity": {
-            "$ref": "#/components/schemas/Entity",
-            "description": "What did this happen to"
+            "description": "What did this happen to",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Entity"
+              }
+            ]
           },
           "key": {
             "type": "string",
