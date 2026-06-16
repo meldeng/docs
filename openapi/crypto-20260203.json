@@ -106,9 +106,6 @@
                 "$ref": "#/components/schemas/SessionTokenForWidgetRequestV20231219"
               },
               "example": {
-                "sessionData": {
-                  "serviceProvider": "ALCHEMYPAY"
-                },
                 "sessionType": "BUY"
               }
             }
@@ -660,9 +657,6 @@
               },
               "example": {
                 "destinationCurrencyCode": "USD",
-                "paymentMethod": {
-                  "type": "LOCAL_BANK_TRANSFER"
-                },
                 "serviceProvider": "ACROSS",
                 "sourceAmount": 20000,
                 "sourceCurrencyCode": "USDC",

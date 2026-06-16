@@ -69,7 +69,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/transactions/payment-token-post"
+          "href": "/api-reference/payments/2025-03-04/transactions/payment-token-post"
         }
       }
     },
@@ -193,7 +193,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/transactions/payments-transactions-create"
+          "href": "/api-reference/payments/2025-03-04/transactions/payments-transactions-create"
         }
       },
       "get": {
@@ -416,7 +416,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/transactions/payments-transactions-search"
+          "href": "/api-reference/payments/2025-03-04/transactions/payments-transactions-search"
         }
       }
     },
@@ -539,7 +539,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/transactions/payments-transactions-capture"
+          "href": "/api-reference/payments/2025-03-04/transactions/payments-transactions-capture"
         }
       }
     },
@@ -602,7 +602,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/transactions/payments-transactions-get"
+          "href": "/api-reference/payments/2025-03-04/transactions/payments-transactions-get"
         }
       }
     },
@@ -735,7 +735,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/transactions/payments-transactions-refund"
+          "href": "/api-reference/payments/2025-03-04/transactions/payments-transactions-refund"
         }
       }
     },
@@ -819,7 +819,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/transactions/payouts-transactions-create"
+          "href": "/api-reference/payments/2025-03-04/transactions/payouts-transactions-create"
         }
       }
     },
@@ -942,7 +942,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/external-transactions/payments-external-transactions-import"
+          "href": "/api-reference/payments/2025-03-04/external-transactions/payments-external-transactions-import"
         }
       }
     },
@@ -1066,7 +1066,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/external-transactions/payments-external-transactions-refund"
+          "href": "/api-reference/payments/2025-03-04/external-transactions/payments-external-transactions-refund"
         }
       }
     },
@@ -1151,7 +1151,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/payments/risk/payments-transactions-risk-analysis"
+          "href": "/api-reference/payments/2025-03-04/risk/payments-transactions-risk-analysis"
         }
       }
     }

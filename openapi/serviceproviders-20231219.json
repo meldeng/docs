@@ -147,7 +147,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-search"
         }
       }
     },
@@ -287,7 +287,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-country-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-country-search"
         }
       }
     },
@@ -427,7 +427,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-crypto-currency-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-crypto-currency-search"
         }
       }
     },
@@ -502,7 +502,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-defaults-by-country-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-defaults-by-country-search"
         }
       }
     },
@@ -642,7 +642,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-fiat-currency-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-fiat-currency-search"
         }
       }
     },
@@ -782,7 +782,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-properties-payment-method-search"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-properties-payment-method-search"
         }
       }
     },
@@ -922,7 +922,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-limits-crypto-currency-sells-get"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-limits-crypto-currency-sells-get"
         }
       }
     },
@@ -1062,7 +1062,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-limits-fiat-currency-purchase-get"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-limits-fiat-currency-purchase-get"
         }
       }
     },
@@ -1202,7 +1202,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/service-providers/service-provider/service-providers-limits-kyc-fiat-level-get"
+          "href": "/api-reference/service-providers/2023-12-19/service-provider/service-providers-limits-kyc-fiat-level-get"
         }
       }
     }

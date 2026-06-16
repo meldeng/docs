@@ -172,7 +172,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/beta/activity-log/activity-log-search"
+          "href": "/api-reference/beta/2025-03-04/activity-log/activity-log-search"
         }
       }
     },
@@ -227,7 +227,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/beta/activity-log/activity-log-details-get"
+          "href": "/api-reference/beta/2025-03-04/activity-log/activity-log-details-get"
         }
       }
     }

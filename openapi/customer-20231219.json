@@ -68,7 +68,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/customer/customers/accounts-customers-create"
+          "href": "/api-reference/customer/2023-12-19/customers/accounts-customers-create"
         }
       },
       "get": {
@@ -200,7 +200,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/customer/customers/accounts-customers-search"
+          "href": "/api-reference/customer/2023-12-19/customers/accounts-customers-search"
         }
       }
     },
@@ -272,7 +272,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/customer/customers/accounts-customers-update"
+          "href": "/api-reference/customer/2023-12-19/customers/accounts-customers-update"
         }
       },
       "delete": {
@@ -352,7 +352,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/customer/customers/accounts-customers-delete"
+          "href": "/api-reference/customer/2023-12-19/customers/accounts-customers-delete"
         }
       }
     },
@@ -417,7 +417,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/customer/customers/accounts-customers-addresses-create"
+          "href": "/api-reference/customer/2023-12-19/customers/accounts-customers-addresses-create"
         }
       }
     },
@@ -514,7 +514,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/customer/customers/accounts-customers-kyc-initiate"
+          "href": "/api-reference/customer/2023-12-19/customers/accounts-customers-kyc-initiate"
         }
       }
     }

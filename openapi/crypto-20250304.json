@@ -87,7 +87,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/crypto/retail-ramp/crypto-quote-get"
+          "href": "/api-reference/crypto/2025-03-04/retail-ramp/crypto-quote-get"
         }
       }
     },
@@ -106,9 +106,6 @@
                 "$ref": "#/components/schemas/SessionTokenForWidgetRequestV20231219"
               },
               "example": {
-                "sessionData": {
-                  "serviceProvider": "ALCHEMYPAY"
-                },
                 "sessionType": "BUY"
               }
             }
@@ -145,7 +142,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/crypto/retail-ramp/crypto-session-widget-create"
+          "href": "/api-reference/crypto/2025-03-04/retail-ramp/crypto-session-widget-create"
         }
       }
     },
@@ -208,7 +205,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/crypto/retail-ramp/payments-transactions-get"
+          "href": "/api-reference/crypto/2025-03-04/retail-ramp/payments-transactions-get"
         }
       }
     },
@@ -433,7 +430,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/crypto/retail-ramp/payments-transactions-search"
+          "href": "/api-reference/crypto/2025-03-04/retail-ramp/payments-transactions-search"
         }
       }
     },
@@ -496,7 +493,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/crypto/retail-ramp/payments-transactions-sessions-get"
+          "href": "/api-reference/crypto/2025-03-04/retail-ramp/payments-transactions-sessions-get"
         }
       }
     },
@@ -552,7 +549,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/crypto/virtual-account/crypto-virtual-account-quote-get"
+          "href": "/api-reference/crypto/2025-03-04/virtual-account/crypto-virtual-account-quote-get"
         }
       }
     },
@@ -629,7 +626,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/crypto/virtual-account/payments-virtual-account-ramp-onramp-order-create"
+          "href": "/api-reference/crypto/2025-03-04/virtual-account/payments-virtual-account-ramp-onramp-order-create"
         }
       }
     },
@@ -660,9 +657,6 @@
               },
               "example": {
                 "destinationCurrencyCode": "USD",
-                "paymentMethod": {
-                  "type": "LOCAL_BANK_TRANSFER"
-                },
                 "serviceProvider": "ACROSS",
                 "sourceAmount": 20000,
                 "sourceCurrencyCode": "USDC",
@@ -709,7 +703,7 @@
           }
         ],
         "x-mint": {
-          "href": "/api-reference/crypto/virtual-account/payments-virtual-account-ramp-offramp-order-create"
+          "href": "/api-reference/crypto/2025-03-04/virtual-account/payments-virtual-account-ramp-offramp-order-create"
         }
       }
     }
