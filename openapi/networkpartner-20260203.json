@@ -1088,12 +1088,16 @@
         "description": "Category-scoped capability metadata for a network partner",
         "properties": {
           "category": {
-            "$ref": "#/components/schemas/Category",
             "type": "string",
             "examples": [
               "CRYPTO_ONRAMP"
             ],
-            "description": "Supported category"
+            "description": "Supported category",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
           },
           "domains": {
             "type": "array",
@@ -1103,12 +1107,16 @@
             "description": "Supported domains for this category"
           },
           "status": {
-            "$ref": "#/components/schemas/ProviderStatus",
             "type": "string",
             "examples": [
               "LIVE"
             ],
-            "description": "Capability status"
+            "description": "Capability status",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderStatus"
+              }
+            ]
           }
         }
       },
@@ -1159,14 +1167,22 @@
             "description": "Provider website"
           },
           "logo": {
-            "$ref": "#/components/schemas/PartnerLogo",
             "type": "object",
-            "description": "Provider logo variants"
+            "description": "Provider logo variants",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PartnerLogo"
+              }
+            ]
           },
           "headless": {
-            "$ref": "#/components/schemas/ProviderHeadlessSupport",
             "type": "object",
-            "description": "Provider-level headless integration capability"
+            "description": "Provider-level headless integration capability",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderHeadlessSupport"
+              }
+            ]
           }
         }
       },
@@ -1209,12 +1225,16 @@
         "description": "Payment method details for a supported route",
         "properties": {
           "paymentType": {
-            "$ref": "#/components/schemas/PaymentType",
             "type": "string",
             "examples": [
               "CARD"
             ],
-            "description": "Payment type"
+            "description": "Payment type",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            ]
           },
           "name": {
             "type": "string",
@@ -1231,23 +1251,35 @@
             "description": "Partner-specific payment method identifier"
           },
           "limits": {
-            "$ref": "#/components/schemas/Limit",
             "type": "object",
-            "description": "Limits for this payment method. Null when limits are not available."
+            "description": "Limits for this payment method. Null when limits are not available.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Limit"
+              }
+            ]
           },
           "logo": {
-            "$ref": "#/components/schemas/PaymentMethodLogo",
             "type": "object",
-            "description": "Payment method logo variants"
+            "description": "Payment method logo variants",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodLogo"
+              }
+            ]
           },
           "headlessSupported": {
             "type": "boolean",
             "description": "Whether this provider payment method is enabled for headless flows"
           },
           "cardRenderMode": {
-            "$ref": "#/components/schemas/CardRenderMode",
             "type": "string",
-            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported"
+            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CardRenderMode"
+              }
+            ]
           }
         }
       },
@@ -1295,12 +1327,16 @@
             "description": "Provider identifier"
           },
           "category": {
-            "$ref": "#/components/schemas/Category",
             "type": "string",
             "examples": [
               "CRYPTO_ONRAMP"
             ],
-            "description": "Provider category"
+            "description": "Provider category",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
           },
           "countryCode": {
             "type": "string",
@@ -1348,9 +1384,13 @@
             "description": "Whether the provider supports headless flows"
           },
           "kycMode": {
-            "$ref": "#/components/schemas/KycMode",
             "type": "string",
-            "description": "How the provider expects KYC to be supplied for headless flows"
+            "description": "How the provider expects KYC to be supplied for headless flows",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycMode"
+              }
+            ]
           },
           "uiCustomization": {
             "type": "boolean",
@@ -1370,12 +1410,16 @@
             "description": "Provider identifier"
           },
           "category": {
-            "$ref": "#/components/schemas/Category",
             "type": "string",
             "examples": [
               "CRYPTO_ONRAMP"
             ],
-            "description": "Provider category"
+            "description": "Provider category",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
           },
           "countryCode": {
             "type": "string",
@@ -1385,12 +1429,16 @@
             "description": "Country code"
           },
           "limitType": {
-            "$ref": "#/components/schemas/LimitType",
             "type": "string",
             "examples": [
               "DAILY"
             ],
-            "description": "Limit window"
+            "description": "Limit window",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LimitType"
+              }
+            ]
           },
           "currencyCode": {
             "type": "string",
@@ -1498,18 +1546,26 @@
             "description": "Payment method type"
           },
           "logo": {
-            "$ref": "#/components/schemas/PaymentMethodLogo",
             "type": "object",
-            "description": "Payment method logo variants"
+            "description": "Payment method logo variants",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodLogo"
+              }
+            ]
           },
           "headlessSupported": {
             "type": "boolean",
             "description": "Whether this method is enabled for headless flows in the response context. For multi-provider search, true when any matching provider supports it headlessly."
           },
           "cardRenderMode": {
-            "$ref": "#/components/schemas/CardRenderMode",
             "type": "string",
-            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported"
+            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CardRenderMode"
+              }
+            ]
           }
         }
       },

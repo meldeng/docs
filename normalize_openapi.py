@@ -371,6 +371,35 @@ def inject_required_only_request_examples(payload: dict) -> int:
     return updated
 
 
+def wrap_ref_siblings(value) -> int:
+    """Mintlify drops schema properties shaped as ``{$ref, ...siblings}`` (e.g. a $ref next to
+    a description). OpenAPI 3.1 allows the siblings, but the renderer ignores the property.
+    Rewrite such nodes into the ``allOf`` form Mintlify does render, scoped to schema refs so
+    path-level response/parameter refs are left untouched."""
+    updated = 0
+    if isinstance(value, dict):
+        ref = value.get("$ref")
+        siblings = [key for key in value if key != "$ref"]
+        if (
+            isinstance(ref, str)
+            and ref.startswith("#/components/schemas/")
+            and siblings
+        ):
+            del value["$ref"]
+            all_of = value.get("allOf")
+            if isinstance(all_of, list):
+                all_of.append({"$ref": ref})
+            else:
+                value["allOf"] = [{"$ref": ref}]
+            updated += 1
+        for child in value.values():
+            updated += wrap_ref_siblings(child)
+    elif isinstance(value, list):
+        for child in value:
+            updated += wrap_ref_siblings(child)
+    return updated
+
+
 def reorder_paths(payload: dict, service: str) -> int:
     path_priority = PATH_PRIORITY_BY_SERVICE.get(service)
     paths = payload.get("paths")
@@ -404,6 +433,7 @@ def normalize_spec(spec_path: Path) -> int:
     updated += normalize_descriptions(payload)
     updated += sanitize_component_schemas(payload)
     updated += inject_required_only_request_examples(payload)
+    updated += wrap_ref_siblings(payload)
     updated += reorder_paths(payload, service)
 
     for path_name, operations in payload.get("paths", {}).items():

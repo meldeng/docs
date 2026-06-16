@@ -1238,8 +1238,12 @@
         "type": "object",
         "properties": {
           "addressDetails": {
-            "$ref": "#/components/schemas/CustomerAddressDetails",
-            "description": "Address details"
+            "description": "Address details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerAddressDetails"
+              }
+            ]
           },
           "type": {
             "type": "string",
@@ -1282,8 +1286,12 @@
             "description": "Meld's internal Id for the Customer"
           },
           "name": {
-            "$ref": "#/components/schemas/CustomerName",
-            "description": "Your customer's name"
+            "description": "Your customer's name",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerName"
+              }
+            ]
           },
           "nameEmpty": {
             "type": "boolean"
@@ -1942,12 +1950,20 @@
                 "minLength": 1
               },
               "beneficiaryAddress": {
-                "$ref": "#/components/schemas/Address",
-                "description": "Beneficiary's address"
+                "description": "Beneficiary's address",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Address"
+                  }
+                ]
               },
               "bankAddress": {
-                "$ref": "#/components/schemas/Address",
-                "description": "Bank address"
+                "description": "Bank address",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Address"
+                  }
+                ]
               }
             }
           }
@@ -2082,8 +2098,12 @@
             "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
           },
           "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethod",
-            "description": "Payment method details for how and where the fiat currency will be received"
+            "description": "Payment method details for how and where the fiat currency will be received",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              }
+            ]
           },
           "serviceProvider": {
             "type": "string",
@@ -2237,16 +2257,24 @@
         "type": "object",
         "properties": {
           "3ds": {
-            "$ref": "#/components/schemas/ThreeDeeEssInput",
-            "description": "3ds settings"
+            "description": "3ds settings",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ThreeDeeEssInput"
+              }
+            ]
           },
           "capture": {
             "type": "boolean",
             "description": "Should the payment be captured immediately, if set to false an authorization will be performed instead"
           },
           "customer": {
-            "$ref": "#/components/schemas/CustomerInput",
-            "description": "Information about your customer"
+            "description": "Information about your customer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerInput"
+              }
+            ]
           },
           "customerId": {
             "type": "string",
@@ -2265,8 +2293,12 @@
             "description": "A payment method nonce is a secure, one-time-use reference to payment information. It's the key element that allows your server to communicate sensitive payment information to the service provider without ever touching the raw data."
           },
           "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethodInput",
-            "description": "PaymentMethod objects represent your customer's payment instruments."
+            "description": "PaymentMethod objects represent your customer's payment instruments.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodInput"
+              }
+            ]
           },
           "serviceProvider": {
             "type": "string",
@@ -2380,8 +2412,12 @@
         "type": "object",
         "properties": {
           "addressDetails": {
-            "$ref": "#/components/schemas/CustomerAddressDetails",
-            "description": "Address details"
+            "description": "Address details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerAddressDetails"
+              }
+            ]
           },
           "type": {
             "type": "string",
@@ -2421,8 +2457,12 @@
             "description": "Meld's internal Id for the Customer"
           },
           "name": {
-            "$ref": "#/components/schemas/CustomerName",
-            "description": "Your Customer's name"
+            "description": "Your Customer's name",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerName"
+              }
+            ]
           },
           "phone": {
             "type": "string",
@@ -2498,12 +2538,20 @@
             "description": "An ISO 8601 DateTime at which the object was created."
           },
           "cryptoDetails": {
-            "$ref": "#/components/schemas/CryptoDetails",
-            "description": "Details of the crypto currency purchase, sale, or transfer"
+            "description": "Details of the crypto currency purchase, sale, or transfer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoDetails"
+              }
+            ]
           },
           "customer": {
-            "$ref": "#/components/schemas/CustomerOutput",
-            "description": "Your customer's details"
+            "description": "Your customer's details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerOutput"
+              }
+            ]
           },
           "description": {
             "type": "string",
@@ -2574,8 +2622,12 @@
             "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
           },
           "paymentDetails": {
-            "$ref": "#/components/schemas/PaymentDetails",
-            "description": "payment details"
+            "description": "payment details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentDetails"
+              }
+            ]
           },
           "paymentMethodType": {
             "type": "string",
@@ -2654,8 +2706,12 @@
         "type": "object",
         "properties": {
           "transaction": {
-            "$ref": "#/components/schemas/PaymentTransactionOutput20230401",
-            "description": "Payment transaction information"
+            "description": "Payment transaction information",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentTransactionOutput20230401"
+              }
+            ]
           }
         }
       },
@@ -2709,8 +2765,12 @@
             "description": "Your (optional) Id for this customer, for example an id or reference from your database which you may supply during customer creation"
           },
           "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethodInput",
-            "description": "PaymentMethod objects represent your customer's receiving payment instrument"
+            "description": "PaymentMethod objects represent your customer's receiving payment instrument",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodInput"
+              }
+            ]
           },
           "serviceProvider": {
             "type": "string",
@@ -2812,8 +2872,12 @@
         "type": "object",
         "properties": {
           "customer": {
-            "$ref": "#/components/schemas/CustomerInput",
-            "description": "Information about your customer"
+            "description": "Information about your customer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerInput"
+              }
+            ]
           },
           "paymentMethod": {
             "$ref": "#/components/schemas/PaymentMethodInput"
@@ -2928,8 +2992,12 @@
             "description": "Meld's id for the customer"
           },
           "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethodInput",
-            "description": "Customer's payment instrument"
+            "description": "Customer's payment instrument",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodInput"
+              }
+            ]
           }
         },
         "required": [
@@ -3045,12 +3113,20 @@
             "minLength": 1
           },
           "name": {
-            "$ref": "#/components/schemas/CustomerName",
-            "description": "Customer name"
+            "description": "Customer name",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerName"
+              }
+            ]
           },
           "plaidTransferAccountFields": {
-            "$ref": "#/components/schemas/PlaidTransferAccountFields",
-            "description": "The id and token for a Plaid account used in a transfer"
+            "description": "The id and token for a Plaid account used in a transfer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaidTransferAccountFields"
+              }
+            ]
           },
           "serviceProvider": {
             "type": "string",
@@ -3423,12 +3499,20 @@
             "description": "An ISO 8601 DateTime at which the object was created."
           },
           "cryptoPurchaseDetails": {
-            "$ref": "#/components/schemas/CryptoPurchaseDetails",
-            "description": "Details of the crypto currency purchase"
+            "description": "Details of the crypto currency purchase",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoPurchaseDetails"
+              }
+            ]
           },
           "customer": {
-            "$ref": "#/components/schemas/CustomerOutput",
-            "description": "Your customer's details"
+            "description": "Your customer's details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerOutput"
+              }
+            ]
           },
           "description": {
             "type": "string",
@@ -3495,8 +3579,12 @@
             "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
           },
           "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethodOutput",
-            "description": "PaymentMethod objects represent your customer's payment instruments."
+            "description": "PaymentMethod objects represent your customer's payment instruments.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodOutput"
+              }
+            ]
           },
           "paymentMethodType": {
             "type": "string",
@@ -3571,8 +3659,12 @@
         "type": "object",
         "properties": {
           "transaction": {
-            "$ref": "#/components/schemas/PaymentTransactionOutput",
-            "description": "Payment transaction information"
+            "description": "Payment transaction information",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentTransactionOutput"
+              }
+            ]
           }
         }
       },
@@ -3617,8 +3709,12 @@
         "type": "object",
         "properties": {
           "customer": {
-            "$ref": "#/components/schemas/WidgetCustomerInput",
-            "description": "Information about your customer"
+            "description": "Information about your customer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WidgetCustomerInput"
+              }
+            ]
           },
           "customerId": {
             "type": "string",
@@ -3633,8 +3729,12 @@
             "description": "Your reference Id for your widget session"
           },
           "sessionData": {
-            "$ref": "#/components/schemas/FiatSessionDataInput",
-            "description": "Data related to the session"
+            "description": "Data related to the session",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FiatSessionDataInput"
+              }
+            ]
           },
           "sessionType": {
             "type": "string",
@@ -3653,8 +3753,12 @@
         "type": "object",
         "properties": {
           "transaction": {
-            "$ref": "#/components/schemas/WidgetTransactionInput",
-            "description": "Transaction to process"
+            "description": "Transaction to process",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WidgetTransactionInput"
+              }
+            ]
           }
         },
         "required": [
@@ -3675,8 +3779,12 @@
         "type": "object",
         "properties": {
           "3ds": {
-            "$ref": "#/components/schemas/ThreeDeeEssInput",
-            "description": "3ds settings"
+            "description": "3ds settings",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ThreeDeeEssInput"
+              }
+            ]
           },
           "description": {
             "type": "string",
@@ -3838,8 +3946,12 @@
             "minLength": 1
           },
           "kycInfo": {
-            "$ref": "#/components/schemas/KycInfo",
-            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it."
+            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycInfo"
+              }
+            ]
           },
           "lockFields": {
             "type": "array",
@@ -3969,8 +4081,12 @@
             "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
           },
           "sessionData": {
-            "$ref": "#/components/schemas/SessionDataInput",
-            "description": "Data related to the session"
+            "description": "Data related to the session",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SessionDataInput"
+              }
+            ]
           },
           "subaccountCustomerId": {
             "type": "string",
@@ -5072,12 +5188,20 @@
             "description": "An ISO 8601 DateTime at which the object was created."
           },
           "cryptoPurchaseDetails": {
-            "$ref": "#/components/schemas/CryptoPurchaseDetails",
-            "description": "Details of the crypto currency purchase"
+            "description": "Details of the crypto currency purchase",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoPurchaseDetails"
+              }
+            ]
           },
           "customer": {
-            "$ref": "#/components/schemas/CustomerOutput",
-            "description": "Your customer's details"
+            "description": "Your customer's details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerOutput"
+              }
+            ]
           },
           "description": {
             "type": "string",
@@ -5144,8 +5268,12 @@
             "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
           },
           "paymentMethod": {
-            "$ref": "#/components/schemas/PaymentMethodOutput",
-            "description": "PaymentMethod objects represent your customer's payment instruments."
+            "description": "PaymentMethod objects represent your customer's payment instruments.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodOutput"
+              }
+            ]
           },
           "paymentMethodType": {
             "type": "string",
@@ -5273,8 +5401,12 @@
         "type": "object",
         "properties": {
           "transaction": {
-            "$ref": "#/components/schemas/WidgetTransactionOutput",
-            "description": "Transaction"
+            "description": "Transaction",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WidgetTransactionOutput"
+              }
+            ]
           }
         }
       },
@@ -5294,8 +5426,12 @@
             "description": "Unique identifier for this session"
           },
           "sessionData": {
-            "$ref": "#/components/schemas/FiatSessionDataOutput",
-            "description": "Data related to the session"
+            "description": "Data related to the session",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FiatSessionDataOutput"
+              }
+            ]
           },
           "widgetPreferences": {
             "type": "object",
@@ -5465,8 +5601,12 @@
             "description": "Unique identifier for this session"
           },
           "sessionData": {
-            "$ref": "#/components/schemas/SessionDataOutput",
-            "description": "Data related to the session"
+            "description": "Data related to the session",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SessionDataOutput"
+              }
+            ]
           },
           "widgetPreferences": {
             "type": "object",
@@ -5479,8 +5619,12 @@
         "type": "object",
         "properties": {
           "additionalParams": {
-            "$ref": "#/components/schemas/ServiceProviderAdditionalParameters",
-            "description": "Service provider specific additional parameters"
+            "description": "Service provider specific additional parameters",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServiceProviderAdditionalParameters"
+              }
+            ]
           },
           "countryCode": {
             "type": "string",
@@ -5664,12 +5808,20 @@
             "description": "An ISO 8601 DateTime at which the object was created."
           },
           "cryptoDetails": {
-            "$ref": "#/components/schemas/CryptoDetails",
-            "description": "Details of the crypto currency purchase, sale, or transfer"
+            "description": "Details of the crypto currency purchase, sale, or transfer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoDetails"
+              }
+            ]
           },
           "customer": {
-            "$ref": "#/components/schemas/CustomerOutput",
-            "description": "Your customer's details"
+            "description": "Your customer's details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerOutput"
+              }
+            ]
           },
           "description": {
             "type": "string",
@@ -5740,8 +5892,12 @@
             "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
           },
           "paymentDetails": {
-            "$ref": "#/components/schemas/PaymentDetails",
-            "description": "payment details"
+            "description": "payment details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentDetails"
+              }
+            ]
           },
           "paymentMethodType": {
             "type": "string",
@@ -5837,8 +5993,12 @@
             "description": "If provided, the institution to bypass the institution selection screen in the service provider's widget. Currently this is only supported for MESH widget sessions."
           },
           "kycInfo": {
-            "$ref": "#/components/schemas/KycInfo",
-            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it."
+            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycInfo"
+              }
+            ]
           },
           "lockFields": {
             "type": "array",
@@ -5988,8 +6148,12 @@
             "minLength": 1
           },
           "kycInfo": {
-            "$ref": "#/components/schemas/KycInfo",
-            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it."
+            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycInfo"
+              }
+            ]
           },
           "lockFields": {
             "type": "array",
@@ -6139,8 +6303,12 @@
             "description": "If provided, the institution to bypass the institution selection screen in the service provider's widget. Currently this is only supported for MESH widget sessions."
           },
           "kycInfo": {
-            "$ref": "#/components/schemas/KycInfo",
-            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it."
+            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycInfo"
+              }
+            ]
           },
           "lockFields": {
             "type": "array",
@@ -6283,8 +6451,12 @@
             "description": "The client's IP address"
           },
           "kycInfo": {
-            "$ref": "#/components/schemas/KycInfo",
-            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it."
+            "description": "Optional KYC information for token passthrough. When provided with a valid KYC token from a supported provider, the verification can be transferred to downstream providers that support it.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycInfo"
+              }
+            ]
           },
           "lockFields": {
             "type": "array",
@@ -6411,8 +6583,12 @@
             "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
           },
           "sessionData": {
-            "$ref": "#/components/schemas/SessionDataInputV20231219",
-            "description": "Data related to the session"
+            "description": "Data related to the session",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SessionDataInputV20231219"
+              }
+            ]
           },
           "sessionType": {
             "type": "string",
@@ -6550,12 +6726,20 @@
             "description": "An ISO 8601 DateTime at which the object was created."
           },
           "cryptoDetails": {
-            "$ref": "#/components/schemas/CryptoDetails20250304",
-            "description": "Details of the crypto currency purchase, sale, or transfer"
+            "description": "Details of the crypto currency purchase, sale, or transfer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoDetails20250304"
+              }
+            ]
           },
           "customer": {
-            "$ref": "#/components/schemas/CustomerOutput",
-            "description": "Your customer's details"
+            "description": "Your customer's details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerOutput"
+              }
+            ]
           },
           "description": {
             "type": "string",
@@ -6626,8 +6810,12 @@
             "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
           },
           "paymentDetails": {
-            "$ref": "#/components/schemas/PaymentDetails",
-            "description": "payment details"
+            "description": "payment details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentDetails"
+              }
+            ]
           },
           "paymentMethodType": {
             "type": "string",
@@ -6719,12 +6907,20 @@
             "description": "An ISO 8601 DateTime at which the object was created."
           },
           "cryptoDetails": {
-            "$ref": "#/components/schemas/CryptoDetails20250304",
-            "description": "Details of the crypto currency purchase, sale, or transfer"
+            "description": "Details of the crypto currency purchase, sale, or transfer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoDetails20250304"
+              }
+            ]
           },
           "customer": {
-            "$ref": "#/components/schemas/CustomerOutput",
-            "description": "Your customer's details"
+            "description": "Your customer's details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerOutput"
+              }
+            ]
           },
           "description": {
             "type": "string",
@@ -6795,8 +6991,12 @@
             "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
           },
           "paymentDetails": {
-            "$ref": "#/components/schemas/PaymentDetails",
-            "description": "payment details"
+            "description": "payment details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentDetails"
+              }
+            ]
           },
           "paymentMethodType": {
             "type": "string",
@@ -6875,8 +7075,12 @@
         "type": "object",
         "properties": {
           "transaction": {
-            "$ref": "#/components/schemas/PaymentTransactionOutput20250304",
-            "description": "Payment transaction information"
+            "description": "Payment transaction information",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentTransactionOutput20250304"
+              }
+            ]
           }
         }
       },
@@ -6925,8 +7129,12 @@
             "description": "Payment Method Type used for this quote"
           },
           "rampIntelligence": {
-            "$ref": "#/components/schemas/RampIntelligence",
-            "description": "A collection of information on how to rank the quotes returned to you, based on Meld's scoring algorithms. Read more about this [here](https://docs.meld.io/docs/ramp-intelligence)."
+            "description": "A collection of information on how to rank the quotes returned to you, based on Meld's scoring algorithms. Read more about this [here](https://docs.meld.io/docs/ramp-intelligence).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RampIntelligence"
+              }
+            ]
           },
           "serviceProvider": {
             "type": "string",
