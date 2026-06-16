@@ -129,8 +129,7 @@
                       "docs/stablecoins/for-all-products/webhook-events",
                       "docs/stablecoins/for-all-products/webhooks-authentication",
                       "docs/stablecoins/for-all-products/transaction-statuses",
-                      "docs/stablecoins/for-all-products/service-provider-setup",
-                      "docs/stablecoins/white-label-api-integration/headless-apple-pay"
+                      "docs/stablecoins/for-all-products/service-provider-setup"
                     ]
                   },
                   "docs/stablecoins/ramp-swap-flow",
@@ -140,8 +139,7 @@
                       "docs/stablecoins/unified-kyc/index",
                       "docs/stablecoins/unified-kyc/you-kyc-the-user",
                       "docs/stablecoins/unified-kyc/meld-kyces-the-user"
-                    ],
-                    "hidden": true
+                    ]
                   },
                   {
                     "group": "Sandbox Testing Guide",
@@ -161,8 +159,7 @@
                       "docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
                       "docs/stablecoins/digital-asset-coverage/supported-payment-methods",
                       "docs/stablecoins/digital-asset-coverage/supported-network-partners"
-                    ],
-                    "hidden": true
+                    ]
                   },
                   {
                     "group": "Additional Information",
@@ -186,7 +183,6 @@
                       }
                     ]
                   },
-                  "docs/stablecoins/coverage",
                   "docs/stablecoins/faq"
                 ]
               },
