@@ -92,8 +92,7 @@
                         "pages": [
                           "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/index",
                           "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence",
-                          "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/white-label-customization",
-                          "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/supporting-multiple-downstream-applications"
+                          "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/white-label-customization"
                         ]
                       }
                     ]
@@ -102,12 +101,9 @@
                     "group": "Product 2: Meld Checkout",
                     "pages": [
                       "docs/stablecoins/meld-checkout-integration/index",
-                      "docs/stablecoins/meld-checkout-integration/meld-checkout-quickstart",
                       {
                         "group": "Full Integration Guide",
                         "pages": [
-                          "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/index",
-                          "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters",
                           "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/meld-checkout-customization"
                         ]
                       }
@@ -116,10 +112,7 @@
                   {
                     "group": "Product 3: Virtual Account and Payouts",
                     "pages": [
-                      "docs/stablecoins/virtual-account-integration/index",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-quickstart",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide-copy"
+                      "docs/stablecoins/virtual-account-integration/virtual-account-guide"
                     ]
                   },
                   {
@@ -128,8 +121,7 @@
                       "docs/stablecoins/for-all-products/index",
                       "docs/stablecoins/for-all-products/webhook-events",
                       "docs/stablecoins/for-all-products/webhooks-authentication",
-                      "docs/stablecoins/for-all-products/transaction-statuses",
-                      "docs/stablecoins/for-all-products/service-provider-setup"
+                      "docs/stablecoins/for-all-products/transaction-statuses"
                     ]
                   },
                   "docs/stablecoins/ramp-swap-flow",
@@ -144,21 +136,16 @@
                   {
                     "group": "Sandbox Testing Guide",
                     "pages": [
-                      "docs/stablecoins/sandbox-guide/index",
                       "docs/stablecoins/sandbox-guide/test",
-                      "docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials",
-                      "docs/stablecoins/sandbox-guide/kyc-testing"
+                      "docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials"
                     ]
                   },
                   {
                     "group": "Coverage",
                     "pages": [
                       "docs/stablecoins/digital-asset-coverage/index",
-                      "docs/stablecoins/digital-asset-coverage/supported-crypto-currencies",
                       "docs/stablecoins/digital-asset-coverage/supported-countries",
-                      "docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
-                      "docs/stablecoins/digital-asset-coverage/supported-payment-methods",
-                      "docs/stablecoins/digital-asset-coverage/supported-network-partners"
+                      "docs/stablecoins/digital-asset-coverage/supported-payment-methods"
                     ]
                   },
                   {
@@ -169,9 +156,7 @@
                         "group": "Buy, Sell, and Transfers",
                         "pages": [
                           "docs/stablecoins/additional-information/flow/index",
-                          "docs/stablecoins/additional-information/flow/buy-flow",
-                          "docs/stablecoins/additional-information/flow/sell-flow",
-                          "docs/stablecoins/additional-information/flow/transfer-flow"
+                          "docs/stablecoins/additional-information/flow/sell-flow"
                         ]
                       },
                       {
@@ -194,7 +179,6 @@
                     "pages": [
                       "docs/bank-linking/bank-linking-quickstart/index",
                       "docs/bank-linking/bank-linking-quickstart/bank-linking-glossary",
-                      "docs/bank-linking/bank-linking-quickstart/bank-linking-use-cases",
                       {
                         "group": "Bank Linking Products",
                         "pages": [
@@ -203,12 +187,9 @@
                           "docs/bank-linking/bank-linking-quickstart/bank-linking-products/account-identifiers",
                           "docs/bank-linking/bank-linking-quickstart/bank-linking-products/account-owners",
                           "docs/bank-linking/bank-linking-quickstart/bank-linking-products/account-transactions",
-                          "docs/bank-linking/bank-linking-quickstart/bank-linking-products/fetching-transaction-information",
-                          "docs/bank-linking/bank-linking-quickstart/bank-linking-products/account-investments",
                           "docs/bank-linking/bank-linking-quickstart/bank-linking-products/account-processor-token"
                         ]
                       },
-                      "docs/bank-linking/bank-linking-quickstart/account-verification",
                       {
                         "group": "App to App Authentication",
                         "pages": [
@@ -224,16 +205,13 @@
                     "pages": [
                       "docs/bank-linking/onboarding/index",
                       "docs/bank-linking/onboarding/step-1-accept-your-dashboard-invite",
-                      "docs/bank-linking/onboarding/step-2-adding-your-service-providers",
                       "docs/bank-linking/onboarding/step-3-meld-api-key",
                       "docs/bank-linking/onboarding/step-4-make-your-first-api-call",
                       {
                         "group": "Step 4: Setting Up Webhooks",
                         "pages": [
                           "docs/bank-linking/onboarding/step-5-setting-up-webhooks/index",
-                          "docs/bank-linking/onboarding/step-5-setting-up-webhooks/webhook-quickstart",
-                          "docs/bank-linking/onboarding/step-5-setting-up-webhooks/webhook-authentication",
-                          "docs/bank-linking/onboarding/step-5-setting-up-webhooks/webhook-retries"
+                          "docs/bank-linking/onboarding/step-5-setting-up-webhooks/webhook-quickstart"
                         ]
                       },
                       "docs/bank-linking/onboarding/step-6-integration"
@@ -247,7 +225,6 @@
                         "group": "Step 1: Create a Connect Token",
                         "pages": [
                           "docs/bank-linking/creating-connections/create-a-connect-token/index",
-                          "docs/bank-linking/creating-connections/create-a-connect-token/supported-bank-linking-products",
                           "docs/bank-linking/creating-connections/create-a-connect-token/optional-products"
                         ]
                       },
@@ -262,16 +239,12 @@
                       {
                         "group": "Step 3: Select an Institution",
                         "pages": [
-                          "docs/bank-linking/creating-connections/select-an-institution/index",
-                          "docs/bank-linking/creating-connections/select-an-institution/routing-overview"
+                          "docs/bank-linking/creating-connections/select-an-institution/index"
                         ]
                       },
                       {
                         "group": "Step 4: Complete the Connection",
-                        "pages": [
-                          "docs/bank-linking/creating-connections/complete-the-connection/index",
-                          "docs/bank-linking/creating-connections/complete-the-connection/widget-errors-during-a-connection"
-                        ]
+                        "pages": []
                       }
                     ]
                   },
@@ -285,8 +258,7 @@
                       {
                         "group": "Connection Statuses and Errors",
                         "pages": [
-                          "docs/bank-linking/get-connection-data/connection-statuses-and-errors/index",
-                          "docs/bank-linking/get-connection-data/connection-statuses-and-errors/connection-errors-and-reasons"
+                          "docs/bank-linking/get-connection-data/connection-statuses-and-errors/index"
                         ]
                       },
                       "docs/bank-linking/get-connection-data/data-normalization",
@@ -296,18 +268,15 @@
                   {
                     "group": "Manage Connections",
                     "pages": [
-                      "docs/bank-linking/manage-connection-status/index",
                       "docs/bank-linking/manage-connection-status/refreshing-connections",
                       "docs/bank-linking/manage-connection-status/updating-connections",
                       "docs/bank-linking/manage-connection-status/repairing-connections",
-                      "docs/bank-linking/manage-connection-status/deleting-connections",
                       "docs/bank-linking/manage-connection-status/importing-connections"
                     ]
                   },
                   {
                     "group": "Testing and Debugging",
                     "pages": [
-                      "docs/bank-linking/testing-and-debugging/index",
                       "docs/bank-linking/testing-and-debugging/bank-linking-sandbox-testing-guide",
                       "docs/bank-linking/testing-and-debugging/debugging-activity-log"
                     ]
@@ -337,7 +306,6 @@
                           "docs/bank-linking/partner-details/finicity/finicity-to-meld-mappings",
                           "docs/bank-linking/partner-details/finicity/finicity-balances-mapping",
                           "docs/bank-linking/partner-details/finicity/finicity-identifiers-mapping",
-                          "docs/bank-linking/partner-details/finicity/finicity-owners-mapping",
                           "docs/bank-linking/partner-details/finicity/finicity-transactions-mapping",
                           "docs/bank-linking/partner-details/finicity/finicity-investment-holdings-mapping",
                           "docs/bank-linking/partner-details/finicity/finicity-investment-transactions-mapping"
@@ -346,10 +314,7 @@
                       {
                         "group": "MX Partner Details",
                         "pages": [
-                          "docs/bank-linking/partner-details/mx/index",
-                          "docs/bank-linking/partner-details/mx/mx-to-meld-mappings",
                           "docs/bank-linking/partner-details/mx/mx-balances-mapping",
-                          "docs/bank-linking/partner-details/mx/mx-identifiers-mapping",
                           "docs/bank-linking/partner-details/mx/mx-owners-mapping",
                           "docs/bank-linking/partner-details/mx/mx-transactions-mapping",
                           "docs/bank-linking/partner-details/mx/mx-investment-holdings-mapping",
@@ -359,12 +324,8 @@
                       {
                         "group": "Salt Edge Partner Details",
                         "pages": [
-                          "docs/bank-linking/partner-details/salt-edge/index",
-                          "docs/bank-linking/partner-details/salt-edge/salt-edge-to-meld-mappings",
                           "docs/bank-linking/partner-details/salt-edge/salt-edge-balances-mapping",
-                          "docs/bank-linking/partner-details/salt-edge/salt-edge-identifiers-mapping",
-                          "docs/bank-linking/partner-details/salt-edge/salt-edge-owners-mapping",
-                          "docs/bank-linking/partner-details/salt-edge/salt-edge-transactions-mapping"
+                          "docs/bank-linking/partner-details/salt-edge/salt-edge-identifiers-mapping"
                         ]
                       },
                       {
@@ -373,7 +334,6 @@
                           "docs/bank-linking/partner-details/salt-edge-partners/index",
                           "docs/bank-linking/partner-details/salt-edge-partners/salt-edge-partners-to-meld-mappings",
                           "docs/bank-linking/partner-details/salt-edge-partners/salt-edge-partners-balance-mapping",
-                          "docs/bank-linking/partner-details/salt-edge-partners/salt-edge-partners-identifiers-mapping",
                           "docs/bank-linking/partner-details/salt-edge-partners/salt-edge-partners-owners-mapping",
                           "docs/bank-linking/partner-details/salt-edge-partners/salt-edge-partners-transactions-mapping"
                         ]
@@ -414,7 +374,8 @@
                 "openapi": {
                   "source": "openapi/payments-20260203.json",
                   "directory": "api-reference/payments"
-                }
+                },
+                "hidden": true
               },
               {
                 "group": "Customer",
