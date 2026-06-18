@@ -141,12 +141,13 @@
                     ]
                   },
                   {
-                    "group": "Coverage",
+                    "group": "Coverage (old)",
                     "pages": [
                       "docs/stablecoins/digital-asset-coverage/index",
                       "docs/stablecoins/digital-asset-coverage/supported-countries",
                       "docs/stablecoins/digital-asset-coverage/supported-payment-methods"
-                    ]
+                    ],
+                    "hidden": true
                   },
                   {
                     "group": "Additional Information",
@@ -168,7 +169,8 @@
                       }
                     ]
                   },
-                  "docs/stablecoins/faq"
+                  "docs/stablecoins/faq",
+                  "docs/stablecoins/untitled-page"
                 ]
               },
               {
@@ -520,7 +522,7 @@
                     ]
                   },
                   {
-                    "group": "Coverage",
+                    "group": "Coverage (old)",
                     "pages": [
                       "docs/stablecoins/digital-asset-coverage/index",
                       "docs/stablecoins/digital-asset-coverage/supported-crypto-currencies",
@@ -528,7 +530,8 @@
                       "docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
                       "docs/stablecoins/digital-asset-coverage/supported-payment-methods",
                       "docs/stablecoins/digital-asset-coverage/supported-network-partners"
-                    ]
+                    ],
+                    "hidden": true
                   },
                   {
                     "group": "Additional Information",
@@ -552,7 +555,8 @@
                       }
                     ]
                   },
-                  "docs/stablecoins/faq"
+                  "docs/stablecoins/faq",
+                  "docs/stablecoins/coverage"
                 ]
               },
               {
