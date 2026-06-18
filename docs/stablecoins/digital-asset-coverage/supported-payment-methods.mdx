@@ -1,22 +1,21 @@
 ---
 title: "Supported Payment Methods"
+hidden: true
 ---
 
 Service Providers accessed through Meld support a wide variety of payment methods. You can find a list of supported payment methods for onramps and offramps below.
 
-
 <Note>
-Interacting with our Coverage docs
+  Interacting with our Coverage docs
 
-Please note that all coverage sheets are set to 'view only' access. To filter the data and use these sheets more easily, please create a local filter.
+  Please note that all coverage sheets are set to 'view only' access. To filter the data and use these sheets more easily, please create a local filter.
 
-To create a local filter, click on 'Data' > 'Filter views' > 'Create new temporary filter view'. Now, you can interact with Meld's coverage documents with ease!
+  To create a local filter, click on 'Data' \> 'Filter views' \> 'Create new temporary filter view'. Now, you can interact with Meld's coverage documents with ease!
 </Note>
-
 
 ## On-Ramps
 
-* [Default Type and Subtype for Onramps](#default-type-and-subtype-for-onramps)
+- [Default Type and Subtype for Onramps](#default-type-and-subtype-for-onramps)
 
 ## Off-Ramps
 
@@ -24,26 +23,22 @@ To create a local filter, click on 'Data' > 'Filter views' > 'Create new tempora
 
 The `GET /service-providers/properties/payment-methods` endpoint can also be used to obtain this information.
 
-
 <Note>
-Type vs. Subtype
+  Type vs. Subtype
 
-The type is a broad and general description of the payment method. The subtype is a subset of the type. For example, 'CARD', 'LOCAL' and 'MOBILE\_WALLET' are payment method types, and 'VISA', 'GIROPAY', and 'APPLE\_PAY' are the respective payment method subtypes.
+  The type is a broad and general description of the payment method. The subtype is a subset of the type. For example, 'CARD', 'LOCAL' and 'MOBILE\_WALLET' are payment method types, and 'VISA', 'GIROPAY', and 'APPLE\_PAY' are the respective payment method subtypes.
 
-If you request a paymentMethodType in your quote request, you will get back either that `paymentMethodType` or the `paymentMethodSubType`that the specific service provider returns as the default for that type. 
+  If you request a paymentMethodType in your quote request, you will get back either that `paymentMethodType` or the `paymentMethodSubType`that the specific service provider returns as the default for that type.
 
-Meld accepts both Type and Subtype as valid strings within the `paymentMethodType` parameter on the `POST /payments/crypto/quote` and `POST /crypto/session/widget` endpoints.
+  Meld accepts both Type and Subtype as valid strings within the `paymentMethodType` parameter on the `POST /payments/crypto/quote` and `POST /crypto/session/widget` endpoints.
 </Note>
 
-
-
-*Note: The `GET /service-providers/properties/payment-methods` endpoint can be used to get a list of countries a payment method supports.*
+_Note: The `GET /service-providers/properties/payment-methods` endpoint can be used to get a list of countries a payment method supports._
 
 ## Supported Payment Methods for Offramps
 
-
 ## Default Type and Subtype for Onramps
 
-If no paymentMethodType or paymentMethodSubType is provided in Meld's /quote or /widget endpoints, the Meld default paymentMethodType and paymentMethodSubType will be used for each service provider. 
+If no paymentMethodType or paymentMethodSubType is provided in Meld's /quote or /widget endpoints, the Meld default paymentMethodType and paymentMethodSubType will be used for each service provider.
 
 Default payment methods are configured at the service provider level. The Meld default for each paymentMethodType  can be found in the sheet below. Please note that Xanpool is the only service provider with a default paymentMethodType for the type LOCAL. If LOCAL is passed as a parameter when requesting quotes from multiple service providers, the LOCAL payment method which supports that currency/country combo and is supported by each service provider will be returned.
