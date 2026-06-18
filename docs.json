@@ -169,6 +169,7 @@
                       }
                     ]
                   },
+                  "docs/stablecoins/coverage",
                   "docs/stablecoins/faq"
                 ]
               },
@@ -554,8 +555,7 @@
                       }
                     ]
                   },
-                  "docs/stablecoins/faq",
-                  "docs/stablecoins/coverage"
+                  "docs/stablecoins/faq"
                 ]
               },
               {
