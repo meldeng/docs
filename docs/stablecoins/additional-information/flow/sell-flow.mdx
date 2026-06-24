@@ -2,17 +2,258 @@
 title: "Sell Flow"
 ---
 
-# Sell Flow - Crypto Offramp
+The sell flow (aka offramping) is how users trade their crypto back for fiat currency.
 
-Sell Flow, also known as offramping, allows users to sell cryptocurrency and receive fiat currency through their preferred payment method.
+If you would like to use Meld's UI for the entire flow, Meld recommends using the [All in One Wizard](/docs/old-crypto/integration-options-old/crypto-widget), which follows the standard flow below. If you use the wizard, you do not need to read any of the information below.
 
-## How the Sell Flow Works
+The information below applies only if you are planning to use the Meld [White Label Widget](/docs/old-crypto/integration-options-old/crypto-widget).
 
-1. **User Input:** Amount of crypto to sell, desired fiat currency, payout method
-2. **Quote Comparison:** Multiple provider quotes with rates and fees
-3. **Provider Selection:** User chooses best quote
-4. **KYC / KYB:** The user must prove their identify, once per onramp. In the Ramp flow this is via the onramp's UI, in the Virtual Account flow this will be manually processed by Meld for the time being.
-5. **Crypto Transfer:** User sends crypto to onramp's wallet
-6. **Fiat Payout:** Provider sends fiat to user's bank account or card
+## How the sell flow works
 
-***
+1. **User input** — Amount of crypto to sell, desired fiat currency, payout method.
+2. **Quote comparison** — Multiple provider quotes with rates and fees.
+3. **Provider selection** — User chooses the best quote.
+4. **KYC / KYB** — The user must prove their identity, once per offramp. In the Ramp flow this is via the offramp's UI; in the Virtual Account flow this is manually processed by Meld for the time being.
+5. **Crypto transfer** — User sends crypto to the offramp's wallet.
+6. **Fiat payout** — Provider sends fiat to the user's bank account or card.
+
+## Steps to users selling crypto
+
+If you are using your own UI to collect this information, use Meld's [service provider endpoints](/api-reference/service-providers) to know which countries, payment methods, fiat currencies, and tokens the offramps you have enabled support.
+
+Once you have the above information, there are two possible flows, depending on what the offramp supports.
+
+### Standard flow
+
+Complete the following steps, in order:
+
+1. Get a [crypto quote](/docs/old-crypto/integration-options-old/crypto-widget/crypto-quotes) from Meld for each provider. This involves gathering the parameters for the kind of quote the user wants and passing them to the [crypto quote](/api-reference/crypto/retail-ramp/crypto-quote-get) endpoint. Meld recommends sorting by the highest `destinationAmount` (the amount of fiat the user will receive).
+2. The user selects an offramp based on the quotes (or you select one for them) and launches the offramp's [widget](/docs/old-crypto/integration-options-old/crypto-widget). The user completes the transaction in the widget. This entails the user sending crypto to the offramp and the offramp sending fiat to the payment method they provided (typically bank account or card). You can pass in a `redirectUrl` so the user gets redirected after they submit a transaction on the offramp.
+3. Wait and listen for webhooks, and use them as triggers to fetch transaction data. For more information see [Fetch transaction information](/docs/old-crypto/integration-options-old/crypto-widget/fetch-transaction-information). Once you have transaction data, you can choose how to display it to the user.
+
+### Preferred flow
+
+This flow is similar to the one above, but leads to a smoother user experience and therefore higher conversion. Meld recommends using this flow as more offramps start to support it.
+
+1. Get a [crypto quote](/docs/old-crypto/integration-options-old/crypto-widget/crypto-quotes) from Meld for each provider. Meld recommends sorting by the highest `destinationAmount`.
+2. The user selects an offramp based on the quotes (or you select one for them) and launches the offramp's [widget](/docs/old-crypto/integration-options-old/crypto-widget). To trigger the preferred flow, pass `"redirectFlow": true` in the body of the request (within `sessionData`). The user completes KYC and confirms the quote in the widget, but does not complete the transaction there — instead they are redirected back to your UI.
+3. Using the redirect to your UI as a trigger, call Meld's [force fetch transaction endpoint](/api-reference/crypto/retail-ramp/payments-transactions-sessions-get) to fetch the token (`sourceCurrencyCode`), amount (`sourceAmount`), and the wallet address for the user to send crypto to (`cryptoDetails.destinationWalletAddress`). Using these, queue up a transfer of that amount of that token to that wallet address, and ask the user to confirm the transfer. Once they do, commence the transfer.
+4. Once the offramp receives the token, they send fiat to the payment method the user provided (typically bank account or card). You can show the user a transaction status page while they wait for the transaction to complete.
+5. Wait and listen for webhooks, and use them as triggers to fetch transaction data from the [`/transactions` endpoint](/api-reference/crypto/retail-ramp/payments-transactions-get). For more information see [Fetch transaction information](/docs/old-crypto/integration-options-old/crypto-widget/fetch-transaction-information).
+
+<Note>
+  In both flows, Step 1 (getting a quote) leads to the best user experience but is not required. You can launch an offramp's widget without asking for a quote beforehand.
+</Note>
+
+\
+
+|  | **\<div style={{ textAlign: "center" }}\>Retail Off-Ramp Support**<br />**(Sell Crypto)** |
+| :-- | :-- |
+| **Alchemy Pay** | \<div style={{ textAlign: "center" }}\> Standard Flow |
+| **Banxa** | \<div style={{ textAlign: "center" }}\> Preferred Flow |
+| **Coinbase Pay** | \<div style={{ textAlign: "center" }}\> Preferred Flow |
+| **Koywe** | \<div style={{ textAlign: "center" }}\> Standard Flow |
+| **OnMeta** | \<div style={{ textAlign: "center" }}\> Preferred Flow |
+| **Paybis** | \<div style={{ textAlign: "center" }}\> Standard Flow |
+| **Robinhood Connect** | \<div style={{ textAlign: "center" }}\> Preferred Flow |
+| **Transak** | \<div style={{ textAlign: "center" }}\> Preferred and Standard Flow |
+| **TransFi** | \<div style={{ textAlign: "center" }}\> Standard Flow |
+| **Unlimit** | \<div style={{ textAlign: "center" }}\> Preferred and Standard Flow |
+
+## How to sell crypto
+
+### Quote
+
+Here is an example call to [`/quotes`](/api-reference/crypto/retail-ramp/crypto-quote-get) when selling cryptocurrency. Passing in `serviceProviders` is optional.
+
+```json Request
+{
+  "countryCode": "US",
+  "sourceCurrencyCode": "ETH",
+  "sourceAmount": "0.01",
+  "destinationCurrencyCode": "USD"
+  // "serviceProviders": ["TRANSAK", "KOYWE"]
+}
+```
+
+```json Response
+{
+  "quotes": [
+    {
+      "transactionType": "CRYPTO_SELL",
+      "sourceAmount": 0.01,
+      "sourceAmountWithoutFees": null,
+      "fiatAmountWithoutFees": 30.75,
+      "destinationAmountWithoutFees": 30.75,
+      "sourceCurrencyCode": "ETH",
+      "countryCode": "US",
+      "totalFee": 4.43,
+      "networkFee": null,
+      "transactionFee": 3.99,
+      "destinationAmount": 26.32,
+      "destinationCurrencyCode": "USD",
+      "exchangeRate": 3075,
+      "paymentMethodType": "VISA_DIRECT",
+      "customerScore": null,
+      "serviceProvider": "TRANSAK"
+    },
+    {
+      "transactionType": "CRYPTO_SELL",
+      "sourceAmount": 0.01,
+      "sourceAmountWithoutFees": null,
+      "fiatAmountWithoutFees": 30.25,
+      "destinationAmountWithoutFees": 30.25,
+      "sourceCurrencyCode": "ETH",
+      "countryCode": "US",
+      "totalFee": 4.93,
+      "networkFee": null,
+      "transactionFee": 3.99,
+      "destinationAmount": 27.04,
+      "destinationCurrencyCode": "USD",
+      "exchangeRate": 2986,
+      "paymentMethodType": "CREDIT_DEBIT_CARD",
+      "customerScore": null,
+      "serviceProvider": "TRANSFI"
+    }
+  ],
+  "message": null,
+  "error": null
+}
+```
+
+<Note>
+  Unlike the Buy flow, currently no `customerScore` values are returned for the Sell flow.
+</Note>
+
+### Widget
+
+Here is an example of the corresponding call to [`/widget`](/api-reference/crypto/retail-ramp/crypto-session-widget-create) when selling cryptocurrency. Unlike the Buy call, the wallet address should not be passed here.
+
+```json Request
+{
+  "sessionData": {
+    "countryCode": "US",
+    "sourceCurrencyCode": "ETH",
+    "sourceAmount": "0.01",
+    "destinationCurrencyCode": "USD",
+    "serviceProvider": "TRANSAK"
+  },
+  "sessionType": "SELL",
+  "externalCustomerId": "customer1",
+  "externalSessionId": "sellsession1"
+}
+```
+
+```json Response
+{
+  "id": "WQ4xsQLPnY1yFWvT1eEYgU",
+  "externalSessionId": "sellsession1",
+  "externalCustomerId": "customer1",
+  "customerId": "WQ5BicuTRkM5BCQAFCY3Qs",
+  "widgetUrl": "https://meldcrypto.com/?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
+
+## Webhooks
+
+Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first webhook you will receive for any transaction. See more about the various webhooks [here](/docs/old-crypto/webhook-events-crypto).
+
+```json
+{
+  "eventType": "TRANSACTION_CRYPTO_PENDING",
+  "eventId": "AAsuLXHXD3mS1cjNBuHHab",
+  "timestamp": "2024-02-24T16:36:41.717262Z",
+  "accountId": "W2aRZnYGPwhBWB94iFsZus",
+  "version": "2024-02-02",
+  "payload": {
+    "accountId": "W2aRZnYGPwhBWB94iFsZus",
+    "paymentTransactionId": "W9k9Tg12BFk1i68WpQYQY9",
+    "customerId": "WQ4toL6ECKWc96PZ8HufDU",
+    "externalCustomerId": "customer1",
+    "externalSessionId": "sellsession1",
+    "paymentTransactionStatus": "PENDING"
+  }
+}
+```
+
+## Transaction data
+
+Once you call [`/transactions`](/api-reference/crypto/retail-ramp/payments-transactions-get) with a `transactionId` (the `paymentTransactionId` in the webhook above), this is a sample response:
+
+```json
+{
+  "key": "LYoQeP31CEkFxmsZvBKqy2EcRvgHiKdSqdsLQNA9C23DAg4ahRPdaSWeL7esWooQb9tMZaEdd7SLukWCSD95zzciDE",
+  "id": "W9k9Tg12BFk1i68WpQYQY9",
+  "parentPaymentTransactionId": null,
+  "accountId": "W9kg9iP1sbpyZptQDcCMJu",
+  "isPassthrough": false,
+  "passthroughReference": null,
+  "isImported": false,
+  "customer": {
+    "id": "WQ4toL6ECKWc96PZ8HufDU",
+    "accountId": "W2aRZnYGPwhBWB94iFsZus",
+    "name": {
+      "firstName": null,
+      "lastName": null
+    },
+    "addresses": []
+  },
+  "transactionType": "CRYPTO_SELL",
+  "status": "SETTLED",
+  "sourceAmount": 0.01,
+  "sourceCurrencyCode": "ETH",
+  "destinationAmount": 26.18,
+  "destinationCurrencyCode": "USD",
+  "paymentMethodType": "CREDIT_DEBIT_CARD",
+  "serviceProvider": "TRANSAK",
+  "serviceTransactionId": "transak-2332238o32uo3iu2",
+  "description": null,
+  "externalReferenceId": null,
+  "serviceProviderDetails": {
+    "networkFee": 0.77,
+    "type": "transak",
+    "quoteId": "edff5599-3999-46d5-a887-9dc340323234",
+    "processingFee": 1.5,
+    "cryptoCurrency": "ETH",
+    "txnHash": "6E54FC71179F741EEE63569A4BA554FEF5A9FDDEDBDF23r23rewfsdfewfw32f3f",
+    "totalFee": 3.27,
+    "requestId": "fa0f7454-0f6d-4e71-b274-3232ewf33f33",
+    "cryptoCurrencyAmount": 0.01,
+    "partnerUserId": "WQ4wmNrDmELekUBRFJZg7K",
+    "walletAddress": "0x23rewFEWKJNEWN3313EFEFKNKN33qx3f3k3k3f3J2",
+    "status": "completed",
+    "partnerFee": 1
+  },
+  "multiFactorAuthorizationStatus": null,
+  "createdAt": "2024-04-19T20:47:36.578875Z",
+  "updatedAt": "2024-04-19T20:49:04.616555Z",
+  "countryCode": "NO",
+  "sessionId": "WQ4wQ4w475pjaRrNfT8KE9",
+  "externalSessionId": null,
+  "paymentDetails": null,
+  "cryptoDetails": {
+    "destinationWalletAddress": "0x23rewFEWKJNEWN3313EFEFKNKN33qx3f3k3k3f3J2",
+    "walletAddress": "0x23rewFEWKJNEWN3313EFEFKNKN33qx3f3k3k3f3J2",
+    "networkFee": 0.77,
+    "transactionFee": 1.5,
+    "partnerFee": 1,
+    "totalFee": 3.27,
+    "networkFeeInUsd": null,
+    "transactionFeeInUsd": null,
+    "partnerFeeInUsd": null,
+    "totalFeeInUsd": null,
+    "blockchainTransactionId": "6E54FC71179F741EEE63569A4BA554FEF5A9FDDEDBDF23r23rewfsdfewfw32f3f",
+    "institution": null,
+    "chainId": 1
+  },
+  "externalCustomerId": null,
+  "fiatAmountInUsd": 96.73,
+  "sessionClientTags": null,
+  "apiAccessProfileId": "WGuwgsCEsfyyrzmZfb4y2t"
+}
+```
+
+<Note>
+  The `serviceProviderDetails` are directly the fields from the offramp's own transactions endpoint, so the specific fields and field names vary per offramp.
+</Note>
