@@ -121,7 +121,8 @@
                       "docs/stablecoins/for-all-products/index",
                       "docs/stablecoins/for-all-products/webhook-events",
                       "docs/stablecoins/for-all-products/webhooks-authentication",
-                      "docs/stablecoins/for-all-products/transaction-statuses"
+                      "docs/stablecoins/for-all-products/transaction-statuses",
+                      "docs/stablecoins/white-label-api-integration/headless-apple-pay"
                     ]
                   },
                   "docs/stablecoins/ramp-swap-flow",
