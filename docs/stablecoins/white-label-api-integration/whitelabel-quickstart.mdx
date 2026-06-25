@@ -1,11 +1,11 @@
 ---
 title: "Quickstart"
-description: "This is the 30 minute quickstart guide for executing the white-label API flow for the first time."
+description: "Fast sandbox quickstart for the White-Label API — run a buy (on-ramp) and a sell (off-ramp) flow against Meld directly with your API key."
 ---
 
 # Integration Quickstart
 
-This quickstart is for developers integrating Meld's White-Label API for the first time. You'll go from zero credentials to a successfully completed sandbox transaction in about 30 minutes.
+This quickstart is for developers integrating Meld's White-Label API for the first time. You call Meld directly over REST with `Authorization: BASIC {apiKey}` — there is no SDK or client framework to install. You'll go from zero credentials to a completed sandbox **buy** and **sell** transaction in about 30 minutes.
 
 **Time required:** 30 minutes
 **Difficulty:** API knowledge required
@@ -17,187 +17,415 @@ This quickstart is for developers integrating Meld's White-Label API for the fir
 * A publicly reachable webhook URL (optional; you can poll the API instead)
 
 <Note>
-**Sandbox base URL:** `https://api-sb.meld.io`. Production credentials and URLs are separate — sandbox credentials will not work in production and vice versa.
+**Base URLs:** `https://api-sb.meld.io` (sandbox) and `https://api.meld.io` (production). Sandbox credentials will not work in production and vice versa. All examples below use the sandbox URL.
 </Note>
 
-## Step 1: Get Your API Key
+### Authentication
+
+Every request carries the same headers:
+
+```
+Authorization: BASIC {apiKey}
+Accept: application/json
+Content-Type: application/json
+Meld-Version: 2026-02-03
+```
+
+<Warning>
+Always add `BASIC` before your API key. Send `Content-Type: application/json` only on requests with a body.
+
+**Example:** `Authorization: BASIC W9kZTT7332okCEc1A9aqAq:3sYKoXQv6oHVHSts7G2agw9vTCXz`
+</Warning>
+
+## Step 1: Get your API key
 
 Your API key is required for all Meld API calls.
 
-### Process:
-
-1. **Check your email** for the Meld dashboard invitation
-2. **Click the invitation link** and log in
-3. In the dashboard [https://dashboard.meld.io](https://dashboard.meld.io) , **navigate to Developer > API Keys**
-4. **Click "Reveal Key"**
-5. **Copy and save** your API key securely
-
-
-<Warning>
-**Important:** Always add `BASIC` before your API key in all requests
-
-**Example:** `BASIC W9kZTT7332okCEc1A9aqAq:3sYKoXQv6oHVHSts7G2agw9vTCXz`
-</Warning>
-
+<Steps>
+<Step title="Open the invitation">
+Check your email for the Meld dashboard invitation, click the link, and log in.
+</Step>
+<Step title="Navigate to API keys">
+In the dashboard at [https://dashboard.meld.io](https://dashboard.meld.io), go to **Developer → API Keys**.
+</Step>
+<Step title="Reveal and copy">
+Click **Reveal Key**, then copy and store your API key securely.
+</Step>
+</Steps>
 
 ***
 
-## Step 2: Set Up Webhooks
+## Step 2: Set up webhooks
 
-Webhooks notify your server when transactions are created and updated. This step can be completed later.
+Webhooks notify your server when transactions are created and updated. This step can be completed later — you can poll `GET /payments/transactions/{id}` instead.
 
-### Requirements:
-
-* **A publicly accessible URL** (localhost will not work)
-* For testing, consider using [ngrok](https://ngrok.com/), [webhook.site](https://webhook.site/) or similar services
-
-### Setup Process:
-
-1. Navigate to **Developer > Webhooks** in the dashboard
-2. Click **"Add Endpoint"**
-3. Enter your **webhook URL** (must start with http/https)
-4. Give your webhook a **descriptive name**
-5. Select **"Subscribe to all events"**
-6. Click **"Add endpoint"**
-
+<Steps>
+<Step title="Add an endpoint">
+In the dashboard, go to **Developer → Webhooks** and click **Add Endpoint**.
+</Step>
+<Step title="Configure">
+Enter a publicly accessible **webhook URL** (http/https; localhost will not work), give it a descriptive name, and select **Subscribe to all events**.
+</Step>
+<Step title="Save">
+Click **Add endpoint**. You'll now receive `TRANSACTION_CRYPTO_*` events for all transaction creations and updates.
+</Step>
+</Steps>
 
 <Note>
-### **Note:** You will receive notifications to this URL for all transaction creations and updates.
+For local testing, use a tunnel such as [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/).
 </Note>
 
+***
+
+## Pick a direction
+
+Everything downstream is parameterized by a **category**:
+
+* **Buy (on-ramp)** — `CRYPTO_ONRAMP`: the user pays fiat and receives crypto.
+* **Sell (off-ramp)** — `CRYPTO_OFFRAMP`: the user sends crypto and receives fiat.
+
+Both directions use the same three core endpoints — `POST /payments/crypto/quote`, `POST /crypto/session/widget`, and `GET /payments/transactions/{id}`. The session body uses the **nested** `{ sessionType, sessionData }` shape in both cases. The differences are the source/destination ordering, the `sessionType`, and one extra step for sell (surfacing the deposit address).
+
+<Note>
+This quickstart keeps discovery to the minimum needed. For full discovery (countries, default currencies, payment methods, and route limits via the `/network-partner/*` endpoints), see the [White-Label API Guide](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide).
+</Note>
 
 ***
 
-## Step 3: Test Your API Connection
+## Minimal buy in 4 calls
 
-Verify your API key by requesting a price quote.
+This is the fastest path to a completed on-ramp (`CRYPTO_ONRAMP`) sandbox transaction: **quote → session → launch widget → poll status**.
 
-### API Call Details:
+### 1. Get a quote
 
-* **Endpoint:** `POST /payments/crypto/quote`
-* **Authorization:** `BASIC [your-api-key]`
+Request live quotes across providers. On the quote endpoint, `sourceAmount` is a **number**. For a buy, `sourceCurrencyCode` is the fiat the user pays and `destinationCurrencyCode` is the crypto they receive.
 
-### Request Body:
+<Frame caption="Buy (on-ramp): the user picks the crypto to receive, their wallet, the pay-with currency, and an amount — the inputs for the quote and session calls below.">
+  <img src="/images/white-label-api/onramp-amount.png" alt="On-ramp buy entry screen" width="300" />
+</Frame>
 
-```json
+<CodeGroup>
+```bash curl
+curl -X POST https://api-sb.meld.io/payments/crypto/quote \
+  -H "Authorization: BASIC {apiKey}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "countryCode": "US",
+    "sourceCurrencyCode": "USD",
+    "destinationCurrencyCode": "USDC",
+    "sourceAmount": 100,
+    "paymentMethodType": "CREDIT_DEBIT_CARD"
+  }'
+```
+
+```json Request body
 {
   "countryCode": "US",
   "sourceCurrencyCode": "USD",
-  "destinationCurrencyCode": "BTC",
-  "paymentMethodType": "CREDIT_DEBIT_CARD",
-  "sourceAmount": 100
-}
-```
-
-### Testing Notes:
-
-* **Use the interactive docs** at the endpoint URL
-
-### Expected Response:
-
-✅ **200 status code** with quote details
-
-Here is an example of a single quote. You can expect multiple quotes, 1 per onramp, in the response.
-
-```json
-{
-    "quotes": [
-        {
-            "transactionType": "CRYPTO_PURCHASE",
-            "sourceAmount": 100.00,
-            "sourceAmountWithoutFees": 95.82,
-            "fiatAmountWithoutFees": 95.82,
-            "destinationAmountWithoutFees": null,
-            "sourceCurrencyCode": "USD",
-            "countryCode": "US",
-            "totalFee": 4.18,
-            "networkFee": 0.28,
-            "transactionFee": 2.9,
-            "partnerFee": 1,
-            "destinationAmount": 0.00105423,
-            "destinationCurrencyCode": "BTC",
-            "exchangeRate": 94856.0,
-            "paymentMethodType": "CREDIT_DEBIT_CARD",
-            "serviceProvider": "TOPPER",
-            "rampIntelligence": {
-              "rampScore": 21.66,
-              "lowKyc": false
-            }
-        }
-    ]
-}
-```
-
-***
-
-## Step 4: Create a Test Transaction
-
-Create a test transaction without using real money.
-
-### API Call Details:
-
-* **Endpoint:** `POST /crypto/session/widget`
-* **Authorization:** `BASIC [your-api-key]`
-
-### Request Body:
-
-```json
-{
-  "countryCode": "US",
-  "sourceCurrencyCode": "USD",
-  "destinationCurrencyCode": "BTC",
-  "paymentMethodType": "CREDIT_DEBIT_CARD",
+  "destinationCurrencyCode": "USDC",
   "sourceAmount": 100,
-  "serviceProvider": "TRANSAK",
-  "walletAddress": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+  "paymentMethodType": "CREDIT_DEBIT_CARD"
 }
 ```
+</CodeGroup>
 
-
-<Note>
-### **Note:** Replace `walletAddress` with your own or use the test address provided.
-</Note>
-
-
-### Expected Response:
-
-✅ **200 status code** with onramp url details
+You'll receive one quote per provider. Pick one and keep its `serviceProvider` and `destinationAmount`.
 
 ```json
 {
-    "id": "WePjVaT4iBHPpqW49F419x",
-    "externalSessionId": "testSession",
-    "externalCustomerId": "testCustomer",
-    "customerId": "WePZCYZjAK97cJWokfH3Jc",
-    "widgetUrl": "https://meldcrypto.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtZWxkLmlvIiwiaWF0IjoxNzY1MjM2MjExLCJzdWIiOiJjcnlwdG8iLCJleHAiOjE3NjUyMzgwMTEsImFjY291bnRJZCI6IldRNVJ5aGRGekU0NXFqc29tZHpRMXUiLCJzZXNzaW9uSWQiOiJXZVBqVmFUNGlCSFBwcVc0OUY0MTlhIn0.TH6P9KVKN4GNu4CNsDAN9uicjMBashgA9QY7jiMiDEF",
-    "serviceProviderWidgetUrl": "https://topper.com?apiKey=1234&sessionId=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJvdHQiOiIxZDFjOTM1ODY0YTQ0NGM0YTJiMmQ5ODJkYjc0Njg1NCIsImlhdCI6MTc2NTIzNjIxMiwiZXhwIjoxNzY1MjM2NTEyfQ.6ZnmR5FAxzr9bG3n_I54L1EmHYljfhPJNeqp97WZPI7GUm9VCksbKv_rWK4KiB6YkAAJR6_C1Xsnn-fliUrABC",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtZWxkLmlvIiwiaWF0IjoxNzY1MjM2MjExLCJzdWIiOiJjcnlwdG8iLCJleHAiOjE3NjUyMzgwMTEsImFjY291bnRJZCI6IldRNVJ5aGRGekU0NXFqc29tZHpRMXUiLCJzZXNzaW9uSWQiOiJXZVBqVmFUNGlCSFBwcVc0OUY0MTlhIn0.TH6P9KVKN4GNu4CNsDAN9uicjMBashgA9QY7jiMiDEF"
+  "quotes": [
+    {
+      "transactionType": "CRYPTO_PURCHASE",
+      "sourceAmount": 100.00,
+      "sourceCurrencyCode": "USD",
+      "destinationCurrencyCode": "USDC",
+      "countryCode": "US",
+      "totalFee": 4.18,
+      "networkFee": 0.28,
+      "transactionFee": 2.9,
+      "partnerFee": 1,
+      "destinationAmount": 95.82,
+      "exchangeRate": 1.0,
+      "paymentMethodType": "CREDIT_DEBIT_CARD",
+      "serviceProvider": "TRANSAK",
+      "rampIntelligence": {
+        "rampScore": 21.66,
+        "lowKyc": false
+      }
+    }
+  ]
 }
 ```
 
-### Complete the Test Flow:
+<Note>
+Rank quotes by `rampIntelligence.rampScore` and `lowKyc` to pick the provider most likely to convert. See [Ramp Intelligence](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence).
+</Note>
 
-1. **Copy the`widgetUrl`** from the API response
-2. **Open the URL** in your browser
-3. **For KYC testing:**
-   * **SSN:** Use any fake number
-   * **ID Upload:** Any image file works
-4. **For payment testing:**
-   * **Card Number:** `4111 1111 1111 1111`
-   * **Expiry:** Any future date
-   * **CVV:** Any 3 digits
+### 2. Create a widget session
+
+Use the **nested** `{ sessionType, sessionData }` body. Set `sessionType` to `BUY`. Note that `sessionData.sourceAmount` is a **string** here (it was a number on the quote endpoint). For a buy, `walletAddress` is the user's receive wallet.
+
+<CodeGroup>
+```bash curl
+curl -X POST https://api-sb.meld.io/crypto/session/widget \
+  -H "Authorization: BASIC {apiKey}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "sessionType": "BUY",
+    "sessionData": {
+      "countryCode": "US",
+      "sourceCurrencyCode": "USD",
+      "destinationCurrencyCode": "USDC",
+      "sourceAmount": "100",
+      "paymentMethodType": "CREDIT_DEBIT_CARD",
+      "serviceProvider": "TRANSAK",
+      "walletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
+      "redirectUrl": "https://example.com/return"
+    },
+    "externalCustomerId": "testCustomer",
+    "externalSessionId": "testSession"
+  }'
+```
+
+```json Request body
+{
+  "sessionType": "BUY",
+  "sessionData": {
+    "countryCode": "US",
+    "sourceCurrencyCode": "USD",
+    "destinationCurrencyCode": "USDC",
+    "sourceAmount": "100",
+    "paymentMethodType": "CREDIT_DEBIT_CARD",
+    "serviceProvider": "TRANSAK",
+    "walletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
+    "redirectUrl": "https://example.com/return"
+  },
+  "externalCustomerId": "testCustomer",
+  "externalSessionId": "testSession"
+}
+```
+</CodeGroup>
+
+The response carries the launch URLs. Prefer `serviceProviderWidgetUrl` (the provider's hosted checkout); `widgetUrl` is a generic fallback.
+
+```json
+{
+  "id": "WePjVaT4iBHPpqW49F419x",
+  "externalSessionId": "testSession",
+  "externalCustomerId": "testCustomer",
+  "customerId": "WePZCYZjAK97cJWokfH3Jc",
+  "widgetUrl": "https://meldcrypto.com?token=eyJhbGciOi...",
+  "serviceProviderWidgetUrl": "https://transak.com?apiKey=1234&sessionId=eyJhbGciOi...",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### 3. Launch the provider widget
+
+Open `serviceProviderWidgetUrl` (popup or redirect on desktop, webview or redirect on mobile). The provider runs its own KYC and payment collection. Whitelist your `redirectUrl` domain so the provider can return the user to you on completion.
+
+For sandbox KYC and payment, use the test values below:
+
+* **SSN:** any fake number — **ID upload:** any image file
+* **Card number:** `4111 1111 1111 1111` — **Expiry:** any future date — **CVV:** any 3 digits
 
 📚 **Full test data reference:** [Sandbox testing credentials](/docs/stablecoins/sandbox-guide/test)
 
+### 4. Poll the transaction status
+
+When you receive a `TRANSACTION_CRYPTO_*` webhook (or to poll directly), call `GET /payments/transactions/{transactionId}`. Match the inbound event to your `externalSessionId`.
+
+```bash
+curl https://api-sb.meld.io/payments/transactions/WePZCYJW7cdXR7SxUMp8mE \
+  -H "Authorization: BASIC {apiKey}" \
+  -H "Accept: application/json"
+```
+
+You'll see the final `status` (for example `SETTLED`), the source/destination amounts, the `serviceProvider`, and on-chain details under `cryptoDetails`. The tracking section below shows the full payload.
+
 ***
 
-## Step 5: Verify Your Transaction
+## Minimal sell in 5 calls
 
-### Fetch Transaction Details after Receiving Webhooks
+A sell (`CRYPTO_OFFRAMP`) needs one discovery call to find a payout rail and its limits, then mirrors the buy flow with reversed currency ordering, `sessionType: SELL`, and an extra **deposit-address** step: **routes → quote → session → launch → show deposit address → poll status**.
 
-1. **Check your webhook endpoint** for a webhook that the transaction has been created.
+### 1. Find a payout route (rail + limits)
 
-### Expected Webhook Response
+For off-ramp, the route path is **source = crypto, destination = fiat**:
+`GET /network-partner/supported/routes/{category}/{country}/{source}/{destination}`.
+
+```bash
+curl "https://api-sb.meld.io/network-partner/supported/routes/CRYPTO_OFFRAMP/US/USDC/USD" \
+  -H "Authorization: BASIC {apiKey}" \
+  -H "Accept: application/json"
+```
+
+<Warning>
+**Get the ordering right.** For sell, crypto comes first (`.../CRYPTO_OFFRAMP/US/USDC/USD`). Putting fiat first returns **HTTP 200 with an empty array `[]`** — not an error — which silently starves rail and limit discovery. (For buy, the order is reversed: fiat → crypto.)
+</Warning>
+
+Each route lists its payout methods and per-method limits. Send the `name` field (the canonical id, e.g. `ACH`) as `paymentMethodType` — never the display label. Validate the user's amount against `limits.min`/`limits.max`.
+
+```json
+[
+  {
+    "partner": "TRANSAK",
+    "source": "USDC",
+    "destination": "USD",
+    "paymentMethods": [
+      {
+        "paymentType": "BANK_TRANSFER",
+        "name": "ACH",
+        "partnerMethodName": "ach_payout",
+        "limits": { "currencyCode": "USD", "min": 10, "max": 10000 },
+        "headlessSupported": true
+      }
+    ],
+    "kycLimits": []
+  }
+]
+```
+
+<Frame caption="Sell (off-ramp): entering a crypto amount surfaces the live fiat payout, the route's min–max limits, the payout rail, and the best provider quote — all from the routes and quote endpoints.">
+  <img src="/images/white-label-api/offramp-amount.png" alt="Off-ramp sell entry screen with a live quote" width="300" />
+</Frame>
+
+### 2. Get a quote
+
+For a sell, the currency ordering is reversed versus buy: `sourceCurrencyCode` is the crypto and `destinationCurrencyCode` is the fiat the user receives. `sourceAmount` is a **number** in crypto units.
+
+<CodeGroup>
+```bash curl
+curl -X POST https://api-sb.meld.io/payments/crypto/quote \
+  -H "Authorization: BASIC {apiKey}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "countryCode": "US",
+    "sourceCurrencyCode": "USDC",
+    "destinationCurrencyCode": "USD",
+    "sourceAmount": 100,
+    "paymentMethodType": "ACH"
+  }'
+```
+
+```json Request body
+{
+  "countryCode": "US",
+  "sourceCurrencyCode": "USDC",
+  "destinationCurrencyCode": "USD",
+  "sourceAmount": 100,
+  "paymentMethodType": "ACH"
+}
+```
+</CodeGroup>
+
+```json
+{
+  "quotes": [
+    {
+      "transactionType": "CRYPTO_SELL",
+      "sourceAmount": 100.00,
+      "sourceCurrencyCode": "USDC",
+      "destinationCurrencyCode": "USD",
+      "countryCode": "US",
+      "totalFee": 2.50,
+      "destinationAmount": 97.50,
+      "exchangeRate": 1.0,
+      "paymentMethodType": "ACH",
+      "serviceProvider": "TRANSAK"
+    }
+  ]
+}
+```
+
+Keep the chosen quote's `serviceProvider`. `destinationAmount` is the fiat the user will receive.
+
+### 3. Create a widget session
+
+Use the nested body with `sessionType: SELL`. The currency ordering matches the quote (crypto → fiat), and `sessionData.sourceAmount` is a **string**. Here `walletAddress` is the user's **own** send-from wallet (the source of the crypto), not a deposit address.
+
+<CodeGroup>
+```bash curl
+curl -X POST https://api-sb.meld.io/crypto/session/widget \
+  -H "Authorization: BASIC {apiKey}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "sessionType": "SELL",
+    "sessionData": {
+      "countryCode": "US",
+      "sourceCurrencyCode": "USDC",
+      "destinationCurrencyCode": "USD",
+      "sourceAmount": "100",
+      "paymentMethodType": "ACH",
+      "serviceProvider": "TRANSAK",
+      "walletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
+      "redirectUrl": "https://example.com/return"
+    },
+    "externalCustomerId": "testCustomer",
+    "externalSessionId": "testSellSession"
+  }'
+```
+
+```json Request body
+{
+  "sessionType": "SELL",
+  "sessionData": {
+    "countryCode": "US",
+    "sourceCurrencyCode": "USDC",
+    "destinationCurrencyCode": "USD",
+    "sourceAmount": "100",
+    "paymentMethodType": "ACH",
+    "serviceProvider": "TRANSAK",
+    "walletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
+    "redirectUrl": "https://example.com/return"
+  },
+  "externalCustomerId": "testCustomer",
+  "externalSessionId": "testSellSession"
+}
+```
+</CodeGroup>
+
+The response shape matches the buy flow — prefer `serviceProviderWidgetUrl`.
+
+### 4. Launch the provider widget
+
+Open `serviceProviderWidgetUrl`. The provider collects the user's payout-bank details and runs KYC.
+
+### 5. Show the deposit address, then poll
+
+After the widget completes, fetch the transaction (by `transactionId`, or look it up by your `externalSessionId`) to read the provider's deposit address — the address the user must send crypto to.
+
+```bash
+curl https://api-sb.meld.io/payments/transactions/{transactionId} \
+  -H "Authorization: BASIC {apiKey}" \
+  -H "Accept: application/json"
+```
+
+Read the deposit address with this exact precedence:
+
+```js
+const depositAddress =
+  transaction.cryptoDetails.destinationWalletAddress ??
+  transaction.cryptoDetails.offrampDestinationWalletAddress;
+```
+
+<Warning>
+Never use `cryptoDetails.walletAddress` — that is the customer's **own** wallet, not the deposit address. Display `destinationWalletAddress` (falling back to `offrampDestinationWalletAddress`) as a QR code and copyable string, and instruct the user to send **exactly** the quoted crypto amount to it. A wrong address or amount means lost funds.
+</Warning>
+
+Then poll `GET /payments/transactions/{transactionId}` until `status` settles. `destinationAmount` is the fiat paid out and `cryptoDetails.blockchainTransactionId` is the on-chain transfer.
+
+***
+
+## Track the transaction
+
+Both directions report status the same way. When you receive a `TRANSACTION_CRYPTO_*` webhook, extract `paymentTransactionId` and call `GET /payments/transactions/{transactionId}`.
+
+### Webhook payload
 
 ```json
 {
@@ -221,109 +449,92 @@ Create a test transaction without using real money.
 }
 ```
 
-2. **Extract the`paymentTransactionId`** from the webhook payload
-3. **Call** `GET /payments/transactions/{transactionId}`
+### Transaction detail
 
-### Expected Response:
-
-✅ **200 status code** with transaction details
+```bash
+curl https://api-sb.meld.io/payments/transactions/WePZCYJW7cdXR7SxUMp8mE \
+  -H "Authorization: BASIC {apiKey}" \
+  -H "Accept: application/json"
+```
 
 ```json
 {
-    "transaction": {
-        "id": "WePZCYJW7cdXR7SxUMp8mE",
-        "parentPaymentTransactionId": null,
-        "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
-        "isPassthrough": false,
-        "passthroughReference": null,
-        "isImported": false,
-        "customer": {
-            "id": "WePZCYZjAK97cJWokfH3Cc",
-            "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
-            "externalId": "YC100"
-        },
-        "transactionType": "CRYPTO_PURCHASE",
-        "status": "SETTLED",
-        "sourceAmount": 100.00,
-        "sourceCurrencyCode": "USD",
-        "destinationAmount": 0.00105423,
-        "destinationCurrencyCode": "BTC",
-        "paymentMethodType": "CREDIT_DEBIT_CARD",
-        "serviceProvider": "TOPPER",
-        "serviceTransactionId": "1f0d470c-f5c2-6fc2-a54d-b6cdd6b6f014",
-        "orderId": null,
-        "description": null,
-        "externalReferenceId": "testSession",
-        "serviceProviderDetails": {
-            **raw details from the onramp**
-        },
-        "multiFactorAuthorizationStatus": null,
-        "createdAt": "2025-12-08T20:03:07.173223Z",
-        "updatedAt": "2025-12-08T20:08:08.877106Z",
-        "countryCode": "US",
-        "sessionId": "WePZCbr96gAUxgu7Auvm4q",
-        "externalSessionId": "testSession",
-        "paymentDetails": null,
-        "externalCustomerId": "testCustomer",
-        "fiatAmountInUsd": 100.00,
-        "sessionClientTags": null,
-        "serviceProviderTransactionUrl": null,
-        "serviceProviderCreatedAt": "2025-12-08T20:02:22Z",
-        "cryptoDetails": {
-            "sourceWalletAddress": null,
-            "destinationWalletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
-            "sessionWalletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
-            "totalFee": 4.18,
-            "networkFee": 0.28,
-            "transactionFee": 2.9,
-            "partnerFee": 1,
-            "totalFeeInUsd": 4.18,
-            "networkFeeInUsd": 0.28,
-            "transactionFeeInUsd": 2.9,
-            "partnerFeeInUsd": 1,
-            "blockchainTransactionId": "0x553d295955a978ed3e9fc1717b5bcb903c69577e49c8ad255abece945ffa9ba0",
-            "institution": null,
-            "chainId": "1"
-        }
+  "transaction": {
+    "id": "WePZCYJW7cdXR7SxUMp8mE",
+    "transactionType": "CRYPTO_PURCHASE",
+    "status": "SETTLED",
+    "sourceAmount": 100.00,
+    "sourceCurrencyCode": "USD",
+    "destinationAmount": 95.82,
+    "destinationCurrencyCode": "USDC",
+    "paymentMethodType": "CREDIT_DEBIT_CARD",
+    "serviceProvider": "TRANSAK",
+    "countryCode": "US",
+    "createdAt": "2025-12-08T20:03:07.173223Z",
+    "updatedAt": "2025-12-08T20:08:08.877106Z",
+    "sessionId": "WePZCbr96gAUxgu7Auvm4q",
+    "externalSessionId": "testSession",
+    "externalCustomerId": "testCustomer",
+    "fiatAmountInUsd": 100.00,
+    "cryptoDetails": {
+      "walletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
+      "destinationWalletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
+      "totalFeeInUsd": 4.18,
+      "networkFeeInUsd": 0.28,
+      "transactionFeeInUsd": 2.9,
+      "partnerFeeInUsd": 1,
+      "blockchainTransactionId": "0x553d295955a978ed3e9fc1717b5bcb903c69577e49c8ad255abece945ffa9ba0",
+      "chainId": "1"
     }
+  }
 }
 ```
 
-### Dashboard Verification:
+For a sell, the same object reports the off-ramp deposit address (`cryptoDetails.destinationWalletAddress` / `offrampDestinationWalletAddress`) and the fiat payout under `destinationAmount`.
 
-1. Navigate to the **Transactions tab**
-2. If your transaction isn't visible:
-   * Click the **Status dropdown**
-   * Select **"Select All"**
-   * Your transaction should appear
+### Dashboard verification
 
-✅ **White-Label API Integration Complete!** You can now build custom crypto experiences.
+1. Navigate to the **Transactions** tab.
+2. If your transaction isn't visible, click the **Status** dropdown and select **Select All**.
+3. Wait a few seconds and refresh.
 
-➡️ **[Build Custom UI Guide](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide)** — complete implementation guide
+✅ **White-Label API Integration complete!** You've run both a buy and a sell against the sandbox.
+
+***
 
 ## Next steps
 
-If you're ready to begin your integration, follow the end-to-end [White-Label API Guide](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide).
+* **[White-Label API Guide](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide)** — full discovery (`/network-partner/*` countries, defaults, currencies, payment methods, routes) and the complete on-ramp and off-ramp walkthroughs.
+* **[Ramp Intelligence](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence)** — rank quotes to improve success rates.
+* **[White-Label Customization](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/white-label-customization)** — theme the provider experience and lock fields.
+* **[Supporting multiple downstream applications](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/supporting-multiple-downstream-applications)** — multi-app setups.
 
 ***
 
 ## Troubleshooting
 
-### Common Issues and Solutions:
+### 🚫 401 Unauthorized
 
-#### 🚫 401 Unauthorized
+* Ensure `BASIC` is added before your API key.
+* Check for extra spaces or incorrect formatting.
 
-* Ensure `BASIC` is added before your API key
-* Check for extra spaces or incorrect formatting
+### 🚫 Empty routes (`200 []`)
 
-#### 🚫 Webhook Not Received
+* You likely reversed the source/destination order. For sell it is crypto → fiat (`.../CRYPTO_OFFRAMP/US/USDC/USD`); for buy it is fiat → crypto.
+* Confirm the `category`, `country`, and currency pair are all supported for that direction.
 
-* Verify URL is publicly accessible
-* Check firewall settings
-* Ensure webhook endpoint returns 200 status
+### 🚫 `NO_VALID_QUOTES`
 
-#### 🚫 Transaction Not Visible
+* You sent a rail that isn't valid for the country/currency. Send the canonical `paymentMethodType` (the route's `name`, e.g. `ACH`), never a display label.
+* Check the amount is within the route's `limits.min`/`limits.max`.
 
-* Change status filter to "Select All" in dashboard
-* Wait 30 seconds and refresh
-* Check if using correct environment (sandbox vs production)
+### 🚫 Webhook not received
+
+* Verify the URL is publicly accessible and returns a 200 status.
+* Check firewall settings, or poll `GET /payments/transactions/{id}` instead.
+
+### 🚫 Transaction not visible
+
+* Change the status filter to **Select All** in the dashboard.
+* Wait 30 seconds and refresh.
+* Confirm you're using the correct environment (sandbox vs production).
