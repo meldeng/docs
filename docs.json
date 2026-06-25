@@ -24,14 +24,14 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
+        "label": "Meld Support",
         "href": "mailto:support@meld.io"
       }
     ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/meldio"
+      "x": "https://x.com/realmeld"
     }
   },
   "api": {
