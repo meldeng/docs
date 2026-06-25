@@ -123,18 +123,13 @@ All discovery is parameterized by a `category`. Retail ramp uses exactly two:
 Putting the segments in the wrong order returns **HTTP 200 with an empty `[]`** — not a 404 — which silently starves payment-method and limit discovery. Always order by direction.
 </Warning>
 
-### What changed from the legacy discovery endpoints
+### Upgrading from the Service Provider API?
 
-If you previously integrated against `/service-providers/*`, the discovery surface moved to `/network-partner/*`. Every call is now category-scoped, fiat and crypto currency lists merged into one endpoint, and purchase limits moved into routes.
+If you previously integrated against the legacy `/service-providers/*` discovery endpoints, they are replaced by the category-scoped `/network-partner/*` family used throughout this guide. The full endpoint-by-endpoint mapping — with before/after requests, response-shape changes, and a migration checklist — lives in a dedicated guide:
 
-| Legacy endpoint (removed) | New endpoint | Notes |
-|---|---|---|
-| `GET /service-providers/properties/countries` | `GET /network-partner/supported/countries?category={CATEGORY}` | Now category-scoped. Item shape is `{ countryCode, name, flag }`. US-state handling moves to the `subdivision` query param on routes. |
-| `GET /service-providers/properties/defaults/by-country` | `GET /network-partner/defaults/{country}/{category}` | Country + category are path params. Returns a single object (or `null`), not an array. `defaultCurrencyCode` → `currencyCode`, `defaultPaymentMethods` → `paymentMethods`. |
-| `GET /service-providers/properties/fiat-currencies` | `GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type=FIAT` | **Merged** — fiat is now `type=FIAT`. |
-| `GET /service-providers/properties/crypto-currencies` | `GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type=CRYPTO` | **Merged** — same path, switched by `type=CRYPTO`. |
-| `GET /service-providers/properties/payment-methods` | `GET /network-partner/supported/payment-methods?category={CATEGORY}&country={c}&currencyCode={f}` | Requires `category` + `country` + `currencyCode`. Send the `method` field downstream, never `name`. |
-| `GET /service-providers/limits/fiat-currency-purchases` | `GET /network-partner/supported/routes/{category}/{country}/{source}/{destination}` | **Limits moved into routes** — per-(partner, method) min/max live on `route.paymentMethods[].limits`. Limits are now direction-aware. |
+<Card title="Migration Guide: Service Provider → Network Partner API" icon="arrow-right-arrow-left" href="/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner">
+  Map every legacy discovery call to its `/network-partner` replacement.
+</Card>
 
 The three transaction endpoints are unchanged: `POST /payments/crypto/quote`, `POST /crypto/session/widget`, and `GET /payments/transactions/{transactionId}`.
 

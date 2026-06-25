@@ -1,0 +1,379 @@
+---
+title: "Migration Guide: Service Provider → Network Partner API"
+description: "Move your White-Label discovery integration from the legacy /service-providers/* endpoints to the category-scoped /network-partner/* API, with before/after for every call."
+---
+
+# Migrating from the Service Provider API to the Network Partner API
+
+This guide is for teams who already integrated White-Label discovery against the legacy **Service Provider API** (`/service-providers/properties/*` and `/service-providers/limits/*`) and need to move to the new **Network Partner API** (`/network-partner/*`).
+
+It maps every legacy discovery call to its replacement, shows the before/after request and response for each, and lists the behavioral changes to watch for.
+
+<Note>
+**Only discovery moved.** The three transaction endpoints are unchanged — you do **not** need to touch them:
+
+* `POST /payments/crypto/quote`
+* `POST /crypto/session/widget`
+* `GET /payments/transactions/{transactionId}`
+
+Authentication is also unchanged: `Authorization: BASIC {apiKey}` on every request, against `https://api-sb.meld.io` (sandbox) or `https://api.meld.io` (production). Network Partner routes carry per-method limits as of `Meld-Version: 2026-02-03`.
+</Note>
+
+## What changed at a glance
+
+1. **Everything is category-scoped.** Each discovery call now takes a `category` — for the retail ramp that is `CRYPTO_ONRAMP` (buy) or `CRYPTO_OFFRAMP` (sell). The legacy endpoints were direction-agnostic; the new ones return results for one direction at a time.
+2. **One currencies endpoint.** The separate `fiat-currencies` and `crypto-currencies` endpoints merged into a single `supported/currencies` call, switched by `type=FIAT|CRYPTO`.
+3. **Limits moved into routes.** There is no standalone limits endpoint. Per-(partner, payment-method) `min`/`max` now live on `supported/routes`, alongside the partners and rails that serve a currency pair — so limits are now **direction-aware**.
+4. **Response shapes changed.** Several fields were renamed and a few were added or dropped (see each section below).
+5. **Routes are ordered by direction.** The `source`/`destination` path segments follow the flow direction, not "fiat then crypto" (see [Routes](#5-limits-and-routes)).
+
+## Endpoint mapping
+
+| Legacy endpoint (removed) | New endpoint |
+|---|---|
+| `GET /service-providers/properties/countries` | `GET /network-partner/supported/countries?category={CATEGORY}` |
+| `GET /service-providers/properties/defaults/by-country` | `GET /network-partner/defaults/{country}/{category}` |
+| `GET /service-providers/properties/fiat-currencies` | `GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type=FIAT` |
+| `GET /service-providers/properties/crypto-currencies` | `GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type=CRYPTO` |
+| `GET /service-providers/properties/payment-methods` | `GET /network-partner/supported/payment-methods?category={CATEGORY}&country={c}&currencyCode={f}` |
+| `GET /service-providers/limits/fiat-currency-purchases` | `GET /network-partner/supported/routes/{category}/{country}/{source}/{destination}` |
+
+The rest of this page walks each row in detail.
+
+---
+
+## 1. Countries
+
+<CodeGroup>
+
+```bash Before — Service Provider API
+GET /service-providers/properties/countries?accountFilter=true
+```
+
+```bash After — Network Partner API
+GET /network-partner/supported/countries?category=CRYPTO_ONRAMP
+```
+
+</CodeGroup>
+
+<CodeGroup>
+
+```json Before — response
+{
+  "countries": [
+    {
+      "countryCode": "US",
+      "countryName": "United States",
+      "states": ["US-NY", "US-CA", "US-TX"]
+    },
+    { "countryCode": "GB", "countryName": "United Kingdom" }
+  ]
+}
+```
+
+```json After — response
+{
+  "countries": [
+    { "countryCode": "US", "name": "United States", "flag": "🇺🇸" },
+    { "countryCode": "DE", "name": "Germany", "flag": "🇩🇪" }
+  ]
+}
+```
+
+</CodeGroup>
+
+**What changed**
+
+* Now requires `category` (`CRYPTO_ONRAMP` or `CRYPTO_OFFRAMP`). The supported set can differ by direction, so call it once per direction you offer.
+* `countryName` → `name`, and a `flag` emoji is now included.
+* `states[]` is **no longer returned here.** Collect the US state in your own UI and pass it as the `subdivision` query param on [Routes](#5-limits-and-routes).
+
+---
+
+## 2. Country defaults
+
+<CodeGroup>
+
+```bash Before — Service Provider API
+GET /service-providers/properties/defaults/by-country?countries=BR
+```
+
+```bash After — Network Partner API
+GET /network-partner/defaults/BR/CRYPTO_ONRAMP
+```
+
+</CodeGroup>
+
+<CodeGroup>
+
+```json Before — response (array)
+[
+  {
+    "countryCode": "BR",
+    "defaultCurrencyCode": "BRL",
+    "defaultPaymentMethods": ["PIX", "CREDIT_DEBIT_CARD", "BINANCE_CASH_BALANCE"]
+  }
+]
+```
+
+```json After — response (single object, or null)
+{
+  "countryCode": "BR",
+  "category": "CRYPTO_ONRAMP",
+  "currencyCode": "BRL",
+  "paymentMethods": ["PIX", "CREDIT_DEBIT_CARD"]
+}
+```
+
+</CodeGroup>
+
+**What changed**
+
+* Country and category are now **path params** (`/defaults/{country}/{category}`), not a `countries=` query list.
+* The response is a **single object** (or `null`), no longer an array — drop the `countryDefaults[0]` indexing.
+* `defaultCurrencyCode` → `currencyCode`, `defaultPaymentMethods` → `paymentMethods`.
+
+<Warning>
+Handle a `null` response — fall back to the first entry from [Currencies](#3-currencies) and [Payment methods](#4-payment-methods) when a country has no configured default.
+</Warning>
+
+---
+
+## 3. Currencies
+
+The two legacy endpoints are now one, switched by `type`.
+
+<CodeGroup>
+
+```bash Before — fiat
+GET /service-providers/properties/fiat-currencies?countries=US&accountFilter=true
+```
+
+```bash Before — crypto
+GET /service-providers/properties/crypto-currencies?countries=US&accountFilter=true
+```
+
+```bash After — fiat
+GET /network-partner/supported/currencies?category=CRYPTO_ONRAMP&country=US&type=FIAT
+```
+
+```bash After — crypto
+GET /network-partner/supported/currencies?category=CRYPTO_ONRAMP&country=US&type=CRYPTO&network=ETHEREUM
+```
+
+</CodeGroup>
+
+<CodeGroup>
+
+```json Before — crypto response
+{
+  "cryptoCurrencies": [
+    {
+      "currencyCode": "ETH_ETHEREUM",
+      "currencyName": "Ethereum",
+      "networkCode": "ETHEREUM",
+      "networkName": "Ethereum"
+    }
+  ]
+}
+```
+
+```json After — crypto response
+{
+  "currencies": [
+    {
+      "currencyCode": "USDC",
+      "name": "USD Coin",
+      "decimalPlaces": 6,
+      "type": "CRYPTO",
+      "symbol": "USDC",
+      "chainCode": "ETHEREUM",
+      "contract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+**What changed**
+
+* One endpoint for both sides — pass `type=FIAT` or `type=CRYPTO`. `category` and `country` are required.
+* The response wrapper `cryptoCurrencies` (and the fiat list) is now `currencies` for both types.
+* `currencyName` → `name`; `networkCode` → `chainCode`; `networkName` is dropped.
+* New fields: `decimalPlaces` (use it for client-side formatting), `symbol`, and `contract` (token contract address) to disambiguate tokens on the same chain.
+* Optional filters: `network` (e.g. `ETHEREUM`, `SOLANA`), `partner`, `paymentType`, `providerCurrencyCode`.
+
+<Note>
+For off-ramp, swap the category to `CRYPTO_OFFRAMP`: the `type=CRYPTO` list is what the user can sell, and `type=FIAT` is what they can receive.
+</Note>
+
+---
+
+## 4. Payment methods
+
+<CodeGroup>
+
+```bash Before — Service Provider API
+GET /service-providers/properties/payment-methods?fiatCurrencies=USD&accountFilter=true
+```
+
+```bash After — Network Partner API
+GET /network-partner/supported/payment-methods?category=CRYPTO_ONRAMP&country=US&currencyCode=USD
+```
+
+</CodeGroup>
+
+```json After — response (bare array)
+[
+  {
+    "countryCode": "US",
+    "providerMethod": "card",
+    "method": "CREDIT_DEBIT_CARD",
+    "name": "Credit / Debit Card",
+    "type": "CARD",
+    "headlessSupported": false
+  },
+  {
+    "countryCode": "US",
+    "providerMethod": "apple_pay",
+    "method": "APPLE_PAY",
+    "name": "Apple Pay",
+    "type": "MOBILE_WALLET"
+  }
+]
+```
+
+**What changed**
+
+* Now requires all three of `category`, `country`, and `currencyCode` (the fiat code — pay-with for buy, payout for sell). The legacy call keyed only off `fiatCurrencies`.
+* Returns a **bare array** (not an object wrapper).
+
+<Warning>
+**Send `method`, never `name`.** The canonical id you pass downstream as `paymentMethodType` is `method` (e.g. `ACH`, `SEPA`, `CREDIT_DEBIT_CARD`). `name` is a display label only and must never be sent to Meld — sending the wrong rail yields `NO_VALID_QUOTES`.
+</Warning>
+
+---
+
+## 5. Limits and routes
+
+This is the biggest structural change. The standalone limits endpoint is gone; limits now live on the **route** that serves a given currency pair, so they arrive together with the partners and rails that actually support that pair.
+
+<CodeGroup>
+
+```bash Before — Service Provider API
+GET /service-providers/limits/fiat-currency-purchases?accountFilter=true
+```
+
+```bash After — on-ramp (fiat → crypto)
+GET /network-partner/supported/routes/CRYPTO_ONRAMP/US/USD/USDC
+```
+
+```bash After — off-ramp (crypto → fiat)
+GET /network-partner/supported/routes/CRYPTO_OFFRAMP/US/USDC/USD
+```
+
+</CodeGroup>
+
+<CodeGroup>
+
+```json Before — response
+{
+  "limits": {
+    "USD": {
+      "minAmount": 20,
+      "maxAmount": 20000,
+      "dailyLimit": 5000,
+      "monthlyLimit": 20000
+    }
+  }
+}
+```
+
+```json After — response
+[
+  {
+    "partner": "TRANSAK",
+    "source": "USD",
+    "destination": "USDC",
+    "paymentMethods": [
+      {
+        "paymentType": "CARD",
+        "name": "CREDIT_DEBIT_CARD",
+        "partnerMethodName": "credit_debit_card",
+        "limits": { "currencyCode": "USD", "min": 30, "max": 20000 },
+        "headlessSupported": false
+      }
+    ],
+    "kycLimits": []
+  }
+]
+```
+
+</CodeGroup>
+
+**What changed**
+
+* Limits are read from `route.paymentMethods[].limits` for the chosen partner + method, not from a global map keyed by currency.
+* `minAmount` → `min`, `maxAmount` → `max`; the `limits.currencyCode` tells you which currency the bounds are expressed in (on-ramp: the fiat paid; off-ramp: the fiat received).
+* Limits are now **direction-aware** — a buy route and a sell route for the same pair can have different `min`/`max`.
+* Path order follows direction:
+  * **On-ramp:** `.../CRYPTO_ONRAMP/{country}/{fiat}/{crypto}` (source = fiat).
+  * **Off-ramp:** `.../CRYPTO_OFFRAMP/{country}/{crypto}/{fiat}` (source = crypto).
+* Optional query params: `partners`, `paymentMethod`, `paymentType`, and `subdivision` (the US state that legacy `countries.states[]` used to carry).
+
+<Warning>
+**Empty `200 []` is the new failure mode.** Routes are indexed by `source`/`destination`, so reversing them — e.g. fiat-first on an off-ramp — returns **HTTP 200 with an empty array**, not a 404. It silently starves rail and limit discovery. Assert the array is non-empty before rendering rails or validating an amount.
+</Warning>
+
+---
+
+## Migration checklist
+
+<Steps>
+
+<Step title="Add a category to every discovery call">
+Decide the direction per screen — `CRYPTO_ONRAMP` for buy, `CRYPTO_OFFRAMP` for sell — and thread it through every `/network-partner/*` call.
+</Step>
+
+<Step title="Repoint and rename the endpoints">
+Swap each legacy path for its replacement using the [mapping table](#endpoint-mapping), and update the response field names (`countryName`→`name`, `defaultCurrencyCode`→`currencyCode`, `currencyName`→`name`, `networkCode`→`chainCode`, `minAmount`/`maxAmount`→`min`/`max`).
+</Step>
+
+<Step title="Merge the currency calls">
+Replace `fiat-currencies` and `crypto-currencies` with a single `supported/currencies` call parameterized by `type=FIAT|CRYPTO`, and read from the `currencies` wrapper.
+</Step>
+
+<Step title="Move limit validation onto routes">
+Delete calls to `/service-providers/limits/*`. Read `min`/`max` from `route.paymentMethods[].limits`, and order the route `source`/`destination` by direction.
+</Step>
+
+<Step title="Handle the new edge cases">
+Treat a `null` defaults response and an empty `200 []` from routes as expected states, and send the canonical `method` id (never the display `name`) as `paymentMethodType`.
+</Step>
+
+<Step title="Re-test both directions in sandbox">
+Run a buy and a sell against `https://api-sb.meld.io` end to end before switching to production credentials.
+</Step>
+
+</Steps>
+
+## What stays the same
+
+* `POST /payments/crypto/quote`, `POST /crypto/session/widget`, and `GET /payments/transactions/{transactionId}` are unchanged.
+* `Authorization: BASIC {apiKey}` auth and the sandbox/production base URLs are unchanged.
+* The overall flow — discover → quote → create session → launch the provider widget → track the transaction — is unchanged.
+
+## Next steps
+
+<CardGroup cols={2}>
+
+<Card title="Full Integration Guide" icon="book-open" href="/docs/stablecoins/white-label-api-integration/whitelabel-api-guide">
+The complete `/network-partner/*` reference plus the end-to-end on-ramp and off-ramp flows.
+</Card>
+
+<Card title="Quickstart" icon="bolt" href="/docs/stablecoins/white-label-api-integration/whitelabel-quickstart">
+Run a sandbox buy and sell in about 30 minutes.
+</Card>
+
+</CardGroup>
