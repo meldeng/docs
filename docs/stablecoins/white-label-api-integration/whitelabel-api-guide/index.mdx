@@ -510,6 +510,8 @@ Tie each user to a Meld `customerId` or `externalCustomerId` (they map 1:1) so R
 curl -X POST 'https://api-sb.meld.io/payments/crypto/quote' \
   -H 'Authorization: BASIC {apiKey}' \
   -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'Meld-Version: 2026-02-03' \
   -d '{
     "countryCode": "US",
     "sourceCurrencyCode": "USD",
@@ -533,6 +535,8 @@ Use the nested `{ sessionType, sessionData }` body. On this endpoint `sessionDat
 curl -X POST 'https://api-sb.meld.io/crypto/session/widget' \
   -H 'Authorization: BASIC {apiKey}' \
   -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'Meld-Version: 2026-02-03' \
   -d '{
     "sessionType": "BUY",
     "sessionData": {
@@ -628,6 +632,8 @@ The source/destination ordering is what makes this a sell: `sourceCurrencyCode` 
 curl -X POST 'https://api-sb.meld.io/payments/crypto/quote' \
   -H 'Authorization: BASIC {apiKey}' \
   -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'Meld-Version: 2026-02-03' \
   -d '{
     "countryCode": "US",
     "sourceCurrencyCode": "USDC",
@@ -650,6 +656,8 @@ Create the session with `sessionType: "SELL"`. Here `sessionData.walletAddress` 
 curl -X POST 'https://api-sb.meld.io/crypto/session/widget' \
   -H 'Authorization: BASIC {apiKey}' \
   -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -H 'Meld-Version: 2026-02-03' \
   -d '{
     "sessionType": "SELL",
     "sessionData": {
@@ -788,10 +796,11 @@ Use the webhook as a trigger to fetch the full transaction. Match the inbound ev
 ```javascript
 // Webhook endpoint receives transaction updates
 app.post('/webhook/meld', async (req, res) => {
-  const { transactionId, externalCustomerId } = req.body;
-  const tx = await fetchTransaction(transactionId);
-  updateTransaction(transactionId, tx);
-  notifyUser(externalCustomerId, { transactionId, status: tx.status });
+  // The transaction id is nested under `payload` on the webhook event.
+  const { paymentTransactionId, externalCustomerId } = req.body.payload;
+  const tx = await fetchTransaction(paymentTransactionId);
+  updateTransaction(paymentTransactionId, tx);
+  notifyUser(externalCustomerId, { transactionId: paymentTransactionId, status: tx.status });
   res.status(200).send('OK');
 });
 

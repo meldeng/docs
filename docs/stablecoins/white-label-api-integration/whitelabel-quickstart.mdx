@@ -208,7 +208,7 @@ curl -X POST https://api-sb.meld.io/crypto/session/widget \
 ```
 </CodeGroup>
 
-The response carries the launch URLs. Prefer `serviceProviderWidgetUrl` (the provider's hosted checkout); `widgetUrl` is a generic fallback.
+The response carries the launch URLs. Prefer `serviceProviderWidgetUrl` (the provider's hosted checkout); `widgetUrl` is a Meld-hosted fallback.
 
 ```json
 {
@@ -267,6 +267,10 @@ curl "https://api-sb.meld.io/network-partner/supported/routes/CRYPTO_OFFRAMP/US/
 </Warning>
 
 Each route lists its payout methods and per-method limits. Send the `name` field (the canonical id, e.g. `ACH`) as `paymentMethodType` — never the display label. Validate the user's amount against `limits.min`/`limits.max`.
+
+<Note>
+The canonical-id field name differs by endpoint: on `supported/routes` it's `name`, while on the separate `supported/payment-methods` endpoint it's `method` (and there `name` is the display label). Both carry the same ids — e.g. `ACH`, `CREDIT_DEBIT_CARD`.
+</Note>
 
 ```json
 [
@@ -472,7 +476,7 @@ curl https://api-sb.meld.io/payments/transactions/WePZCYJW7cdXR7SxUMp8mE \
     "countryCode": "US",
     "createdAt": "2025-12-08T20:03:07.173223Z",
     "updatedAt": "2025-12-08T20:08:08.877106Z",
-    "sessionId": "WePZCbr96gAUxgu7Auvm4q",
+    "sessionId": "WePjVaT4iBHPpqW49F419x",
     "externalSessionId": "testSession",
     "externalCustomerId": "testCustomer",
     "fiatAmountInUsd": 100.00,
@@ -508,6 +512,7 @@ For a sell, the same object reports the off-ramp deposit address (`cryptoDetails
 * **[Ramp Intelligence](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence)** — rank quotes to improve success rates.
 * **[White-Label Customization](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/white-label-customization)** — theme the provider experience and lock fields.
 * **[Supporting multiple downstream applications](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/supporting-multiple-downstream-applications)** — multi-app setups.
+* **[Transaction statuses](/docs/stablecoins/for-all-products/transaction-statuses)** — the full status lifecycle (`PENDING` → `SETTLING` → `SETTLED`, plus `FAILED` / `CANCELLED`).
 
 ***
 

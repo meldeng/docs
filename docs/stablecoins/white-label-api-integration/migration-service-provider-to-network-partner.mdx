@@ -121,7 +121,7 @@ GET /network-partner/defaults/BR/CRYPTO_ONRAMP
   "countryCode": "BR",
   "category": "CRYPTO_ONRAMP",
   "currencyCode": "BRL",
-  "paymentMethods": ["PIX", "CREDIT_DEBIT_CARD"]
+  "paymentMethods": ["PIX", "CREDIT_DEBIT_CARD", "BINANCE_CASH_BALANCE"]
 }
 ```
 
@@ -199,7 +199,7 @@ GET /network-partner/supported/currencies?category=CRYPTO_ONRAMP&country=US&type
 **What changed**
 
 * One endpoint for both sides — pass `type=FIAT` or `type=CRYPTO`. `category` and `country` are required.
-* The response wrapper `cryptoCurrencies` (and the fiat list) is now `currencies` for both types.
+* The legacy crypto list was returned under a `cryptoCurrencies` wrapper; both fiat and crypto now return a single `currencies` wrapper.
 * `currencyName` → `name`; `networkCode` → `chainCode`; `networkName` is dropped.
 * New fields: `decimalPlaces` (use it for client-side formatting), `symbol`, and `contract` (token contract address) to disambiguate tokens on the same chain.
 * Optional filters: `network` (e.g. `ETHEREUM`, `SOLANA`), `partner`, `paymentType`, `providerCurrencyCode`.
