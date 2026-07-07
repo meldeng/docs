@@ -1425,7 +1425,7 @@
       },
       "RoutingCondition": {
         "type": "object",
-        "description": "This is polymorphic based on the operator:\n\nCONTAINS - SingleValueRoutingCondition\n\nCONTAINS_ALL - MultipleValueRoutingCondition\n\nCONTAINS_ANY - MultipleValueRoutingCondition\n\nCONTAINS_NONE - MultipleValueRoutingCondition\n\nGREATER_THAN - SingleValueRoutingCondition\n\nGREATER_THAN_EQUALS - SingleValueRoutingCondition\n\nIN - MultipleValueRoutingCondition\n\nLESS_THAN - SingleValueRoutingCondition\n\nLESS_THAN_EQUALS - SingleValueRoutingCondition\n\nNOT_CONTAINS - SingleValueRoutingCondition\n\nNOT_IN - MultipleValueRoutingCondition\n\nVariable value formats:\n\nSOURCE_AMOUNT - <3-character currency code><space><numeric amount>\n\nexamples: USD 100, CAD 123.45\n\nINSTITUTION_ID - <id>\n\nexamples: Ntj3AwgdridJc2rtfeheku, 29KL1L2iYUV3zUCoSHhwvr\n\nCOUNTRY_CODE - <2-character country code>\n\nexamples: US, CA\n\nPAYMENT_METHOD_TYPE - <payment method>\n\nexamples: VISA, APPLE_PAY",
+        "description": "This is polymorphic based on the operator:\n\nCONTAINS - SingleValueRoutingCondition\n\nCONTAINS_ALL - MultipleValueRoutingCondition\n\nCONTAINS_ANY - MultipleValueRoutingCondition\n\nCONTAINS_NONE - MultipleValueRoutingCondition\n\nGREATER_THAN - SingleValueRoutingCondition\n\nGREATER_THAN_EQUALS - SingleValueRoutingCondition\n\nIN - MultipleValueRoutingCondition\n\nLESS_THAN - SingleValueRoutingCondition\n\nLESS_THAN_EQUALS - SingleValueRoutingCondition\n\nNOT_CONTAINS - SingleValueRoutingCondition\n\nNOT_IN - MultipleValueRoutingCondition\n\nVariable value formats:\n\nSOURCE_AMOUNT - <3-character currency code>\n\nexamples: USD 100, CAD 123.45\n\nINSTITUTION_ID -\n\nexamples: Ntj3AwgdridJc2rtfeheku, 29KL1L2iYUV3zUCoSHhwvr\n\nCOUNTRY_CODE - <2-character country code>\n\nexamples: US, CA\n\nPAYMENT_METHOD_TYPE -\n\nexamples: VISA, APPLE_PAY",
         "discriminator": {
           "propertyName": "operator"
         },
@@ -1478,16 +1478,36 @@
             "description": "Default service provider preference to use if no rules match",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/ListServiceProviderPreference"
+                "title": "ListServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ListServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OptionalListServiceProviderPreference"
+                "title": "OptionalListServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OptionalListServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                "title": "SingleServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/WeightedServiceProviderPreference"
+                "title": "WeightedServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/WeightedServiceProviderPreference"
+                  }
+                ]
               }
             ]
           },
@@ -1542,10 +1562,20 @@
             "items": {
               "oneOf": [
                 {
-                  "$ref": "#/components/schemas/MultipleValueRoutingCondition"
+                  "title": "MultipleValueRoutingCondition",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/MultipleValueRoutingCondition"
+                    }
+                  ]
                 },
                 {
-                  "$ref": "#/components/schemas/SingleValueRoutingCondition"
+                  "title": "SingleValueRoutingCondition",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SingleValueRoutingCondition"
+                    }
+                  ]
                 }
               ]
             }
@@ -1558,16 +1588,36 @@
             "description": "Service provider preference to use when this rule is true",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/ListServiceProviderPreference"
+                "title": "ListServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ListServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OptionalListServiceProviderPreference"
+                "title": "OptionalListServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OptionalListServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                "title": "SingleServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/WeightedServiceProviderPreference"
+                "title": "WeightedServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/WeightedServiceProviderPreference"
+                  }
+                ]
               }
             ]
           }

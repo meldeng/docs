@@ -1277,172 +1277,452 @@
             "description": "Auth settings",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AcrossAuthSettings"
+                "title": "AcrossAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AcrossAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AeropayAuthSettings"
+                "title": "AeropayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AeropayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AkoyaAuthSettings"
+                "title": "AkoyaAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AkoyaAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AlchemyPayAuthSettings"
+                "title": "AlchemyPayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AlchemyPayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ApplePayAuthSettings"
+                "title": "ApplePayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BanxaAuthSettings"
+                "title": "BanxaAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BanxaAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BiliraAuthSettings"
+                "title": "BiliraAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BiliraAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinanceConnectAuthSettings"
+                "title": "BinanceConnectAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinanceConnectAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinancePayAuthSettings"
+                "title": "BinancePayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinancePayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BlockchainDotComAuthSettings"
+                "title": "BlockchainDotComAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockchainDotComAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BoomFiAuthSettings"
+                "title": "BoomFiAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BoomFiAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraintreeAuthSettings"
+                "title": "BraintreeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraintreeAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraleAuthSettings"
+                "title": "BraleAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraleAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BtcDirectAuthSettings"
+                "title": "BtcDirectAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BtcDirectAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CheckoutAuthSettings"
+                "title": "CheckoutAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CheckoutAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CircleAuthSettings"
+                "title": "CircleAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CircleAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinFlowAuthSettings"
+                "title": "CoinFlowAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinFlowAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinbasePayAuthSettings"
+                "title": "CoinbasePayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinbasePayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/DueNetworkAuthSettings"
+                "title": "DueNetworkAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DueNetworkAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/EldoradoAuthSettings"
+                "title": "EldoradoAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EldoradoAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FinicityAuthSettings"
+                "title": "FinicityAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FlashnetAuthSettings"
+                "title": "FlashnetAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FonbnkAuthSettings"
+                "title": "FonbnkAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FonbnkAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/GuardarianAuthSettings"
+                "title": "GuardarianAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GuardarianAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KoyweAuthSettings"
+                "title": "KoyweAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KoyweAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KryptonimAuthSettings"
+                "title": "KryptonimAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KryptonimAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MercuryoAuthSettings"
+                "title": "MercuryoAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MercuryoAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MeshAuthSettings"
+                "title": "MeshAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MeshAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MoovAuthSettings"
+                "title": "MoovAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MoovAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MxAuthSettings"
+                "title": "MxAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MxAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/NoahAuthSettings"
+                "title": "NoahAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/NoahAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnRampMoneyAuthSettings"
+                "title": "OnRampMoneyAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnRampMoneyAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnmetaAuthSettings"
+                "title": "OnmetaAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnmetaAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaybisAuthSettings"
+                "title": "PaybisAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaybisAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaypalAuthSettings"
+                "title": "PaypalAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaypalAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PlaidAuthSettings"
+                "title": "PlaidAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaidAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RevolutAuthSettings"
+                "title": "RevolutAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RevolutAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RobinhoodAuthSettings"
+                "title": "RobinhoodAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RobinhoodAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RouterProtocolAuthSettings"
+                "title": "RouterProtocolAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RouterProtocolAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgeAuthSettings"
+                "title": "SaltEdgeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgeAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgePartnersAuthSettings"
+                "title": "SaltEdgePartnersAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgePartnersAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SardineAuthSettings"
+                "title": "SardineAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SardineAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ServiceProviderSharedAuthSettings"
+                "title": "ServiceProviderSharedAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ServiceProviderSharedAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/Shift4AuthSettings"
+                "title": "Shift4AuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Shift4AuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SimplexAuthSettings"
+                "title": "SimplexAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimplexAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SkrillCryptoAuthSettings"
+                "title": "SkrillCryptoAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SkrillCryptoAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SquareAuthSettings"
+                "title": "SquareAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SquareAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/StripeAuthSettings"
+                "title": "StripeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/StripeAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SumsubAuthSettings"
+                "title": "SumsubAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SumsubAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SwappedAuthSettings"
+                "title": "SwappedAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SwappedAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TopperAuthSettings"
+                "title": "TopperAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TopperAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransFiAuthSettings"
+                "title": "TransFiAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransFiAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransakAuthSettings"
+                "title": "TransakAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransakAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/UnlimitAuthSettings"
+                "title": "UnlimitAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnlimitAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YellowcardAuthSettings"
+                "title": "YellowcardAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YellowcardAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YodleeAuthSettings"
+                "title": "YodleeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YodleeAuthSettings"
+                  }
+                ]
               }
             ]
           },
@@ -1450,169 +1730,444 @@
             "description": "Config settings",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AcrossConfigSettings"
+                "title": "AcrossConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AcrossConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AeropayConfigSettings"
+                "title": "AeropayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AeropayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AkoyaConfigSettings"
+                "title": "AkoyaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AkoyaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AlchemyPayConfigSettings"
+                "title": "AlchemyPayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AlchemyPayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ApplePayConfigSettings"
+                "title": "ApplePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BanxaConfigSettings"
+                "title": "BanxaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BanxaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BiliraConfigSettings"
+                "title": "BiliraConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BiliraConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinanceConnectConfigSettings"
+                "title": "BinanceConnectConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinanceConnectConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinancePayConfigSettings"
+                "title": "BinancePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinancePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BlockchainDotComConfigSettings"
+                "title": "BlockchainDotComConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockchainDotComConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BoomFiConfigSettings"
+                "title": "BoomFiConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BoomFiConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraintreeConfigSettings"
+                "title": "BraintreeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraintreeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraleConfigSettings"
+                "title": "BraleConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraleConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BtcDirectConfigSettings"
+                "title": "BtcDirectConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BtcDirectConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CheckoutConfigSettings"
+                "title": "CheckoutConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CheckoutConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CircleConfigSettings"
+                "title": "CircleConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CircleConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinFlowConfigSettings"
+                "title": "CoinFlowConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinFlowConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinbasePayConfigSettings"
+                "title": "CoinbasePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinbasePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/DueNetworkConfigSettings"
+                "title": "DueNetworkConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DueNetworkConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/EldoradoConfigSettings"
+                "title": "EldoradoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EldoradoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FinicityConfigSettings"
+                "title": "FinicityConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FlashnetConfigSettings"
+                "title": "FlashnetConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FonbnkConfigSettings"
+                "title": "FonbnkConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FonbnkConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/GuardarianConfigSettings"
+                "title": "GuardarianConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GuardarianConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KoyweConfigSettings"
+                "title": "KoyweConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KoyweConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KryptonimConfigSettings"
+                "title": "KryptonimConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KryptonimConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MercuryoConfigSettings"
+                "title": "MercuryoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MercuryoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MeshConfigSettings"
+                "title": "MeshConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MeshConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MoovConfigSettings"
+                "title": "MoovConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MoovConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MxConfigSettings"
+                "title": "MxConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MxConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/NoahConfigSettings"
+                "title": "NoahConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/NoahConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnRampMoneyConfigSettings"
+                "title": "OnRampMoneyConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnRampMoneyConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnmetaConfigSettings"
+                "title": "OnmetaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnmetaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaybisConfigSettings"
+                "title": "PaybisConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaybisConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaypalConfigSettings"
+                "title": "PaypalConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaypalConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PlaidConfigSettings"
+                "title": "PlaidConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaidConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RevolutConfigSettings"
+                "title": "RevolutConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RevolutConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RobinhoodConfigSettings"
+                "title": "RobinhoodConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RobinhoodConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RouterProtocolConfigSettings"
+                "title": "RouterProtocolConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RouterProtocolConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgeConfigSettings"
+                "title": "SaltEdgeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgePartnersConfigSettings"
+                "title": "SaltEdgePartnersConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgePartnersConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SardineConfigSettings"
+                "title": "SardineConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SardineConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/Shift4ConfigSettings"
+                "title": "Shift4ConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Shift4ConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SimplexConfigSettings"
+                "title": "SimplexConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimplexConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SkrillCryptoConfigSettings"
+                "title": "SkrillCryptoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SkrillCryptoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SquareConfigSettings"
+                "title": "SquareConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SquareConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/StripeConfigSettings"
+                "title": "StripeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/StripeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SumsubConfigSettings"
+                "title": "SumsubConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SumsubConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SwappedConfigSettings"
+                "title": "SwappedConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SwappedConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TopperConfigSettings"
+                "title": "TopperConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TopperConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransFiConfigSettings"
+                "title": "TransFiConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransFiConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransakConfigSettings"
+                "title": "TransakConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransakConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/UnlimitConfigSettings"
+                "title": "UnlimitConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnlimitConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YellowcardConfigSettings"
+                "title": "YellowcardConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YellowcardConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YodleeConfigSettings"
+                "title": "YodleeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YodleeConfigSettings"
+                  }
+                ]
               }
             ]
           },
@@ -3023,341 +3578,896 @@
           "authSettings": {
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AcrossAuthSettings"
+                "title": "AcrossAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AcrossAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AeropayAuthSettings"
+                "title": "AeropayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AeropayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AkoyaAuthSettings"
+                "title": "AkoyaAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AkoyaAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AlchemyPayAuthSettings"
+                "title": "AlchemyPayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AlchemyPayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ApplePayAuthSettings"
+                "title": "ApplePayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BanxaAuthSettings"
+                "title": "BanxaAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BanxaAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BiliraAuthSettings"
+                "title": "BiliraAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BiliraAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinanceConnectAuthSettings"
+                "title": "BinanceConnectAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinanceConnectAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinancePayAuthSettings"
+                "title": "BinancePayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinancePayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BlockchainDotComAuthSettings"
+                "title": "BlockchainDotComAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockchainDotComAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BoomFiAuthSettings"
+                "title": "BoomFiAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BoomFiAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraintreeAuthSettings"
+                "title": "BraintreeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraintreeAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraleAuthSettings"
+                "title": "BraleAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraleAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BtcDirectAuthSettings"
+                "title": "BtcDirectAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BtcDirectAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CheckoutAuthSettings"
+                "title": "CheckoutAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CheckoutAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CircleAuthSettings"
+                "title": "CircleAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CircleAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinFlowAuthSettings"
+                "title": "CoinFlowAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinFlowAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinbasePayAuthSettings"
+                "title": "CoinbasePayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinbasePayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/DueNetworkAuthSettings"
+                "title": "DueNetworkAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DueNetworkAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/EldoradoAuthSettings"
+                "title": "EldoradoAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EldoradoAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FinicityAuthSettings"
+                "title": "FinicityAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FlashnetAuthSettings"
+                "title": "FlashnetAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FonbnkAuthSettings"
+                "title": "FonbnkAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FonbnkAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/GuardarianAuthSettings"
+                "title": "GuardarianAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GuardarianAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KoyweAuthSettings"
+                "title": "KoyweAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KoyweAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KryptonimAuthSettings"
+                "title": "KryptonimAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KryptonimAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MercuryoAuthSettings"
+                "title": "MercuryoAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MercuryoAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MeshAuthSettings"
+                "title": "MeshAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MeshAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MoovAuthSettings"
+                "title": "MoovAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MoovAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MxAuthSettings"
+                "title": "MxAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MxAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/NoahAuthSettings"
+                "title": "NoahAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/NoahAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnRampMoneyAuthSettings"
+                "title": "OnRampMoneyAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnRampMoneyAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnmetaAuthSettings"
+                "title": "OnmetaAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnmetaAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaybisAuthSettings"
+                "title": "PaybisAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaybisAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaypalAuthSettings"
+                "title": "PaypalAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaypalAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PlaidAuthSettings"
+                "title": "PlaidAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaidAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RevolutAuthSettings"
+                "title": "RevolutAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RevolutAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RobinhoodAuthSettings"
+                "title": "RobinhoodAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RobinhoodAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RouterProtocolAuthSettings"
+                "title": "RouterProtocolAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RouterProtocolAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgeAuthSettings"
+                "title": "SaltEdgeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgeAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgePartnersAuthSettings"
+                "title": "SaltEdgePartnersAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgePartnersAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SardineAuthSettings"
+                "title": "SardineAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SardineAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ServiceProviderSharedAuthSettings"
+                "title": "ServiceProviderSharedAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ServiceProviderSharedAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/Shift4AuthSettings"
+                "title": "Shift4AuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Shift4AuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SimplexAuthSettings"
+                "title": "SimplexAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimplexAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SkrillCryptoAuthSettings"
+                "title": "SkrillCryptoAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SkrillCryptoAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SquareAuthSettings"
+                "title": "SquareAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SquareAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/StripeAuthSettings"
+                "title": "StripeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/StripeAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SumsubAuthSettings"
+                "title": "SumsubAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SumsubAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SwappedAuthSettings"
+                "title": "SwappedAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SwappedAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TopperAuthSettings"
+                "title": "TopperAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TopperAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransFiAuthSettings"
+                "title": "TransFiAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransFiAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransakAuthSettings"
+                "title": "TransakAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransakAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/UnlimitAuthSettings"
+                "title": "UnlimitAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnlimitAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YellowcardAuthSettings"
+                "title": "YellowcardAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YellowcardAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YodleeAuthSettings"
+                "title": "YodleeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YodleeAuthSettings"
+                  }
+                ]
               }
             ]
           },
           "configSettings": {
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AcrossConfigSettings"
+                "title": "AcrossConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AcrossConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AeropayConfigSettings"
+                "title": "AeropayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AeropayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AkoyaConfigSettings"
+                "title": "AkoyaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AkoyaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AlchemyPayConfigSettings"
+                "title": "AlchemyPayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AlchemyPayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ApplePayConfigSettings"
+                "title": "ApplePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BanxaConfigSettings"
+                "title": "BanxaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BanxaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BiliraConfigSettings"
+                "title": "BiliraConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BiliraConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinanceConnectConfigSettings"
+                "title": "BinanceConnectConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinanceConnectConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinancePayConfigSettings"
+                "title": "BinancePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinancePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BlockchainDotComConfigSettings"
+                "title": "BlockchainDotComConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockchainDotComConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BoomFiConfigSettings"
+                "title": "BoomFiConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BoomFiConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraintreeConfigSettings"
+                "title": "BraintreeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraintreeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraleConfigSettings"
+                "title": "BraleConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraleConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BtcDirectConfigSettings"
+                "title": "BtcDirectConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BtcDirectConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CheckoutConfigSettings"
+                "title": "CheckoutConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CheckoutConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CircleConfigSettings"
+                "title": "CircleConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CircleConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinFlowConfigSettings"
+                "title": "CoinFlowConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinFlowConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinbasePayConfigSettings"
+                "title": "CoinbasePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinbasePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/DueNetworkConfigSettings"
+                "title": "DueNetworkConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DueNetworkConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/EldoradoConfigSettings"
+                "title": "EldoradoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EldoradoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FinicityConfigSettings"
+                "title": "FinicityConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FlashnetConfigSettings"
+                "title": "FlashnetConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FonbnkConfigSettings"
+                "title": "FonbnkConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FonbnkConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/GuardarianConfigSettings"
+                "title": "GuardarianConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GuardarianConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KoyweConfigSettings"
+                "title": "KoyweConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KoyweConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KryptonimConfigSettings"
+                "title": "KryptonimConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KryptonimConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MercuryoConfigSettings"
+                "title": "MercuryoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MercuryoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MeshConfigSettings"
+                "title": "MeshConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MeshConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MoovConfigSettings"
+                "title": "MoovConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MoovConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MxConfigSettings"
+                "title": "MxConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MxConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/NoahConfigSettings"
+                "title": "NoahConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/NoahConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnRampMoneyConfigSettings"
+                "title": "OnRampMoneyConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnRampMoneyConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnmetaConfigSettings"
+                "title": "OnmetaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnmetaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaybisConfigSettings"
+                "title": "PaybisConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaybisConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaypalConfigSettings"
+                "title": "PaypalConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaypalConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PlaidConfigSettings"
+                "title": "PlaidConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaidConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RevolutConfigSettings"
+                "title": "RevolutConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RevolutConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RobinhoodConfigSettings"
+                "title": "RobinhoodConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RobinhoodConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RouterProtocolConfigSettings"
+                "title": "RouterProtocolConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RouterProtocolConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgeConfigSettings"
+                "title": "SaltEdgeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgePartnersConfigSettings"
+                "title": "SaltEdgePartnersConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgePartnersConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SardineConfigSettings"
+                "title": "SardineConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SardineConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/Shift4ConfigSettings"
+                "title": "Shift4ConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Shift4ConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SimplexConfigSettings"
+                "title": "SimplexConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimplexConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SkrillCryptoConfigSettings"
+                "title": "SkrillCryptoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SkrillCryptoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SquareConfigSettings"
+                "title": "SquareConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SquareConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/StripeConfigSettings"
+                "title": "StripeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/StripeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SumsubConfigSettings"
+                "title": "SumsubConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SumsubConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SwappedConfigSettings"
+                "title": "SwappedConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SwappedConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TopperConfigSettings"
+                "title": "TopperConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TopperConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransFiConfigSettings"
+                "title": "TransFiConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransFiConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransakConfigSettings"
+                "title": "TransakConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransakConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/UnlimitConfigSettings"
+                "title": "UnlimitConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnlimitConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YellowcardConfigSettings"
+                "title": "YellowcardConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YellowcardConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YodleeConfigSettings"
+                "title": "YodleeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YodleeConfigSettings"
+                  }
+                ]
               }
             ]
           },
@@ -3658,13 +4768,28 @@
         "description": "The preference details",
         "oneOf": [
           {
-            "$ref": "#/components/schemas/CryptoPreference"
+            "title": "CryptoPreference",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoPreference"
+              }
+            ]
           },
           {
-            "$ref": "#/components/schemas/BankLinkingPreference"
+            "title": "BankLinkingPreference",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BankLinkingPreference"
+              }
+            ]
           },
           {
-            "$ref": "#/components/schemas/KycPreference"
+            "title": "KycPreference",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycPreference"
+              }
+            ]
           }
         ]
       },
@@ -4337,7 +5462,12 @@
             "description": "Service provider specific details for the customer",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/FinicityCustomerDetails"
+                "title": "FinicityCustomerDetails",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityCustomerDetails"
+                  }
+                ]
               }
             ]
           },
@@ -4531,7 +5661,12 @@
           "serviceProviderDetails": {
             "oneOf": [
               {
-                "$ref": "#/components/schemas/FinicityCustomerDetails"
+                "title": "FinicityCustomerDetails",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityCustomerDetails"
+                  }
+                ]
               }
             ]
           },
@@ -4672,7 +5807,12 @@
         "description": "The customer service provider auth details",
         "oneOf": [
           {
-            "$ref": "#/components/schemas/MeshCustomerAuthDetails"
+            "title": "MeshCustomerAuthDetails",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MeshCustomerAuthDetails"
+              }
+            ]
           }
         ]
       },
@@ -5030,7 +6170,12 @@
         "description": "Provider-specific details for KYC initiation",
         "oneOf": [
           {
-            "$ref": "#/components/schemas/SumsubTokenImportKycDetails"
+            "title": "SumsubTokenImportKycDetails",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SumsubTokenImportKycDetails"
+              }
+            ]
           }
         ]
       },
@@ -5209,172 +6354,452 @@
             "description": "Auth settings",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AcrossAuthSettings"
+                "title": "AcrossAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AcrossAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AeropayAuthSettings"
+                "title": "AeropayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AeropayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AkoyaAuthSettings"
+                "title": "AkoyaAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AkoyaAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AlchemyPayAuthSettings"
+                "title": "AlchemyPayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AlchemyPayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ApplePayAuthSettings"
+                "title": "ApplePayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BanxaAuthSettings"
+                "title": "BanxaAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BanxaAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BiliraAuthSettings"
+                "title": "BiliraAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BiliraAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinanceConnectAuthSettings"
+                "title": "BinanceConnectAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinanceConnectAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinancePayAuthSettings"
+                "title": "BinancePayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinancePayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BlockchainDotComAuthSettings"
+                "title": "BlockchainDotComAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockchainDotComAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BoomFiAuthSettings"
+                "title": "BoomFiAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BoomFiAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraintreeAuthSettings"
+                "title": "BraintreeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraintreeAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraleAuthSettings"
+                "title": "BraleAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraleAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BtcDirectAuthSettings"
+                "title": "BtcDirectAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BtcDirectAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CheckoutAuthSettings"
+                "title": "CheckoutAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CheckoutAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CircleAuthSettings"
+                "title": "CircleAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CircleAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinFlowAuthSettings"
+                "title": "CoinFlowAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinFlowAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinbasePayAuthSettings"
+                "title": "CoinbasePayAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinbasePayAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/DueNetworkAuthSettings"
+                "title": "DueNetworkAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DueNetworkAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/EldoradoAuthSettings"
+                "title": "EldoradoAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EldoradoAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FinicityAuthSettings"
+                "title": "FinicityAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FlashnetAuthSettings"
+                "title": "FlashnetAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FonbnkAuthSettings"
+                "title": "FonbnkAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FonbnkAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/GuardarianAuthSettings"
+                "title": "GuardarianAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GuardarianAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KoyweAuthSettings"
+                "title": "KoyweAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KoyweAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KryptonimAuthSettings"
+                "title": "KryptonimAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KryptonimAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MercuryoAuthSettings"
+                "title": "MercuryoAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MercuryoAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MeshAuthSettings"
+                "title": "MeshAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MeshAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MoovAuthSettings"
+                "title": "MoovAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MoovAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MxAuthSettings"
+                "title": "MxAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MxAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/NoahAuthSettings"
+                "title": "NoahAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/NoahAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnRampMoneyAuthSettings"
+                "title": "OnRampMoneyAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnRampMoneyAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnmetaAuthSettings"
+                "title": "OnmetaAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnmetaAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaybisAuthSettings"
+                "title": "PaybisAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaybisAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaypalAuthSettings"
+                "title": "PaypalAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaypalAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PlaidAuthSettings"
+                "title": "PlaidAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaidAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RevolutAuthSettings"
+                "title": "RevolutAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RevolutAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RobinhoodAuthSettings"
+                "title": "RobinhoodAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RobinhoodAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RouterProtocolAuthSettings"
+                "title": "RouterProtocolAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RouterProtocolAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgeAuthSettings"
+                "title": "SaltEdgeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgeAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgePartnersAuthSettings"
+                "title": "SaltEdgePartnersAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgePartnersAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SardineAuthSettings"
+                "title": "SardineAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SardineAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ServiceProviderSharedAuthSettings"
+                "title": "ServiceProviderSharedAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ServiceProviderSharedAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/Shift4AuthSettings"
+                "title": "Shift4AuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Shift4AuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SimplexAuthSettings"
+                "title": "SimplexAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimplexAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SkrillCryptoAuthSettings"
+                "title": "SkrillCryptoAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SkrillCryptoAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SquareAuthSettings"
+                "title": "SquareAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SquareAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/StripeAuthSettings"
+                "title": "StripeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/StripeAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SumsubAuthSettings"
+                "title": "SumsubAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SumsubAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SwappedAuthSettings"
+                "title": "SwappedAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SwappedAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TopperAuthSettings"
+                "title": "TopperAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TopperAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransFiAuthSettings"
+                "title": "TransFiAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransFiAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransakAuthSettings"
+                "title": "TransakAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransakAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/UnlimitAuthSettings"
+                "title": "UnlimitAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnlimitAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YellowcardAuthSettings"
+                "title": "YellowcardAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YellowcardAuthSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YodleeAuthSettings"
+                "title": "YodleeAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YodleeAuthSettings"
+                  }
+                ]
               }
             ]
           },
@@ -5382,169 +6807,444 @@
             "description": "Config settings",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AcrossConfigSettings"
+                "title": "AcrossConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AcrossConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AeropayConfigSettings"
+                "title": "AeropayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AeropayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AkoyaConfigSettings"
+                "title": "AkoyaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AkoyaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AlchemyPayConfigSettings"
+                "title": "AlchemyPayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AlchemyPayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ApplePayConfigSettings"
+                "title": "ApplePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BanxaConfigSettings"
+                "title": "BanxaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BanxaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BiliraConfigSettings"
+                "title": "BiliraConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BiliraConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinanceConnectConfigSettings"
+                "title": "BinanceConnectConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinanceConnectConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinancePayConfigSettings"
+                "title": "BinancePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinancePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BlockchainDotComConfigSettings"
+                "title": "BlockchainDotComConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockchainDotComConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BoomFiConfigSettings"
+                "title": "BoomFiConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BoomFiConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraintreeConfigSettings"
+                "title": "BraintreeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraintreeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraleConfigSettings"
+                "title": "BraleConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraleConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BtcDirectConfigSettings"
+                "title": "BtcDirectConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BtcDirectConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CheckoutConfigSettings"
+                "title": "CheckoutConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CheckoutConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CircleConfigSettings"
+                "title": "CircleConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CircleConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinFlowConfigSettings"
+                "title": "CoinFlowConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinFlowConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinbasePayConfigSettings"
+                "title": "CoinbasePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinbasePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/DueNetworkConfigSettings"
+                "title": "DueNetworkConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DueNetworkConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/EldoradoConfigSettings"
+                "title": "EldoradoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EldoradoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FinicityConfigSettings"
+                "title": "FinicityConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FlashnetConfigSettings"
+                "title": "FlashnetConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FonbnkConfigSettings"
+                "title": "FonbnkConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FonbnkConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/GuardarianConfigSettings"
+                "title": "GuardarianConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GuardarianConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KoyweConfigSettings"
+                "title": "KoyweConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KoyweConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KryptonimConfigSettings"
+                "title": "KryptonimConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KryptonimConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MercuryoConfigSettings"
+                "title": "MercuryoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MercuryoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MeshConfigSettings"
+                "title": "MeshConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MeshConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MoovConfigSettings"
+                "title": "MoovConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MoovConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MxConfigSettings"
+                "title": "MxConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MxConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/NoahConfigSettings"
+                "title": "NoahConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/NoahConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnRampMoneyConfigSettings"
+                "title": "OnRampMoneyConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnRampMoneyConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnmetaConfigSettings"
+                "title": "OnmetaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnmetaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaybisConfigSettings"
+                "title": "PaybisConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaybisConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaypalConfigSettings"
+                "title": "PaypalConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaypalConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PlaidConfigSettings"
+                "title": "PlaidConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaidConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RevolutConfigSettings"
+                "title": "RevolutConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RevolutConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RobinhoodConfigSettings"
+                "title": "RobinhoodConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RobinhoodConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RouterProtocolConfigSettings"
+                "title": "RouterProtocolConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RouterProtocolConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgeConfigSettings"
+                "title": "SaltEdgeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgePartnersConfigSettings"
+                "title": "SaltEdgePartnersConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgePartnersConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SardineConfigSettings"
+                "title": "SardineConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SardineConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/Shift4ConfigSettings"
+                "title": "Shift4ConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Shift4ConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SimplexConfigSettings"
+                "title": "SimplexConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimplexConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SkrillCryptoConfigSettings"
+                "title": "SkrillCryptoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SkrillCryptoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SquareConfigSettings"
+                "title": "SquareConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SquareConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/StripeConfigSettings"
+                "title": "StripeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/StripeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SumsubConfigSettings"
+                "title": "SumsubConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SumsubConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SwappedConfigSettings"
+                "title": "SwappedConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SwappedConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TopperConfigSettings"
+                "title": "TopperConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TopperConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransFiConfigSettings"
+                "title": "TransFiConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransFiConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransakConfigSettings"
+                "title": "TransakConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransakConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/UnlimitConfigSettings"
+                "title": "UnlimitConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnlimitConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YellowcardConfigSettings"
+                "title": "YellowcardConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YellowcardConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YodleeConfigSettings"
+                "title": "YodleeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YodleeConfigSettings"
+                  }
+                ]
               }
             ]
           },
@@ -5758,7 +7458,12 @@
             "description": "The updated service provider specific details for the customer",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/FinicityCustomerDetails"
+                "title": "FinicityCustomerDetails",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityCustomerDetails"
+                  }
+                ]
               }
             ]
           },
@@ -6085,169 +7790,444 @@
           "configSettings": {
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AcrossConfigSettings"
+                "title": "AcrossConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AcrossConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AeropayConfigSettings"
+                "title": "AeropayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AeropayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AkoyaConfigSettings"
+                "title": "AkoyaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AkoyaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AlchemyPayConfigSettings"
+                "title": "AlchemyPayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AlchemyPayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/ApplePayConfigSettings"
+                "title": "ApplePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BanxaConfigSettings"
+                "title": "BanxaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BanxaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BiliraConfigSettings"
+                "title": "BiliraConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BiliraConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinanceConnectConfigSettings"
+                "title": "BinanceConnectConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinanceConnectConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BinancePayConfigSettings"
+                "title": "BinancePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BinancePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BlockchainDotComConfigSettings"
+                "title": "BlockchainDotComConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BlockchainDotComConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BoomFiConfigSettings"
+                "title": "BoomFiConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BoomFiConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraintreeConfigSettings"
+                "title": "BraintreeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraintreeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BraleConfigSettings"
+                "title": "BraleConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BraleConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BtcDirectConfigSettings"
+                "title": "BtcDirectConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BtcDirectConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CheckoutConfigSettings"
+                "title": "CheckoutConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CheckoutConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CircleConfigSettings"
+                "title": "CircleConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CircleConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinFlowConfigSettings"
+                "title": "CoinFlowConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinFlowConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CoinbasePayConfigSettings"
+                "title": "CoinbasePayConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CoinbasePayConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/DueNetworkConfigSettings"
+                "title": "DueNetworkConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DueNetworkConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/EldoradoConfigSettings"
+                "title": "EldoradoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EldoradoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FinicityConfigSettings"
+                "title": "FinicityConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FinicityConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FlashnetConfigSettings"
+                "title": "FlashnetConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/FonbnkConfigSettings"
+                "title": "FonbnkConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FonbnkConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/GuardarianConfigSettings"
+                "title": "GuardarianConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GuardarianConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KoyweConfigSettings"
+                "title": "KoyweConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KoyweConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/KryptonimConfigSettings"
+                "title": "KryptonimConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/KryptonimConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MercuryoConfigSettings"
+                "title": "MercuryoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MercuryoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MeshConfigSettings"
+                "title": "MeshConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MeshConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MoovConfigSettings"
+                "title": "MoovConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MoovConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MxConfigSettings"
+                "title": "MxConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MxConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/NoahConfigSettings"
+                "title": "NoahConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/NoahConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnRampMoneyConfigSettings"
+                "title": "OnRampMoneyConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnRampMoneyConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OnmetaConfigSettings"
+                "title": "OnmetaConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OnmetaConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaybisConfigSettings"
+                "title": "PaybisConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaybisConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PaypalConfigSettings"
+                "title": "PaypalConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PaypalConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PlaidConfigSettings"
+                "title": "PlaidConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaidConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RevolutConfigSettings"
+                "title": "RevolutConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RevolutConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RobinhoodConfigSettings"
+                "title": "RobinhoodConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RobinhoodConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/RouterProtocolConfigSettings"
+                "title": "RouterProtocolConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RouterProtocolConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgeConfigSettings"
+                "title": "SaltEdgeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SaltEdgePartnersConfigSettings"
+                "title": "SaltEdgePartnersConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SaltEdgePartnersConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SardineConfigSettings"
+                "title": "SardineConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SardineConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/Shift4ConfigSettings"
+                "title": "Shift4ConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Shift4ConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SimplexConfigSettings"
+                "title": "SimplexConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimplexConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SkrillCryptoConfigSettings"
+                "title": "SkrillCryptoConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SkrillCryptoConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SquareConfigSettings"
+                "title": "SquareConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SquareConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/StripeConfigSettings"
+                "title": "StripeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/StripeConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SumsubConfigSettings"
+                "title": "SumsubConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SumsubConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SwappedConfigSettings"
+                "title": "SwappedConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SwappedConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TopperConfigSettings"
+                "title": "TopperConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TopperConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransFiConfigSettings"
+                "title": "TransFiConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransFiConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/TransakConfigSettings"
+                "title": "TransakConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransakConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/UnlimitConfigSettings"
+                "title": "UnlimitConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UnlimitConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YellowcardConfigSettings"
+                "title": "YellowcardConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YellowcardConfigSettings"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/YodleeConfigSettings"
+                "title": "YodleeConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YodleeConfigSettings"
+                  }
+                ]
               }
             ]
           },

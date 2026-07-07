@@ -106,9 +106,6 @@
                 "$ref": "#/components/schemas/SessionTokenForWidgetRequestV20231219"
               },
               "example": {
-                "sessionData": {
-                  "serviceProvider": "ALCHEMYPAY"
-                },
                 "sessionType": "BUY"
               }
             }
@@ -660,9 +657,6 @@
               },
               "example": {
                 "destinationCurrencyCode": "USD",
-                "fiatPayoutMethod": {
-                  "type": "PAYOUT_TO_BANK"
-                },
                 "serviceProvider": "ACROSS",
                 "sourceAmount": 20000,
                 "sourceCurrencyCode": "USDC",
@@ -1507,13 +1501,28 @@
             "description": "Bank information for receiving the fiat transfer; shape depends on paymentMethodType",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AchReceivingBankInformation"
+                "title": "AchReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AchReceivingBankInformation"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/LocalBankTransferReceivingBankInformation"
+                "title": "LocalBankTransferReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LocalBankTransferReceivingBankInformation"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SepaReceivingBankInformation"
+                "title": "SepaReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SepaReceivingBankInformation"
+                  }
+                ]
               }
             ]
           },
@@ -1629,13 +1638,28 @@
             "description": "Payout method details",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AchPaymentMethodDetails"
+                "title": "AchPaymentMethodDetails",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AchPaymentMethodDetails"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MobilePaymentMethodDetails"
+                "title": "MobilePaymentMethodDetails",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MobilePaymentMethodDetails"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SepaPaymentMethodDetails"
+                "title": "SepaPaymentMethodDetails",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SepaPaymentMethodDetails"
+                  }
+                ]
               }
             ]
           },
@@ -2069,19 +2093,44 @@
             "description": "Bank information for the fiat transfer; shape depends on paymentMethodType",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/AchReceivingBankInformation"
+                "title": "AchReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AchReceivingBankInformation"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/LocalBankTransferReceivingBankInformation"
+                "title": "LocalBankTransferReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LocalBankTransferReceivingBankInformation"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/MobileMoneyReceivingBankInformation"
+                "title": "MobileMoneyReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MobileMoneyReceivingBankInformation"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/PixReceivingBankInformation"
+                "title": "PixReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PixReceivingBankInformation"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SepaReceivingBankInformation"
+                "title": "SepaReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SepaReceivingBankInformation"
+                  }
+                ]
               }
             ]
           },
@@ -2295,13 +2344,28 @@
         },
         "oneOf": [
           {
-            "$ref": "#/components/schemas/CardDetails"
+            "title": "CardDetails",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CardDetails"
+              }
+            ]
           },
           {
-            "$ref": "#/components/schemas/AchDetails"
+            "title": "AchDetails",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AchDetails"
+              }
+            ]
           },
           {
-            "$ref": "#/components/schemas/MeldPaymentTokenDetails"
+            "title": "MeldPaymentTokenDetails",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MeldPaymentTokenDetails"
+              }
+            ]
           }
         ]
       },
@@ -3865,7 +3929,12 @@
         "description": "Data related to the session",
         "oneOf": [
           {
-            "$ref": "#/components/schemas/FiatTransactionSessionDataInput"
+            "title": "FiatTransactionSessionDataInput",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FiatTransactionSessionDataInput"
+              }
+            ]
           }
         ]
       },
@@ -4909,7 +4978,12 @@
             "description": "Provider-specific extension; subtype keyed by serviceProvider",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/YellowcardData"
+                "title": "YellowcardData",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/YellowcardData"
+                  }
+                ]
               }
             ]
           },
@@ -5166,13 +5240,28 @@
             "description": "Method-specific response payload",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/ApplePayOrder"
+                "title": "ApplePayOrder",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayOrder"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/BankTransferOrder"
+                "title": "BankTransferOrder",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BankTransferOrder"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/CardOrder"
+                "title": "CardOrder",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CardOrder"
+                  }
+                ]
               }
             ]
           },
@@ -6627,13 +6716,28 @@
         "description": "Data related to the session",
         "oneOf": [
           {
-            "$ref": "#/components/schemas/CryptoBuySessionData"
+            "title": "CryptoBuySessionData",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoBuySessionData"
+              }
+            ]
           },
           {
-            "$ref": "#/components/schemas/CryptoSellSessionData"
+            "title": "CryptoSellSessionData",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoSellSessionData"
+              }
+            ]
           },
           {
-            "$ref": "#/components/schemas/CryptoTransferSessionData"
+            "title": "CryptoTransferSessionData",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoTransferSessionData"
+              }
+            ]
           }
         ],
         "properties": {

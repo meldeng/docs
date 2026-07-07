@@ -400,6 +400,48 @@ def wrap_ref_siblings(value) -> int:
     return updated
 
 
+def branch_schema_name(branch: dict) -> str | None:
+    """Return the component schema name a oneOf/anyOf branch points at, if any."""
+    if not isinstance(branch, dict):
+        return None
+    ref = branch.get("$ref")
+    if isinstance(ref, str) and ref.startswith("#/components/schemas/"):
+        return ref.removeprefix("#/components/schemas/")
+    all_of = branch.get("allOf")
+    if isinstance(all_of, list) and len(all_of) == 1 and isinstance(all_of[0], dict):
+        inner = all_of[0].get("$ref")
+        if isinstance(inner, str) and inner.startswith("#/components/schemas/"):
+            return inner.removeprefix("#/components/schemas/")
+    return None
+
+
+def annotate_polymorphic_titles(value) -> int:
+    """Mintlify labels oneOf/anyOf tabs by each branch's `title`; without one it shows
+    "Option 1/2/3", hiding which subtype (and therefore which discriminator value) each tab
+    represents. Bare `{$ref}` branches have nowhere to carry a title, so tag each branch with
+    its referenced schema name. Runs before wrap_ref_siblings, which folds the `{title, $ref}`
+    pair into the `{title, allOf:[{$ref}]}` subschema form Mintlify renders as the tab label."""
+    updated = 0
+    if isinstance(value, dict):
+        for key in ("oneOf", "anyOf"):
+            branches = value.get(key)
+            if not isinstance(branches, list):
+                continue
+            for branch in branches:
+                if not isinstance(branch, dict) or "title" in branch:
+                    continue
+                name = branch_schema_name(branch)
+                if name:
+                    branch["title"] = name
+                    updated += 1
+        for child in value.values():
+            updated += annotate_polymorphic_titles(child)
+    elif isinstance(value, list):
+        for child in value:
+            updated += annotate_polymorphic_titles(child)
+    return updated
+
+
 def reorder_paths(payload: dict, service: str) -> int:
     path_priority = PATH_PRIORITY_BY_SERVICE.get(service)
     paths = payload.get("paths")
@@ -433,6 +475,7 @@ def normalize_spec(spec_path: Path, is_latest: bool = True) -> int:
     updated += normalize_descriptions(payload)
     updated += sanitize_component_schemas(payload)
     updated += inject_required_only_request_examples(payload)
+    updated += annotate_polymorphic_titles(payload)
     updated += wrap_ref_siblings(payload)
     updated += reorder_paths(payload, service)
 
