@@ -1445,6 +1445,14 @@
                 ]
               },
               {
+                "title": "FlashnetAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetAuthSettings"
+                  }
+                ]
+              },
+              {
                 "title": "FonbnkAuthSettings",
                 "allOf": [
                   {
@@ -1701,6 +1709,14 @@
                 ]
               },
               {
+                "title": "UpholdAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdAuthSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardAuthSettings",
                 "allOf": [
                   {
@@ -1886,6 +1902,14 @@
                 "allOf": [
                   {
                     "$ref": "#/components/schemas/FinicityConfigSettings"
+                  }
+                ]
+              },
+              {
+                "title": "FlashnetConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetConfigSettings"
                   }
                 ]
               },
@@ -2138,6 +2162,14 @@
                 ]
               },
               {
+                "title": "UpholdConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdConfigSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardConfigSettings",
                 "allOf": [
                   {
@@ -2218,6 +2250,9 @@
             "type": "object",
             "properties": {
               "apiKey": {
+                "type": "string"
+              },
+              "webhookPublicKey": {
                 "type": "string"
               }
             }
@@ -2308,6 +2343,42 @@
         ],
         "required": [
           "loadHistoricalTxsOnInitial"
+        ]
+      },
+      "FlashnetAuthSettings": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ServiceProviderAuthSettings"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "apiKey": {
+                "type": "string"
+              },
+              "webhookSecret": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "required": [
+          "apiKey"
+        ]
+      },
+      "FlashnetConfigSettings": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ServiceProviderConfigSettings"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "affiliateId": {
+                "type": "string"
+              }
+            }
+          }
         ]
       },
       "FonbnkAuthSettings": {
@@ -3431,6 +3502,47 @@
           }
         ]
       },
+      "UpholdAuthSettings": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ServiceProviderAuthSettings"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "clientId": {
+                "type": "string"
+              },
+              "clientSecret": {
+                "type": "string"
+              },
+              "webhookSigningSecret": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "required": [
+          "clientId",
+          "clientSecret",
+          "webhookSigningSecret"
+        ]
+      },
+      "UpholdConfigSettings": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ServiceProviderConfigSettings"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "partnerFeePercentage": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
       "YellowcardAuthSettings": {
         "allOf": [
           {
@@ -3691,6 +3803,14 @@
                 ]
               },
               {
+                "title": "FlashnetAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetAuthSettings"
+                  }
+                ]
+              },
+              {
                 "title": "FonbnkAuthSettings",
                 "allOf": [
                   {
@@ -3947,6 +4067,14 @@
                 ]
               },
               {
+                "title": "UpholdAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdAuthSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardAuthSettings",
                 "allOf": [
                   {
@@ -4131,6 +4259,14 @@
                 "allOf": [
                   {
                     "$ref": "#/components/schemas/FinicityConfigSettings"
+                  }
+                ]
+              },
+              {
+                "title": "FlashnetConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetConfigSettings"
                   }
                 ]
               },
@@ -4383,6 +4519,14 @@
                 ]
               },
               {
+                "title": "UpholdConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdConfigSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardConfigSettings",
                 "allOf": [
                   {
@@ -4556,9 +4700,9 @@
             "type": "string",
             "description": "The color of the Buy/Sell text on the CTA button"
           },
-          "enableMeldCryptoWizard": {
+          "headlessOnrampsEnabled": {
             "type": "boolean",
-            "description": "Whether to enable the Meld crypto wizard functionality. If a value is not set, it defaults to false."
+            "description": "Account-wide gate for the headless onramp endpoint (POST /crypto/order/headless). When true, the validator's WHITELABEL_NOT_ENABLED gate passes for any headless-eligible provider the account is provisioned for. If a value is not set, it is assumed to be false (default-deny)."
           },
           "hideBackButton": {
             "type": "boolean",
@@ -4630,6 +4774,7 @@
                 "DUENETWORK",
                 "ELDORADO",
                 "FINICITY",
+                "FLASHNET",
                 "FONBNK",
                 "GUARDARIAN",
                 "HARBOUR",
@@ -4670,6 +4815,7 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
+                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -4988,19 +5134,22 @@
             "type": "string",
             "description": "Full name of the person",
             "example": "John Doe",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^(?=.{1,100}$)[\\p{L}\\p{M}]+([ '-][\\p{L}\\p{M}]+)*$"
           },
           "reasonName": {
             "type": "string",
             "description": "Reason name(s) - can be a single reason or multiple comma-separated reasons (must be valid reasons from reference table)",
             "example": "TRADITIONAL_RAMPS,VIRTUAL_ACCOUNTS",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_,\\s\\-]+$"
           },
           "roleName": {
             "type": "string",
             "description": "Role name (must be valid role from reference table)",
             "example": "ENGINEER",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_\\-]+$"
           }
         },
         "required": [
@@ -5533,6 +5682,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -5573,6 +5723,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -5663,6 +5814,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -5703,6 +5855,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -5892,6 +6045,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -5932,6 +6086,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -6008,6 +6163,7 @@
                 "DUENETWORK",
                 "ELDORADO",
                 "FINICITY",
+                "FLASHNET",
                 "FONBNK",
                 "GUARDARIAN",
                 "HARBOUR",
@@ -6048,6 +6204,7 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
+                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -6443,6 +6600,14 @@
                 ]
               },
               {
+                "title": "FlashnetAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetAuthSettings"
+                  }
+                ]
+              },
+              {
                 "title": "FonbnkAuthSettings",
                 "allOf": [
                   {
@@ -6699,6 +6864,14 @@
                 ]
               },
               {
+                "title": "UpholdAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdAuthSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardAuthSettings",
                 "allOf": [
                   {
@@ -6884,6 +7057,14 @@
                 "allOf": [
                   {
                     "$ref": "#/components/schemas/FinicityConfigSettings"
+                  }
+                ]
+              },
+              {
+                "title": "FlashnetConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetConfigSettings"
                   }
                 ]
               },
@@ -7132,6 +7313,14 @@
                 "allOf": [
                   {
                     "$ref": "#/components/schemas/UnlimitConfigSettings"
+                  }
+                ]
+              },
+              {
+                "title": "UpholdConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdConfigSettings"
                   }
                 ]
               },
@@ -7618,6 +7807,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -7658,6 +7848,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -7858,6 +8049,14 @@
                 "allOf": [
                   {
                     "$ref": "#/components/schemas/FinicityConfigSettings"
+                  }
+                ]
+              },
+              {
+                "title": "FlashnetConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlashnetConfigSettings"
                   }
                 ]
               },
@@ -8110,6 +8309,14 @@
                 ]
               },
               {
+                "title": "UpholdConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdConfigSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardConfigSettings",
                 "allOf": [
                   {
@@ -8161,6 +8368,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -8201,6 +8409,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -8244,6 +8453,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -8284,6 +8494,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -8539,6 +8750,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -8579,6 +8791,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",

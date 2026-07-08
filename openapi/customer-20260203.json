@@ -1709,6 +1709,14 @@
                 ]
               },
               {
+                "title": "UpholdAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdAuthSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardAuthSettings",
                 "allOf": [
                   {
@@ -2150,6 +2158,14 @@
                 "allOf": [
                   {
                     "$ref": "#/components/schemas/UnlimitConfigSettings"
+                  }
+                ]
+              },
+              {
+                "title": "UpholdConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdConfigSettings"
                   }
                 ]
               },
@@ -3486,6 +3502,47 @@
           }
         ]
       },
+      "UpholdAuthSettings": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ServiceProviderAuthSettings"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "clientId": {
+                "type": "string"
+              },
+              "clientSecret": {
+                "type": "string"
+              },
+              "webhookSigningSecret": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "required": [
+          "clientId",
+          "clientSecret",
+          "webhookSigningSecret"
+        ]
+      },
+      "UpholdConfigSettings": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ServiceProviderConfigSettings"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "partnerFeePercentage": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
       "YellowcardAuthSettings": {
         "allOf": [
           {
@@ -4010,6 +4067,14 @@
                 ]
               },
               {
+                "title": "UpholdAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdAuthSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardAuthSettings",
                 "allOf": [
                   {
@@ -4454,6 +4519,14 @@
                 ]
               },
               {
+                "title": "UpholdConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdConfigSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardConfigSettings",
                 "allOf": [
                   {
@@ -4742,6 +4815,7 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
+                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -5649,6 +5723,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -5780,6 +5855,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -6010,6 +6086,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -6127,6 +6204,7 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
+                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -6786,6 +6864,14 @@
                 ]
               },
               {
+                "title": "UpholdAuthSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdAuthSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardAuthSettings",
                 "allOf": [
                   {
@@ -7227,6 +7313,14 @@
                 "allOf": [
                   {
                     "$ref": "#/components/schemas/UnlimitConfigSettings"
+                  }
+                ]
+              },
+              {
+                "title": "UpholdConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdConfigSettings"
                   }
                 ]
               },
@@ -7754,6 +7848,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -8214,6 +8309,14 @@
                 ]
               },
               {
+                "title": "UpholdConfigSettings",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpholdConfigSettings"
+                  }
+                ]
+              },
+              {
                 "title": "YellowcardConfigSettings",
                 "allOf": [
                   {
@@ -8306,6 +8409,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -8390,6 +8494,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -8686,6 +8791,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",

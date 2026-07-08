@@ -106,7 +106,17 @@
                 "$ref": "#/components/schemas/SessionTokenForWidgetRequestV20231219"
               },
               "example": {
-                "sessionType": "BUY"
+                "sessionType": "BUY",
+                "sessionData": {
+                  "serviceProvider": "TOPPER",
+                  "countryCode": "US",
+                  "sourceCurrencyCode": "USD",
+                  "sourceAmount": "100",
+                  "destinationCurrencyCode": "BTC",
+                  "walletAddress": "bc1qr74wmrcwqq9w5yxczxj6udts9mnqsh3xlhk5yp"
+                },
+                "externalSessionId": "example-session-id",
+                "externalCustomerId": "example-customer-id"
               }
             }
           },
@@ -657,6 +667,9 @@
               },
               "example": {
                 "destinationCurrencyCode": "USD",
+                "fiatPayoutMethod": {
+                  "type": "PAYOUT_TO_BANK"
+                },
                 "serviceProvider": "ACROSS",
                 "sourceAmount": 20000,
                 "sourceCurrencyCode": "USDC",
@@ -972,6 +985,7 @@
                 "DUENETWORK",
                 "ELDORADO",
                 "FINICITY",
+                "FLASHNET",
                 "FONBNK",
                 "GUARDARIAN",
                 "HARBOUR",
@@ -1012,6 +1026,7 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
+                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -1110,6 +1125,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -1150,6 +1166,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -1223,6 +1240,10 @@
             "type": "string",
             "description": "External customer id of the individual initiating the order"
           },
+          "externalSessionId": {
+            "type": "string",
+            "description": "Optional integrator-supplied session identifier. When provided, it's persisted on the underlying order row and surfaced on the resulting payment_transaction's externalReferenceId, matching the behavior of the headless POST /crypto/order/headless endpoint. Use the same value across retries / webhook joins / customer-side polling to correlate. Optional for back-compat; existing callers omitting the field continue to behave as before (no session correlation)."
+          },
           "externalSubaccountCustomerId": {
             "type": "string",
             "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
@@ -1259,6 +1280,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -1299,6 +1321,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -1380,6 +1403,27 @@
                 "description": "Bank routing number"
               }
             }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "accountNumber": {
+                "type": "string",
+                "description": "Bank account number"
+              },
+              "routingNumber": {
+                "type": "string",
+                "description": "Bank routing number"
+              },
+              "bankName": {
+                "type": "string",
+                "description": "Receiving bank name"
+              },
+              "accountHolderName": {
+                "type": "string",
+                "description": "Account holder name on the virtual account"
+              }
+            }
           }
         ],
         "description": "Receiving bank details for ACH"
@@ -1430,6 +1474,27 @@
               "iban": {
                 "type": "string",
                 "description": "IBAN"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "iban": {
+                "type": "string",
+                "description": "IBAN"
+              },
+              "bic": {
+                "type": "string",
+                "description": "BIC / SWIFT code when provided by the provider"
+              },
+              "bankName": {
+                "type": "string",
+                "description": "Receiving bank name"
+              },
+              "accountHolderName": {
+                "type": "string",
+                "description": "Account holder name on the virtual account"
               }
             }
           }
@@ -1487,7 +1552,7 @@
       "AchPaymentMethodDetails": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/PaymentMethodDetails"
+            "$ref": "#/components/schemas/FiatPayoutMethodDetails"
           },
           {
             "type": "object",
@@ -1531,7 +1596,7 @@
             }
           }
         ],
-        "description": "Payment method details for ACH / LOCAL_BANK_TRANSFER",
+        "description": "Payout method details for ACH / PAYOUT_TO_BANK / NG_BANK_TRANSFER / ZA_BANK_TRANSFER",
         "required": [
           "accountNumber",
           "accountType",
@@ -1564,12 +1629,12 @@
             "type": "string",
             "description": "State"
           },
-          "street_line_1": {
+          "streetLineOne": {
             "type": "string",
             "description": "Street line 1",
             "minLength": 1
           },
-          "street_line_2": {
+          "streetLineTwo": {
             "type": "string",
             "description": "Street line 2"
           }
@@ -1578,21 +1643,29 @@
           "city",
           "country",
           "postalCode",
-          "street_line_1"
+          "streetLineOne"
         ]
       },
-      "PaymentMethod": {
+      "FiatPayoutMethod": {
         "type": "object",
-        "description": "Payment method details for offramp",
+        "description": "Payout method for offramp",
         "properties": {
           "details": {
-            "description": "Payment method details",
+            "description": "Payout method details",
             "oneOf": [
               {
                 "title": "AchPaymentMethodDetails",
                 "allOf": [
                   {
                     "$ref": "#/components/schemas/AchPaymentMethodDetails"
+                  }
+                ]
+              },
+              {
+                "title": "MobilePaymentMethodDetails",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MobilePaymentMethodDetails"
                   }
                 ]
               },
@@ -1613,11 +1686,14 @@
           },
           "type": {
             "type": "string",
-            "description": "Payment method type",
+            "description": "Fiat Payout method type",
             "enum": [
-              "LOCAL_BANK_TRANSFER",
+              "PAYOUT_TO_BANK",
               "ACH",
-              "SEPA"
+              "SEPA",
+              "MOBILE_MONEY",
+              "NG_BANK_TRANSFER",
+              "ZA_BANK_TRANSFER"
             ]
           }
         },
@@ -1627,13 +1703,34 @@
           "type"
         ]
       },
-      "PaymentMethodDetails": {
-        "description": "Payment method details. The schema depends on paymentMethod.type."
+      "FiatPayoutMethodDetails": {
+        "description": "Payout method details. The schema depends on fiatPayoutMethod.type."
+      },
+      "MobilePaymentMethodDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FiatPayoutMethodDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "phoneNumber": {
+                "type": "string",
+                "description": "Customer phone number",
+                "minLength": 1
+              }
+            }
+          }
+        ],
+        "description": "Payout method details for MOBILE_MONEY",
+        "required": [
+          "phoneNumber"
+        ]
       },
       "SepaPaymentMethodDetails": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/PaymentMethodDetails"
+            "$ref": "#/components/schemas/FiatPayoutMethodDetails"
           },
           {
             "type": "object",
@@ -1646,7 +1743,7 @@
             }
           }
         ],
-        "description": "Payment method details for SEPA",
+        "description": "Payout method details for SEPA",
         "required": [
           "iban"
         ]
@@ -1670,11 +1767,11 @@
             "type": "string",
             "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
           },
-          "paymentMethod": {
-            "description": "Payment method details for how and where the fiat currency will be received",
+          "fiatPayoutMethod": {
+            "description": "Payout method details for how and where the fiat currency will be received",
             "allOf": [
               {
-                "$ref": "#/components/schemas/PaymentMethod"
+                "$ref": "#/components/schemas/FiatPayoutMethod"
               }
             ]
           },
@@ -1705,6 +1802,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -1745,6 +1843,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -1777,7 +1876,7 @@
         "required": [
           "customerId",
           "destinationCurrencyCode",
-          "paymentMethod",
+          "fiatPayoutMethod",
           "serviceProvider",
           "sourceAmount",
           "sourceCurrencyCode",
@@ -1801,6 +1900,493 @@
             "description": "Wallet address used for the transfer"
           }
         }
+      },
+      "VirtualAccountDepositInstructionsRequest": {
+        "type": "object",
+        "description": "Request to provision or retrieve standing virtual-account deposit instructions",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld customer id",
+            "minLength": 1
+          },
+          "customerPhoneNumber": {
+            "type": "string",
+            "description": "Customer phone number \u2014 required when paymentMethodType is MOBILE_MONEY and the provider requires it"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Destination cryptocurrency code",
+            "example": "USDC",
+            "minLength": 1
+          },
+          "destinationWalletAddress": {
+            "type": "string",
+            "description": "Wallet address that will receive the purchased cryptocurrency",
+            "example": "0xe51f36521fF5D857824e615a64D34808534a55f4",
+            "minLength": 1
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Fiat rail used to fund the virtual account",
+            "enum": [
+              "ACH",
+              "SEPA",
+              "PIX",
+              "MOBILE_MONEY"
+            ]
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service provider for the virtual deposit account",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FLASHNET",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "UPHOLD",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Source fiat currency code",
+            "example": "USD",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "customerId",
+          "destinationCurrencyCode",
+          "destinationWalletAddress",
+          "paymentMethodType",
+          "serviceProvider",
+          "sourceCurrencyCode"
+        ]
+      },
+      "MobileMoneyReceivingBankInformation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ReceivingBankInformation"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "mobileMoneyReference": {
+                "type": "string",
+                "description": "Mobile money reference"
+              },
+              "bankName": {
+                "type": "string",
+                "description": "Receiving bank name"
+              },
+              "accountHolderName": {
+                "type": "string",
+                "description": "Account holder name on the virtual account"
+              }
+            }
+          }
+        ],
+        "description": "Receiving bank details for mobile money"
+      },
+      "PixReceivingBankInformation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ReceivingBankInformation"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "pixKey": {
+                "type": "string",
+                "description": "PIX key"
+              },
+              "bankName": {
+                "type": "string",
+                "description": "Receiving bank name"
+              },
+              "accountHolderName": {
+                "type": "string",
+                "description": "Account holder name on the virtual account"
+              }
+            }
+          }
+        ],
+        "description": "Receiving bank details for PIX"
+      },
+      "VirtualAccountDepositInstructionsResponse": {
+        "type": "object",
+        "description": "Standing virtual-account deposit instructions",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld customer id"
+          },
+          "depositInstructionsId": {
+            "type": "string",
+            "description": "Unique id for this deposit instruction row"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Destination cryptocurrency code"
+          },
+          "destinationWalletAddress": {
+            "type": "string",
+            "description": "Destination wallet address for purchased crypto"
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment method type for the fiat deposit rail",
+            "enum": [
+              "ACH",
+              "SEPA",
+              "PIX",
+              "MOBILE_MONEY"
+            ]
+          },
+          "receivingBankInformation": {
+            "description": "Bank information for the fiat transfer; shape depends on paymentMethodType",
+            "oneOf": [
+              {
+                "title": "AchReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AchReceivingBankInformation"
+                  }
+                ]
+              },
+              {
+                "title": "LocalBankTransferReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/LocalBankTransferReceivingBankInformation"
+                  }
+                ]
+              },
+              {
+                "title": "MobileMoneyReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MobileMoneyReceivingBankInformation"
+                  }
+                ]
+              },
+              {
+                "title": "PixReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PixReceivingBankInformation"
+                  }
+                ]
+              },
+              {
+                "title": "SepaReceivingBankInformation",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SepaReceivingBankInformation"
+                  }
+                ]
+              }
+            ]
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service provider",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FLASHNET",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "UPHOLD",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Raw provider-specific fields not mapped into receivingBankInformation"
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Source fiat currency code"
+          }
+        }
+      },
+      "AchDetails": {
+        "type": "object",
+        "description": "ACH details",
+        "properties": {
+          "accountNumber": {
+            "type": "string",
+            "description": "Account number",
+            "minLength": 1
+          },
+          "accountType": {
+            "type": "string",
+            "description": "Bank account type",
+            "enum": [
+              "BUSINESS_CHECKING",
+              "CHECKING",
+              "SAVINGS"
+            ]
+          },
+          "name": {
+            "description": "Account name",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Name"
+              }
+            ]
+          },
+          "routingNumber": {
+            "type": "string",
+            "description": "Routing number",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "accountNumber",
+          "accountType",
+          "routingNumber"
+        ]
+      },
+      "CardDetails": {
+        "type": "object",
+        "description": "Credit card details",
+        "properties": {
+          "cvc": {
+            "type": "string",
+            "description": "Card CVC",
+            "example": "123",
+            "minLength": 1
+          },
+          "expiration": {
+            "description": "Expiration date",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CardExpiration"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "The cardholder's name"
+          },
+          "number": {
+            "type": "string",
+            "description": "Card number",
+            "example": "4111111111111111",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "cvc",
+          "number"
+        ]
+      },
+      "CardExpiration": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Integer value for the expiration month"
+          },
+          "year": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Integer value for the expiration year"
+          }
+        }
+      },
+      "MeldPaymentTokenDetails": {
+        "type": "object",
+        "description": "Meld payment token details",
+        "properties": {
+          "meldPaymentToken": {
+            "type": "string",
+            "description": "Meld Payment Token",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "meldPaymentToken"
+        ]
+      },
+      "Name": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName"
+        ]
+      },
+      "PaymentMethodDetails": {
+        "description": "[Details of the payment method used for this transaction](https://docs.meld.io/docs/payment-methods-and-tokenization)",
+        "discriminator": {
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "title": "CardDetails",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CardDetails"
+              }
+            ]
+          },
+          {
+            "title": "AchDetails",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AchDetails"
+              }
+            ]
+          },
+          {
+            "title": "MeldPaymentTokenDetails",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MeldPaymentTokenDetails"
+              }
+            ]
+          }
+        ]
       },
       "PaymentMethodInput": {
         "type": "object",
@@ -2400,6 +2986,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -2440,6 +3027,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -2536,6 +3124,7 @@
                 "DUENETWORK",
                 "ELDORADO",
                 "FINICITY",
+                "FLASHNET",
                 "FONBNK",
                 "GUARDARIAN",
                 "HARBOUR",
@@ -2576,6 +3165,7 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
+                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -2756,6 +3346,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -2796,6 +3387,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -2888,6 +3480,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -2928,6 +3521,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -3483,6 +4077,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -3523,6 +4118,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -3866,6 +4462,7 @@
                 "DUENETWORK",
                 "ELDORADO",
                 "FINICITY",
+                "FLASHNET",
                 "FONBNK",
                 "GUARDARIAN",
                 "HARBOUR",
@@ -3906,6 +4503,7 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
+                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -4025,6 +4623,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -4065,6 +4664,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -4347,10 +4947,204 @@
           }
         }
       },
+      "AuthorizeSessionRequest": {
+        "type": "object",
+        "description": "Authorize-session request for two-step (Option 1) card providers",
+        "properties": {
+          "cardId": {
+            "type": "string",
+            "description": "Provider external-account id of the card captured in the select-for-deposit widget",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "cardId"
+        ]
+      },
+      "ApplePayOrder": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "sessionToken": {
+                "type": "string",
+                "description": "Session JWT used to authenticate the /crypto/session/* Apple Pay endpoints"
+              },
+              "merchantTransactionId": {
+                "type": "string",
+                "description": "Merchant transaction id to pass into /apple-pay/process; equals the session id"
+              }
+            }
+          }
+        ],
+        "description": "Apple Pay response \u2014 present when paymentMethodType == APPLE_PAY. Native (non-widget) flow: the caller renders the Apple Pay sheet on its own surface, then drives the existing session-token endpoints (GET /crypto/session/applepay/paymentsession, POST /crypto/session/mercuryo/apple-pay/validate-merchant, POST /crypto/session/mercuryo/apple-pay/process) authenticated with sessionToken. There is no provider-hosted widget URL."
+      },
+      "BankTransferOrder": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "accountNumber": {
+                "type": "string",
+                "description": "Bank account number; populated for ACH and FPS"
+              },
+              "routingNumber": {
+                "type": "string",
+                "description": "Bank routing number (ACH) or UK sort code (FPS)"
+              },
+              "iban": {
+                "type": "string",
+                "description": "IBAN; populated for SEPA"
+              },
+              "bic": {
+                "type": "string",
+                "description": "BIC / SWIFT code; populated for SEPA and wire"
+              },
+              "pixKey": {
+                "type": "string",
+                "description": "PIX key; populated for PIX"
+              },
+              "mobileMoneyReference": {
+                "type": "string",
+                "description": "Mobile money reference; populated for MOBILE_MONEY"
+              }
+            }
+          }
+        ],
+        "description": "Bank-transfer response \u2014 present for ACH, FPS, SEPA, PIX, MOBILE_MONEY. Only the rail-relevant fields are populated per response; the others are null. For FPS the UK sort code is carried in routingNumber; the FPS payment reference is available in the persisted serviceProviderDetails (surfacing it as a typed field needs a framework hook)."
+      },
+      "CardOrder": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "serviceProviderWidgetUrl": {
+                "type": "string",
+                "description": "Provider widget/session URL. For SDK-mounted providers (Uphold) this is the session's API-host URL that the provider's own web SDK requires alongside sdkSessionToken \u2014 it is NOT directly loadable in a plain iframe."
+              },
+              "renderMode": {
+                "type": "string",
+                "description": "Render mode for the card surface (NPP-sourced)",
+                "enum": [
+                  "IFRAME",
+                  "REDIRECT"
+                ]
+              },
+              "authorizeSessionUrl": {
+                "type": "string",
+                "description": "Two-step (Option 1) providers only (e.g. Uphold): the URL the SDK POSTs the captured card id to (POST /crypto/order/{orderId}/authorize-session) to create the authorize widget session. Null for single-widget card providers."
+              },
+              "continuationToken": {
+                "type": "string",
+                "description": "Two-step (Option 1) providers only: short-lived bearer token the SDK passes on the authorize-session call. Null when not required."
+              },
+              "sdkSessionToken": {
+                "type": "string",
+                "description": "SDK-mounted providers (Uphold): the payment-session token. The Meld SDK feeds {serviceProviderWidgetUrl, sdkSessionToken, sdkSessionFlow} to the provider's web SDK (e.g. Uphold's PaymentWidget(session)), which mounts its own iframe and swaps to the widget host using this token. Null for URL-loadable providers."
+              },
+              "sdkSessionFlow": {
+                "type": "string",
+                "description": "SDK-mounted providers (Uphold): the session flow \u2014 'select-for-deposit' for the capture widget, 'authorize' for the commit widget. Null for URL-loadable providers."
+              }
+            }
+          }
+        ],
+        "description": "Card-method response \u2014 present when paymentMethodType == CREDIT_DEBIT_CARD"
+      },
+      "HeadlessOrderResponse": {
+        "type": "object",
+        "description": "Headless onramp order response envelope",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld customer id"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Caller's external customer id"
+          },
+          "externalOrderId": {
+            "type": "string",
+            "description": "Caller's external order id"
+          },
+          "id": {
+            "type": "string",
+            "description": "Meld order id (headless_order.id)"
+          },
+          "paymentMethodResponseDetails": {
+            "description": "Method-specific response payload",
+            "oneOf": [
+              {
+                "title": "ApplePayOrder",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayOrder"
+                  }
+                ]
+              },
+              {
+                "title": "BankTransferOrder",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BankTransferOrder"
+                  }
+                ]
+              },
+              {
+                "title": "CardOrder",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CardOrder"
+                  }
+                ]
+              }
+            ]
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment method type \u2014 also acts as the discriminator for paymentMethodResponseDetails",
+            "enum": [
+              "CREDIT_DEBIT_CARD",
+              "APPLE_PAY",
+              "ACH",
+              "FPS",
+              "SEPA",
+              "PIX",
+              "MOBILE_MONEY"
+            ]
+          }
+        }
+      },
+      "PaymentMethodResponseDetails": {
+        "discriminator": {
+          "propertyName": "paymentMethodType"
+        },
+        "properties": {
+          "paymentMethodType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentMethodType"
+        ]
+      },
       "HeadlessOrderRequest": {
         "type": "object",
         "description": "Request to create a headless onramp order",
         "properties": {
+          "clientIpAddress": {
+            "type": "string",
+            "description": "The end-user's IP address. Required by some service providers."
+          },
           "countryCode": {
             "type": "string",
             "description": "Country code (ISO 3166-1 alpha-2)",
@@ -4380,7 +5174,7 @@
             "type": "string",
             "description": "Caller's external customer id (one of customerId / externalCustomerId is required)"
           },
-          "externalSessionId": {
+          "externalOrderId": {
             "type": "string",
             "description": "Caller's reference for the order; unique per account when provided"
           },
@@ -4391,6 +5185,7 @@
               "CREDIT_DEBIT_CARD",
               "APPLE_PAY",
               "ACH",
+              "FPS",
               "SEPA",
               "PIX",
               "MOBILE_MONEY"
@@ -4440,6 +5235,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -4480,6 +5276,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -4488,10 +5285,11 @@
           },
           "sessionType": {
             "type": "string",
-            "description": "Direction of the order",
+            "description": "Direction of the order. Phase 1 accepts BUY only; SELL ships in Phase 3. TRANSFER (peer-to-peer crypto move) is widget-only and rejected here.",
             "enum": [
               "BUY",
-              "SELL"
+              "SELL",
+              "TRANSFER"
             ]
           },
           "sourceAmount": {
@@ -4553,161 +5351,6 @@
         ],
         "description": "Yellowcard-specific provider data"
       },
-      "ApplePayOrder": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "serviceProviderWidgetUrl": {
-                "type": "string",
-                "description": "Short-TTL provider URL; caller opens at user tap"
-              }
-            }
-          }
-        ],
-        "description": "Apple Pay response \u2014 present when paymentMethodType == APPLE_PAY"
-      },
-      "BankTransferOrder": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "accountNumber": {
-                "type": "string",
-                "description": "ACH account number"
-              },
-              "routingNumber": {
-                "type": "string",
-                "description": "ACH routing number"
-              },
-              "iban": {
-                "type": "string",
-                "description": "SEPA IBAN"
-              },
-              "bic": {
-                "type": "string",
-                "description": "SEPA / wire BIC"
-              },
-              "pixKey": {
-                "type": "string",
-                "description": "PIX key"
-              },
-              "mobileMoneyReference": {
-                "type": "string",
-                "description": "Mobile money reference"
-              }
-            }
-          }
-        ],
-        "description": "Bank-transfer response \u2014 present for ACH, SEPA, PIX, MOBILE_MONEY"
-      },
-      "CardOrder": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "serviceProviderWidgetUrl": {
-                "type": "string",
-                "description": "Provider-hosted widget URL"
-              },
-              "renderMode": {
-                "type": "string",
-                "description": "Render mode for the card surface (NPP-sourced)",
-                "enum": [
-                  "IFRAME",
-                  "REDIRECT"
-                ]
-              }
-            }
-          }
-        ],
-        "description": "Card-method response \u2014 present when paymentMethodType == CREDIT_DEBIT_CARD"
-      },
-      "HeadlessOrderResponse": {
-        "type": "object",
-        "description": "Headless onramp order response envelope",
-        "properties": {
-          "customerId": {
-            "type": "string",
-            "description": "Meld customer id"
-          },
-          "externalCustomerId": {
-            "type": "string",
-            "description": "Caller's external customer id"
-          },
-          "externalSessionId": {
-            "type": "string",
-            "description": "Caller's external session id"
-          },
-          "id": {
-            "type": "string",
-            "description": "Meld order id (headless_order.id)"
-          },
-          "paymentMethodResponseDetails": {
-            "description": "Method-specific response payload",
-            "oneOf": [
-              {
-                "title": "ApplePayOrder",
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ApplePayOrder"
-                  }
-                ]
-              },
-              {
-                "title": "BankTransferOrder",
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/BankTransferOrder"
-                  }
-                ]
-              },
-              {
-                "title": "CardOrder",
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/CardOrder"
-                  }
-                ]
-              }
-            ]
-          },
-          "paymentMethodType": {
-            "type": "string",
-            "description": "Payment method type \u2014 also acts as the discriminator for paymentMethodResponseDetails",
-            "enum": [
-              "CREDIT_DEBIT_CARD",
-              "APPLE_PAY",
-              "ACH",
-              "SEPA",
-              "PIX",
-              "MOBILE_MONEY"
-            ]
-          }
-        }
-      },
-      "PaymentMethodResponseDetails": {
-        "discriminator": {
-          "propertyName": "paymentMethodType"
-        },
-        "properties": {
-          "paymentMethodType": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "paymentMethodType"
-        ]
-      },
       "TokenSessionAuthResponse": {
         "type": "object",
         "properties": {
@@ -4746,6 +5389,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -4786,6 +5430,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -5053,27 +5698,6 @@
           }
         }
       },
-      "CryptoLimit": {
-        "type": "object",
-        "properties": {
-          "currencyCode": {
-            "type": "string",
-            "description": "The fiat currency\u2019s 3 letter code."
-          },
-          "defaultAmount": {
-            "type": "number",
-            "description": "The default amount the crypto wizard shows for the fiat currency."
-          },
-          "maxAmount": {
-            "type": "number",
-            "description": "The maximum amount a quote can be requested for, regardless of cryptocurrency."
-          },
-          "minAmount": {
-            "type": "number",
-            "description": "The minimum amount a quote can be requested for, regardless of cryptocurrency."
-          }
-        }
-      },
       "BalanceResponse": {
         "type": "object",
         "properties": {
@@ -5183,6 +5807,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -5223,6 +5848,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -5758,6 +6384,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -5798,6 +6425,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -5925,6 +6553,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -5965,6 +6594,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -6068,6 +6698,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -6108,6 +6739,7 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
+              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
