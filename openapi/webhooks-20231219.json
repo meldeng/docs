@@ -750,10 +750,20 @@
           "data": {
             "oneOf": [
               {
-                "$ref": "#/components/schemas/DueNetworkData"
+                "title": "DueNetworkData",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DueNetworkData"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/DueNetworkKycSubmissionData"
+                "title": "DueNetworkKycSubmissionData",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DueNetworkKycSubmissionData"
+                  }
+                ]
               }
             ]
           },

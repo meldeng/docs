@@ -1476,16 +1476,36 @@
             "description": "Default service provider preference to use if no rules match",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/ListServiceProviderPreference"
+                "title": "ListServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ListServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OptionalListServiceProviderPreference"
+                "title": "OptionalListServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OptionalListServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                "title": "SingleServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/WeightedServiceProviderPreference"
+                "title": "WeightedServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/WeightedServiceProviderPreference"
+                  }
+                ]
               }
             ]
           },
@@ -1540,10 +1560,20 @@
             "items": {
               "oneOf": [
                 {
-                  "$ref": "#/components/schemas/MultipleValueRoutingCondition"
+                  "title": "MultipleValueRoutingCondition",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/MultipleValueRoutingCondition"
+                    }
+                  ]
                 },
                 {
-                  "$ref": "#/components/schemas/SingleValueRoutingCondition"
+                  "title": "SingleValueRoutingCondition",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SingleValueRoutingCondition"
+                    }
+                  ]
                 }
               ]
             }
@@ -1556,16 +1586,36 @@
             "description": "Service provider preference to use when this rule is true",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/ListServiceProviderPreference"
+                "title": "ListServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ListServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/OptionalListServiceProviderPreference"
+                "title": "OptionalListServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OptionalListServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                "title": "SingleServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/WeightedServiceProviderPreference"
+                "title": "WeightedServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/WeightedServiceProviderPreference"
+                  }
+                ]
               }
             ]
           }

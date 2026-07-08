@@ -2255,16 +2255,36 @@
             "items": {
               "oneOf": [
                 {
-                  "$ref": "#/components/schemas/ImportAkoyaDetails"
+                  "title": "ImportAkoyaDetails",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ImportAkoyaDetails"
+                    }
+                  ]
                 },
                 {
-                  "$ref": "#/components/schemas/ImportFinicityDetails"
+                  "title": "ImportFinicityDetails",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ImportFinicityDetails"
+                    }
+                  ]
                 },
                 {
-                  "$ref": "#/components/schemas/ImportMeshDetails"
+                  "title": "ImportMeshDetails",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ImportMeshDetails"
+                    }
+                  ]
                 },
                 {
-                  "$ref": "#/components/schemas/ImportPlaidDetails"
+                  "title": "ImportPlaidDetails",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ImportPlaidDetails"
+                    }
+                  ]
                 }
               ]
             },
