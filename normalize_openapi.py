@@ -135,8 +135,19 @@ class MarkdownHTMLParser(HTMLParser):
         return text.strip()
 
 
+# Only these tags trigger HTML->markdown conversion. Meld descriptions use angle-bracket
+# placeholders like `<id>`, `<payment method>`, `<numeric amount>` that HTMLParser would
+# otherwise parse as tags and silently strip. Convert only when a real HTML tag is present.
+HTML_TAG_RE = re.compile(
+    r"</?(?:br|p|div|li|ul|ol|b|strong|i|em|a|span|code|pre|h[1-6]|table|thead|tbody|tr|td|th|blockquote)\b[^>]*>",
+    re.IGNORECASE,
+)
+
+
 def html_to_markdown(text: str) -> str:
     if not isinstance(text, str) or "<" not in text:
+        return text
+    if not HTML_TAG_RE.search(text):
         return text
     parser = MarkdownHTMLParser()
     parser.feed(text)
@@ -350,6 +361,14 @@ def inject_required_only_request_examples(payload: dict) -> int:
                     continue
                 schema = content.get("schema")
                 if not isinstance(schema, dict):
+                    continue
+
+                # Preserve an author/backend-provided example. The synthesizer only covers
+                # required fields and drops any it can't resolve (allOf-wrapped refs, required
+                # scalars without a sample), which previously overwrote curated examples with
+                # schema-invalid ones. Trust a real example and leave it untouched.
+                existing = content.get("example")
+                if isinstance(existing, dict) and existing:
                     continue
 
                 example = build_required_example(schema, schemas)
