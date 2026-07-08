@@ -464,6 +464,11 @@ payment-http:
               - post
             tags:
               - Virtual Account
+          /payments/virtual-account/deposit-instructions:
+            methods:
+              - post
+            tags:
+              - Virtual Account
         components_to_modify:
           CryptoQuote:
             - path: properties.paymentMethodType.enum
@@ -569,6 +574,11 @@ payment-http:
               - post
             tags:
               - Virtual Account
+          /payments/virtual-account/deposit-instructions:
+            methods:
+              - post
+            tags:
+              - Virtual Account
       "2023-09-11":
         readme_oas:
           - None # did not publish this version
@@ -598,6 +608,11 @@ payment-http:
             tags:
               - Virtual Account
           /payments/virtual-account/offramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/deposit-instructions:
             methods:
               - post
             tags:
@@ -659,6 +674,11 @@ payment-http:
               - post
             tags:
               - Virtual Account
+          /payments/virtual-account/deposit-instructions:
+            methods:
+              - post
+            tags:
+              - Virtual Account
         components_to_modify:
           SessionDataInputV20231219:
             - path: properties.serviceProvider.enum
@@ -703,6 +723,11 @@ payment-http:
             tags:
               - Virtual Account
           /payments/virtual-account/offramp-order:
+            methods:
+              - post
+            tags:
+              - Virtual Account
+          /payments/virtual-account/deposit-instructions:
             methods:
               - post
             tags:
