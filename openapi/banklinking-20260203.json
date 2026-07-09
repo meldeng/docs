@@ -143,7 +143,8 @@
             "description": "Connection id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -163,7 +164,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -204,7 +213,8 @@
             "description": "Connection id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -217,7 +227,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -260,7 +278,8 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -269,7 +288,8 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -278,7 +298,8 @@
             "description": "Institution id. If present, only institution connections with this institution will be included.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -287,7 +308,8 @@
             "description": "Comma separated list of institution connection statuses. If present, only institution connections with these statuses will be included.\n\nFind out more about connection statuses [here.](https://docs.meld.io/docs/connection-statuses-and-errors)",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -296,7 +318,8 @@
             "description": "Comma separated list of service providers. If present, only institution connections with these service providers will be included.\n\n***Note:*** Reference [Supported Service Providers](https://docs.meld.io/docs/creating-connections#supported-service-providers) for the list of available bank linking providers.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -306,7 +329,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "format": "date"
+              "default": ""
             }
           },
           {
@@ -316,7 +339,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "format": "date"
+              "default": ""
             }
           },
           {
@@ -325,7 +348,8 @@
             "description": "Unique key corresponding to an institution connection's position in the paginated list of results -- used to indicate that only institution connections residing before this key will be retrieved.\n\nEach institution connection carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -334,7 +358,8 @@
             "description": "Unique key corresponding to a institution connection's position in the paginated list of results -- used to indicate that only institution connections residing after this key will be retrieved.\n\nEach institution connection carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -343,8 +368,8 @@
             "description": "Limits number of returned institution connections.\n\n*Default value*: 10\n\n*Minimum value*: 1\n\n*Maximum value*: 100",
             "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -353,7 +378,8 @@
             "description": "Institution name. If present, only institution connections with this institution will be included.If institutionId is present then institutionId will take precedence.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -406,7 +432,8 @@
             "description": "Connection id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -417,7 +444,7 @@
                 "$ref": "#/components/schemas/ConnectionAddProductsRequest"
               },
               "example": {
-                "products": []
+                "products": ""
               }
             }
           },
@@ -439,7 +466,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -482,7 +517,8 @@
             "description": "Connection id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -512,7 +548,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -555,7 +599,7 @@
                 "$ref": "#/components/schemas/ImportRequest"
               },
               "example": {
-                "connections": []
+                "connections": ""
               }
             }
           },
@@ -610,7 +654,8 @@
             "description": "Financial account id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -630,7 +675,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -673,7 +726,8 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. Should not be provided in conjunction with `externalCustomerId`",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -682,7 +736,8 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity. Should not be provided in conjunction with `customerId`",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -691,7 +746,8 @@
             "description": "Institution id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -700,7 +756,8 @@
             "description": "Connection id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -709,7 +766,8 @@
             "description": "Unique key corresponding to a financial account's position in the paginated list of results -- used to indicate that only financial accounts residing before this key will be retrieved.\n\nEach financial account carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -718,7 +776,8 @@
             "description": "Unique key corresponding to a financial account's position in the paginated list of results -- used to indicate that only financial accounts residing after this key will be retrieved.\n\nEach financial account carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -727,8 +786,8 @@
             "description": "Limits number of returned financial accounts.\n\n*Default value*: 10\n\n*Minimum value*: 1\n\n*Maximum value*: 100",
             "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -781,7 +840,8 @@
             "description": "Financial account id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -792,7 +852,7 @@
                 "$ref": "#/components/schemas/FinancialAccountProcessorCreateTokenRequest"
               },
               "example": {
-                "processor": "ACHQ"
+                "processor": ""
               }
             }
           },
@@ -814,7 +874,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -857,7 +925,8 @@
             "description": "Transaction id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -877,7 +946,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -920,7 +997,8 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. If provided, `externalCustomerId` should not be provided. However, if both are present then `customerId` takes precedence.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -929,7 +1007,8 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity. If provided, `customerId` should not be provided. However, if both are present then `customerId` takes precedence.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -938,7 +1017,8 @@
             "description": "Financial account id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -948,6 +1028,7 @@
             "required": false,
             "schema": {
               "type": "string",
+              "default": "",
               "enum": [
                 "PENDING",
                 "POSTED"
@@ -961,7 +1042,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "format": "date"
+              "default": ""
             }
           },
           {
@@ -971,7 +1052,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "format": "date"
+              "default": ""
             }
           },
           {
@@ -980,7 +1061,8 @@
             "description": "Unique key corresponding to a transaction's position in the paginated list of results -- used to indicate that only transactions residing before this key will be retrieved.\n\nEach transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -989,7 +1071,8 @@
             "description": "Unique key corresponding to a transaction's position in the paginated list of results -- used to indicate that only transactions residing after this key will be retrieved.\n\nEach transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -998,7 +1081,8 @@
             "description": "Transaction category",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1007,7 +1091,8 @@
             "description": "Connection Id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1016,8 +1101,8 @@
             "description": "Limits number of returned financial account transactions.\n\n*Default value*: 100\n\n*Minimum value*: 1\n\n*Maximum value*: 1000",
             "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -1070,7 +1155,8 @@
             "description": "Investment Holding id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -1090,7 +1176,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -1133,7 +1227,8 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. Should not be provided in conjunction with `externalCustomerId`",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1142,7 +1237,8 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity. Should not be provided in conjunction with`customerId`",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1151,7 +1247,8 @@
             "description": "Financial account id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1160,7 +1257,8 @@
             "description": "Connection Id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1169,7 +1267,8 @@
             "description": "Unique key corresponding to a investment holding's position in the paginated list of results -- used to indicate that only investment holdings residing before this key will be retrieved.\n\nEach investment holding carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1178,7 +1277,8 @@
             "description": "Unique key corresponding to a investment holding's position in the paginated list of results -- used to indicate that only investment holdings residing after this key will be retrieved.\n\nEach investment holding carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1187,8 +1287,8 @@
             "description": "Limits number of returned financial account investment holdings.\n\n*Default value*: 100\n\n*Minimum value*: 1\n\n*Maximum value*: 1000",
             "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -1241,7 +1341,8 @@
             "description": "Investment Transaction id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -1261,7 +1362,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -1304,7 +1413,8 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. Should not be provided in conjunction with `externalCustomerId`",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1313,7 +1423,8 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity. Should not be provided in conjunction with `customerId`",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1322,7 +1433,8 @@
             "description": "Financial account id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1332,6 +1444,7 @@
             "required": false,
             "schema": {
               "type": "string",
+              "default": "",
               "enum": [
                 "PENDING",
                 "POSTED"
@@ -1345,7 +1458,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "format": "date"
+              "default": ""
             }
           },
           {
@@ -1355,7 +1468,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "format": "date"
+              "default": ""
             }
           },
           {
@@ -1364,7 +1477,8 @@
             "description": "Connection Id",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1373,7 +1487,8 @@
             "description": "Unique key corresponding to a investment transaction's position in the paginated list of results -- used to indicate that only investment transactions residing before this key will be retrieved.\n\nEach investment transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1382,7 +1497,8 @@
             "description": "Unique key corresponding to a investment transaction's position in the paginated list of results -- used to indicate that only investment transactions residing after this key will be retrieved.\n\nEach investment transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1391,8 +1507,8 @@
             "description": "Limits number of returned financial account investment transactions.\n\n*Default value*: 100\n\n*Minimum value*: 1\n\n*Maximum value*: 1000",
             "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -1445,7 +1561,8 @@
             "description": "Institution id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -1465,7 +1582,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -1508,7 +1633,8 @@
             "description": "Unique key corresponding to a institution's position in the paginated list of results -- used to indicate that only institutions residing before this key will be retrieved.\n\nEach institution carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1517,7 +1643,8 @@
             "description": "Unique key corresponding to a institution's position in the paginated list of results -- used to indicate that only institutions residing after this key will be retrieved.\n\nEach institution carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1526,7 +1653,8 @@
             "description": "Comma separated list of service providers. If present, only institutions supported by at least one of the service providers will be included.\n\n***Note:*** Reference [Supported Service Providers](https://docs.meld.io/docs/creating-connections#supported-service-providers) for the list of available bank linking providers.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1535,8 +1663,8 @@
             "description": "Limits number of returned institutions.\n\n*Default value*: 10\n\n*Minimum value*: 1\n\n*Maximum value*: 1000",
             "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1545,7 +1673,8 @@
             "description": "If present, only institutions will be included whose name matches partially or fully.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1554,7 +1683,8 @@
             "description": "If present, only institutions will be included whose type matches.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -1563,7 +1693,8 @@
             "description": "Comma separated list of regions. If present, only institutions supported by at least one of the regions will be included.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -1609,6 +1740,7 @@
         "properties": {
           "serviceProvider": {
             "type": "string",
+            "default": "",
             "description": "Service provider to search by",
             "enum": [
               "ACROSS",
@@ -1634,6 +1766,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -1678,12 +1811,15 @@
               "XANPOOL",
               "YELLOWCARD",
               "YODLEE"
-            ]
+            ],
+            "example": ""
           },
           "serviceProviderInstitutionId": {
             "type": "string",
+            "default": "",
             "description": "Service provider institution id to search by",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -1854,17 +1990,23 @@
           "dayOfMonth": {
             "type": "integer",
             "format": "int64",
-            "description": "The day of the customer's birthday"
+            "default": "",
+            "description": "The day of the customer's birthday",
+            "example": ""
           },
           "month": {
             "type": "integer",
             "format": "int64",
-            "description": "The month of the customer's birthday"
+            "default": "",
+            "description": "The month of the customer's birthday",
+            "example": ""
           },
           "year": {
             "type": "integer",
             "format": "int64",
-            "description": "The year of the customer's birthday"
+            "default": "",
+            "description": "The year of the customer's birthday",
+            "example": ""
           }
         },
         "required": [
@@ -1886,8 +2028,10 @@
           },
           "customerId": {
             "type": "string",
+            "default": "",
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity.",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "includePending": {
             "type": "boolean",
@@ -1908,11 +2052,15 @@
         "properties": {
           "address": {
             "type": "string",
+            "default": "",
             "description": "The customer's address",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "birthday": {
+            "default": "",
             "description": "The customer's birthday",
+            "example": "",
             "allOf": [
               {
                 "$ref": "#/components/schemas/Birthday"
@@ -1921,43 +2069,59 @@
           },
           "city": {
             "type": "string",
+            "default": "",
             "description": "The customer's city",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "email": {
             "type": "string",
+            "default": "",
             "description": "The customer's email address",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "firstName": {
             "type": "string",
+            "default": "",
             "description": "The customer's first name",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "lastName": {
             "type": "string",
+            "default": "",
             "description": "The customer's last name",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "phone": {
             "type": "string",
+            "default": "",
             "description": "The customer's phone number",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "ssn": {
             "type": "string",
+            "default": "",
             "description": "The customer's social security number",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "state": {
             "type": "string",
+            "default": "",
             "description": "The customer's state",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "zip": {
             "type": "string",
+            "default": "",
             "description": "The customer's zip code",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -1987,6 +2151,7 @@
         "properties": {
           "products": {
             "type": "array",
+            "default": "",
             "description": "List of products to add retroactively to the connection.",
             "items": {
               "type": "string",
@@ -1999,7 +2164,8 @@
                 "TRANSACTIONS"
               ]
             },
-            "minItems": 1
+            "minItems": 1,
+            "example": ""
           }
         },
         "required": [
@@ -2054,17 +2220,21 @@
         "properties": {
           "category": {
             "type": "string",
+            "default": "",
             "description": "The widget type associated with the previously authenticated crypto session",
             "enum": [
               "CRYPTO_ONRAMP",
               "CRYPTO_OFFRAMP",
               "CRYPTO_TRANSFER"
-            ]
+            ],
+            "example": ""
           },
           "previouslyAuthenticatedId": {
             "type": "string",
+            "default": "",
             "description": "The Meld id of the crypto session in which the customer has already authenticated with their institution. The auth tied to this session will be used to import the connection if it is still valid. This id may pertain to the initial session in which the customer authenticated, or any subsequent session that used this prior authentication successfully.\n\nFor more details, reference [Using Multiple Products without Re-authenticating](https://docs.meld.io/docs/using-multiple-products-without-reauthenticating)",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -2082,16 +2252,19 @@
             "properties": {
               "providerId": {
                 "type": "string",
+                "default": "",
                 "description": "Akoya provider id (aka institution id)",
                 "minLength": 1
               },
               "refreshToken": {
                 "type": "string",
+                "default": "",
                 "description": "Akoya refresh token",
                 "minLength": 1
               },
               "products": {
                 "type": "array",
+                "default": "",
                 "description": "Meld products to import from the connection. Optional. If not present, then all products supported by the institution will be used",
                 "items": {
                   "type": "string",
@@ -2115,6 +2288,7 @@
       },
       "ImportDetails": {
         "type": "object",
+        "default": null,
         "description": "A provider's connection info",
         "discriminator": {
           "propertyName": "serviceProvider"
@@ -2150,15 +2324,18 @@
               "customerId": {
                 "type": "integer",
                 "format": "int64",
+                "default": "",
                 "description": "Finicity customer id"
               },
               "institutionLoginId": {
                 "type": "integer",
                 "format": "int64",
+                "default": "",
                 "description": "Finicity institution login id"
               },
               "products": {
                 "type": "array",
+                "default": "",
                 "description": "Meld products to import from the connection. Optional. If not present, then all products supported by the institution will be used",
                 "items": {
                   "type": "string",
@@ -2190,6 +2367,7 @@
             "properties": {
               "importType": {
                 "type": "string",
+                "default": "",
                 "description": "The type of import being performed.",
                 "enum": [
                   "MELD_AUTHENTICATED"
@@ -2197,6 +2375,7 @@
               },
               "products": {
                 "type": "array",
+                "default": "",
                 "description": "Meld products to import from the connection. Optional. If not present, then all products supported by the institution will be used",
                 "items": {
                   "type": "string",
@@ -2212,6 +2391,7 @@
                 "uniqueItems": true
               },
               "authenticationBypassDetails": {
+                "default": "",
                 "description": "Details of the previously authenticated crypto session that will be used to import the connection. Only required if importType is MELD_AUTHENTICATED.",
                 "allOf": [
                   {
@@ -2236,6 +2416,7 @@
             "properties": {
               "accessToken": {
                 "type": "string",
+                "default": "",
                 "description": "Plaid access token",
                 "minLength": 1
               }
@@ -2251,6 +2432,7 @@
         "properties": {
           "connections": {
             "type": "array",
+            "default": "",
             "description": "Import details for the connections specific to the service provider",
             "items": {
               "oneOf": [
@@ -2288,7 +2470,8 @@
                 }
               ]
             },
-            "minItems": 1
+            "minItems": 1,
+            "example": ""
           }
         },
         "required": [
@@ -2402,9 +2585,9 @@
           },
           "externalCustomerId": {
             "type": "string",
+            "default": "testUser",
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "minLength": 1,
-            "default": "testUser",
             "example": "testUser"
           },
           "institutionId": {
@@ -2504,9 +2687,9 @@
           },
           "externalCustomerId": {
             "type": "string",
+            "default": "testUser",
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "minLength": 1,
-            "default": "testUser",
             "example": "testUser"
           },
           "institutionId": {
@@ -2603,13 +2786,17 @@
         "properties": {
           "connectToken": {
             "type": "string",
+            "default": "",
             "description": "Connect token",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "institutionId": {
             "type": "string",
+            "default": "",
             "description": "Institution id",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "serviceProvider": {
             "type": "string",
@@ -2638,6 +2825,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -2730,6 +2918,7 @@
                 "DUENETWORK",
                 "ELDORADO",
                 "FINICITY",
+                "FLASHNET",
                 "FONBNK",
                 "GUARDARIAN",
                 "HARBOUR",
@@ -2859,6 +3048,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -2917,8 +3107,10 @@
         "properties": {
           "connectToken": {
             "type": "string",
+            "default": "",
             "description": "Connect token",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -2967,8 +3159,10 @@
         "properties": {
           "connectToken": {
             "type": "string",
+            "default": "",
             "description": "Connect token",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "isReconnect": {
             "type": "boolean",
@@ -2976,6 +3170,7 @@
           },
           "serviceProvider": {
             "type": "string",
+            "default": "",
             "description": "Service provider",
             "enum": [
               "AKOYA",
@@ -2985,7 +3180,8 @@
               "SALTEDGE",
               "SALTEDGEPARTNERS",
               "YODLEE"
-            ]
+            ],
+            "example": ""
           },
           "serviceProviderDetails": {
             "type": "object",
@@ -3061,6 +3257,7 @@
         "properties": {
           "processor": {
             "type": "string",
+            "default": "",
             "description": "Processor which will have access to this account",
             "enum": [
               "ACHQ",
@@ -3110,7 +3307,8 @@
               "WEPAY",
               "WYRE",
               "ZERO_HASH"
-            ]
+            ],
+            "example": ""
           },
           "serviceProvider": {
             "type": "string",
@@ -3210,13 +3408,15 @@
         "properties": {
           "status": {
             "type": "string",
+            "default": "",
             "description": "Financial account transaction's status.",
             "enum": [
               "PENDING",
               "POSTED",
               "SHADOW",
               "EXPIRED"
-            ]
+            ],
+            "example": ""
           }
         },
         "required": [
@@ -3443,6 +3643,7 @@
       },
       "VerifyAccessProfileResponse": {
         "type": "object",
+        "default": null,
         "properties": {
           "status": {
             "type": "string",
@@ -3520,6 +3721,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -3989,6 +4191,7 @@
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
+              "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
               "HARBOUR",
@@ -4053,13 +4256,17 @@
         "properties": {
           "accountNumber": {
             "type": "string",
+            "default": "",
             "description": "The ACH account number for the financial account",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "routingNumber": {
             "type": "string",
+            "default": "",
             "description": "The ACH routing number for the financial account",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -4123,8 +4330,10 @@
         "properties": {
           "accountNumber": {
             "type": "string",
+            "default": "",
             "description": "The BACS account number for the financial account",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "sortCode": {
             "type": "string",
@@ -4140,8 +4349,10 @@
         "properties": {
           "accountNumber": {
             "type": "string",
+            "default": "",
             "description": "The EFT account number for the financial account",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "branchNumber": {
             "type": "string",
@@ -4149,8 +4360,10 @@
           },
           "institutionNumber": {
             "type": "string",
+            "default": "",
             "description": "The EFT institution number for the financial account",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -4563,9 +4776,9 @@
           },
           "externalCustomerId": {
             "type": "string",
+            "default": "testUser",
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "minLength": 1,
-            "default": "testUser",
             "example": "testUser"
           },
           "institutionId": {
