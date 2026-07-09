@@ -384,34 +384,7 @@
   },
   "components": {
     "schemas": {
-      "YodleeEvent": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "object"
-          },
-          "info": {
-            "type": "string"
-          },
-          "loginName": {
-            "type": "string"
-          },
-          "notificationId": {
-            "type": "string"
-          },
-          "notificationTime": {
-            "type": "string"
-          }
-        }
-      },
-      "YodleeWebhookPayload": {
-        "type": "object",
-        "properties": {
-          "event": {
-            "$ref": "#/components/schemas/YodleeEvent"
-          }
-        }
-      },
+      "YodleeWebhookPayload": {},
       "TransakWebhookRequest": {
         "type": "object",
         "properties": {

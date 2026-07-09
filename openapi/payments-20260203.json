@@ -1461,7 +1461,6 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
-                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -1527,7 +1526,7 @@
           },
           "partnerFee": {
             "type": "number",
-            "description": "The fee amount charged by the partner to process your customer's purchase. This fee % can be set by you."
+            "description": "The fee amount charged by the partner to process your customer's purchase."
           },
           "paymentMethodType": {
             "type": "string",
@@ -1601,7 +1600,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -1756,7 +1754,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -2278,7 +2275,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -2439,7 +2435,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -2655,7 +2650,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -3434,7 +3428,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -3572,7 +3565,6 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
-                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -3794,7 +3786,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -3928,7 +3919,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -4469,7 +4459,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -4851,7 +4840,6 @@
                 "TREMENDOUS",
                 "TRANSFI",
                 "UNLIMIT",
-                "UPHOLD",
                 "WYRE",
                 "XANPOOL",
                 "YELLOWCARD",
@@ -4935,7 +4923,7 @@
           },
           "partnerFee": {
             "type": "number",
-            "description": "The fee amount charged by the partner to process your customer's purchase. This fee % can be set by you."
+            "description": "The fee amount charged by the partner to process your customer's purchase."
           },
           "paymentMethodType": {
             "type": "string",
@@ -5009,7 +4997,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -5292,196 +5279,6 @@
           }
         }
       },
-      "AuthorizeSessionRequest": {
-        "type": "object",
-        "description": "Authorize-session request for two-step (Option 1) card providers",
-        "properties": {
-          "cardId": {
-            "type": "string",
-            "description": "Provider external-account id of the card captured in the select-for-deposit widget",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "cardId"
-        ]
-      },
-      "ApplePayOrder": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "sessionToken": {
-                "type": "string",
-                "description": "Session JWT used to authenticate the /crypto/session/* Apple Pay endpoints"
-              },
-              "merchantTransactionId": {
-                "type": "string",
-                "description": "Merchant transaction id to pass into /apple-pay/process; equals the session id"
-              }
-            }
-          }
-        ],
-        "description": "Apple Pay response \u2014 present when paymentMethodType == APPLE_PAY. Native (non-widget) flow: the caller renders the Apple Pay sheet on its own surface, then drives the existing session-token endpoints (GET /crypto/session/applepay/paymentsession, POST /crypto/session/mercuryo/apple-pay/validate-merchant, POST /crypto/session/mercuryo/apple-pay/process) authenticated with sessionToken. There is no provider-hosted widget URL."
-      },
-      "BankTransferOrder": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "accountNumber": {
-                "type": "string",
-                "description": "Bank account number; populated for ACH and FPS"
-              },
-              "routingNumber": {
-                "type": "string",
-                "description": "Bank routing number (ACH) or UK sort code (FPS)"
-              },
-              "iban": {
-                "type": "string",
-                "description": "IBAN; populated for SEPA"
-              },
-              "bic": {
-                "type": "string",
-                "description": "BIC / SWIFT code; populated for SEPA and wire"
-              },
-              "pixKey": {
-                "type": "string",
-                "description": "PIX key; populated for PIX"
-              },
-              "mobileMoneyReference": {
-                "type": "string",
-                "description": "Mobile money reference; populated for MOBILE_MONEY"
-              }
-            }
-          }
-        ],
-        "description": "Bank-transfer response \u2014 present for ACH, FPS, SEPA, PIX, MOBILE_MONEY. Only the rail-relevant fields are populated per response; the others are null. For FPS the UK sort code is carried in routingNumber; the FPS payment reference is available in the persisted serviceProviderDetails (surfacing it as a typed field needs a framework hook)."
-      },
-      "CardOrder": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "serviceProviderWidgetUrl": {
-                "type": "string",
-                "description": "Provider widget/session URL. For SDK-mounted providers (Uphold) this is the session's API-host URL that the provider's own web SDK requires alongside sdkSessionToken \u2014 it is NOT directly loadable in a plain iframe."
-              },
-              "renderMode": {
-                "type": "string",
-                "description": "Render mode for the card surface (NPP-sourced)",
-                "enum": [
-                  "IFRAME",
-                  "REDIRECT"
-                ]
-              },
-              "authorizeSessionUrl": {
-                "type": "string",
-                "description": "Two-step (Option 1) providers only (e.g. Uphold): the URL the SDK POSTs the captured card id to (POST /crypto/order/{orderId}/authorize-session) to create the authorize widget session. Null for single-widget card providers."
-              },
-              "continuationToken": {
-                "type": "string",
-                "description": "Two-step (Option 1) providers only: short-lived bearer token the SDK passes on the authorize-session call. Null when not required."
-              },
-              "sdkSessionToken": {
-                "type": "string",
-                "description": "SDK-mounted providers (Uphold): the payment-session token. The Meld SDK feeds {serviceProviderWidgetUrl, sdkSessionToken, sdkSessionFlow} to the provider's web SDK (e.g. Uphold's PaymentWidget(session)), which mounts its own iframe and swaps to the widget host using this token. Null for URL-loadable providers."
-              },
-              "sdkSessionFlow": {
-                "type": "string",
-                "description": "SDK-mounted providers (Uphold): the session flow \u2014 'select-for-deposit' for the capture widget, 'authorize' for the commit widget. Null for URL-loadable providers."
-              }
-            }
-          }
-        ],
-        "description": "Card-method response \u2014 present when paymentMethodType == CREDIT_DEBIT_CARD"
-      },
-      "HeadlessOrderResponse": {
-        "type": "object",
-        "description": "Headless onramp order response envelope",
-        "properties": {
-          "customerId": {
-            "type": "string",
-            "description": "Meld customer id"
-          },
-          "externalCustomerId": {
-            "type": "string",
-            "description": "Caller's external customer id"
-          },
-          "externalOrderId": {
-            "type": "string",
-            "description": "Caller's external order id"
-          },
-          "id": {
-            "type": "string",
-            "description": "Meld order id (headless_order.id)"
-          },
-          "paymentMethodResponseDetails": {
-            "description": "Method-specific response payload",
-            "oneOf": [
-              {
-                "title": "ApplePayOrder",
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ApplePayOrder"
-                  }
-                ]
-              },
-              {
-                "title": "BankTransferOrder",
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/BankTransferOrder"
-                  }
-                ]
-              },
-              {
-                "title": "CardOrder",
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/CardOrder"
-                  }
-                ]
-              }
-            ]
-          },
-          "paymentMethodType": {
-            "type": "string",
-            "description": "Payment method type \u2014 also acts as the discriminator for paymentMethodResponseDetails",
-            "enum": [
-              "CREDIT_DEBIT_CARD",
-              "APPLE_PAY",
-              "ACH",
-              "FPS",
-              "SEPA",
-              "PIX",
-              "MOBILE_MONEY"
-            ]
-          }
-        }
-      },
-      "PaymentMethodResponseDetails": {
-        "discriminator": {
-          "propertyName": "paymentMethodType"
-        },
-        "properties": {
-          "paymentMethodType": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "paymentMethodType"
-        ]
-      },
       "HeadlessOrderRequest": {
         "type": "object",
         "description": "Request to create a headless onramp order",
@@ -5530,7 +5327,6 @@
               "CREDIT_DEBIT_CARD",
               "APPLE_PAY",
               "ACH",
-              "FPS",
               "SEPA",
               "PIX",
               "MOBILE_MONEY"
@@ -5621,7 +5417,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -5695,6 +5490,165 @@
           }
         ],
         "description": "Yellowcard-specific provider data"
+      },
+      "ApplePayOrder": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "sessionToken": {
+                "type": "string",
+                "description": "Session JWT used to authenticate the /crypto/session/* Apple Pay endpoints"
+              },
+              "merchantTransactionId": {
+                "type": "string",
+                "description": "Merchant transaction id to pass into /apple-pay/process; equals the session id"
+              }
+            }
+          }
+        ],
+        "description": "Apple Pay response \u2014 present when paymentMethodType == APPLE_PAY. Native (non-widget) flow: the caller renders the Apple Pay sheet on its own surface, then drives the existing session-token endpoints (GET /crypto/session/applepay/paymentsession, POST /crypto/session/mercuryo/apple-pay/validate-merchant, POST /crypto/session/mercuryo/apple-pay/process) authenticated with sessionToken. There is no provider-hosted widget URL."
+      },
+      "BankTransferOrder": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "accountNumber": {
+                "type": "string",
+                "description": "Bank account number; populated for ACH"
+              },
+              "routingNumber": {
+                "type": "string",
+                "description": "Bank routing number; populated for ACH"
+              },
+              "iban": {
+                "type": "string",
+                "description": "IBAN; populated for SEPA"
+              },
+              "bic": {
+                "type": "string",
+                "description": "BIC / SWIFT code; populated for SEPA and wire"
+              },
+              "pixKey": {
+                "type": "string",
+                "description": "PIX key; populated for PIX"
+              },
+              "mobileMoneyReference": {
+                "type": "string",
+                "description": "Mobile money reference; populated for MOBILE_MONEY"
+              }
+            }
+          }
+        ],
+        "description": "Bank-transfer response \u2014 present for ACH, SEPA, PIX, MOBILE_MONEY. Only the rail-relevant fields are populated per response; the others are null."
+      },
+      "CardOrder": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PaymentMethodResponseDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "serviceProviderWidgetUrl": {
+                "type": "string",
+                "description": "Provider-hosted widget URL"
+              },
+              "renderMode": {
+                "type": "string",
+                "description": "Render mode for the card surface (NPP-sourced)",
+                "enum": [
+                  "IFRAME",
+                  "REDIRECT"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "Card-method response \u2014 present when paymentMethodType == CREDIT_DEBIT_CARD"
+      },
+      "HeadlessOrderResponse": {
+        "type": "object",
+        "description": "Headless onramp order response envelope",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "Meld customer id"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Caller's external customer id"
+          },
+          "externalOrderId": {
+            "type": "string",
+            "description": "Caller's external order id"
+          },
+          "id": {
+            "type": "string",
+            "description": "Meld order id (headless_order.id)"
+          },
+          "paymentMethodResponseDetails": {
+            "description": "Method-specific response payload",
+            "oneOf": [
+              {
+                "title": "ApplePayOrder",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApplePayOrder"
+                  }
+                ]
+              },
+              {
+                "title": "BankTransferOrder",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BankTransferOrder"
+                  }
+                ]
+              },
+              {
+                "title": "CardOrder",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CardOrder"
+                  }
+                ]
+              }
+            ]
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment method type \u2014 also acts as the discriminator for paymentMethodResponseDetails",
+            "enum": [
+              "CREDIT_DEBIT_CARD",
+              "APPLE_PAY",
+              "ACH",
+              "SEPA",
+              "PIX",
+              "MOBILE_MONEY"
+            ]
+          }
+        }
+      },
+      "PaymentMethodResponseDetails": {
+        "discriminator": {
+          "propertyName": "paymentMethodType"
+        },
+        "properties": {
+          "paymentMethodType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentMethodType"
+        ]
       },
       "TokenSessionAuthResponse": {
         "type": "object",
@@ -5775,7 +5729,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -6013,6 +5966,55 @@
           }
         }
       },
+      "TransactionSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "The ISO 3166 2-digit country code"
+          },
+          "destinationAmount": {
+            "type": "number",
+            "description": "The destination amount of the transaction, e.g. the amount of crypto currency purchased"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "The currency code of the destination amount"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this transaction"
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment method type used for this transaction"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction"
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "source amount"
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "The currency code of the source amount"
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the transaction"
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "The transaction's type"
+          },
+          "walletAddress": {
+            "type": "string",
+            "description": "The masked wallet address used for the crypto transaction, if known (e.g. 2N3oe****91FDbsm)"
+          }
+        }
+      },
       "ServiceProviderCustomer": {
         "type": "object",
         "properties": {
@@ -6193,7 +6195,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -6766,7 +6767,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -6927,7 +6927,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -7072,7 +7071,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -7237,7 +7235,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",
@@ -7816,7 +7813,7 @@
           },
           "partnerFee": {
             "type": "number",
-            "description": "The fee amount charged by the partner to process your customer's purchase. This fee % can be set by you."
+            "description": "The fee amount charged by the partner to process your customer's purchase."
           },
           "paymentMethodType": {
             "type": "string",
@@ -7898,7 +7895,6 @@
               "TREMENDOUS",
               "TRANSFI",
               "UNLIMIT",
-              "UPHOLD",
               "WYRE",
               "XANPOOL",
               "YELLOWCARD",

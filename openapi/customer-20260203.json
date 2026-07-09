@@ -85,7 +85,8 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. This takes a comma separated list of customer ids.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -94,7 +95,8 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -103,7 +105,8 @@
             "description": "Customer's email",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -112,7 +115,8 @@
             "description": "Customer's phone",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -122,6 +126,7 @@
             "required": false,
             "schema": {
               "type": "string",
+              "default": "",
               "enum": [
                 "ACTIVE",
                 "INACTIVE"
@@ -135,6 +140,7 @@
             "required": false,
             "schema": {
               "type": "string",
+              "default": "",
               "enum": [
                 "INDIVIDUAL",
                 "BUSINESS"
@@ -147,7 +153,8 @@
             "description": "Key of customer to get before. The next batch of results will be immediately before this customer.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -156,7 +163,8 @@
             "description": "Key of customer to get after. The next batch of results will be immediately after this customer.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -165,8 +173,8 @@
             "description": "Limits number of returned customers.\n\n*Default value*: 10 or the number of customer ids provided\n\n*Minimum value*: 1\n\n*Maximum value*: 100",
             "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -218,7 +226,8 @@
             "description": "Customer id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -248,7 +257,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -289,7 +306,8 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           },
           {
@@ -298,7 +316,8 @@
             "description": "Comma separated list of service providers. If present, the customer will ***only*** be deleted with these specified service provider(s), but the Meld customer will remain active. This can be useful for when service providers impose restrictions on the number of customers allowed in their sandbox/development environments. In such cases, you may only want to delete the customer with that provider, but maintain it for other providers it is connected to, if any. If this parameter is absent, then the customer will be deleted with all the service providers it is linked to and the Meld customer will be deleted as well.\n\n***Note:*** Currently, this endpoint only supports deleting [Bank-Linking service provider](https://docs.meld.io/docs/bank-linking-supported-service-providers) customers. Therefore, Payments/Crypto service providers ***should not*** be included.",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -318,7 +337,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -328,7 +355,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -370,7 +405,8 @@
             "description": "Customer id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -381,7 +417,14 @@
                 "$ref": "#/components/schemas/CreateCustomerAddressRequest"
               },
               "example": {
-                "type": "BILLING"
+                "address": {
+                  "city": "",
+                  "countryCode": "",
+                  "lineOne": "",
+                  "postalCode": "",
+                  "region": ""
+                },
+                "type": ""
               }
             }
           },
@@ -436,7 +479,8 @@
             "description": "Customer id",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "default": ""
             }
           }
         ],
@@ -447,8 +491,8 @@
                 "$ref": "#/components/schemas/InitiateKycRequest"
               },
               "example": {
-                "mode": "HOSTED_URL",
-                "serviceProvider": "SUMSUB"
+                "mode": "",
+                "serviceProvider": ""
               }
             }
           },
@@ -470,7 +514,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -480,7 +532,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -490,7 +550,15 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "additionalProperties": {
+                    "default": ""
+                  },
+                  "default": "",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -530,8 +598,10 @@
           },
           "name": {
             "type": "string",
+            "default": "",
             "description": "Name",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -569,22 +639,28 @@
           "email": {
             "type": "string",
             "format": "email",
+            "default": "",
             "description": "Email",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "name": {
             "type": "string",
+            "default": "",
             "description": "Name",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "roles": {
             "type": "array",
+            "default": "",
             "description": "Roles",
             "items": {
               "type": "string"
             },
             "minItems": 1,
-            "uniqueItems": true
+            "uniqueItems": true,
+            "example": ""
           }
         },
         "required": [
@@ -693,8 +769,10 @@
         "properties": {
           "linkedAccountId": {
             "type": "string",
+            "default": "",
             "description": "Cross-environment linked account",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -1274,6 +1352,7 @@
         "type": "object",
         "properties": {
           "authSettings": {
+            "default": "",
             "description": "Auth settings",
             "oneOf": [
               {
@@ -1732,7 +1811,8 @@
                   }
                 ]
               }
-            ]
+            ],
+            "example": ""
           },
           "configSettings": {
             "description": "Config settings",
@@ -2189,20 +2269,25 @@
           },
           "environment": {
             "type": "string",
+            "default": "",
             "description": "Service provider's environment",
             "enum": [
               "SANDBOX",
               "DEVELOPMENT",
               "PRODUCTION"
-            ]
+            ],
+            "example": ""
           },
           "name": {
             "type": "string",
+            "default": "",
             "description": "Name",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "serviceProvider": {
             "type": "string",
+            "default": "",
             "description": "Service provider",
             "enum": [
               "AUTHORIZENET",
@@ -2231,7 +2316,8 @@
               "TRANSFI",
               "UNLIMIT",
               "YODLEE"
-            ]
+            ],
+            "example": ""
           }
         },
         "required": [
@@ -4664,12 +4750,14 @@
           },
           "type": {
             "type": "string",
+            "default": "",
             "description": "Type of preference to create for this account.\n\n***Note:*** Only one preference of each type can exist. To edit an existing preference, use the Update an account preference endpoint instead",
             "enum": [
               "CRYPTO",
               "BANK_LINKING"
             ],
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -4839,6 +4927,7 @@
         }
       },
       "Preference": {
+        "default": null,
         "description": "The preference details",
         "oneOf": [
           {
@@ -4906,8 +4995,10 @@
           },
           "name": {
             "type": "string",
+            "default": "",
             "description": "Name",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "permissions": {
             "type": "array",
@@ -5086,18 +5177,24 @@
         "properties": {
           "ownerAccountId": {
             "type": "string",
+            "default": "",
             "description": "Owner account id",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "ownerServiceProviderAccessProfileId": {
             "type": "string",
+            "default": "",
             "description": "Owner service provider access profile id",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "recipientAccountId": {
             "type": "string",
+            "default": "",
             "description": "Recipient account id",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -5119,35 +5216,40 @@
         "properties": {
           "companyName": {
             "type": "string",
+            "default": "",
             "description": "Company name",
-            "example": "Acme Corp",
+            "example": "",
             "minLength": 1
           },
           "email": {
             "type": "string",
             "format": "email",
+            "default": "",
             "description": "Email address",
-            "example": "john.doe@example.com",
+            "example": "",
             "minLength": 1
           },
           "fullName": {
             "type": "string",
+            "default": "",
             "description": "Full name of the person",
-            "example": "John Doe",
+            "example": "",
             "minLength": 1,
             "pattern": "^(?=.{1,100}$)[\\p{L}\\p{M}]+([ '-][\\p{L}\\p{M}]+)*$"
           },
           "reasonName": {
             "type": "string",
+            "default": "",
             "description": "Reason name(s) - can be a single reason or multiple comma-separated reasons (must be valid reasons from reference table)",
-            "example": "TRADITIONAL_RAMPS,VIRTUAL_ACCOUNTS",
+            "example": "",
             "minLength": 1,
             "pattern": "^[a-zA-Z0-9_,\\s\\-]+$"
           },
           "roleName": {
             "type": "string",
+            "default": "",
             "description": "Role name (must be valid role from reference table)",
-            "example": "ENGINEER",
+            "example": "",
             "minLength": 1,
             "pattern": "^[a-zA-Z0-9_\\-]+$"
           }
@@ -5241,16 +5343,9 @@
         "properties": {
           "assignments": {
             "type": "array",
+            "default": "",
             "description": "List of reason assignments",
-            "example": [
-              {
-                "onboardingReasonName": "TRADITIONAL_RAMPS",
-                "serviceProviderAccessProfileIds": [
-                  "profile1",
-                  "profile2"
-                ]
-              }
-            ],
+            "example": "",
             "items": {
               "$ref": "#/components/schemas/AssignServiceProviderAccessProfileRequest"
             },
@@ -5421,6 +5516,7 @@
       },
       "CustomerAddress": {
         "type": "object",
+        "default": null,
         "description": "Customer address",
         "properties": {
           "addressDetails": {
@@ -5460,6 +5556,7 @@
       },
       "CustomerAddressDetails": {
         "type": "object",
+        "default": null,
         "description": "Address details",
         "properties": {
           "city": {
@@ -5493,11 +5590,14 @@
         "properties": {
           "id": {
             "type": "string",
+            "default": "",
             "description": "The service provider's id for the customer",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "serviceProvider": {
             "type": "string",
+            "default": "",
             "description": "Service provider for the customer",
             "enum": [
               "AUTHORIZENET",
@@ -5526,7 +5626,8 @@
               "TRANSFI",
               "UNLIMIT",
               "YODLEE"
-            ]
+            ],
+            "example": ""
           },
           "serviceProviderAccessProfileId": {
             "type": "string",
@@ -5772,7 +5873,9 @@
         "type": "object",
         "properties": {
           "details": {
+            "default": "",
             "description": "The service provider specific authentication details",
+            "example": "",
             "allOf": [
               {
                 "$ref": "#/components/schemas/CustomerServiceProviderAuthDetails"
@@ -5780,7 +5883,9 @@
             ]
           },
           "scope": {
+            "default": "",
             "description": "The scope the authentication details are confined to",
+            "example": "",
             "allOf": [
               {
                 "$ref": "#/components/schemas/CustomerServiceProviderAuthScope"
@@ -5789,6 +5894,7 @@
           },
           "serviceProvider": {
             "type": "string",
+            "default": "",
             "description": "Service provider to create authentication details for",
             "enum": [
               "ACROSS",
@@ -5860,12 +5966,15 @@
               "XANPOOL",
               "YELLOWCARD",
               "YODLEE"
-            ]
+            ],
+            "example": ""
           },
           "serviceProviderAccessProfileId": {
             "type": "string",
+            "default": "",
             "description": "Service provider access profile id",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "status": {
             "type": "string",
@@ -5880,6 +5989,7 @@
         ]
       },
       "CustomerServiceProviderAuthDetails": {
+        "default": null,
         "description": "The customer service provider auth details",
         "oneOf": [
           {
@@ -5897,8 +6007,10 @@
         "properties": {
           "institutionId": {
             "type": "string",
+            "default": "",
             "description": "Institution id that the authentication details are confined to",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -5989,16 +6101,22 @@
         "properties": {
           "accountId": {
             "type": "string",
+            "default": "",
             "description": "The account id",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "customerId": {
             "type": "string",
+            "default": "",
             "description": "The customer id that the authentication details belong to",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "details": {
+            "default": "",
             "description": "The authentication details",
+            "example": "",
             "allOf": [
               {
                 "$ref": "#/components/schemas/CustomerServiceProviderAuthDetails"
@@ -6007,11 +6125,15 @@
           },
           "id": {
             "type": "string",
+            "default": "",
             "description": "The unique identifier for the authentication details",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "scope": {
+            "default": "",
             "description": "The scope the authentication details are confined to",
+            "example": "",
             "allOf": [
               {
                 "$ref": "#/components/schemas/CustomerServiceProviderAuthScope"
@@ -6020,6 +6142,7 @@
           },
           "serviceProvider": {
             "type": "string",
+            "default": "",
             "description": "Service provider that the authentication details pertain to",
             "enum": [
               "ACROSS",
@@ -6091,22 +6214,27 @@
               "XANPOOL",
               "YELLOWCARD",
               "YODLEE"
-            ]
+            ],
+            "example": ""
           },
           "serviceProviderAccessProfileId": {
             "type": "string",
+            "default": "",
             "description": "Service provider access profile id",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "status": {
             "type": "string",
+            "default": "",
             "description": "Status of the authentication details for the customer",
             "enum": [
               "ACTIVE",
               "EXPIRED",
               "DELETED"
             ],
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -6122,6 +6250,7 @@
       },
       "KycTokenResponse": {
         "type": "object",
+        "default": null,
         "description": "Short-lived token for the KYC provider SDK (e.g. Sumsub access token)",
         "properties": {
           "token": {
@@ -6132,6 +6261,7 @@
       },
       "InitiateKycRequest": {
         "type": "object",
+        "default": null,
         "description": "Request to initiate KYC for a customer with a given provider",
         "properties": {
           "kycShareProviders": {
@@ -6215,19 +6345,22 @@
           },
           "mode": {
             "type": "string",
+            "default": "",
             "description": "KYC initiation mode",
             "enum": [
               "HOSTED_URL",
               "TOKEN_IMPORT"
-            ]
+            ],
+            "example": ""
           },
           "serviceProvider": {
             "type": "string",
+            "default": "",
             "description": "KYC provider to use (currently only SUMSUB is supported)",
             "enum": [
               "SUMSUB"
             ],
-            "example": "SUMSUB",
+            "example": "",
             "minLength": 1
           },
           "serviceProviderDetails": {
@@ -6245,6 +6378,7 @@
         ]
       },
       "KycServiceProviderDetails": {
+        "default": null,
         "description": "Provider-specific details for KYC initiation",
         "oneOf": [
           {
@@ -6267,11 +6401,13 @@
             "properties": {
               "kycToken": {
                 "type": "string",
+                "default": "",
                 "description": "Access token issued by the KYC provider",
                 "minLength": 1
               },
               "applicantId": {
                 "type": "string",
+                "default": "",
                 "description": "Applicant ID from the KYC provider",
                 "minLength": 1
               }
@@ -6286,6 +6422,7 @@
       },
       "InitiateKycResponse": {
         "type": "object",
+        "default": null,
         "description": "Response after initiating KYC: customer/provider/status. Token is obtained via getToken once KYC is complete.",
         "properties": {
           "customerId": {
@@ -6324,12 +6461,14 @@
           },
           "type": {
             "type": "string",
+            "default": "",
             "description": "Address type",
             "enum": [
               "BILLING",
               "SHIPPING",
               "RESIDENCE"
-            ]
+            ],
+            "example": ""
           }
         },
         "required": [
@@ -6339,16 +6478,21 @@
       },
       "CustomerAddressDetailsRequest": {
         "type": "object",
+        "default": null,
         "description": "Address details",
         "properties": {
           "city": {
             "type": "string",
-            "minLength": 1
+            "default": "",
+            "minLength": 1,
+            "example": ""
           },
           "countryCode": {
             "type": "string",
+            "default": "",
             "description": "Two-letter country code (ISO 3166-1 alpha-2)",
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           },
           "firstName": {
             "type": "string"
@@ -6358,17 +6502,23 @@
           },
           "lineOne": {
             "type": "string",
-            "minLength": 1
+            "default": "",
+            "minLength": 1,
+            "example": ""
           },
           "lineTwo": {
             "type": "string"
           },
           "postalCode": {
             "type": "string",
-            "minLength": 1
+            "default": "",
+            "minLength": 1,
+            "example": ""
           },
           "region": {
-            "type": "string"
+            "type": "string",
+            "default": "",
+            "example": ""
           }
         },
         "required": [
@@ -7414,13 +7564,15 @@
           },
           "type": {
             "type": "string",
+            "default": "",
             "description": "Type of the preference to update for this account",
             "enum": [
               "CRYPTO",
               "BANK_LINKING",
               "KYC"
             ],
-            "minLength": 1
+            "minLength": 1,
+            "example": ""
           }
         },
         "required": [
@@ -8579,11 +8731,15 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "The id of the customer deleted"
+            "default": "",
+            "description": "The id of the customer deleted",
+            "example": ""
           },
           "isDeleted": {
             "type": "boolean",
-            "description": "True if the Meld customer was deleted as well and can no longer be used anymore. This will only be true if no service providers were passed into the request"
+            "default": false,
+            "description": "True if the Meld customer was deleted as well and can no longer be used anymore. This will only be true if no service providers were passed into the request",
+            "example": false
           },
           "serviceProviderCustomersDeleted": {
             "type": "object",
