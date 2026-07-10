@@ -87,6 +87,7 @@
                     "pages": [
                       "docs/stablecoins/white-label-api-integration/index",
                       "docs/stablecoins/white-label-api-integration/whitelabel-quickstart",
+                      "docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner",
                       {
                         "group": "Full Integration Guide",
                         "pages": [
@@ -495,6 +496,7 @@
                     "pages": [
                       "docs/stablecoins/white-label-api-integration/index",
                       "docs/stablecoins/white-label-api-integration/whitelabel-quickstart",
+                      "docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner",
                       {
                         "group": "Full Integration Guide",
                         "pages": [
@@ -894,6 +896,7 @@
                     "pages": [
                       "docs/stablecoins/white-label-api-integration/index",
                       "docs/stablecoins/white-label-api-integration/whitelabel-quickstart",
+                      "docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner",
                       {
                         "group": "Full Integration Guide",
                         "pages": [
