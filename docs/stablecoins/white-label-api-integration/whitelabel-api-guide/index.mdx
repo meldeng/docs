@@ -9,21 +9,21 @@ This guide is for developers building a custom crypto interface on top of Meld's
 
 You'll learn the exact sequence of API calls for **both directions**:
 
-* **On-ramp (buy)** — fiat → crypto, `category = CRYPTO_ONRAMP`, session `BUY`.
-* **Off-ramp (sell)** — crypto → fiat, `category = CRYPTO_OFFRAMP`, session `SELL`.
+- **On-ramp (buy)** — fiat → crypto, `category = CRYPTO_ONRAMP`, session `BUY`.
+- **Off-ramp (sell)** — crypto → fiat, `category = CRYPTO_OFFRAMP`, session `SELL`.
 
 Discovery is documented once in [The discovery model](#the-discovery-model), then each direction has its own ordered flow section that shows only its ordering, session type, and (for sell) the deposit-address step.
 
 ## Before you begin
 
-* ✅ **API key** from the Meld dashboard (see [White-Label Quickstart](/docs/stablecoins/white-label-api-integration/whitelabel-quickstart) Step 1)
-* ✅ **Webhook endpoint** configured (recommended; you can also poll the API)
-* ✅ **Basic understanding** of REST APIs and JSON
-* ✅ **Sandbox environment** — base URL `https://api-sb.meld.io` (production is `https://api.meld.io`)
+- ✅ **API key** from the Meld dashboard (see [White-Label Quickstart](/docs/stablecoins/white-label-api-integration/whitelabel-quickstart) Step 1)
+- ✅ **Webhook endpoint** configured (recommended; you can also poll the API)
+- ✅ **Basic understanding** of REST APIs and JSON
+- ✅ **Sandbox environment** — base URL `https://api-sb.meld.io` (production is `https://api.meld.io`)
 
 Every request sends:
 
-```
+```text
 Authorization: BASIC {apiKey}
 Accept: application/json
 Content-Type: application/json   # on requests with a body
@@ -31,65 +31,65 @@ Meld-Version: 2026-02-03
 ```
 
 <Note>
-Sandbox and production credentials, base URLs, and widget URLs are separate. Develop against `https://api-sb.meld.io` until your flow is ready, then switch credentials and the base URL to `https://api.meld.io` to go live.
+  Sandbox and production credentials, base URLs, and widget URLs are separate. Develop against `https://api-sb.meld.io` until your flow is ready, then switch credentials and the base URL to `https://api.meld.io` to go live.
 </Note>
 
 <Warning>
-**Important:** This is White-Label API Integration, NOT Meld Checkout Integration (Public Key URL). This approach requires custom UI development and API integration.
+  **Important:** This is White-Label API Integration, NOT Meld Checkout Integration (Public Key URL). This approach requires custom UI development and API integration.
 </Warning>
 
 <br />
 
 <Warning>
-**CRITICAL: API Changes & Compatibility**
+  **CRITICAL: API Changes & Compatibility**
 
-**Non-Breaking Changes (No Versioning):**
+  **Non-Breaking Changes (No Versioning):**
 
-* New fields may be added to API responses at any time
-* Your system MUST handle unexpected fields gracefully
-* Avoid strict JSON validation that rejects unknown properties
+  - New fields may be added to API responses at any time
+  - Your system MUST handle unexpected fields gracefully
+  - Avoid strict JSON validation that rejects unknown properties
 
-**Breaking Changes (Versioned):**
+  **Breaking Changes (Versioned):**
 
-* Field modifications or deletions will be versioned
-* Released approximately with advance notice
+  - Field modifications or deletions will be versioned
+  - Released approximately with advance notice
 
-**Required Actions:**
+  **Required Actions:**
 
-* ✅ Use flexible JSON parsing (ignore unknown fields)
-* ✅ Implement defensive coding practices
-* ✅ Test with mock responses containing extra fields
+  - ✅ Use flexible JSON parsing (ignore unknown fields)
+  - ✅ Implement defensive coding practices
+  - ✅ Test with mock responses containing extra fields
 </Warning>
 
 <Warning>
-**IMPORTANT: Automatic Provider Management**
+  **IMPORTANT: Automatic Provider Management**
 
-**Automatic Additions:**
+  **Automatic Additions:**
 
-* Meld may automatically enable providers for your account based on:
-  * Conversion rates and user success
-  * Competitive pricing
-  * Geographic coverage for your users
+  - Meld may automatically enable providers for your account based on:
+    - Conversion rates and user success
+    - Competitive pricing
+    - Geographic coverage for your users
 
-**Automatic Removals:**
+  **Automatic Removals:**
 
-* Providers may be disabled due to:
-  * Compliance or regulatory issues
-  * Technical problems or outages
-  * Provider service interruptions
+  - Providers may be disabled due to:
+    - Compliance or regulatory issues
+    - Technical problems or outages
+    - Provider service interruptions
 
-**Manual Control:**
+  **Manual Control:**
 
-* Contact Meld to opt out of automatic management
-* Request specific provider additions/removals
-* Set custom provider preferences for your account
+  - Contact Meld to opt out of automatic management
+  - Request specific provider additions/removals
+  - Set custom provider preferences for your account
 </Warning>
 
 ## Technical Architecture
 
 Your UI talks only to Meld's APIs for discovery, pricing, and sessions. When the user is ready to pay (buy) or get paid (sell), you hand off to the selected provider's hosted UI, then track the result through webhooks and the transactions endpoint.
 
-```
+```text
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │   Your UI   │◄──►│  Meld APIs  │◄──►│ Provider UI │───►│   Your UI   │
 │             │    │             │    │  (Widget)   │    │             │
@@ -102,7 +102,7 @@ Your UI talks only to Meld's APIs for discovery, pricing, and sessions. When the
 ```
 
 <Note>
-**Off-ramp variant:** the sell flow adds one handoff back to your UI. After the provider session is created and the user confirms in the provider UI, Meld returns a **deposit address** on the transaction. Your UI must display it and instruct the user to send the exact crypto amount to it. See [Off-ramp flow](#off-ramp-flow-sell) Step 6.
+  **Off-ramp variant:** the sell flow adds one handoff back to your UI. After the provider session is created and the user confirms in the provider UI, Meld returns a **deposit address** on the transaction. Your UI must display it and instruct the user to send the exact crypto amount to it. See [Off-ramp flow](#off-ramp-flow-sell) Step 6.
 </Note>
 
 ## The discovery model
@@ -110,17 +110,17 @@ Your UI talks only to Meld's APIs for discovery, pricing, and sessions. When the
 All discovery is parameterized by a `category`. Retail ramp uses exactly two:
 
 | Direction | `category` | Session type | Currency flow |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Buy | `CRYPTO_ONRAMP` | `BUY` | fiat → crypto |
 | Sell | `CRYPTO_OFFRAMP` | `SELL` | crypto → fiat |
 
 <Warning>
-**Routes follow direction, not fiat/crypto.** On `GET /network-partner/supported/routes/{category}/{country}/{source}/{destination}`:
+  **Routes follow direction, not fiat/crypto.** On `GET /network-partner/supported/routes/{category}/{countryCode}/{sourceCurrencyCode}/{destinationCurrencyCode}`:
 
-* **On-ramp:** `source = fiat`, `destination = crypto` → `.../CRYPTO_ONRAMP/US/USD/USDC`
-* **Off-ramp:** `source = crypto`, `destination = fiat` → `.../CRYPTO_OFFRAMP/US/USDC/USD`
+  - **On-ramp:** `source = fiat`, `destination = crypto` → `.../CRYPTO_ONRAMP/US/USD/USDC`
+  - **Off-ramp:** `source = crypto`, `destination = fiat` → `.../CRYPTO_OFFRAMP/US/USDC/USD`
 
-Putting the segments in the wrong order returns **HTTP 200 with an empty `[]`** — not a 404 — which silently starves payment-method and limit discovery. Always order by direction.
+  Putting the segments in the wrong order returns **HTTP 200 with an empty `[]`** — not a 404 — which silently starves payment-method and limit discovery. Always order by direction.
 </Warning>
 
 ### Upgrading from the Service Provider API?
@@ -134,7 +134,7 @@ If you previously integrated against the legacy `/service-providers/*` discovery
 The three transaction endpoints are unchanged: `POST /payments/crypto/quote`, `POST /crypto/session/widget`, and `GET /payments/transactions/{transactionId}`.
 
 <Note>
-Swap variants (`CRYPTO_ONRAMP_SWAP` / `CRYPTO_OFFRAMP_SWAP`) and virtual-account categories also exist but are out of scope for this retail buy/sell guide.
+  Swap variants (`CRYPTO_ONRAMP_SWAP` / `CRYPTO_OFFRAMP_SWAP`) and virtual-account categories also exist but are out of scope for this retail buy/sell guide.
 </Note>
 
 ## Discovery endpoint reference
@@ -143,12 +143,12 @@ These five endpoints back both flows. Each example shows the on-ramp and off-ram
 
 ### Supported countries
 
-```
+```text
 GET /network-partner/supported/countries?category={CATEGORY}
 ```
 
 | Query param | Required | Allowed values |
-|---|---|---|
+| --- | --- | --- |
 | `category` | yes | `CRYPTO_ONRAMP` or `CRYPTO_OFFRAMP` |
 
 <CodeGroup>
@@ -170,33 +170,50 @@ curl 'https://api-sb.meld.io/network-partner/supported/countries?category=CRYPTO
 ```json Response
 {
   "countries": [
-    { "countryCode": "US", "name": "United States", "flag": "🇺🇸" },
-    { "countryCode": "DE", "name": "Germany", "flag": "🇩🇪" }
+    {
+      "countryCode": "US",
+      "name": "United States",
+      "flag": "https://cdn.meld.io/images-country/US/flag.svg",
+      "subdivisions": ["US-CA", "US-NY"]
+    },
+    {
+      "countryCode": "DE",
+      "name": "Germany",
+      "flag": "https://cdn.meld.io/images-country/DE/flag.svg"
+    }
   ]
 }
 ```
 
 <Note>
-The set of countries can differ by direction. Subdivision/state support is no longer returned here — collect the US state when needed and pass it as `subdivision` to [Supported routes](#supported-routes).
+  - The set of countries can differ by direction.
+  - **`flag`** is a hosted image URL, not an emoji — render it as an `<img>`.
+  - **`subdivisions`** returns ISO 3166-2 codes (e.g. `US-CA`) when a country has regional coverage differences. Collect the user's state/region and pass it as `subdivision` to [Supported routes](#supported-routes).
 </Note>
 
 ### Country defaults
 
-```
-GET /network-partner/defaults/{country}/{category}
+```text
+GET /service-providers/properties/defaults/by-country?countries={c}&categories={CATEGORY}
 ```
 
-Country (ISO-3166-1 alpha-2, e.g. `US`) and category are path params. Returns a single object or `null` — handle `null` by falling back to the first supported currency/method.
+| Query param | Required | Meaning |
+| --- | --- | --- |
+| `countries` | yes | Comma-separated ISO 3166-1 alpha-2 codes (e.g. `US` or `US,DE`) |
+| `categories` | yes | Comma-separated categories (e.g. `CRYPTO_ONRAMP` or `CRYPTO_OFFRAMP`) |
+| `accountFilter` | no | `true` restricts to providers configured for your account |
+
+Returns a **bare array** of `{ countryCode, defaultCurrencyCode, defaultPaymentMethods[] }`. Fall back to the first supported currency/method when the array is empty for a country.
 
 <CodeGroup>
 
 ```bash On-ramp
-curl 'https://api-sb.meld.io/network-partner/defaults/US/CRYPTO_ONRAMP' \
+curl 'https://api-sb.meld.io/service-providers/properties/defaults/by-country?countries=US&categories=CRYPTO_ONRAMP' \
   -H 'Authorization: BASIC {apiKey}'
 ```
 
 ```bash Off-ramp
-curl 'https://api-sb.meld.io/network-partner/defaults/DE/CRYPTO_OFFRAMP' \
+curl 'https://api-sb.meld.io/service-providers/properties/defaults/by-country?countries=DE&categories=CRYPTO_OFFRAMP' \
   -H 'Authorization: BASIC {apiKey}'
 ```
 
@@ -205,35 +222,41 @@ curl 'https://api-sb.meld.io/network-partner/defaults/DE/CRYPTO_OFFRAMP' \
 <CodeGroup>
 
 ```json On-ramp response
-{
-  "countryCode": "US",
-  "category": "CRYPTO_ONRAMP",
-  "currencyCode": "USD",
-  "paymentMethods": ["CREDIT_DEBIT_CARD", "APPLE_PAY"]
-}
+[
+  {
+    "countryCode": "US",
+    "defaultCurrencyCode": "USD",
+    "defaultPaymentMethods": ["CREDIT_DEBIT_CARD", "APPLE_PAY"]
+  }
+]
 ```
 
 ```json Off-ramp response
-{
-  "countryCode": "DE",
-  "category": "CRYPTO_OFFRAMP",
-  "currencyCode": "EUR",
-  "paymentMethods": ["SEPA"]
-}
+[
+  {
+    "countryCode": "DE",
+    "defaultCurrencyCode": "EUR",
+    "defaultPaymentMethods": ["SEPA"]
+  }
+]
 ```
 
 </CodeGroup>
 
+<Note>
+  This endpoint lives under `/service-providers/*` (not `/network-partner/*`) but is still the canonical source of per-country defaults for both on-ramp and off-ramp.
+</Note>
+
 ### Supported currencies
 
-```
+```text
 GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type={FIAT|CRYPTO}
 ```
 
 One endpoint serves both fiat and crypto, selected by `type`.
 
 | Query param | Required | Meaning |
-|---|---|---|
+| --- | --- | --- |
 | `category` | yes | `CRYPTO_ONRAMP` or `CRYPTO_OFFRAMP` |
 | `country` | yes | ISO alpha-2 |
 | `type` | yes | `FIAT` or `CRYPTO` — selects which side of the list you get |
@@ -242,7 +265,12 @@ One endpoint serves both fiat and crypto, selected by `type`.
 | `paymentType` | no | broad bucket (e.g. `CARD`) |
 | `providerCurrencyCode` | no | provider-specific currency code |
 
-Each currency is `{ currencyCode, name, decimalPlaces, type, symbol, chainCode?, contract? }`. Use `decimalPlaces` for client-side formatting and `chainCode`/`contract` to disambiguate tokens.
+Each currency is `{ currencyCode, name, decimalPlaces, type, symbol, chainCode?, contract? }`.
+
+- **`currencyCode`** — the ticker/id you send downstream (e.g. `USD`, `USDC`).
+- **`decimalPlaces`** — use for client-side formatting of the amount input.
+- **`symbol`** — a hosted image URL for the currency logo (not a ticker). Render as an `<img>`.
+- **`chainCode`** / **`contract`** — disambiguate tokens on multi-chain networks.
 
 <CodeGroup>
 
@@ -276,8 +304,8 @@ curl 'https://api-sb.meld.io/network-partner/supported/currencies?category=CRYPT
       "name": "USD Coin",
       "decimalPlaces": 6,
       "type": "CRYPTO",
-      "symbol": "USDC",
-      "chainCode": "ETHEREUM",
+      "symbol": "https://cdn.meld.io/images-currency/crypto/USDC/symbol.png",
+      "chainCode": "ETH",
       "contract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
     },
     {
@@ -285,8 +313,8 @@ curl 'https://api-sb.meld.io/network-partner/supported/currencies?category=CRYPT
       "name": "Ethereum",
       "decimalPlaces": 18,
       "type": "CRYPTO",
-      "symbol": "ETH",
-      "chainCode": "ETHEREUM"
+      "symbol": "https://cdn.meld.io/images-currency/crypto/ETH/symbol.png",
+      "chainCode": "ETH"
     }
   ]
 }
@@ -294,20 +322,24 @@ curl 'https://api-sb.meld.io/network-partner/supported/currencies?category=CRYPT
 
 ### Supported payment methods
 
-```
+```text
 GET /network-partner/supported/payment-methods?category={CATEGORY}&country={c}&currencyCode={f}
 ```
 
 | Query param | Required | Meaning |
-|---|---|---|
+| --- | --- | --- |
 | `category` | yes | `CRYPTO_ONRAMP` or `CRYPTO_OFFRAMP` |
 | `country` | yes | ISO alpha-2 |
 | `currencyCode` | yes | the **fiat** code — on-ramp: the pay-with currency; off-ramp: the payout currency |
 
 Returns a **bare array** of `{ countryCode, providerMethod, method, name, type, logo?, headlessSupported? }`.
 
+- **`method`** — the canonical id (e.g. `ACH`, `SEPA`, `CREDIT_DEBIT_CARD`). This is the value you send downstream as `paymentMethodType`.
+- **`name`** — human-readable display label ("ACH Bank Transfer"). **Never send `name` to Meld.**
+- **`headlessSupported`** — `true` if the rail supports a headless (server-to-server, no provider UI) checkout for this method. Prefer these when your flow doesn't need the provider's hosted UI.
+
 <Warning>
-**Send `method`, never `name`.** The canonical id you pass downstream as `paymentMethodType` is `method` (e.g. `ACH`, `SEPA`, `CREDIT_DEBIT_CARD`). `name` is a display label only ("ACH Bank Transfer") and must never be sent to Meld. Sending the wrong rail for a country/currency yields `NO_VALID_QUOTES`.
+  **Send `method`, never `name`.** Sending a display label or the wrong rail for a country/currency yields `NO_VALID_QUOTES`.
 </Warning>
 
 <CodeGroup>
@@ -350,17 +382,17 @@ curl 'https://api-sb.meld.io/network-partner/supported/payment-methods?category=
 
 ### Supported routes
 
-```
-GET /network-partner/supported/routes/{category}/{country}/{source}/{destination}
+```text
+GET /network-partner/supported/routes/{category}/{countryCode}/{sourceCurrencyCode}/{destinationCurrencyCode}
 ```
 
 Routes return the partners and payment methods that serve a currency pair, **and** the per-method min/max limits (which replaced the standalone limits endpoint).
 
-* **On-ramp:** `source = fiat`, `destination = crypto` → `.../CRYPTO_ONRAMP/US/USD/USDC`
-* **Off-ramp:** `source = crypto`, `destination = fiat` → `.../CRYPTO_OFFRAMP/US/USDC/USD`
+- **On-ramp:** `source = fiat`, `destination = crypto` → `.../CRYPTO_ONRAMP/US/USD/USDC`
+- **Off-ramp:** `source = crypto`, `destination = fiat` → `.../CRYPTO_OFFRAMP/US/USDC/USD`
 
 | Query param | Meaning |
-|---|---|
+| --- | --- |
 | `partners` | comma-joined partner allow-list, e.g. `transak,banxa` |
 | `paymentMethod` | a `method` id to filter routes by rail |
 | `paymentType` | broad bucket, e.g. `CARD` |
@@ -368,16 +400,16 @@ Routes return the partners and payment methods that serve a currency pair, **and
 
 Each route is:
 
-```
+```text
 Route = { partner, source, destination, paymentMethods: RoutePaymentMethod[], kycLimits?: [] }
 
 RoutePaymentMethod = {
   paymentType,        // broad bucket: CARD, MOBILE_WALLET, BANK_TRANSFER
-  name,               // CANONICAL id to send as paymentMethodType
-  partnerMethodName,
+  name,               // canonical method id — SAME value as `method` from /supported/payment-methods (send as paymentMethodType)
+  partnerMethodName,  // provider-specific label (informational only)
   limits: { currencyCode, min, max } | null,   // replaces the legacy limits endpoint
   logo?: { dark, light },
-  headlessSupported?
+  headlessSupported?  // true = rail supports headless checkout
 }
 ```
 
@@ -442,7 +474,9 @@ curl 'https://api-sb.meld.io/network-partner/supported/routes/CRYPTO_OFFRAMP/US/
 ```
 
 <Note>
-To validate the user's amount, read `route.paymentMethods[].limits` for the chosen partner + method. The `currencyCode` on `limits` tells you which currency the min/max are expressed in: for on-ramp it's the fiat the user pays; for off-ramp it's the fiat the user receives. Because limits live on the route, a buy route and a sell route for the same pair can have different min/max.
+  To validate the user's amount, read `route.paymentMethods[].limits` for the chosen partner \+ method. The `currencyCode` on `limits` tells you which currency the min/max are expressed in: for on-ramp it's the fiat the user pays; for off-ramp it's the fiat the user receives. Because limits live on the route, a buy route and a sell route for the same pair can have different min/max.
+
+  **`kycLimits`** — an optional array of tier-based limits that some partners apply on top of the per-method `limits` (e.g. higher caps after enhanced KYC). Usually empty; treat as advisory unless a partner returns entries.
 </Note>
 
 ## On-ramp flow (buy)
@@ -450,120 +484,109 @@ To validate the user's amount, read `route.paymentMethods[].limits` for the chos
 `category = CRYPTO_ONRAMP` throughout. Currency flow is fiat → crypto, session type is `BUY`.
 
 <Steps>
+  <Step title="Resolve country and defaults">
+    Auto-detect the user's country from their device/browser (geolocation or IP) where possible. For a manual override list and availability check, call:
 
-<Step title="Resolve country and defaults">
+    ```text
+    GET /network-partner/supported/countries?category=CRYPTO_ONRAMP
+    ```
 
-Auto-detect the user's country from their device/browser (geolocation or IP) where possible. For a manual override list and availability check, call:
+    Then fetch defaults to preselect the pay-with currency and rail (returns a bare array — handle an empty result by falling back to the first supported currency/method):
 
-```
-GET /network-partner/supported/countries?category=CRYPTO_ONRAMP
-```
+    ```text
+    GET /service-providers/properties/defaults/by-country?countries={country}&categories=CRYPTO_ONRAMP
+    ```
+  </Step>
+  <Step title="Load fiat and crypto options">
+    Populate the pay-with currency menu and the buy-asset selector:
 
-Then fetch defaults to preselect the pay-with currency and rail (handle a `null` response):
+    ```text
+    GET /network-partner/supported/currencies?category=CRYPTO_ONRAMP&country={country}&type=FIAT
+    GET /network-partner/supported/currencies?category=CRYPTO_ONRAMP&country={country}&type=CRYPTO
+    ```
 
-```
-GET /network-partner/defaults/{country}/CRYPTO_ONRAMP
-```
+    Use `decimalPlaces` to format the amount input, `currencyCode`/`name` for the label, `symbol` (image URL) for the logo, and `chainCode`/`contract` to disambiguate multi-chain tokens.
 
-</Step>
+    <Frame caption="On-ramp amount entry: the crypto buy-asset selector, destination wallet, pay-with currency, and quick-amount chips — the inputs assembled from the discovery calls above.">
+      <img
+        src="/images/white-label-api/onramp-amount.png"
+        alt="On-ramp buy amount-entry screen"
+        width="300"
+      />
+    </Frame>
+  </Step>
+  <Step title="Get routes for the chosen pair (methods + limits)">
+    With a fiat → crypto pair selected, fetch the routes that serve it. This returns the selectable rails and their min/max limits. Pass `subdivision` for the US state when applicable.
 
-<Step title="Load fiat and crypto options">
+    ```text
+    GET /network-partner/supported/routes/CRYPTO_ONRAMP/{country}/{fiat}/{crypto}
+    ```
 
-Populate the pay-with currency menu and the buy-asset selector:
+    Consume `route.paymentMethods[].name` (the rails), `...limits.{min,max,currencyCode}` (validate the amount), `partner`, and `headlessSupported`. Alternatively (or in addition), list rails explicitly:
 
-```
-GET /network-partner/supported/currencies?category=CRYPTO_ONRAMP&country={country}&type=FIAT
-GET /network-partner/supported/currencies?category=CRYPTO_ONRAMP&country={country}&type=CRYPTO
-```
+    ```text
+    GET /network-partner/supported/payment-methods?category=CRYPTO_ONRAMP&country={country}&currencyCode={fiat}
+    ```
 
-Use `symbol` and `decimalPlaces` to format the amount input, and `name`/`chainCode`/`contract` to render a searchable crypto selector.
+    Both yield the canonical `method`/`name` id you send as `paymentMethodType`.
+  </Step>
+  <Step title="Fetch a real-time quote">
+    Tie each user to a Meld `customerId` or `externalCustomerId` (they map 1:1) so Ramp Intelligence can rank quotes for that user. On this endpoint `sourceAmount` is a **number**.
 
-<Frame caption="On-ramp amount entry: the crypto buy-asset selector, destination wallet, pay-with currency, and quick-amount chips — the inputs assembled from the discovery calls above.">
-  <img src="/images/white-label-api/onramp-amount.png" alt="On-ramp buy amount-entry screen" width="300" />
-</Frame>
+    ```bash
+    curl -X POST 'https://api-sb.meld.io/payments/crypto/quote' \
+      -H 'Authorization: BASIC {apiKey}' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'Meld-Version: 2026-02-03' \
+      -d '{
+        "countryCode": "US",
+        "sourceCurrencyCode": "USD",
+        "destinationCurrencyCode": "USDC",
+        "sourceAmount": 200,
+        "paymentMethodType": "CREDIT_DEBIT_CARD",
+        "externalCustomerId": "user_123",
+        "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6"
+      }'
+    ```
 
-</Step>
+    For on-ramp, `sourceCurrencyCode` is fiat and `destinationCurrencyCode` is crypto. Rank the returned `quotes[]` by `rampIntelligence.rampScore` (see [Quote ranking](#quote-ranking-ramp-intelligence)), then let the user pick. Capture the chosen quote's `serviceProvider`.
 
-<Step title="Get routes for the chosen pair (methods + limits)">
+    <Note>
+      Pass an optional `serviceProviders: ["TRANSAK", "BANXA"]` array on the request body to restrict which providers can quote (allow-list). Omit it to receive quotes from every provider linked to your API key.
+    </Note>
+  </Step>
+  <Step title="Create the widget session">
+    Use the nested `{ sessionType, sessionData }` body. On this endpoint `sessionData.sourceAmount` is a **string** (it was a number on the quote endpoint).
 
-With a fiat → crypto pair selected, fetch the routes that serve it. This returns the selectable rails and their min/max limits. Pass `subdivision` for the US state when applicable.
+    ```bash
+    curl -X POST 'https://api-sb.meld.io/crypto/session/widget' \
+      -H 'Authorization: BASIC {apiKey}' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'Meld-Version: 2026-02-03' \
+      -d '{
+        "sessionType": "BUY",
+        "sessionData": {
+          "countryCode": "US",
+          "sourceCurrencyCode": "USD",
+          "destinationCurrencyCode": "USDC",
+          "sourceAmount": "200",
+          "paymentMethodType": "CREDIT_DEBIT_CARD",
+          "serviceProvider": "TRANSAK",
+          "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
+          "redirectUrl": "https://your-domain.example/transaction-complete"
+        },
+        "externalCustomerId": "user_123",
+        "externalSessionId": "session_456"
+      }'
+    ```
 
-```
-GET /network-partner/supported/routes/CRYPTO_ONRAMP/{country}/{fiat}/{crypto}
-```
-
-Consume `route.paymentMethods[].name` (the rails), `...limits.{min,max,currencyCode}` (validate the amount), `partner`, and `headlessSupported`. Alternatively (or in addition), list rails explicitly:
-
-```
-GET /network-partner/supported/payment-methods?category=CRYPTO_ONRAMP&country={country}&currencyCode={fiat}
-```
-
-Both yield the canonical `method`/`name` id you send as `paymentMethodType`.
-
-</Step>
-
-<Step title="Fetch a real-time quote">
-
-Tie each user to a Meld `customerId` or `externalCustomerId` (they map 1:1) so Ramp Intelligence can rank quotes for that user. On this endpoint `sourceAmount` is a **number**.
-
-```bash
-curl -X POST 'https://api-sb.meld.io/payments/crypto/quote' \
-  -H 'Authorization: BASIC {apiKey}' \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json' \
-  -H 'Meld-Version: 2026-02-03' \
-  -d '{
-    "countryCode": "US",
-    "sourceCurrencyCode": "USD",
-    "destinationCurrencyCode": "USDC",
-    "sourceAmount": 200,
-    "paymentMethodType": "CREDIT_DEBIT_CARD",
-    "externalCustomerId": "user_123",
-    "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6"
-  }'
-```
-
-For on-ramp, `sourceCurrencyCode` is fiat and `destinationCurrencyCode` is crypto. Rank the returned `quotes[]` by `rampIntelligence.rampScore` (see [Quote ranking](#quote-ranking-ramp-intelligence)), then let the user pick. Capture the chosen quote's `serviceProvider`.
-
-</Step>
-
-<Step title="Create the widget session">
-
-Use the nested `{ sessionType, sessionData }` body. On this endpoint `sessionData.sourceAmount` is a **string** (it was a number on the quote endpoint).
-
-```bash
-curl -X POST 'https://api-sb.meld.io/crypto/session/widget' \
-  -H 'Authorization: BASIC {apiKey}' \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json' \
-  -H 'Meld-Version: 2026-02-03' \
-  -d '{
-    "sessionType": "BUY",
-    "sessionData": {
-      "countryCode": "US",
-      "sourceCurrencyCode": "USD",
-      "destinationCurrencyCode": "USDC",
-      "sourceAmount": "200",
-      "paymentMethodType": "CREDIT_DEBIT_CARD",
-      "serviceProvider": "TRANSAK",
-      "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
-      "redirectUrl": "https://your-domain.example/transaction-complete"
-    },
-    "externalCustomerId": "user_123",
-    "externalSessionId": "session_456"
-  }'
-```
-
-The response returns `serviceProviderWidgetUrl` (preferred — the provider's hosted checkout), `widgetUrl` (Meld-hosted fallback), `token`, `id`, and `externalSessionId`.
-
-</Step>
-
-<Step title="Launch the provider UI and track the result">
-
-Open `serviceProviderWidgetUrl` (popup or new tab on desktop; redirect on mobile). The provider runs its own KYC and collects payment. Completion is signaled by your `redirectUrl` and/or `postMessage`, but authoritative status comes from webhooks. See [Launch provider UI](#launch-the-provider-ui) and [Track the transaction](#track-the-transaction).
-
-</Step>
-
+    The response returns `serviceProviderWidgetUrl` (preferred — the provider's hosted checkout), `widgetUrl` (Meld-hosted fallback), `token`, `id`, and `externalSessionId`.
+  </Step>
+  <Step title="Launch the provider UI and track the result">
+    Open `serviceProviderWidgetUrl` (popup or new tab on desktop; redirect on mobile). The provider runs its own KYC and collects payment. Completion is signaled by your `redirectUrl` and/or `postMessage`, but authoritative status comes from webhooks. See [Launch provider UI](#launch-the-provider-ui) and [Track the transaction](#track-the-transaction).
+  </Step>
 </Steps>
 
 ## Off-ramp flow (sell)
@@ -571,124 +594,108 @@ Open `serviceProviderWidgetUrl` (popup or new tab on desktop; redirect on mobile
 `category = CRYPTO_OFFRAMP` throughout. Currency flow is crypto → fiat, session type is `SELL`. The structural differences from buy are flagged inline.
 
 <Steps>
+  <Step title="Resolve country and defaults">
+    The sell-supported country set can differ from buy. Fetch it and the payout defaults:
 
-<Step title="Resolve country and defaults">
+    ```text
+    GET /network-partner/supported/countries?category=CRYPTO_OFFRAMP
+    GET /service-providers/properties/defaults/by-country?countries={country}&categories=CRYPTO_OFFRAMP
+    ```
 
-The sell-supported country set can differ from buy. Fetch it and the payout defaults:
+    Defaults preselect the payout fiat (`defaultCurrencyCode`) and payout rail (`defaultPaymentMethods[]`).
+  </Step>
+  <Step title="Load sellable crypto and payout fiat options">
+    ```text
+    GET /network-partner/supported/currencies?category=CRYPTO_OFFRAMP&country={country}&type=CRYPTO
+    GET /network-partner/supported/currencies?category=CRYPTO_OFFRAMP&country={country}&type=FIAT
+    ```
 
-```
-GET /network-partner/supported/countries?category=CRYPTO_OFFRAMP
-GET /network-partner/defaults/{country}/CRYPTO_OFFRAMP
-```
+    The `type=CRYPTO` list is what the user can sell; the `type=FIAT` list is what they can receive. Use `decimalPlaces` to format the crypto-units input and show a ≈ fiat preview.
 
-Defaults preselect the payout fiat (`currencyCode`) and payout rail (`paymentMethods[]`).
+    <Frame caption="Off-ramp amount entry: the crypto-units input shows a live ≈ fiat payout, the route's min–max limits, the selected payout rail, and the best provider quote — populated from supported/routes and /payments/crypto/quote.">
+      <img
+        src="/images/white-label-api/offramp-amount.png"
+        alt="Off-ramp sell amount-entry screen with a live quote"
+        width="300"
+      />
+    </Frame>
+  </Step>
+  <Step title="Get routes — CRYPTO → FIAT ordering">
+    <Warning>
+      **Off-ramp ordering trap:** put `source = crypto` and `destination = fiat`. Putting fiat first returns **HTTP 200 with an empty `[]`** and silently breaks the whole sell screen.
+    </Warning>
 
-</Step>
+    ```text
+    GET /network-partner/supported/routes/CRYPTO_OFFRAMP/{country}/{crypto}/{fiat}
+    ```
 
-<Step title="Load sellable crypto and payout fiat options">
+    Consume `route.paymentMethods[].name` (payout rails), `...limits` (validate the amount), and `partner`.
+  </Step>
+  <Step title="Select a payout method">
+    ```text
+    GET /network-partner/supported/payment-methods?category=CRYPTO_OFFRAMP&country={country}&currencyCode={fiat}
+    ```
 
-```
-GET /network-partner/supported/currencies?category=CRYPTO_OFFRAMP&country={country}&type=CRYPTO
-GET /network-partner/supported/currencies?category=CRYPTO_OFFRAMP&country={country}&type=FIAT
-```
+    `currencyCode` here is the **payout** fiat. Choose a payout rail and send its `method` (e.g. `ACH`, `SEPA`, `LOCAL_BANK_TRANSFER`, `PAYOUT_TO_CARD`) as `paymentMethodType` — never `name`. Prefer a `headlessSupported` rail when offered.
+  </Step>
+  <Step title="Fetch a quote — reversed currency ordering">
+    The source/destination ordering is what makes this a sell: `sourceCurrencyCode` is crypto, `destinationCurrencyCode` is fiat. `sourceAmount` is a **number** in crypto units.
 
-The `type=CRYPTO` list is what the user can sell; the `type=FIAT` list is what they can receive. Use `decimalPlaces` to format the crypto-units input and show a ≈ fiat preview.
+    ```bash
+    curl -X POST 'https://api-sb.meld.io/payments/crypto/quote' \
+      -H 'Authorization: BASIC {apiKey}' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'Meld-Version: 2026-02-03' \
+      -d '{
+        "countryCode": "US",
+        "sourceCurrencyCode": "USDC",
+        "destinationCurrencyCode": "USD",
+        "sourceAmount": 250,
+        "paymentMethodType": "ACH",
+        "externalCustomerId": "user_123"
+      }'
+    ```
 
-<Frame caption="Off-ramp amount entry: the crypto-units input shows a live ≈ fiat payout, the route's min–max limits, the selected payout rail, and the best provider quote — populated from supported/routes and /payments/crypto/quote.">
-  <img src="/images/white-label-api/offramp-amount.png" alt="Off-ramp sell amount-entry screen with a live quote" width="300" />
-</Frame>
+    `destinationAmount` on each quote is the fiat the user receives. Capture the chosen quote's `serviceProvider`.
+  </Step>
+  <Step title="Create the session, launch, and surface the deposit address">
+    Create the session with `sessionType: "SELL"`. Here `sessionData.walletAddress` is the user's **own** wallet (the one they send crypto from / are refunded to) — not a deposit address. `sourceAmount` is a **string**.
 
-</Step>
+    ```bash
+    curl -X POST 'https://api-sb.meld.io/crypto/session/widget' \
+      -H 'Authorization: BASIC {apiKey}' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/json' \
+      -H 'Meld-Version: 2026-02-03' \
+      -d '{
+        "sessionType": "SELL",
+        "sessionData": {
+          "countryCode": "US",
+          "sourceCurrencyCode": "USDC",
+          "destinationCurrencyCode": "USD",
+          "sourceAmount": "250",
+          "paymentMethodType": "ACH",
+          "serviceProvider": "TRANSAK",
+          "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
+          "redirectUrl": "https://your-domain.example/transaction-complete"
+        },
+        "externalCustomerId": "user_123",
+        "externalSessionId": "session_789"
+      }'
+    ```
 
-<Step title="Get routes — CRYPTO → FIAT ordering">
+    Open `serviceProviderWidgetUrl`; the provider collects payout-bank details and runs KYC. After the widget completes, fetch the transaction (or look it up by your `externalSessionId`) and read the **deposit address** from `cryptoDetails.offrampDestinationWalletAddress`:
 
-<Warning>
-**Off-ramp ordering trap:** put `source = crypto` and `destination = fiat`. Putting fiat first returns **HTTP 200 with an empty `[]`** and silently breaks the whole sell screen.
-</Warning>
+    ```js
+    // Response is wrapped: { transaction: { cryptoDetails: {...} } }
+    const depositAddress = transaction.cryptoDetails.offrampDestinationWalletAddress;
+    ```
 
-```
-GET /network-partner/supported/routes/CRYPTO_OFFRAMP/{country}/{crypto}/{fiat}
-```
-
-Consume `route.paymentMethods[].name` (payout rails), `...limits` (validate the amount), and `partner`.
-
-</Step>
-
-<Step title="Select a payout method">
-
-```
-GET /network-partner/supported/payment-methods?category=CRYPTO_OFFRAMP&country={country}&currencyCode={fiat}
-```
-
-`currencyCode` here is the **payout** fiat. Choose a payout rail and send its `method` (e.g. `ACH`, `SEPA`, `LOCAL_BANK_TRANSFER`, `PAYOUT_TO_CARD`) as `paymentMethodType` — never `name`. Prefer a `headlessSupported` rail when offered.
-
-</Step>
-
-<Step title="Fetch a quote — reversed currency ordering">
-
-The source/destination ordering is what makes this a sell: `sourceCurrencyCode` is crypto, `destinationCurrencyCode` is fiat. `sourceAmount` is a **number** in crypto units.
-
-```bash
-curl -X POST 'https://api-sb.meld.io/payments/crypto/quote' \
-  -H 'Authorization: BASIC {apiKey}' \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json' \
-  -H 'Meld-Version: 2026-02-03' \
-  -d '{
-    "countryCode": "US",
-    "sourceCurrencyCode": "USDC",
-    "destinationCurrencyCode": "USD",
-    "sourceAmount": 250,
-    "paymentMethodType": "ACH",
-    "externalCustomerId": "user_123"
-  }'
-```
-
-`destinationAmount` on each quote is the fiat the user receives. Capture the chosen quote's `serviceProvider`.
-
-</Step>
-
-<Step title="Create the session, launch, and surface the deposit address">
-
-Create the session with `sessionType: "SELL"`. Here `sessionData.walletAddress` is the user's **own** wallet (the one they send crypto from / are refunded to) — not a deposit address. `sourceAmount` is a **string**.
-
-```bash
-curl -X POST 'https://api-sb.meld.io/crypto/session/widget' \
-  -H 'Authorization: BASIC {apiKey}' \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json' \
-  -H 'Meld-Version: 2026-02-03' \
-  -d '{
-    "sessionType": "SELL",
-    "sessionData": {
-      "countryCode": "US",
-      "sourceCurrencyCode": "USDC",
-      "destinationCurrencyCode": "USD",
-      "sourceAmount": "250",
-      "paymentMethodType": "ACH",
-      "serviceProvider": "TRANSAK",
-      "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
-      "redirectUrl": "https://your-domain.example/transaction-complete"
-    },
-    "externalCustomerId": "user_123",
-    "externalSessionId": "session_789"
-  }'
-```
-
-Open `serviceProviderWidgetUrl`; the provider collects payout-bank details and runs KYC. After the widget completes, fetch the transaction (or look it up by your `externalSessionId`) and read the **deposit address** with this exact precedence:
-
-```js
-const depositAddress =
-  transaction.cryptoDetails.destinationWalletAddress
-  ?? transaction.cryptoDetails.offrampDestinationWalletAddress;
-```
-
-<Warning>
-**Never use `cryptoDetails.walletAddress`** — that is the customer's own wallet, not the deposit address. Display `destinationWalletAddress` / `offrampDestinationWalletAddress` (as a QR code plus a copyable string) and instruct the user to send **exactly** the quoted crypto amount to it. A wrong address or amount means lost funds — show a hard warning.
-</Warning>
-
-</Step>
-
+    <Warning>
+      **Never use `cryptoDetails.walletAddress`** — for off-ramp that is the customer's own origin wallet, not the deposit address. Display `offrampDestinationWalletAddress` (as a QR code plus a copyable string) and instruct the user to send **exactly** the quoted crypto amount to it. A wrong address or amount means lost funds — show a hard warning.
+    </Warning>
+  </Step>
 </Steps>
 
 ## Quote ranking (Ramp Intelligence)
@@ -709,13 +716,12 @@ const depositAddress =
   "partnerFee": 2,
   "paymentMethodType": "CREDIT_DEBIT_CARD",
   "serviceProvider": "TRANSAK",
-  "lowKyc": false,
   "rampIntelligence": { "rampScore": 20.00, "lowKyc": false }
 }
 ```
 
-* **`rampScore`** — Meld's recommendation score (higher = better conversion likelihood).
-* **`lowKyc`** — whether the provider requires minimal identity verification.
+- **`rampScore`** — Meld's recommendation score (higher = better conversion likelihood).
+- **`lowKyc`** — whether the provider requires minimal identity verification.
 
 ```javascript
 // Sort by Meld's recommended ranking for best results
@@ -730,9 +736,9 @@ function rankQuotesByMeldScore(quotes) {
 ```
 
 <Note>
-Display the highest `rampScore` quote first to maximize transaction success rates. For off-ramp, the same ranking applies — just compare `destinationAmount` (fiat received) as the tie-break.
+  Display the highest `rampScore` quote first to maximize transaction success rates. For off-ramp, the same ranking applies — just compare `destinationAmount` (fiat received) as the tie-break.
 
-📊 **Learn More:** See [Ramp Intelligence](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence) for advanced ranking strategies.
+  📊 **Learn More:** See [Ramp Intelligence](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence) for advanced ranking strategies.
 </Note>
 
 ## Launch the provider UI
@@ -740,47 +746,40 @@ Display the highest `rampScore` quote first to maximize transaction success rate
 When the session is created, open the provider's payment UI in a webview, new tab, or redirect.
 
 <Note>
-`widgetUrl` returns a Meld URL that iframes the provider's URL (or full-redirects for providers that block iframing). `serviceProviderWidgetUrl` returns the provider's URL directly. You can launch either; we recommend `serviceProviderWidgetUrl`. The only difference between buy and sell is the `sessionType` you sent when creating the session.
+  `widgetUrl` returns a Meld URL that iframes the provider's URL (or full-redirects for providers that block iframing). `serviceProviderWidgetUrl` returns the provider's URL directly. You can launch either; we recommend `serviceProviderWidgetUrl`. The only difference between buy and sell is the `sessionType` you sent when creating the session.
 </Note>
 
 <Tabs>
-
-<Tab title="Desktop">
-
-```javascript
-function launchProviderUI(sessionResponse) {
-  window.open(
-    sessionResponse.serviceProviderWidgetUrl,
-    'meld-widget',
-    'width=450,height=700,scrollbars=yes,resizable=yes'
-  );
-  // Meld redirects the user back when the flow completes;
-  // close the popup based on your application's flow.
-}
-```
-
-</Tab>
-
-<Tab title="Mobile">
-
-```javascript
-function launchMobileProviderUI(sessionResponse) {
-  // Open the provider URL in an in-app browser / webview,
-  // or full-redirect the current page.
-  window.location.href = sessionResponse.serviceProviderWidgetUrl;
-}
-```
-
-</Tab>
-
+  <Tab title="Desktop">
+    ```javascript
+    function launchProviderUI(sessionResponse) {
+      window.open(
+        sessionResponse.serviceProviderWidgetUrl,
+        'meld-widget',
+        'width=450,height=700,scrollbars=yes,resizable=yes'
+      );
+      // Meld redirects the user back when the flow completes;
+      // close the popup based on your application's flow.
+    }
+    ```
+  </Tab>
+  <Tab title="Mobile">
+    ```javascript
+    function launchMobileProviderUI(sessionResponse) {
+      // Open the provider URL in an in-app browser / webview,
+      // or full-redirect the current page.
+      window.location.href = sessionResponse.serviceProviderWidgetUrl;
+    }
+    ```
+  </Tab>
 </Tabs>
 
 <Warning>
-**Redirect Domain Whitelisting:** Some providers require redirect-domain whitelisting. Contact Meld support if provider UIs don't redirect back properly to your `redirectUrl`.
+  **Redirect Domain Whitelisting:** Some providers require redirect-domain whitelisting. Contact Meld support if provider UIs don't redirect back properly to your `redirectUrl`.
 </Warning>
 
 <Note>
-**Transaction Completion:** Meld does not send completion events or use redirect parameters. When the flow is complete, Meld simply redirects the user back to your `redirectUrl`. Track transaction status through webhooks, not redirect handling.
+  **Transaction Completion:** Meld does not send completion events or use redirect parameters. When the flow is complete, Meld simply redirects the user back to your `redirectUrl`. Track transaction status through webhooks, not redirect handling.
 </Note>
 
 ## Track the transaction
@@ -788,7 +787,7 @@ function launchMobileProviderUI(sessionResponse) {
 Monitor progress and update your UI as the user completes the flow.
 
 <Note>
-**Webhook Setup Required:** Sign up for webhooks in the Meld Dashboard. You receive a webhook each time a transaction is created or updated. See [Webhook events](/docs/stablecoins/for-all-products/webhook-events) for payload examples.
+  **Webhook Setup Required:** Sign up for webhooks in the Meld Dashboard. You receive a webhook each time a transaction is created or updated. See [Webhook events](/docs/stablecoins/for-all-products/webhook-events) for payload examples.
 </Note>
 
 Use the webhook as a trigger to fetch the full transaction. Match the inbound event/redirect to your `externalSessionId`.
@@ -810,34 +809,36 @@ async function fetchTransaction(transactionId) {
     `https://api-sb.meld.io/payments/transactions/${transactionId}`,
     { headers: { 'Authorization': `BASIC ${apiKey}`, 'Meld-Version': '2026-02-03' } }
   );
-  return res.json();
+  const body = await res.json();
+  return body.transaction; // response is wrapped in { transaction: {...} }
 }
 ```
 
-The `Transaction` response includes the status and amounts plus a `cryptoDetails` block:
+The response is **wrapped** in `{ "transaction": { ... } }`. The inner object carries status, amounts, and a `cryptoDetails` block. **`cryptoDetails.walletAddress` is direction-dependent**: on **on-ramp** it's the user's destination wallet (where the crypto is delivered); on **off-ramp** it's the user's origin wallet (where they send from / receive refunds). For the off-ramp deposit address, read `cryptoDetails.offrampDestinationWalletAddress` — see [Off-ramp flow](#off-ramp-flow-sell) Step 6.
 
 ```json
 {
-  "id": "WePLapZetkn1hfeKFScf3T",
-  "transactionType": "CRYPTO_PURCHASE",
-  "status": "SETTLED",
-  "sourceAmount": 200,
-  "sourceCurrencyCode": "USD",
-  "destinationAmount": 199.83,
-  "destinationCurrencyCode": "USDC",
-  "paymentMethodType": "CREDIT_DEBIT_CARD",
-  "serviceProvider": "TRANSAK",
-  "externalSessionId": "session_456",
-  "cryptoDetails": {
-    "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
-    "destinationWalletAddress": null,
-    "offrampDestinationWalletAddress": null,
-    "blockchainTransactionId": "0xabc...def",
-    "chainId": "1",
-    "networkFeeInUsd": 0.17,
-    "transactionFeeInUsd": 2,
-    "partnerFeeInUsd": 2,
-    "totalFeeInUsd": 4.17
+  "transaction": {
+    "id": "WePLapZetkn1hfeKFScf3T",
+    "transactionType": "CRYPTO_PURCHASE",
+    "status": "SETTLED",
+    "sourceAmount": 200,
+    "sourceCurrencyCode": "USD",
+    "destinationAmount": 199.83,
+    "destinationCurrencyCode": "USDC",
+    "paymentMethodType": "CREDIT_DEBIT_CARD",
+    "serviceProvider": "TRANSAK",
+    "externalSessionId": "session_456",
+    "cryptoDetails": {
+      "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
+      "offrampDestinationWalletAddress": null,
+      "blockchainTransactionId": "0xabc...def",
+      "chainId": "1",
+      "networkFeeInUsd": 0.17,
+      "transactionFeeInUsd": 2,
+      "partnerFeeInUsd": 2,
+      "totalFeeInUsd": 4.17
+    }
   }
 }
 ```
@@ -855,9 +856,9 @@ function getStatusMessage(status) {
 ```
 
 <Note>
-For off-ramp, the same endpoint also carries the deposit address (`cryptoDetails.destinationWalletAddress ?? offrampDestinationWalletAddress`) used in the sell flow. See [Off-ramp flow](#off-ramp-flow-sell) Step 6.
+  For off-ramp, the same endpoint also carries the deposit address (`cryptoDetails.offrampDestinationWalletAddress`) used in the sell flow. See [Off-ramp flow](#off-ramp-flow-sell) Step 6.
 
-**Status Reference:** See [Transaction Statuses](/docs/stablecoins/for-all-products/transaction-statuses) for complete definitions.
+  **Status Reference:** See [Transaction Statuses](/docs/stablecoins/for-all-products/transaction-statuses) for complete definitions.
 </Note>
 
 ## API response caching guide
@@ -865,8 +866,8 @@ For off-ramp, the same endpoint also carries the deposit address (`cryptoDetails
 Cache static discovery data; never cache pricing, sessions, or transaction state.
 
 | Cache | Endpoints | TTL guidance |
-|---|---|---|
-| Long (static) | `supported/countries`, `defaults/{country}/{category}`, `supported/currencies` (FIAT and CRYPTO), `supported/payment-methods` | Up to 1 week — these rarely change. |
+| --- | --- | --- |
+| Long (static) | `supported/countries`, `service-providers/properties/defaults/by-country`, `supported/currencies` (FIAT and CRYPTO), `supported/payment-methods` | Up to 1 week — these rarely change. |
 | Short | `supported/routes` | Minutes to hours — routes carry **limits**, which change more often. Refetch before validating a user's amount. |
 | Never | `POST /payments/crypto/quote`, `POST /crypto/session/widget`, `GET /payments/transactions/{id}` | Always fresh. |
 
@@ -890,16 +891,16 @@ class MeldDiscoveryCache {
 
 ### Performance
 
-* **Cache static discovery** for up to 1 week; keep `supported/routes` on a short TTL because limits change.
-* **Debounce quote requests** while the user types an amount.
-* **Preload country/currency data** on app startup.
+- **Cache static discovery** for up to 1 week; keep `supported/routes` on a short TTL because limits change.
+- **Debounce quote requests** while the user types an amount.
+- **Preload country/currency data** on app startup.
 
 ### User experience
 
-* **Show loading states** during API calls.
-* **Display fees clearly** before the user commits.
-* **Validate amounts** against `route.paymentMethods[].limits` in the correct currency.
-* **Handle errors gracefully** with retry options.
+- **Show loading states** during API calls.
+- **Display fees clearly** before the user commits.
+- **Validate amounts** against `route.paymentMethods[].limits` in the correct currency.
+- **Handle errors gracefully** with retry options.
 
 ### Error handling
 
@@ -917,37 +918,37 @@ async function handleAPIError(error, endpoint) {
 ```
 
 <Warning>
-**Two discovery pitfalls to guard against:**
+  **Two discovery pitfalls to guard against:**
 
-* **`NO_VALID_QUOTES`** — usually means you sent a `paymentMethodType` that isn't valid for the country/currency, or sent a display `name` instead of the canonical `method` id. Re-derive the method from `supported/payment-methods` / route methods.
-* **Empty `200 []` from `supported/routes`** — almost always wrong `source`/`destination` ordering. On-ramp is fiat → crypto; off-ramp is crypto → fiat. An empty array is silent, not a 404 — assert it's non-empty before rendering rails or limits.
+  - **`NO_VALID_QUOTES`** — usually means you sent a `paymentMethodType` that isn't valid for the country/currency, or sent a display `name` instead of the canonical `method` id. Re-derive the method from `supported/payment-methods` / route methods.
+  - **Empty `200 []` from `supported/routes`** — almost always wrong `source`/`destination` ordering. On-ramp is fiat → crypto; off-ramp is crypto → fiat. An empty array is silent, not a 404 — assert it's non-empty before rendering rails or limits.
 </Warning>
 
 ### Security
 
-* **Never expose API keys** in frontend code — proxy Meld calls through your backend.
-* **Validate all user inputs** before API calls.
-* **Use HTTPS only** for API communications.
-* **Implement rate limiting** to prevent abuse.
+- **Never expose API keys** in frontend code — proxy Meld calls through your backend.
+- **Validate all user inputs** before API calls.
+- **Use HTTPS only** for API communications.
+- **Implement rate limiting** to prevent abuse.
 
 ## Next steps
 
 ### Testing your implementation
 
-* **[Sandbox testing credentials](/docs/stablecoins/sandbox-guide/test)** — test cards, wallets, and KYC triggers
+- [**Sandbox testing credentials**](/docs/stablecoins/sandbox-guide/test) — test cards, wallets, and KYC triggers
 
 ### Advanced features
 
-* **[Webhook events](/docs/stablecoins/for-all-products/webhook-events)** — real-time updates
-* **[Dashboard data](/docs/stablecoins/additional-information/dashboard-data)** — track performance
-* **[Ramp Intelligence](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence)** — improve success rates
+- [**Webhook events**](/docs/stablecoins/for-all-products/webhook-events) — real-time updates
+- [**Dashboard data**](/docs/stablecoins/additional-information/dashboard-data) — track performance
+- [**Ramp Intelligence**](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence) — improve success rates
 
 ### Production deployment
 
-* **[Service-provider setup](/docs/stablecoins/for-all-products/service-provider-setup)** — configure additional providers
+- [**Service-provider setup**](/docs/stablecoins/for-all-products/service-provider-setup) — configure additional providers
 
 ## Support & resources
 
-* **[FAQ](/docs/stablecoins/faq)** — common questions answered
+- [**FAQ**](/docs/stablecoins/faq) — common questions answered
 
 _This guide provides everything needed to build a production-ready buy and sell interface. Most teams complete their custom UI integration within 1-2 weeks using this approach._
