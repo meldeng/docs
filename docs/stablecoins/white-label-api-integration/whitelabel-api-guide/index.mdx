@@ -125,11 +125,7 @@ All discovery is parameterized by a `category`. Retail ramp uses exactly two:
 
 ### Upgrading from the Service Provider API?
 
-If you previously integrated against the legacy `/service-providers/*` discovery endpoints, they are replaced by the category-scoped `/network-partner/*` family used throughout this guide. The full endpoint-by-endpoint mapping — with before/after requests, response-shape changes, and a migration checklist — lives in a dedicated guide:
-
-<Card title="Migration Guide: Service Provider → Network Partner API" icon="arrow-right-arrow-left" href="/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner">
-  Map every legacy discovery call to its `/network-partner` replacement.
-</Card>
+If you previously integrated against the legacy `/service-providers/*` discovery endpoints, they are replaced by the category-scoped `/network-partner/*` family used throughout this guide.
 
 The three transaction endpoints are unchanged: `POST /payments/crypto/quote`, `POST /crypto/session/widget`, and `GET /payments/transactions/{transactionId}`.
 
@@ -194,26 +190,20 @@ curl 'https://api-sb.meld.io/network-partner/supported/countries?category=CRYPTO
 ### Country defaults
 
 ```text
-GET /service-providers/properties/defaults/by-country?countries={c}&categories={CATEGORY}
+GET /network-partner/defaults/{country}/{category}
 ```
 
-| Query param | Required | Meaning |
-| --- | --- | --- |
-| `countries` | yes | Comma-separated ISO 3166-1 alpha-2 codes (e.g. `US` or `US,DE`) |
-| `categories` | yes | Comma-separated categories (e.g. `CRYPTO_ONRAMP` or `CRYPTO_OFFRAMP`) |
-| `accountFilter` | no | `true` restricts to providers configured for your account |
-
-Returns a **bare array** of `{ countryCode, defaultCurrencyCode, defaultPaymentMethods[] }`. Fall back to the first supported currency/method when the array is empty for a country.
+Country (ISO 3166-1 alpha-2, e.g. `US`) and category (`CRYPTO_ONRAMP` or `CRYPTO_OFFRAMP`) are path params. Returns a single object with the preselected pay-with / payout currency and payment methods for that country.
 
 <CodeGroup>
 
 ```bash On-ramp
-curl 'https://api-sb.meld.io/service-providers/properties/defaults/by-country?countries=US&categories=CRYPTO_ONRAMP' \
+curl 'https://api-sb.meld.io/network-partner/defaults/US/CRYPTO_ONRAMP' \
   -H 'Authorization: BASIC {apiKey}'
 ```
 
 ```bash Off-ramp
-curl 'https://api-sb.meld.io/service-providers/properties/defaults/by-country?countries=DE&categories=CRYPTO_OFFRAMP' \
+curl 'https://api-sb.meld.io/network-partner/defaults/DE/CRYPTO_OFFRAMP' \
   -H 'Authorization: BASIC {apiKey}'
 ```
 
@@ -222,29 +212,27 @@ curl 'https://api-sb.meld.io/service-providers/properties/defaults/by-country?co
 <CodeGroup>
 
 ```json On-ramp response
-[
-  {
-    "countryCode": "US",
-    "defaultCurrencyCode": "USD",
-    "defaultPaymentMethods": ["CREDIT_DEBIT_CARD", "APPLE_PAY"]
-  }
-]
+{
+  "countryCode": "US",
+  "category": "CRYPTO_ONRAMP",
+  "currencyCode": "USD",
+  "paymentMethods": ["CREDIT_DEBIT_CARD", "APPLE_PAY", "ROBINHOOD_BUYING_POWER"]
+}
 ```
 
 ```json Off-ramp response
-[
-  {
-    "countryCode": "DE",
-    "defaultCurrencyCode": "EUR",
-    "defaultPaymentMethods": ["SEPA"]
-  }
-]
+{
+  "countryCode": "DE",
+  "category": "CRYPTO_OFFRAMP",
+  "currencyCode": "EUR",
+  "paymentMethods": ["SEPA"]
+}
 ```
 
 </CodeGroup>
 
 <Note>
-  This endpoint lives under `/service-providers/*` (not `/network-partner/*`) but is still the canonical source of per-country defaults for both on-ramp and off-ramp.
+  Fall back to the first item from `/network-partner/supported/currencies` and `/network-partner/supported/payment-methods` if the response omits a field for a given country/category.
 </Note>
 
 ### Supported currencies
@@ -491,10 +479,10 @@ curl 'https://api-sb.meld.io/network-partner/supported/routes/CRYPTO_OFFRAMP/US/
     GET /network-partner/supported/countries?category=CRYPTO_ONRAMP
     ```
 
-    Then fetch defaults to preselect the pay-with currency and rail (returns a bare array — handle an empty result by falling back to the first supported currency/method):
+    Then fetch defaults to preselect the pay-with currency and rail:
 
     ```text
-    GET /service-providers/properties/defaults/by-country?countries={country}&categories=CRYPTO_ONRAMP
+    GET /network-partner/defaults/{country}/CRYPTO_ONRAMP
     ```
   </Step>
   <Step title="Load fiat and crypto options">
@@ -531,7 +519,7 @@ curl 'https://api-sb.meld.io/network-partner/supported/routes/CRYPTO_OFFRAMP/US/
     Both yield the canonical `method`/`name` id you send as `paymentMethodType`.
   </Step>
   <Step title="Fetch a real-time quote">
-    Tie each user to a Meld `customerId` or `externalCustomerId` (they map 1:1) so Ramp Intelligence can rank quotes for that user. On this endpoint `sourceAmount` is a **number**.
+    Send `walletAddress` on the request — Ramp Intelligence keys off the destination wallet address (not `customerId` / `externalCustomerId`) to rank quotes for the user. On this endpoint `sourceAmount` is a **number**.
 
     ```bash
     curl -X POST 'https://api-sb.meld.io/payments/crypto/quote' \
@@ -599,10 +587,10 @@ curl 'https://api-sb.meld.io/network-partner/supported/routes/CRYPTO_OFFRAMP/US/
 
     ```text
     GET /network-partner/supported/countries?category=CRYPTO_OFFRAMP
-    GET /service-providers/properties/defaults/by-country?countries={country}&categories=CRYPTO_OFFRAMP
+    GET /network-partner/defaults/{country}/CRYPTO_OFFRAMP
     ```
 
-    Defaults preselect the payout fiat (`defaultCurrencyCode`) and payout rail (`defaultPaymentMethods[]`).
+    Defaults preselect the payout fiat (`currencyCode`) and payout rail (`paymentMethods[]`).
   </Step>
   <Step title="Load sellable crypto and payout fiat options">
     ```text
@@ -867,7 +855,7 @@ Cache static discovery data; never cache pricing, sessions, or transaction state
 
 | Cache | Endpoints | TTL guidance |
 | --- | --- | --- |
-| Long (static) | `supported/countries`, `service-providers/properties/defaults/by-country`, `supported/currencies` (FIAT and CRYPTO), `supported/payment-methods` | Up to 1 week — these rarely change. |
+| Long (static) | `supported/countries`, `defaults/{country}/{category}`, `supported/currencies` (FIAT and CRYPTO), `supported/payment-methods` | Up to 1 week — these rarely change. |
 | Short | `supported/routes` | Minutes to hours — routes carry **limits**, which change more often. Refetch before validating a user's amount. |
 | Never | `POST /payments/crypto/quote`, `POST /crypto/session/widget`, `GET /payments/transactions/{id}` | Always fresh. |
 
