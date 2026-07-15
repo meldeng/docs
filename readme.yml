@@ -412,7 +412,7 @@ payment-http:
     tags:
       - name: Retail Ramp
         description: ""
-      - name: Virtual Account
+      - name: Headless
         description: ""
       - name: Payment
         description: ""
@@ -449,26 +449,16 @@ payment-http:
               - get
             tags:
               - Retail Ramp
-          /payments/virtual-account/quote:
+          /crypto/order/headless/offramp:
             methods:
               - post
             tags:
-              - Virtual Account
-          /payments/virtual-account/onramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
-          /payments/virtual-account/offramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
+              - Headless
           /payments/virtual-account/deposit-instructions:
             methods:
               - post
             tags:
-              - Virtual Account
+              - Headless
         components_to_modify:
           CryptoQuote:
             - path: properties.paymentMethodType.enum
@@ -559,26 +549,11 @@ payment-http:
               - get
             tags:
               - Retail Ramp
-          /payments/virtual-account/quote:
-            methods:
-              - post
-            tags:
-              - Virtual Account
-          /payments/virtual-account/onramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
-          /payments/virtual-account/offramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
           /payments/virtual-account/deposit-instructions:
             methods:
               - post
             tags:
-              - Virtual Account
+              - Headless
       "2023-09-11":
         readme_oas:
           - None # did not publish this version
@@ -597,26 +572,16 @@ payment-http:
               - post
             tags:
               - Retail Ramp
-          /payments/virtual-account/quote:
+          /crypto/order/headless/offramp:
             methods:
               - post
             tags:
-              - Virtual Account
-          /payments/virtual-account/onramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
-          /payments/virtual-account/offramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
+              - Headless
           /payments/virtual-account/deposit-instructions:
             methods:
               - post
             tags:
-              - Virtual Account
+              - Headless
         paths_to_remove:
           /payments/crypto/limits:
             methods:
@@ -659,26 +624,16 @@ payment-http:
               - get
             tags:
               - Retail Ramp
-          /payments/virtual-account/quote:
+          /crypto/order/headless/offramp:
             methods:
               - post
             tags:
-              - Virtual Account
-          /payments/virtual-account/onramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
-          /payments/virtual-account/offramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
+              - Headless
           /payments/virtual-account/deposit-instructions:
             methods:
               - post
             tags:
-              - Virtual Account
+              - Headless
         components_to_modify:
           SessionDataInputV20231219:
             - path: properties.serviceProvider.enum
@@ -712,26 +667,16 @@ payment-http:
               - get
             tags:
               - Retail Ramp
-          /payments/virtual-account/quote:
+          /crypto/order/headless/offramp:
             methods:
               - post
             tags:
-              - Virtual Account
-          /payments/virtual-account/onramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
-          /payments/virtual-account/offramp-order:
-            methods:
-              - post
-            tags:
-              - Virtual Account
+              - Headless
           /payments/virtual-account/deposit-instructions:
             methods:
               - post
             tags:
-              - Virtual Account
+              - Headless
         components_to_modify:
           SessionDataInputV20231219:
             - path: properties.serviceProvider.enum

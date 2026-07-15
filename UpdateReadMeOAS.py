@@ -391,21 +391,33 @@ def purge_prev_oas_file(prev_oas_file, configs):
 
 
 def merge_meld_oas_files(prev_oas_file, current_oas_file):
-    for path in current_oas_file['paths']:
-        for method in current_oas_file['paths'][path]:
-            # Copy the method data but preserve the tags from the previous version
-            method_data = current_oas_file['paths'][path][method].copy()
-            if path in prev_oas_file['paths'] and method in prev_oas_file['paths'][path]:
-                # Preserve the tags from the previous version (which should have the correct tags)
-                method_data['tags'] = prev_oas_file['paths'][path][method]['tags']
-            prev_oas_file['paths'][path][method] = method_data
+    prev_paths = prev_oas_file.setdefault('paths', {})
+    for path, methods in (current_oas_file.get('paths') or {}).items():
+        if not isinstance(methods, dict):
+            continue
+        prev_path = prev_paths.setdefault(path, {})
+        for method, method_obj in methods.items():
+            if not isinstance(method_obj, dict):
+                continue
+            # Copy method data; keep tags from the previous version when present
+            # (those tags come from paths_to_keep / prior prep).
+            method_data = method_obj.copy()
+            prev_method = prev_path.get(method) or {}
+            if 'tags' in prev_method:
+                method_data['tags'] = prev_method['tags']
+            prev_path[method] = method_data
 
-    # Merge schemas - current file takes precedence, but preserve defaults/examples from current
-    for schema in current_oas_file['components']['schemas'].keys():
-        # Current file's schema (which has defaults applied) takes precedence
-        prev_oas_file['components']['schemas'][schema] = current_oas_file['components']['schemas'][schema]
+    # Merge schemas - current file takes precedence, but preserve defaults/examples from current.
+    # Some versioned OAS payloads return empty/partial components (e.g. no schemas key).
+    current_schemas = (current_oas_file.get('components') or {}).get('schemas') or {}
+    if current_schemas:
+        prev_oas_file.setdefault('components', {}).setdefault('schemas', {})
+        for schema in current_schemas.keys():
+            # Current file's schema (which has defaults applied) takes precedence
+            prev_oas_file['components']['schemas'][schema] = current_schemas[schema]
 
-    prev_oas_file['x-readme'] = current_oas_file['x-readme']
+    if 'x-readme' in current_oas_file:
+        prev_oas_file['x-readme'] = current_oas_file['x-readme']
 
     return prev_oas_file
 
