@@ -1686,28 +1686,21 @@
         "properties": {
           "countryCode": {
             "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "example": "US"
+            "description": "ISO 3166-1 alpha-2 country code"
           },
           "category": {
             "$ref": "#/components/schemas/Category"
           },
           "currencyCode": {
             "type": "string",
-            "description": "Default currency code for the country and category",
-            "example": "USD"
+            "description": "Default currency code for the country and category"
           },
           "paymentMethods": {
             "type": "array",
             "description": "Default canonical payment method codes, ordered by preference",
             "items": {
               "type": "string"
-            },
-            "example": [
-              "CREDIT_DEBIT_CARD",
-              "APPLE_PAY",
-              "ROBINHOOD_BUYING_POWER"
-            ]
+            }
           }
         }
       }
