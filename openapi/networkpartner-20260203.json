@@ -870,6 +870,76 @@
           "href": "/api-reference/network-partners/supported/find-supported-routes"
         }
       }
+    },
+    "/network-partner/defaults/{countryCode}/{category}": {
+      "get": {
+        "summary": "Get country defaults",
+        "description": "Returns the default currency and payment methods for a given country and category, used to preselect sensible values in a white-label flow. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: defaults come from the global dataset.\n- Basic Auth only: defaults are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: defaults are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: defaults are restricted to the intersection of both provider sets.\n\nReturns `null` when no defaults are available for the requested country and category within the resolved provider scope.",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "description": "Country code",
+            "example": "US",
+            "name": "countryCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Provider category",
+            "example": "CRYPTO_ONRAMP",
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Country defaults, or `null` when none are available for the requested country and category",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "countryDefaults": {
+                    "summary": "Default currency and payment methods",
+                    "value": {
+                      "countryCode": "US",
+                      "category": "CRYPTO_ONRAMP",
+                      "currencyCode": "USD",
+                      "paymentMethods": [
+                        "CREDIT_DEBIT_CARD",
+                        "APPLE_PAY",
+                        "ROBINHOOD_BUYING_POWER"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CountryDefaults"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-country-defaults",
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/get-country-defaults"
+        }
+      }
     }
   },
   "components": {
@@ -1607,6 +1677,37 @@
               "$ref": "#/components/schemas/ProviderKycLimit"
             },
             "description": "Provider KYC limits for this route. Empty when limits are not available."
+          }
+        }
+      },
+      "CountryDefaults": {
+        "type": "object",
+        "description": "Default currency and payment methods for a country and category",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "US"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "currencyCode": {
+            "type": "string",
+            "description": "Default currency code for the country and category",
+            "example": "USD"
+          },
+          "paymentMethods": {
+            "type": "array",
+            "description": "Default canonical payment method codes, ordered by preference",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "CREDIT_DEBIT_CARD",
+              "APPLE_PAY",
+              "ROBINHOOD_BUYING_POWER"
+            ]
           }
         }
       }
