@@ -31,14 +31,6 @@ PATH_PRIORITY_BY_SERVICE = {
     ],
 }
 
-PLACEHOLDER_EXAMPLE_VALUES = {
-    "<string>",
-    "<unknown>",
-    "string",
-    "unknown",
-}
-
-
 def slugify(text: str) -> str:
     text = text.lower().replace("&", " and ")
     text = re.sub(r"[^a-z0-9]+", "-", text)
@@ -172,23 +164,22 @@ def normalize_descriptions(value) -> int:
     return updated
 
 
-def is_placeholder_example(value) -> bool:
-    if not isinstance(value, str):
-        return False
-    normalized = value.strip()
-    if normalized in PLACEHOLDER_EXAMPLE_VALUES:
-        return True
-    if normalized.startswith("<") and normalized.endswith(">"):
-        return True
-    return False
+def is_empty_placeholder(value) -> bool:
+    """Only null/empty-string defaults and empty-string examples are generator noise.
+
+    Keep every other non-empty annotation example exactly as the backend emitted it
+    (including imperfect values like "USD or BTC" or "CHECKING, SAVINGS").
+    """
+    return value is None or value == ""
 
 
-def should_drop_example(value) -> bool:
-    if is_placeholder_example(value):
-        return True
-    if isinstance(value, str) and " or " in value.lower():
-        return True
-    return False
+def has_nonempty_example_value(value) -> bool:
+    """True when a requestBody example contains at least one non-empty leaf value."""
+    if isinstance(value, dict):
+        return any(has_nonempty_example_value(child) for child in value.values())
+    if isinstance(value, list):
+        return any(has_nonempty_example_value(child) for child in value)
+    return value is not None and value != ""
 
 
 def resolve_ref(ref: str, schemas: dict) -> dict | None:
@@ -199,70 +190,30 @@ def resolve_ref(ref: str, schemas: dict) -> dict | None:
     return target if isinstance(target, dict) else None
 
 
-def sanitize_object_schema(schema: dict) -> int:
-    properties = schema.get("properties")
-    if not isinstance(properties, dict):
-        return 0
-
+def strip_empty_placeholders(node) -> int:
+    """Remove only default:null, default:"", and example:"" from schema trees."""
     updated = 0
-    required = set(schema.get("required") or [])
-
-    # SpringDoc occasionally emits a spurious `example` property on request objects.
-    if "example" in properties and "example" not in required:
-        del properties["example"]
-        updated += 1
-
-    for name, prop in properties.items():
-        if not isinstance(prop, dict):
-            continue
-
-        if name not in required:
-            if "example" in prop:
-                del prop["example"]
-                updated += 1
-            if "default" in prop:
-                del prop["default"]
-                updated += 1
-            continue
-
-        default = prop.get("default")
-        example = prop.get("example")
-        if default is not None:
-            if example != default:
-                prop["example"] = default
-                updated += 1
-        elif "example" in prop and should_drop_example(example):
-            del prop["example"]
+    if isinstance(node, dict):
+        if "default" in node and is_empty_placeholder(node["default"]):
+            del node["default"]
+            updated += 1
+        if "example" in node and node["example"] == "":
+            del node["example"]
             updated += 1
 
-    return updated
+        properties = node.get("properties")
+        if isinstance(properties, dict):
+            required = set(node.get("required") or [])
+            # SpringDoc occasionally emits a spurious `example` property on request objects.
+            if "example" in properties and "example" not in required:
+                del properties["example"]
+                updated += 1
 
-
-def sanitize_schema_node(schema: dict, schemas: dict, visited: set[str] | None = None) -> int:
-    if not isinstance(schema, dict):
-        return 0
-
-    visited = visited or set()
-    updated = 0
-
-    ref = schema.get("$ref")
-    if isinstance(ref, str):
-        ref_name = ref.removeprefix("#/components/schemas/")
-        if ref_name in visited:
-            return 0
-        target = resolve_ref(ref, schemas)
-        if target is not None:
-            visited.add(ref_name)
-            updated += sanitize_schema_node(target, schemas, visited)
-        return updated
-
-    if schema.get("type") == "object" or isinstance(schema.get("properties"), dict):
-        updated += sanitize_object_schema(schema)
-
-    items = schema.get("items")
-    if isinstance(items, dict):
-        updated += sanitize_schema_node(items, schemas, visited)
-
+        for value in node.values():
+            updated += strip_empty_placeholders(value)
+    elif isinstance(node, list):
+        for value in node:
+            updated += strip_empty_placeholders(value)
     return updated
 
 
@@ -271,17 +222,15 @@ def sanitize_component_schemas(payload: dict) -> int:
     if not isinstance(schemas, dict):
         return 0
 
-    updated = 0
-    for schema in schemas.values():
-        updated += sanitize_schema_node(schema, schemas)
-    return updated
+    return strip_empty_placeholders(schemas)
 
 
 def build_property_example_value(prop: dict, schemas: dict, visited: set[str]):
-    if "default" in prop:
-        return prop["default"]
+    default = prop.get("default")
+    if default is not None and not is_empty_placeholder(default):
+        return default
     example = prop.get("example")
-    if example is not None and not should_drop_example(example):
+    if example is not None and example != "":
         return example
     enum_values = prop.get("enum")
     if isinstance(enum_values, list) and enum_values:
@@ -290,6 +239,13 @@ def build_property_example_value(prop: dict, schemas: dict, visited: set[str]):
     if "$ref" in prop:
         nested = build_required_example({"$ref": prop["$ref"]}, schemas, visited)
         return nested
+
+    # allOf-wrapped refs (common for polymorphic nested objects)
+    for part in prop.get("allOf") or []:
+        if isinstance(part, dict) and "$ref" in part:
+            nested = build_required_example({"$ref": part["$ref"]}, schemas, visited)
+            if nested is not None:
+                return nested
 
     prop_type = prop.get("type")
     if prop_type == "object" or isinstance(prop.get("properties"), dict):
@@ -340,6 +296,19 @@ def build_required_example(schema: dict, schemas: dict, visited: set[str] | None
     return example or None
 
 
+def first_named_example_value(examples) -> dict | None:
+    """Extract the first non-empty OpenAPI `examples.*.value` object."""
+    if not isinstance(examples, dict):
+        return None
+    for example in examples.values():
+        if not isinstance(example, dict):
+            continue
+        value = example.get("value")
+        if isinstance(value, dict) and has_nonempty_example_value(value):
+            return value
+    return None
+
+
 def inject_required_only_request_examples(payload: dict) -> int:
     """Mintlify prefill uses requestBody examples; without one it fabricates <string> for optional fields."""
     schemas = payload.get("components", {}).get("schemas", {})
@@ -363,12 +332,18 @@ def inject_required_only_request_examples(payload: dict) -> int:
                 if not isinstance(schema, dict):
                     continue
 
-                # Preserve an author/backend-provided example. The synthesizer only covers
-                # required fields and drops any it can't resolve (allOf-wrapped refs, required
-                # scalars without a sample), which previously overwrote curated examples with
-                # schema-invalid ones. Trust a real example and leave it untouched.
+                # Preserve author/backend-provided examples. Springdoc emits named
+                # `examples` from `@ExampleObject`; Mintlify also reads singular
+                # `example`. Prefer those over synthesized required-only samples.
                 existing = content.get("example")
-                if isinstance(existing, dict) and existing:
+                if isinstance(existing, dict) and has_nonempty_example_value(existing):
+                    continue
+
+                named_example = first_named_example_value(content.get("examples"))
+                if named_example is not None:
+                    if content.get("example") != named_example:
+                        content["example"] = named_example
+                        updated += 1
                     continue
 
                 example = build_required_example(schema, schemas)
@@ -376,16 +351,10 @@ def inject_required_only_request_examples(payload: dict) -> int:
                     if "example" in content:
                         del content["example"]
                         updated += 1
-                    if "examples" in content:
-                        del content["examples"]
-                        updated += 1
                     continue
 
                 if content.get("example") != example:
                     content["example"] = example
-                    updated += 1
-                if "examples" in content:
-                    del content["examples"]
                     updated += 1
     return updated
 

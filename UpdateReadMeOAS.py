@@ -290,7 +290,31 @@ def prep_meld_oas_file(meld_oas_file, configs):
     # Apply default values to schemas
     apply_defaults_to_schemas(meld_oas_file, configs)
 
+    # Remove placeholder defaults/examples emitted by the upstream spec
+    # generator. Mintlify uses schema defaults to build samples, so
+    # `default: null` renders a response as null and `default: ""` produces
+    # invalid empty request examples.
+    strip_placeholder_schema_values(
+        meld_oas_file.get('components', {}).get('schemas', {})
+    )
+
     return meld_oas_file
+
+
+'''
+Helper function to recursively remove empty defaults/examples from component schemas.
+'''
+def strip_placeholder_schema_values(node):
+    if isinstance(node, dict):
+        if 'default' in node and node['default'] in (None, ''):
+            del node['default']
+        if node.get('example') == '':
+            del node['example']
+        for value in node.values():
+            strip_placeholder_schema_values(value)
+    elif isinstance(node, list):
+        for value in node:
+            strip_placeholder_schema_values(value)
 
 
 '''
