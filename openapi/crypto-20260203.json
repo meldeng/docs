@@ -433,7 +433,13 @@
         "responses": {
           "200": {
             "description": "Payment transaction found",
-            "content": {}
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentTransactionListResponse20250304"
+                }
+              }
+            }
           },
           "403": {
             "description": "Unauthenticated or authenticated with insufficient access"
@@ -6397,6 +6403,218 @@
             "description": "A numerical score representing the expectation a Customer will convert (Ramp score). Read more about this feature [here](https://docs.meld.io/docs/conversion-routing)."
           }
         }
+      },
+      "PaymentTransactionListResponse20250304": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of payment transactions returned."
+          },
+          "remaining": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of payment transactions before/after this page, depending the direction this page was selected."
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total number of payment transactions."
+          },
+          "transactions": {
+            "type": "array",
+            "description": "List of transactions",
+            "items": {
+              "$ref": "#/components/schemas/SearchedPaymentTransactionOutput20250304"
+            }
+          }
+        }
+      },
+      "SearchedPaymentTransactionOutput20250304": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Your account Id"
+          },
+          "apiAccessProfileId": {
+            "type": "string",
+            "description": "The id of the API access profile used to create this transaction. May be null if the transaction was not created via an endpoint that uses an API key for authentication. For example, when imported as a result of a webhook from a service provider."
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "The ISO 3166 2-digit country code."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "An ISO 8601 DateTime at which the object was created."
+          },
+          "cryptoDetails": {
+            "description": "Details of the crypto currency purchase, sale, or transfer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CryptoDetails20250304"
+              }
+            ]
+          },
+          "customer": {
+            "description": "Your customer's details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CustomerOutput"
+              }
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "An arbitrary string which you can attach to this transaction. It is displayed when in the web interface alongside the charge."
+          },
+          "destinationAmount": {
+            "type": "number",
+            "description": "The destination amount of the transaction, e.g. the amount of crypto currency purchased"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "externalCustomerId": {
+            "type": "string",
+            "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity."
+          },
+          "externalReferenceId": {
+            "type": "string",
+            "description": "Your optional reference id provided during transaction creation"
+          },
+          "externalSessionId": {
+            "type": "string",
+            "description": "The external Id of the session."
+          },
+          "externalSubaccountCustomerId": {
+            "type": "string",
+            "description": "Optional external identifier for the sub-account customer this transaction belongs to. Used for tracking when multiple businesses operate under one Meld account. A sub-account customer must be created first before it can be referenced."
+          },
+          "fiatAmountInUsd": {
+            "type": "number",
+            "description": "The fiat amount of the transaction in usd"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this transaction"
+          },
+          "isImported": {
+            "type": "boolean",
+            "description": "Return ***True*** if this transaction was initiated outside Meld"
+          },
+          "isPassthrough": {
+            "type": "boolean",
+            "description": "Return ***True*** if the passthrough credentials were used"
+          },
+          "key": {
+            "type": "string",
+            "description": "Pagination key, may be used with the \"after\" parameter in search requests.  Only set and relevant for paginated calls"
+          },
+          "multiFactorAuthorizationStatus": {
+            "type": "array",
+            "description": "The transaction required multi-factor authentication methods, and their current status. When required, must be approved for the purchase tobe completed successfully.",
+            "items": {
+              "$ref": "#/components/schemas/MultiFactorAuthorizationStatusOutput"
+            },
+            "uniqueItems": true
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Unique identifier for the order associated with this transaction, when applicable"
+          },
+          "parentPaymentTransactionId": {
+            "type": "string",
+            "description": "The Id of the associated object for this line item"
+          },
+          "passthroughReference": {
+            "type": "string",
+            "description": "The unique reference you use to identify the partner on whose behalf you created this transaction.  This might be a String or UUID in your system to identify a merchant or partner.  This is needed so that you can associate passthrough transactions to your partners who may not be registered with Meld"
+          },
+          "paymentDetails": {
+            "description": "payment details",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentDetails"
+              }
+            ]
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "Payment Method type used for this transaction."
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "The service provider used for this transaction"
+          },
+          "serviceProviderCreatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The ISO 8601 DateTime when the transaction was created on the service provider's side"
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "The service provider's details"
+          },
+          "serviceProviderTransactionUrl": {
+            "type": "string",
+            "description": "A link to the resource on the Service Provider, may not be present"
+          },
+          "serviceTransactionId": {
+            "type": "string",
+            "description": "The service provider's unique identifier for this transaction"
+          },
+          "sessionClientTags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "A map of client tags"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "The Id of the session."
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "The amount of the transaction"
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Three-letter ISO currency code. Must be a supported currency"
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the transaction"
+          },
+          "subaccountCustomerId": {
+            "type": "string",
+            "description": "Optional Meld customer id used to track the business sub-account this transaction belongs to when multiple businesses operate under one Meld account."
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "The transaction's type"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time at which the object was last updated. Measured in seconds since the Unix epoch."
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "serviceProvider",
+          "sessionId",
+          "status",
+          "transactionType",
+          "updatedAt"
+        ]
       }
     },
     "securitySchemes": {
