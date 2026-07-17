@@ -444,7 +444,7 @@
                 "$ref": "#/components/schemas/ConnectionAddProductsRequest"
               },
               "example": {
-                "products": ""
+                "products": []
               }
             }
           },
@@ -599,7 +599,7 @@
                 "$ref": "#/components/schemas/ImportRequest"
               },
               "example": {
-                "connections": ""
+                "connections": []
               }
             }
           },
@@ -852,7 +852,7 @@
                 "$ref": "#/components/schemas/FinancialAccountProcessorCreateTokenRequest"
               },
               "example": {
-                "processor": ""
+                "processor": "ACHQ"
               }
             }
           },
@@ -1740,7 +1740,6 @@
         "properties": {
           "serviceProvider": {
             "type": "string",
-            "default": "",
             "description": "Service provider to search by",
             "enum": [
               "ACROSS",
@@ -1811,15 +1810,12 @@
               "XANPOOL",
               "YELLOWCARD",
               "YODLEE"
-            ],
-            "example": ""
+            ]
           },
           "serviceProviderInstitutionId": {
             "type": "string",
-            "default": "",
             "description": "Service provider institution id to search by",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           }
         },
         "required": [
@@ -1990,23 +1986,17 @@
           "dayOfMonth": {
             "type": "integer",
             "format": "int64",
-            "default": "",
-            "description": "The day of the customer's birthday",
-            "example": ""
+            "description": "The day of the customer's birthday"
           },
           "month": {
             "type": "integer",
             "format": "int64",
-            "default": "",
-            "description": "The month of the customer's birthday",
-            "example": ""
+            "description": "The month of the customer's birthday"
           },
           "year": {
             "type": "integer",
             "format": "int64",
-            "default": "",
-            "description": "The year of the customer's birthday",
-            "example": ""
+            "description": "The year of the customer's birthday"
           }
         },
         "required": [
@@ -2028,10 +2018,8 @@
           },
           "customerId": {
             "type": "string",
-            "default": "",
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity.",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "includePending": {
             "type": "boolean",
@@ -2052,15 +2040,11 @@
         "properties": {
           "address": {
             "type": "string",
-            "default": "",
             "description": "The customer's address",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "birthday": {
-            "default": "",
             "description": "The customer's birthday",
-            "example": "",
             "allOf": [
               {
                 "$ref": "#/components/schemas/Birthday"
@@ -2069,59 +2053,43 @@
           },
           "city": {
             "type": "string",
-            "default": "",
             "description": "The customer's city",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "email": {
             "type": "string",
-            "default": "",
             "description": "The customer's email address",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "firstName": {
             "type": "string",
-            "default": "",
             "description": "The customer's first name",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "lastName": {
             "type": "string",
-            "default": "",
             "description": "The customer's last name",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "phone": {
             "type": "string",
-            "default": "",
             "description": "The customer's phone number",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "ssn": {
             "type": "string",
-            "default": "",
             "description": "The customer's social security number",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "state": {
             "type": "string",
-            "default": "",
             "description": "The customer's state",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "zip": {
             "type": "string",
-            "default": "",
             "description": "The customer's zip code",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           }
         },
         "required": [
@@ -2151,7 +2119,6 @@
         "properties": {
           "products": {
             "type": "array",
-            "default": "",
             "description": "List of products to add retroactively to the connection.",
             "items": {
               "type": "string",
@@ -2164,8 +2131,7 @@
                 "TRANSACTIONS"
               ]
             },
-            "minItems": 1,
-            "example": ""
+            "minItems": 1
           }
         },
         "required": [
@@ -2220,21 +2186,17 @@
         "properties": {
           "category": {
             "type": "string",
-            "default": "",
             "description": "The widget type associated with the previously authenticated crypto session",
             "enum": [
               "CRYPTO_ONRAMP",
               "CRYPTO_OFFRAMP",
               "CRYPTO_TRANSFER"
-            ],
-            "example": ""
+            ]
           },
           "previouslyAuthenticatedId": {
             "type": "string",
-            "default": "",
             "description": "The Meld id of the crypto session in which the customer has already authenticated with their institution. The auth tied to this session will be used to import the connection if it is still valid. This id may pertain to the initial session in which the customer authenticated, or any subsequent session that used this prior authentication successfully.\n\nFor more details, reference [Using Multiple Products without Re-authenticating](https://docs.meld.io/docs/using-multiple-products-without-reauthenticating)",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           }
         },
         "required": [
@@ -2252,19 +2214,16 @@
             "properties": {
               "providerId": {
                 "type": "string",
-                "default": "",
                 "description": "Akoya provider id (aka institution id)",
                 "minLength": 1
               },
               "refreshToken": {
                 "type": "string",
-                "default": "",
                 "description": "Akoya refresh token",
                 "minLength": 1
               },
               "products": {
                 "type": "array",
-                "default": "",
                 "description": "Meld products to import from the connection. Optional. If not present, then all products supported by the institution will be used",
                 "items": {
                   "type": "string",
@@ -2288,7 +2247,6 @@
       },
       "ImportDetails": {
         "type": "object",
-        "default": null,
         "description": "A provider's connection info",
         "discriminator": {
           "propertyName": "serviceProvider"
@@ -2324,18 +2282,15 @@
               "customerId": {
                 "type": "integer",
                 "format": "int64",
-                "default": "",
                 "description": "Finicity customer id"
               },
               "institutionLoginId": {
                 "type": "integer",
                 "format": "int64",
-                "default": "",
                 "description": "Finicity institution login id"
               },
               "products": {
                 "type": "array",
-                "default": "",
                 "description": "Meld products to import from the connection. Optional. If not present, then all products supported by the institution will be used",
                 "items": {
                   "type": "string",
@@ -2367,7 +2322,6 @@
             "properties": {
               "importType": {
                 "type": "string",
-                "default": "",
                 "description": "The type of import being performed.",
                 "enum": [
                   "MELD_AUTHENTICATED"
@@ -2375,7 +2329,6 @@
               },
               "products": {
                 "type": "array",
-                "default": "",
                 "description": "Meld products to import from the connection. Optional. If not present, then all products supported by the institution will be used",
                 "items": {
                   "type": "string",
@@ -2391,7 +2344,6 @@
                 "uniqueItems": true
               },
               "authenticationBypassDetails": {
-                "default": "",
                 "description": "Details of the previously authenticated crypto session that will be used to import the connection. Only required if importType is MELD_AUTHENTICATED.",
                 "allOf": [
                   {
@@ -2416,7 +2368,6 @@
             "properties": {
               "accessToken": {
                 "type": "string",
-                "default": "",
                 "description": "Plaid access token",
                 "minLength": 1
               }
@@ -2432,7 +2383,6 @@
         "properties": {
           "connections": {
             "type": "array",
-            "default": "",
             "description": "Import details for the connections specific to the service provider",
             "items": {
               "oneOf": [
@@ -2470,8 +2420,7 @@
                 }
               ]
             },
-            "minItems": 1,
-            "example": ""
+            "minItems": 1
           }
         },
         "required": [
@@ -2786,17 +2735,13 @@
         "properties": {
           "connectToken": {
             "type": "string",
-            "default": "",
             "description": "Connect token",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "institutionId": {
             "type": "string",
-            "default": "",
             "description": "Institution id",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "serviceProvider": {
             "type": "string",
@@ -3107,10 +3052,8 @@
         "properties": {
           "connectToken": {
             "type": "string",
-            "default": "",
             "description": "Connect token",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           }
         },
         "required": [
@@ -3159,10 +3102,8 @@
         "properties": {
           "connectToken": {
             "type": "string",
-            "default": "",
             "description": "Connect token",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "isReconnect": {
             "type": "boolean",
@@ -3170,7 +3111,6 @@
           },
           "serviceProvider": {
             "type": "string",
-            "default": "",
             "description": "Service provider",
             "enum": [
               "AKOYA",
@@ -3180,8 +3120,7 @@
               "SALTEDGE",
               "SALTEDGEPARTNERS",
               "YODLEE"
-            ],
-            "example": ""
+            ]
           },
           "serviceProviderDetails": {
             "type": "object",
@@ -3257,7 +3196,6 @@
         "properties": {
           "processor": {
             "type": "string",
-            "default": "",
             "description": "Processor which will have access to this account",
             "enum": [
               "ACHQ",
@@ -3307,8 +3245,7 @@
               "WEPAY",
               "WYRE",
               "ZERO_HASH"
-            ],
-            "example": ""
+            ]
           },
           "serviceProvider": {
             "type": "string",
@@ -3408,15 +3345,13 @@
         "properties": {
           "status": {
             "type": "string",
-            "default": "",
             "description": "Financial account transaction's status.",
             "enum": [
               "PENDING",
               "POSTED",
               "SHADOW",
               "EXPIRED"
-            ],
-            "example": ""
+            ]
           }
         },
         "required": [
@@ -3643,7 +3578,6 @@
       },
       "VerifyAccessProfileResponse": {
         "type": "object",
-        "default": null,
         "properties": {
           "status": {
             "type": "string",
@@ -4256,17 +4190,13 @@
         "properties": {
           "accountNumber": {
             "type": "string",
-            "default": "",
             "description": "The ACH account number for the financial account",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "routingNumber": {
             "type": "string",
-            "default": "",
             "description": "The ACH routing number for the financial account",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           }
         },
         "required": [
@@ -4330,10 +4260,8 @@
         "properties": {
           "accountNumber": {
             "type": "string",
-            "default": "",
             "description": "The BACS account number for the financial account",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "sortCode": {
             "type": "string",
@@ -4349,10 +4277,8 @@
         "properties": {
           "accountNumber": {
             "type": "string",
-            "default": "",
             "description": "The EFT account number for the financial account",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           },
           "branchNumber": {
             "type": "string",
@@ -4360,10 +4286,8 @@
           },
           "institutionNumber": {
             "type": "string",
-            "default": "",
             "description": "The EFT institution number for the financial account",
-            "minLength": 1,
-            "example": ""
+            "minLength": 1
           }
         },
         "required": [
