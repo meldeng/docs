@@ -417,6 +417,13 @@
                 "$ref": "#/components/schemas/CreateCustomerAddressRequest"
               },
               "example": {
+                "address": {
+                  "city": "<string>",
+                  "countryCode": "<string>",
+                  "lineOne": "<string>",
+                  "postalCode": "<string>",
+                  "region": "<string>"
+                },
                 "type": "BILLING"
               }
             }

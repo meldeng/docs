@@ -256,6 +256,12 @@ def build_property_example_value(prop: dict, schemas: dict, visited: set[str]):
         return False
     if prop_type in {"number", "integer"}:
         return 0
+    # A required scalar with no example/default/enum still has to appear in the
+    # sample, otherwise the generated request body silently omits a required
+    # field. Fall back to a type placeholder (matching Mintlify's own prefill)
+    # so the field is always present for the caller to fill in.
+    if prop_type == "string":
+        return "<string>"
     return None
 
 

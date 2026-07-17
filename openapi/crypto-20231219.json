@@ -627,6 +627,7 @@
                 "$ref": "#/components/schemas/VirtualAccountDepositInstructionsRequest"
               },
               "example": {
+                "customerId": "<string>",
                 "destinationCurrencyCode": "USDC",
                 "destinationWalletAddress": "0x000000000000000000000000000000000000dEaD",
                 "paymentMethodType": "ACH",
