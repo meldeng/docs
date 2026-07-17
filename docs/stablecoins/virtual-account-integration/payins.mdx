@@ -1,0 +1,504 @@
+---
+title: "Payins (Virtual account onramp) Full Integration Guide"
+---
+
+> End-to-end guide for integrating Meld’s standing virtual-account onramp (fiat → crypto) over the Payment and Account APIs.
+
+A provider provisions reusable bank deposit details for the user. When the user sends fiat to that account, the provider converts it and sends crypto to the destination wallet you registered. You present your own UI — there is no Meld-hosted widget.
+
+Fetch deposit instructions **once** per customer \+ provider \+ payment method \+ currency pair \+ destination wallet. The user reuses the same account for later deposits.
+
+> **API compatibility:** New fields may appear in responses without a version bump. Use flexible JSON parsing and do not reject unknown properties. Breaking changes ship under a dated `Meld-Version`.
+
+---
+
+## Before you begin
+
+- You have a Meld API key with payment access (sandbox first, production for go-live)
+- Your account has headless onramps enabled (`account_preference.crypto.headlessOnrampsEnabled`). Reach out to Meld support to confirm this is enabled.
+- At least one virtual-account-capable onramp provider is enabled on your account.
+
+---
+
+## Flow overview
+
+```text
+Customer → Webhooks → KYC → Fetch VA details (once) → [Quote] → User sends fiat → Webhooks / GET transaction
+```
+
+### One time per user
+
+1. Create a customer (and address when required).
+2. Configure webhooks.
+3. Complete KYC for the provider(s) you will use.
+4. **Fetch virtual account details** for customer \+ provider \+ payment method \+ currency pair \+ destination wallet.
+
+### Every deposit
+
+5. (Optional) Get a quote for the amount the user wants to send.
+6. User sends fiat to the **same** stored VA details.
+7. Track via webhooks / Transactions API.
+
+---
+
+## 1. Create a customer
+
+**Endpoint:** `POST /accounts/customers`
+
+**Once per end user.** Reuse the same Meld `customerId` for KYC, quotes, and deposit instructions.
+
+### Required fields
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `externalId` | recommended | Your internal user id — useful for correlation |
+| `name.firstName` / `name.lastName` | yes for KYC | Required for Sumsub / provider KYC |
+| `email` | yes for KYC | Required for Sumsub / provider KYC |
+| `dateOfBirth` | yes for KYC | Required for Sumsub / provider KYC |
+| `type` | yes | e.g. `INDIVIDUAL` |
+
+```json
+{
+  "externalId": "your-internal-user-id-123",
+  "name": {
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "email": "john@example.com",
+  "dateOfBirth": "1990-03-15",
+  "type": "INDIVIDUAL"
+}
+```
+
+Response:
+
+```json
+{
+  "id": "WmYYgvN8ukpV62N3m4u3ee",
+  "accountId": "W2aRZnYGPwhBWB94iFsZus",
+  "externalId": "your-internal-user-id-123",
+  "status": "ACTIVE",
+  "type": "INDIVIDUAL",
+  "serviceProviderCustomers": [],
+  "addresses": []
+}
+```
+
+Save the returned `id`. You may also use `externalCustomerId` on some endpoints when supported.
+
+### Add a customer address (required for Due Network)
+
+If you plan to use **Due Network**, add a residential address before KYC. Due uses address `country` when creating / sharing the provider customer.
+
+**Endpoint:** `POST /accounts/customers/{customerId}/addresses`
+
+```json
+{
+  "type": "RESIDENCE",
+  "address": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "lineOne": "123 Market St",
+    "lineTwo": "Apt 4",
+    "city": "San Francisco",
+    "region": "CA",
+    "countryCode": "US",
+    "postalCode": "94105"
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "id": "addr_01HXYZEXAMPLE000000001",
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "type": "RESIDENCE",
+  "status": "ACTIVE",
+  "addressDetails": {
+    "lineOne": "123 Market St",
+    "lineTwo": "Apt 4",
+    "city": "San Francisco",
+    "region": "CA",
+    "country": "US",
+    "postalCode": "94105"
+  }
+}
+```
+
+---
+
+## 2. Configure webhooks
+
+Set this up **before KYC** so you receive `CUSTOMER_KYC_STATUS_CHANGE` as well as transaction events.
+
+In the Meld dashboard (**Developer → Webhooks**), subscribe at minimum to:
+
+- `CUSTOMER_KYC_STATUS_CHANGE`
+- `TRANSACTION_CRYPTO_PENDING`
+- `TRANSACTION_CRYPTO_TRANSFERRING`
+- `TRANSACTION_CRYPTO_COMPLETE`
+- `TRANSACTION_CRYPTO_FAILED`
+
+Verify signatures per Webhook authentication docs.
+
+---
+
+## 3. KYC
+
+Standing virtual-account providers use **ASYNC** KYC: initiate once per (customer, provider) **before** fetching deposit instructions, then wait for provider KYC `APPROVED`.
+
+**Endpoints:**
+
+- `POST /accounts/customers/{customerId}/kyc/initiate`
+- `PATCH /accounts/customers/{customerId}/kyc/initiate`
+
+Choose one Sumsub initiation mode:
+
+| Mode | When to use | What you send | What the user does |
+| --- | --- | --- | --- |
+| `HOSTED_URL` | User has **not** completed Sumsub yet | `serviceProvider: SUMSUB`, `mode: HOSTED_URL`, `kycShareProviders` | Open the returned `url` and complete Sumsub |
+| `TOKEN_IMPORT` | User already has a Sumsub applicant in your Sumsub account | Same \+ `serviceProviderDetails.kycToken` / `applicantId` | Usually nothing for Sumsub — Meld imports the existing applicant |
+
+Both modes share KYC to the providers listed in `kycShareProviders` after Sumsub is approved. You still must wait for **each share provider** to reach `APPROVED` before deposit-instructions.
+
+### 3a. `HOSTED_URL` — Meld returns a Sumsub link
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "HOSTED_URL",
+  "kycShareProviders": ["NOAH", "DUENETWORK"]
+}
+```
+
+Response:
+
+```json
+{
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "serviceProvider": "SUMSUB",
+  "status": "PENDING",
+  "url": "https://kyc-provider.example.com/verify/abc123"
+}
+```
+
+Direct the user to `url`. Listen for `CUSTOMER_KYC_STATUS_CHANGE`.
+
+### 3b. `TOKEN_IMPORT` — import an existing Sumsub applicant
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "TOKEN_IMPORT",
+  "kycShareProviders": ["NOAH", "DUENETWORK"],
+  "serviceProviderDetails": {
+    "kycToken": "_act-sbx-jwt-…",
+    "applicantId": "sumsub-applicant-id"
+  }
+}
+```
+
+There is typically no Sumsub `url` to open — Meld attaches the existing applicant and shares to `kycShareProviders`. Listen for `CUSTOMER_KYC_STATUS_CHANGE` the same way.
+
+### 3c. After Sumsub — provider-specific KYC link
+
+After Sumsub approval, KYC is shared to `kycShareProviders`. A provider may still require its own step (status `PENDING`). The link lives on the customer record:
+
+**Endpoint:** `GET /accounts/customers/{customerId}`
+
+Look up that provider in `serviceProviderCustomers[]`. When present, send the user to `kyc.additionalInfo.HostedURL`, then wait until that provider’s `kyc.status` is `APPROVED`.
+
+Sample customer response (Sumsub approved; Noah still needs provider KYC):
+
+```json
+{
+  "id": "WmYYgvN8ukpV62N3m4u3ee",
+  "accountId": "W2aRZnYGPwhBWB94iFsZus",
+  "externalId": "your-internal-user-id-123",
+  "status": "ACTIVE",
+  "type": "INDIVIDUAL",
+  "serviceProviderCustomers": [
+    {
+      "id": "spc_sumsub_example",
+      "serviceProvider": "SUMSUB",
+      "kyc": {
+        "status": "APPROVED",
+        "additionalInfo": null
+      }
+    },
+    {
+      "id": "spc_noah_example",
+      "serviceProvider": "NOAH",
+      "kyc": {
+        "status": "PENDING",
+        "additionalInfo": {
+          "HostedURL": "https://noah.example.com/kyc/session/abc123"
+        }
+      }
+    }
+  ],
+  "addresses": []
+}
+```
+
+You can also react to `CUSTOMER_KYC_STATUS_CHANGE` webhooks and re-fetch the customer when a share provider moves to `PENDING` or `APPROVED`.
+
+## 4. Get a quote (optional)
+
+**Endpoint:** `POST /payments/crypto/quote?integrationMode=HEADLESS`
+
+**Header:** `Meld-Version: 2026-05-01`
+
+`customerId` is optional. Pass it when available so ramp intelligence / previously-used scoring can use it.
+
+Use quotes to show rates, fees, available providers / methods, and each provider’s `kycMode`.
+
+```json
+{
+  "countryCode": "US",
+  "sourceAmount": 100,
+  "sourceCurrencyCode": "USD",
+  "destinationCurrencyCode": "USDC",
+  "paymentMethodType": "ACH",
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "walletAddress": "0x51FB80013111111111111112121111111"
+}
+```
+
+Response:
+
+```json
+{
+  "quotes": [
+    {
+      "transactionType": "CRYPTO_PURCHASE",
+      "sourceAmount": 100.00,
+      "sourceAmountWithoutFees": 99.10,
+      "fiatAmountWithoutFees": 99.10,
+      "destinationAmountWithoutFees": null,
+      "sourceCurrencyCode": "USD",
+      "countryCode": "US",
+      "totalFee": 0.90,
+      "networkFee": 0.00,
+      "partnerFee": 0.00,
+      "transactionFee": 0.90,
+      "destinationAmount": 99.10,
+      "destinationCurrencyCode": "USDC",
+      "exchangeRate": 1.0,
+      "paymentMethodType": "ACH",
+      "serviceProvider": "NOAH",
+      "rampIntelligence": {
+        "rampScore": 0.82,
+        "previouslyUsed": null
+      },
+      "integrationMode": "HEADLESS",
+      "kycMode": "ASYNC"
+    }
+  ]
+}
+```
+
+> Some providers (for example Brale) may not surface commercial quotes the same way; confirm available providers in Network Partner / quote responses for your account.
+
+---
+
+## 5. Fetch virtual account details
+
+**Endpoint:** `POST /payments/virtual-account/deposit-instructions`
+
+**Call this once** for that customer \+ provider \+ payment method \+ currency pair \+ destination wallet. Store the returned bank details. Do **not** call again for each deposit unless that combination changes.
+
+**Idempotency (recommended):** `X-Idempotency-Key: <uuid>`
+
+- Successful create / return → HTTP **201**
+- Same key after success → cached body, HTTP **200**
+
+### Request (ACH example)
+
+```json
+{
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "serviceProvider": "NOAH",
+  "paymentMethodType": "ACH",
+  "sourceCurrencyCode": "USD",
+  "destinationCurrencyCode": "USDC",
+  "destinationWalletAddress": "0x51FB80013111111111111112121111111"
+}
+```
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `customerId` | yes | Meld customer id |
+| `serviceProvider` | yes | From quote / capability discovery |
+| `paymentMethodType` | yes | `ACH`, `SEPA`, `PIX`, or `MOBILE_MONEY` |
+| `sourceCurrencyCode` | yes | Fiat |
+| `destinationCurrencyCode` | yes | Crypto |
+| `destinationWalletAddress` | yes | Where crypto is delivered |
+| `customerPhoneNumber` | conditional | Required for `MOBILE_MONEY` |
+
+### Response (ACH example)
+
+```json
+{
+  "depositInstructionsId": "WdEPOSITabcexample000001",
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "serviceProvider": "NOAH",
+  "paymentMethodType": "ACH",
+  "sourceCurrencyCode": "USD",
+  "destinationCurrencyCode": "USDC",
+  "destinationWalletAddress": "0x51FB80013111111111111112121111111",
+  "receivingBankInformation": {
+    "accountNumber": "441829750331",
+    "routingNumber": "031101279",
+    "bankName": "Example Community Bank",
+    "accountHolderName": "Jordan Avery Ellis"
+  },
+  "serviceProviderDetails": {
+    "bankCode": "031101279",
+    "bankName": "Example Community Bank",
+    "bankAddress": {
+      "city": "Austin",
+      "state": "TX",
+      "street": "100 Main Street",
+      "country": "US",
+      "postCode": "78701"
+    },
+    "accountNumber": "441829750331",
+    "paymentMethodId": "Bank/Ach/USD/031101279/441829750331/example-payment-method-id",
+    "accountHolderName": "Jordan Avery Ellis",
+    "paymentMethodType": "BankAch"
+  }
+}
+```
+
+Display details from `receivingBankInformation` (typed fields) and any extras in `serviceProviderDetails`. The user sends fiat from their bank app. Meld and the provider do **not** collect the user’s bank login credentials.
+
+### Response (SEPA example)
+
+```json
+{
+  "depositInstructionsId": "WdEPOSITabcexample000002",
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "serviceProvider": "DUENETWORK",
+  "paymentMethodType": "SEPA",
+  "sourceCurrencyCode": "EUR",
+  "destinationCurrencyCode": "USDC",
+  "destinationWalletAddress": "0x51FB80013111111111111112121111111",
+  "receivingBankInformation": {
+    "iban": "DE89370400440532013000",
+    "bic": "COBADEFFXXX",
+    "bankName": "Example European Bank",
+    "accountHolderName": "Jordan Avery Ellis"
+  },
+  "serviceProviderDetails": {
+    "iban": "DE89370400440532013000",
+    "bic": "COBADEFFXXX",
+    "bankName": "Example European Bank",
+    "accountHolderName": "Jordan Avery Ellis",
+    "memo": "MELD-REF-1"
+  }
+}
+```
+
+For SEPA, show `iban` / `bic` (and bank / account-holder name) from `receivingBankInformation`. Some providers also return a payment reference (for example Due Network’s `memo` in `serviceProviderDetails`) — the payer **must** include this reference on the transfer so the provider can correlate funds.
+
+### After you have the details
+
+1. Store the VA details against your user.
+2. On later deposits: optional quote → show the same account / routing (or IBAN) → user sends fiat.
+3. Listen for transaction webhooks — no new deposit-instructions call unless destination wallet, currencies, provider, or payment method changes.
+
+## 6. Tracking
+
+### Webhook sample (buy)
+
+Correlate with `paymentTransactionId`.
+
+```json
+{
+  "eventType": "TRANSACTION_CRYPTO_PENDING",
+  "eventId": "AAsuLXHXD3mS1cjNBuHHzv",
+  "timestamp": "2025-02-24T16:36:41.717262Z",
+  "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+  "version": "2025-03-01",
+  "payload": {
+    "paymentTransactionId": "WePZCYJW7cdXR7SxUMp8mE",
+    "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+    "externalCustomerId": "your-internal-user-id-123",
+    "paymentTransactionStatus": "PENDING",
+    "transactionType": "CRYPTO_PURCHASE"
+  }
+}
+```
+
+### Fetch the full transaction
+
+**Endpoint:** `GET /payments/transactions/{paymentTransactionId}`
+
+```json
+{
+  "transaction": {
+    "id": "WePZCYJW7cdXR7SxUMp8mE",
+    "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+    "isPassthrough": false,
+    "isImported": false,
+    "customer": {
+      "id": "WmYYgvN8ukpV62N3m4u3ee",
+      "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+      "externalId": "your-internal-user-id-123",
+      "email": "john@example.com",
+      "name": {
+        "firstName": "John",
+        "lastName": "Doe"
+      }
+    },
+    "transactionType": "CRYPTO_PURCHASE",
+    "status": "SETTLING",
+    "sourceAmount": 100.00,
+    "sourceCurrencyCode": "USD",
+    "destinationAmount": 99.10,
+    "destinationCurrencyCode": "USDC",
+    "paymentMethodType": "ACH",
+    "serviceProvider": "NOAH",
+    "serviceTransactionId": "noah-tx-abc123",
+    "serviceProviderDetails": {},
+    "createdAt": "2026-07-15T18:00:00Z",
+    "updatedAt": "2026-07-15T18:05:00Z",
+    "countryCode": "US",
+    "externalCustomerId": "your-internal-user-id-123",
+    "fiatAmountInUsd": 100.00,
+    "cryptoDetails": {
+      "sourceWalletAddress": null,
+      "destinationWalletAddress": "0x51FB80013111111111111112121111111",
+      "sessionWalletAddress": "0x51FB80013111111111111112121111111",
+      "networkFee": 0,
+      "transactionFee": 0.90,
+      "partnerFee": 0,
+      "totalFee": 0.90,
+      "networkFeeInUsd": 0,
+      "transactionFeeInUsd": 0.90,
+      "partnerFeeInUsd": 0,
+      "totalFeeInUsd": 0.90,
+      "blockchainTransactionId": null,
+      "chainId": "1"
+    }
+  }
+}
+```
+
+---
+
+## Sequence Diagram
+
+<Frame>
+  ![Sumsub KYC Approval Workflow 2026 07 17 230908](/images/Sumsub-KYC-Approval-Workflow-2026-07-17-230908.png)
+</Frame>
+
+## Notes and limits
+
+- Standing virtual accounts require `headlessOnrampsEnabled` on the account.
+- Primary API: `POST /payments/virtual-account/deposit-instructions` (fetch once, reuse).
+- Supported payment methods for this flow: `ACH`, `SEPA`, `PIX`, `MOBILE_MONEY`.
+- Provider sandboxes often cannot complete full settlement — you may stop at instruction issuance.

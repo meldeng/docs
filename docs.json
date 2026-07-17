@@ -118,8 +118,7 @@
                     "pages": [
                       "docs/stablecoins/virtual-account-integration/index",
                       "docs/stablecoins/virtual-account-integration/virtual-account-guide",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-quickstart",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide-copy"
+                      "docs/stablecoins/virtual-account-integration/payins"
                     ]
                   },
                   {
@@ -525,9 +524,7 @@
                     "group": "Product 3: Virtual Account and Payouts",
                     "pages": [
                       "docs/stablecoins/virtual-account-integration/index",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-quickstart",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide-copy"
+                      "docs/stablecoins/virtual-account-integration/virtual-account-guide"
                     ]
                   },
                   {
@@ -924,9 +921,7 @@
                     "group": "Product 3: Virtual Account and Payouts",
                     "pages": [
                       "docs/stablecoins/virtual-account-integration/index",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-quickstart",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide-copy"
+                      "docs/stablecoins/virtual-account-integration/virtual-account-guide"
                     ]
                   },
                   {
