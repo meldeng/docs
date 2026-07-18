@@ -117,7 +117,6 @@
                     "group": "Product 3: Virtual Account and Payouts",
                     "pages": [
                       "docs/stablecoins/virtual-account-integration/index",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide",
                       "docs/stablecoins/virtual-account-integration/payins",
                       "docs/stablecoins/virtual-account-integration/untitled-page"
                     ]
@@ -524,8 +523,7 @@
                   {
                     "group": "Product 3: Virtual Account and Payouts",
                     "pages": [
-                      "docs/stablecoins/virtual-account-integration/index",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide"
+                      "docs/stablecoins/virtual-account-integration/index"
                     ]
                   },
                   {
@@ -921,8 +919,7 @@
                   {
                     "group": "Product 3: Virtual Account and Payouts",
                     "pages": [
-                      "docs/stablecoins/virtual-account-integration/index",
-                      "docs/stablecoins/virtual-account-integration/virtual-account-guide"
+                      "docs/stablecoins/virtual-account-integration/index"
                     ]
                   },
                   {
