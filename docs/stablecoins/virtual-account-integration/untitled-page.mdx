@@ -1,0 +1,477 @@
+---
+title: "Payouts (Offramp) Full Integration Guide"
+---
+
+> End-to-end guide for integrating Meld’s headless offramp (crypto → fiat) over the Payment and Account APIs.
+
+This guide walks through customer creation, KYC, quoting, order creation, and webhook tracking for the **headless offramp** flow. Callers collect a provider deposit wallet address from Meld, have the user send crypto, and the provider pays out fiat to the bank / mobile money details you supplied.
+
+---
+
+## Before you begin
+
+- You have a Meld API key with payment access (sandbox first, production for go-live)
+- You have a webhook endpoint configured in **Developer → Webhooks** in the dashboard
+- At least one headless-capable offramp provider is enabled on your account (for example Noah, Due Network, Brale, or Yellowcard)
+
+---
+
+## How it works
+
+1. Create a customer in the Account API. (**one time per user**)
+2. Configure webhooks (including KYC events). (**one time**)
+3. Complete KYC for that customer with the offramp provider. (**one time per user / provider**)
+4. Get a sell quote from the Payment API. (**every transaction**)
+5. Create a headless offramp order with fiat payout details. (**every transaction**)
+6. The end user sends crypto to the returned `walletAddress`. (**every transaction**)
+7. Track progress via webhooks and the Transactions API. (**every transaction**)
+
+```text
+Customer → Webhooks → KYC → Quote → POST /crypto/order/headless/offramp → User sends crypto → Webhooks / GET transaction
+```
+
+Step 6 stays its own step: the user (or your treasury) must send the correct crypto amount to the provider-issued address before the fiat payout can complete.
+
+---
+
+## 1. Create a customer
+
+**Endpoint:** `POST /accounts/customers`
+
+**Once per end user.** Reuse the same Meld `customerId` for all later KYC, quote, and order calls.
+
+### Required fields
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `externalId` | recommended | Your internal user id — useful for correlation |
+| `name.firstName` / `name.lastName` | yes for KYC | Required for Sumsub / provider KYC |
+| `email` | yes for KYC | Required for Sumsub / provider KYC |
+| `dateOfBirth` | yes for KYC | Required for Sumsub / provider KYC |
+| `type` | yes | e.g. `INDIVIDUAL` |
+| `phone` | **no** | Optional on customer create. Format-validated only if you send it. Phone is **not** a create-customer requirement unless you later use `MOBILE_MONEY` payout (then you pass `fiatPayoutMethod.details.phoneNumber` on the **order**, not here) |
+
+```json
+{
+  "externalId": "your-internal-user-id-123",
+  "name": {
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "email": "john@example.com",
+  "dateOfBirth": "1990-03-15",
+  "type": "INDIVIDUAL"
+}
+```
+
+Response:
+
+```json
+{
+  "id": "WmYYgvN8ukpV62N3m4u3ee",
+  "accountId": "W2aRZnYGPwhBWB94iFsZus",
+  "externalId": "your-internal-user-id-123",
+  "status": "ACTIVE",
+  "type": "INDIVIDUAL",
+  "serviceProviderCustomers": [],
+  "addresses": []
+}
+```
+
+Save the returned `id` — offramp create requires `customerId`.
+
+### Add a customer address (required for Due Network)
+
+If you plan to use **Due Network**, add a residential address before KYC. Due uses address `country` when creating / sharing the provider customer.
+
+**Endpoint:** `POST /accounts/customers/{customerId}/addresses`
+
+```json
+{
+  "type": "RESIDENCE",
+  "address": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "lineOne": "123 Market St",
+    "lineTwo": "Apt 4",
+    "city": "San Francisco",
+    "region": "CA",
+    "countryCode": "US",
+    "postalCode": "94105"
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "id": "addr_01HXYZEXAMPLE000000001",
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "type": "RESIDENCE",
+  "status": "ACTIVE",
+  "addressDetails": {
+    "lineOne": "123 Market St",
+    "lineTwo": "Apt 4",
+    "city": "San Francisco",
+    "region": "CA",
+    "country": "US",
+    "postalCode": "94105"
+  }
+}
+```
+
+Optional grouping fields on the offramp order: `subaccountCustomerId`, `externalSubaccountCustomerId`.
+
+---
+
+## 2. Configure webhooks
+
+Set this up **before KYC** so you receive `CUSTOMER_KYC_STATUS_CHANGE` as well as transaction events.
+
+In the Meld dashboard (**Developer → Webhooks**), subscribe at minimum to:
+
+- `CUSTOMER_KYC_STATUS_CHANGE`
+- `TRANSACTION_CRYPTO_PENDING`
+- `TRANSACTION_CRYPTO_TRANSFERRING`
+- `TRANSACTION_CRYPTO_COMPLETE`
+- `TRANSACTION_CRYPTO_FAILED`
+
+Verify signatures per Webhook authentication docs.
+
+---
+
+## 3. KYC
+
+Offramp providers that use Sumsub sharing (Noah, Due Network, and similar) follow the same **ASYNC** KYC pattern as virtual account onramp:
+
+1. Initiate Sumsub via `POST /accounts/customers/{customerId}/kyc/initiate` (**once per customer**)
+2. Set `kycShareProviders` so approval is shared to the offramp provider
+3. Wait for provider KYC `APPROVED` (webhook or `GET /accounts/customers/{customerId}`) before the first sell order for that provider
+
+### Initiate KYC
+
+**Endpoints:**
+
+- `POST /accounts/customers/{customerId}/kyc/initiate`
+- `PATCH /accounts/customers/{customerId}/kyc/initiate`
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "HOSTED_URL",
+  "kycShareProviders": ["NOAH", "DUENETWORK"]
+}
+```
+
+Or import an existing Sumsub applicant:
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "TOKEN_IMPORT",
+  "kycShareProviders": ["NOAH", "DUENETWORK"],
+  "serviceProviderDetails": {
+    "kycToken": "_act-sbx-jwt-…",
+    "applicantId": "sumsub-applicant-id"
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "serviceProvider": "SUMSUB",
+  "status": "PENDING",
+  "url": "https://kyc-provider.example.com/verify/abc123"
+}
+```
+
+Direct the user to `url` when present. Listen for `CUSTOMER_KYC_STATUS_CHANGE`. If the offramp provider needs extra KYC, `serviceProviderCustomers[].kyc.additionalInfo.HostedURL` (when present) is where you send the user next; wait until that provider’s status is `APPROVED` before creating sell orders.
+
+---
+
+## 4. Get a quote (sell)
+
+**Endpoint:** `POST /payments/crypto/quote?integrationMode=HEADLESS`
+
+**Header:** `Meld-Version: 2026-05-01`
+
+`customerId` is optional on quote (same as widget crypto quote). Pass it when available so ramp intelligence / previously-used scoring can use it.
+
+> Sell quotes with `integrationMode=HEADLESS` include `CRYPTO_VIRTUAL_ACCOUNT_OFFRAMP` providers (Noah, Due, and similar) as well as standard crypto offramp providers.
+
+For a **sell** quote, `sourceCurrencyCode` is crypto and `destinationCurrencyCode` is fiat:
+
+```json
+{
+  "countryCode": "US",
+  "sourceAmount": 100,
+  "sourceCurrencyCode": "USDC",
+  "destinationCurrencyCode": "USD",
+  "paymentMethodType": "ACH",
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee"
+}
+```
+
+Response:
+
+```json
+{
+  "quotes": [
+    {
+      "transactionType": "CRYPTO_SELL",
+      "sourceAmount": 100.00,
+      "sourceAmountWithoutFees": 99.10,
+      "fiatAmountWithoutFees": 99.10,
+      "destinationAmountWithoutFees": 99.10,
+      "sourceCurrencyCode": "USDC",
+      "countryCode": "US",
+      "totalFee": 0.90,
+      "networkFee": 0.00,
+      "partnerFee": 0.00,
+      "transactionFee": 0.90,
+      "destinationAmount": 99.10,
+      "destinationCurrencyCode": "USD",
+      "exchangeRate": 1.0,
+      "paymentMethodType": "ACH",
+      "serviceProvider": "NOAH",
+      "rampIntelligence": {
+        "rampScore": 0.82,
+        "previouslyUsed": null
+      },
+      "integrationMode": "HEADLESS",
+      "kycMode": "ASYNC"
+    }
+  ]
+}
+```
+
+Capture the selected `serviceProvider` and amounts for order creation. Quote coverage varies by provider and rail. Headless rows include `kycMode` (`ASYNC` or `SYNC`).
+
+---
+
+## 5. Create a headless offramp order
+
+**Endpoint:** `POST /crypto/order/headless/offramp`
+
+**Auth:** Payment charge permission on your API key / session.
+
+**Idempotency (recommended):** `X-Idempotency-Key: <uuid>`
+
+- Successful create → HTTP **201**
+- Same key after success → cached body, HTTP **200**
+- After a failed attempt that left an empty idempotency row → HTTP **425 TOO\_EARLY** — mint a **new** key
+
+### ACH / bank payout example
+
+```json
+{
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "sourceAmount": 100,
+  "sourceCurrencyCode": "USDC",
+  "destinationCurrencyCode": "USD",
+  "sourceWalletAddress": "0xe51f36521fF5D857824e615a64D34808534a55e6",
+  "serviceProvider": "NOAH",
+  "fiatPayoutMethod": {
+    "type": "ACH",
+    "owner": "John Doe",
+    "details": {
+      "accountType": "CHECKING",
+      "routingNumber": "021000021",
+      "accountNumber": "1234567890",
+      "bankName": "Chase Bank",
+      "beneficiaryAddress": {
+        "streetLineOne": "123 Market St",
+        "streetLineTwo": null,
+        "city": "San Francisco",
+        "state": "CA",
+        "postalCode": "94115",
+        "country": "US"
+      },
+      "bankAddress": {
+        "streetLineOne": "270 Park Avenue",
+        "streetLineTwo": null,
+        "city": "New York",
+        "state": "NY",
+        "postalCode": "10017",
+        "country": "US"
+      }
+    }
+  }
+}
+```
+
+> Address fields also accept snake\_case aliases `street_line_1` / `street_line_2` for compatibility with older examples.
+
+### SEPA details shape
+
+```json
+{
+  "fiatPayoutMethod": {
+    "type": "SEPA",
+    "owner": "John Doe",
+    "details": {
+      "iban": "DE89370400440532013000"
+    }
+  }
+}
+```
+
+### Mobile money details shape
+
+```json
+{
+  "fiatPayoutMethod": {
+    "type": "MOBILE_MONEY",
+    "owner": "John Doe",
+    "details": {
+      "phoneNumber": "+2348012345678"
+    }
+  }
+}
+```
+
+### Payout `type` options
+
+| Type | `details` schema |
+| --- | --- |
+| `ACH`, `PAYOUT_TO_BANK`, `NG_BANK_TRANSFER`, `ZA_BANK_TRANSFER` | Required: `accountType`, `routingNumber`, `accountNumber`, `beneficiaryAddress`, `bankAddress`. Optional: `bankName` |
+| `SEPA` | `iban` |
+| `MOBILE_MONEY` | `phoneNumber` |
+
+Provider support for each type is account- and rail-specific.
+
+### Response
+
+```json
+{
+  "id": "WfR7abcDEF12345xyz9876",
+  "paymentMethodType": "ACH",
+  "walletAddress": "0xABCDEF1234567890ABCDEF1234567890ABCDEF12"
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `id` | Meld headless order id — correlate with webhooks as `headlessOrderId` |
+| `paymentMethodType` | Fiat payout rail used |
+| `walletAddress` | Provider-issued address the user must send **crypto** to |
+
+---
+
+## 6. User sends crypto
+
+Instruct the user (or your ops/treasury process) to send **exactly** the `sourceAmount` / currency from the order request to `walletAddress`. Incorrect amount, asset, or network can prevent payout.
+
+This is a required human (or treasury) action after order create — the order alone does not move crypto.
+
+---
+
+## 7. Track the transaction
+
+### Webhooks
+
+Correlate using **`headlessOrderId`** (same as response `id`).
+
+For sell flows, `transactionType` is `CRYPTO_SELL`.
+
+Sample:
+
+```json
+{
+  "eventType": "TRANSACTION_CRYPTO_PENDING",
+  "eventId": "AAsuLXHXD3mS1cjNBuHHzv",
+  "timestamp": "2025-02-24T16:36:41.717262Z",
+  "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+  "version": "2025-03-01",
+  "payload": {
+    "headlessOrderId": "WfR7abcDEF12345xyz9876",
+    "paymentTransactionId": "WePZCYJW7cdXR7SxUMp8mE",
+    "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+    "externalCustomerId": "your-internal-user-id-123",
+    "paymentTransactionStatus": "PENDING",
+    "transactionType": "CRYPTO_SELL"
+  }
+}
+```
+
+### Fetch the full transaction
+
+**Endpoint:** `GET /payments/transactions/{paymentTransactionId}`
+
+Use `paymentTransactionId` from the webhook.
+
+Example response:
+
+```json
+{
+  "transaction": {
+    "id": "WePZCYJW7cdXR7SxUMp8mE",
+    "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+    "isPassthrough": false,
+    "isImported": false,
+    "customer": {
+      "id": "WmYYgvN8ukpV62N3m4u3ee",
+      "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+      "externalId": "your-internal-user-id-123",
+      "email": "john@example.com",
+      "name": {
+        "firstName": "John",
+        "lastName": "Doe"
+      }
+    },
+    "transactionType": "CRYPTO_SELL",
+    "status": "SETTLING",
+    "sourceAmount": 100.00,
+    "sourceCurrencyCode": "USDC",
+    "destinationAmount": 99.10,
+    "destinationCurrencyCode": "USD",
+    "paymentMethodType": "ACH",
+    "serviceProvider": "NOAH",
+    "serviceTransactionId": "noah-tx-abc123",
+    "orderId": "WfR7abcDEF12345xyz9876",
+    "externalReferenceId": null,
+    "serviceProviderDetails": {},
+    "createdAt": "2026-07-15T18:00:00Z",
+    "updatedAt": "2026-07-15T18:05:00Z",
+    "countryCode": "US",
+    "externalCustomerId": "your-internal-user-id-123",
+    "fiatAmountInUsd": 99.10,
+    "cryptoDetails": {
+      "sourceWalletAddress": "0xe51f36521fF5D857824e615a64D34808534a55e6",
+      "destinationWalletAddress": "0xABCDEF1234567890ABCDEF1234567890ABCDEF12",
+      "networkFee": 0,
+      "transactionFee": 0.90,
+      "partnerFee": 0,
+      "totalFee": 0.90,
+      "networkFeeInUsd": 0,
+      "transactionFeeInUsd": 0.90,
+      "partnerFeeInUsd": 0,
+      "totalFeeInUsd": 0.90,
+      "blockchainTransactionId": null,
+      "chainId": "1"
+    }
+  }
+}
+```
+
+---
+
+## Sequence Diagram
+
+<Frame>
+  ![Sumsub KYC Approval Workflow 2026 07 18 004700](/images/Sumsub-KYC-Approval-Workflow-2026-07-18-004700.png)
+</Frame>
+
+---
+
+## Notes and limits
+
+- Always wait for provider KYC approval before create when your provider requires shared Sumsub / onboarding.
+- Send the correct crypto amount and network/asset implied by your quote and order — the provider matches inbound crypto to the order.
+- Provider sandboxes may not complete full fiat settlement; you may stop at wallet address issuance.
+
+---
