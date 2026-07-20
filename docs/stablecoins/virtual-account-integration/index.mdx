@@ -1,20 +1,62 @@
 ---
 title: "Product 3: Virtual Account and Payouts"
-description: "Overview of the Virtual Account Flow"
+description: "Overview for product and engineering teams evaluating Meld’s virtual account (onramp) and payout (offramp) product."
 ---
 
-This page is for product and engineering teams evaluating Meld's Virtual Account product. It explains what virtual accounts are, how onramp vs offramp flows work, and when this product is the right choice. For a step-by-step integration, jump to the [Virtual Account Quickstart](/docs/stablecoins/virtual-account-integration/virtual-account-quickstart).
+This page explains what virtual accounts are, how onramp vs offramp flows work, and when this product is the right choice. For step-by-step integration:
+
+| Flow | Guide |
+| --- | --- |
+| **Onramp** (fiat → crypto) | [Virtual Account Integration Guide](./virtual-account-integration-guide.md) |
+| **Offramp** (crypto → fiat) | [Headless Offramp Integration Guide](./headless-offramp-integration-guide.md) |
+
+Reach out to Meld support to enable virtual accounts / headless rails on your account.
+
+---
 
 ## What are virtual accounts?
 
-A virtual account is a dedicated set of receiving details — a bank account number, IBAN, or crypto address — assigned to a specific customer. When funds arrive at those details, the provider automatically converts and settles them to the destination you configured (e.g. a crypto wallet for onramp, or a bank account for offramp).
+A virtual account is a dedicated set of receiving details — for example a bank account number, IBAN, or crypto deposit address — used so inbound funds can be attributed to a specific customer and settled to a destination you configured.
 
-**Onramp (fiat to crypto):** The customer receives unique bank details (ACH routing \+ account number, SEPA IBAN, etc.). They deposit fiat from their bank; the provider converts it and delivers stablecoin to the specified wallet address.
+Meld orchestrates provider integration, KYC, quoting, and settlement tracking so you work with a single API surface regardless of which provider (Noah, Due Network, and similar) handles the underlying rails. You present your own UI — there is no Meld-hosted widget.
 
-**Offramp (crypto to fiat):** The customer receives a crypto deposit address. They send stablecoin from their wallet; the provider converts and pays out fiat to the bank details on file. In this flow, typically a virtual account is not created per business / user unless necessary. Instead the onramp sends money directly from the provider's funding account to the business' / user's end bank account.
+---
 
-Because each virtual account is unique to a customer, deposits are automatically attributed — no manual reference matching required. Meld orchestrates the provider integration, KYC, quoting, and settlement tracking so you work with a single API surface regardless of which provider (Noah, Due, etc.) handles the underlying rails.
+## Onramp (fiat → crypto)
 
-Please reach out to Meld for more information about virtual accounts and how to enable them.
+The customer receives unique **bank deposit details** (ACH routing \+ account number, SEPA IBAN, PIX, mobile money, and so on). They send fiat from their bank; the provider converts it and delivers crypto to the destination wallet you registered.
 
-<br />
+For standing virtual accounts, you fetch those bank details **once** per customer \+ provider \+ payment method \+ currency pair \+ destination wallet. The user reuses the same details for later deposits — no new order per transfer.
+
+→ See the [Virtual Account Integration Guide](./virtual-account-integration-guide.md).
+
+---
+
+## Offramp (crypto → fiat)
+
+The customer receives a **crypto deposit address** on each sell order. They send stablecoin (or other supported crypto) from their wallet; the provider converts and pays out fiat to the bank / mobile money details you supplied on the order.
+
+In this flow, a standing virtual account is typically **not** created per business or end user. Fiat payout usually goes from the provider’s funding account directly to the end bank account (or mobile money wallet) on the order — not via a reusable per-customer fiat “VA.”
+
+→ See the [Headless Offramp Integration Guide](./headless-offramp-integration-guide.md).
+
+---
+
+## When to use this product
+
+Choose virtual accounts and payouts when you want:
+
+- **Your own UI** — no Meld-hosted widget
+- **Bank rails for deposits** (ACH, SEPA, PIX, mobile money) with automatic attribution to a customer
+- **Crypto → fiat payouts** with bank / mobile money details supplied at order time
+- **One Meld API** across multiple VA / payout providers
+
+It is a weaker fit when you need a full hosted checkout widget, card / Apple Pay headless checkout (separate product surface), or non-VA widget ramp flows.
+
+---
+
+## Next steps
+
+1. Confirm with Meld that headless / virtual-account preferences and providers are enabled on your account.
+2. Integrate the [onramp guide](./virtual-account-integration-guide.md) and/or [offramp guide](./headless-offramp-integration-guide.md).
+3. Subscribe to KYC and transaction webhooks before go-live.
