@@ -1,5 +1,5 @@
 ---
-title: "Product 3: Virtual Account and Payouts"
+title: "Virtual Account and Payouts"
 description: "Overview for product and engineering teams evaluating Meld’s virtual account (onramp) and payout (offramp) product."
 ---
 
@@ -7,8 +7,8 @@ This page explains what virtual accounts are, how onramp vs offramp flows work, 
 
 | Flow | Guide |
 | --- | --- |
-| **Onramp** (fiat → crypto) | [Virtual Account Integration Guide](./virtual-account-integration-guide.md) |
-| **Offramp** (crypto → fiat) | [Headless Offramp Integration Guide](./headless-offramp-integration-guide.md) |
+| **Onramp** (fiat → crypto) | [Virtual Account Integration Guide](https://docs.meld.io/docs/stablecoins/virtual-account-integration/payins) |
+| **Offramp** (crypto → fiat) | [Headless Offramp Integration Guide](https://docs.meld.io/docs/stablecoins/virtual-account-integration/payouts) |
 
 Reach out to Meld support to enable virtual accounts / headless rails on your account.
 
@@ -28,7 +28,7 @@ The customer receives unique **bank deposit details** (ACH routing \+ account nu
 
 For standing virtual accounts, you fetch those bank details **once** per customer \+ provider \+ payment method \+ currency pair \+ destination wallet. The user reuses the same details for later deposits — no new order per transfer.
 
-→ See the [Virtual Account Integration Guide](./virtual-account-integration-guide.md).
+→ See the [Virtual Account Integration Guide](https://docs.meld.io/docs/stablecoins/virtual-account-integration/payins).
 
 ---
 
@@ -38,7 +38,7 @@ The customer receives a **crypto deposit address** on each sell order. They send
 
 In this flow, a standing virtual account is typically **not** created per business or end user. Fiat payout usually goes from the provider’s funding account directly to the end bank account (or mobile money wallet) on the order — not via a reusable per-customer fiat “VA.”
 
-→ See the [Headless Offramp Integration Guide](./headless-offramp-integration-guide.md).
+→ See the [Headless Offramp Integration Guide](https://docs.meld.io/docs/stablecoins/virtual-account-integration/payouts).
 
 ---
 
@@ -58,5 +58,5 @@ It is a weaker fit when you need a full hosted checkout widget, card / Apple Pay
 ## Next steps
 
 1. Confirm with Meld that headless / virtual-account preferences and providers are enabled on your account.
-2. Integrate the [onramp guide](./virtual-account-integration-guide.md) and/or [offramp guide](./headless-offramp-integration-guide.md).
+2. Integrate the [onramp guide](https://docs.meld.io/docs/stablecoins/virtual-account-integration/payins) and/or [offramp guide](https://docs.meld.io/docs/stablecoins/virtual-account-integration/payouts).
 3. Subscribe to KYC and transaction webhooks before go-live.
