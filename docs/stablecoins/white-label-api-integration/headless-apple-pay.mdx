@@ -111,50 +111,57 @@ Coinbase headless Apple Pay works differently: there is no Apple Pay JS to imple
 When the user is ready to pay, create a headless order with `serviceProvider: "COINBASEPAY"` and `paymentMethodType: "APPLE_PAY"`:
 
 ```text
-POST https://api.meld.io/crypto/order/headless
+POST https://api.meld.io/crypto/order/headless/onramp
 ```
 
-{/* TODO(NPI:COINBASEPAY) [VERIFY] Endpoint path and all request/response field names below must match the payment-domain PR for PYMT-3968 before this page is unhidden — coordinate with that PR. */}
+This is the same generic headless-order endpoint the other headless providers use.
 
 ```json
 {
   "customerId": "WXDsY9TDMhKGYyNu9CH9W7",
   "serviceProvider": "COINBASEPAY",
   "paymentMethodType": "APPLE_PAY",
+  "countryCode": "US",
   "sourceAmount": 100,
   "sourceCurrencyCode": "USD",
   "destinationCurrencyCode": "USDC_BASE",
-  "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
-  "email": "user@example.com",
-  "phoneNumber": "+12025550123",
-  "phoneNumberVerifiedAt": "2026-07-16T17:32:00Z",
-  "agreementAcceptedAt": "2026-07-16T17:31:12Z",
-  "domain": "pay.yourcompany.com"
+  "destinationWalletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
+  "customerPhoneNumber": "+12025550123",
+  "externalOrderId": "your-order-ref-123",
+  "clientIpAddress": "203.0.113.10"
 }
 ```
 
 | Field | Notes |
 | --- | --- |
+| `countryCode` | Required. Must be `US` — Coinbase headless onramp is US-only. |
 | `sourceAmount` / `sourceCurrencyCode` | Fiat amount and currency the user pays. USD only. |
 | `destinationCurrencyCode` | Crypto the user receives, network-qualified where applicable (e.g. `USDC_BASE`). |
-| `walletAddress` | Destination wallet address for the purchased crypto. |
-| `email`, `phoneNumber` | The user's verified contact details. Phone must be E.164 and a US cell number. |
-| `phoneNumberVerifiedAt`, `agreementAcceptedAt` | ISO 8601 timestamps of when you OTP-verified the phone number and when the user accepted the terms. |
-| `domain` | The domain of the page that will embed the payment link in an iframe. Required for web; must be allow-listed with Coinbase. Omit if you only launch the link directly on mobile. |
+| `destinationWalletAddress` | Destination wallet address for the purchased crypto. |
+| `customerPhoneNumber` | The user's verified phone number (E.164, US cell). Falls back to the phone on the Meld customer record if omitted. |
+| `externalOrderId` | Your order reference; forwarded to Coinbase as the partner order reference. |
+| `clientIpAddress` | End-user IP, forwarded to Coinbase. |
 
-A successful request returns the order and a Coinbase-hosted Apple Pay payment link:
+The customer's **email is not sent in the request body** — Meld pulls it from the Meld customer record.
+
+<Note>
+  **Not final — pending PYMT-3968.** Coinbase guest checkout also requires OTP-verified phone/email
+  timestamps (`phoneNumberVerifiedAt`, `agreementAcceptedAt`) and, for the web iframe, an
+  allow-listed `domain`. The request contract does **not** accept these inputs yet, and ownership of
+  the OTP/ToS verification step is still being decided (see the requirements callout above). Do not
+  build against these fields until this note is removed.
+</Note>
+
+A successful request returns the headless-order envelope with a Coinbase-hosted Apple Pay payment link nested under `paymentMethodResponseDetails`:
 
 ```json
 {
-  "id": "ord_2hFbC7...",
-  "status": "PENDING",
-  "applePay": {
+  "paymentMethodType": "APPLE_PAY",
+  "paymentMethodResponseDetails": {
     "paymentLinkUrl": "https://pay.coinbase.com/..."
   }
 }
 ```
-
-{/* TODO(NPI:COINBASEPAY) [VERIFY] Response shape: confirm the field is applePay.paymentLinkUrl and document the full response (order id, status enum, fees, exchange rate) from the payment-domain PR. */}
 
 ### Step 2 — Launch the payment link
 
@@ -168,7 +175,9 @@ A successful request returns the order and a Coinbase-hosted Apple Pay payment l
 />
 ```
 
-The iframe renders the Apple Pay button itself, so size and place it inline where your pay button goes. The user taps it and the Apple Pay sheet opens over your page — there is no intermediate screen. The parent page's domain must match the `domain` you sent on the order and be allow-listed with Coinbase, or the button will not render.
+The user taps to pay and the Apple Pay sheet opens over your page — there is no intermediate screen. The parent page's domain must be allow-listed with Coinbase, or the link will not render.
+
+{/* TODO(NPI:COINBASEPAY) [VERIFY] Rendering model is NOT yet confirmed and this example must be aligned with crypto-widget-web#239 before publishing. Two competing models are in play for the same link: (a) the hosted page auto-surfaces the Apple Pay sheet (Meld's widget embeds a transparent full-viewport overlay assuming this), or (b) the page renders an inline Apple Pay button (implied by PAYMENT_LINK_TYPE_APPLE_PAY_BUTTON, which the fixed 48px inline sizing here assumes). If (a) is correct, a 48px iframe clips the hosted page and breaks the flow; if (b) is correct, the widget's overlay is wrong. Confirm in the widget PR's sandbox pass and make both artifacts agree before unhiding this page. */}
 
 **iOS and Android** — open `paymentLinkUrl` directly (system browser or in-app browser). The Apple Pay sheet is presented for the user to confirm.
 
@@ -182,21 +191,46 @@ On web, the payment link posts messages to the parent window as the payment prog
 | --- | --- |
 | `onramp_api.commit_success` | The user authorized the payment and the order was submitted. |
 | `onramp_api.polling_success` | The transaction was confirmed. Safe to show your success state. |
+| `onramp_api.cancel` | The user dismissed the Apple Pay sheet. Return them to your quote/checkout. |
+| `onramp_api.commit_error` / `onramp_api.polling_error` / `onramp_api.load_error` | The payment or the hosted page failed. Show an error / retry option. |
+
+{/* TODO(NPI:COINBASEPAY) [VERIFY] The cancel and failure event names are sandbox-unverified — confirm the exact names against crypto-widget-web#239's sandbox pass before publishing. */}
+
+Always validate the message origin before trusting it — a payment-completion signal must not be spoofable by another frame on your page — and handle both string and object payloads (Coinbase may post the event name as a raw string):
 
 ```javascript
+// Derive the trusted origin from the payment link you embedded.
+const expectedOrigin = new URL(paymentLinkUrl).origin;
+
 window.addEventListener("message", (event) => {
-  const data =
-    typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-  if (data?.eventName === "onramp_api.commit_success") {
+  if (event.origin !== expectedOrigin) return; // ignore other frames/windows
+  if (event.source !== iframeEl.contentWindow) return; // only the frame we embedded
+
+  let name;
+  if (typeof event.data === "string") {
+    try {
+      name = JSON.parse(event.data)?.eventName ?? event.data;
+    } catch {
+      name = event.data; // raw event-name string
+    }
+  } else {
+    name = event.data?.eventName;
+  }
+
+  if (name === "onramp_api.commit_success") {
     // payment authorized — show progress state
   }
-  if (data?.eventName === "onramp_api.polling_success") {
+  if (name === "onramp_api.polling_success") {
     // transaction confirmed — show success state
   }
 });
 ```
 
-{/* TODO(NPI:COINBASEPAY) [VERIFY] Confirm the postMessage payload shape (eventName key) and the expected event.origin to validate against, from sandbox testing. */}
+<Warning>
+  Because a cancelled sheet produces no webhook, don't rely on `polling_success` alone to unblock
+  your UI — also implement a timeout or poll the transactions endpoint so a user who cancels or hits
+  an error isn't stuck waiting.
+</Warning>
 
 Treat postMessage events as a UI signal only. The authoritative transaction status comes from Meld webhooks and the transactions endpoint, same as any other white-label transaction.
 
@@ -206,6 +240,7 @@ Treat postMessage events as a UI signal only. The authoritative transaction stat
 
 - Use the sandbox base URL `https://api-sb.meld.io` with your sandbox API key.
 - Sandbox orders always succeed, so you can exercise the full flow end to end.
-- On web, append `&useApplePaySandbox=true` to `paymentLinkUrl` before embedding it, so the Apple Pay sheet runs against Apple's sandbox.
+- Sandbox `paymentLinkUrl` values **already include** `useApplePaySandbox=true` (Meld appends it server-side from the environment) — embed the link as-is. Do not add it yourself, or you'll double the parameter.
+- Meld also applies Coinbase's required `sandbox-` partner-user-reference prefix automatically in sandbox — no integrator action needed.
 
-{/* TODO(NPI:COINBASEPAY) [VERIFY] Coinbase requires the partner user reference to be prefixed with "sandbox-" for sandbox orders. Confirm whether Meld applies this automatically in sandbox or the customer must prefix an externalCustomerId, and document accordingly. */}
+Because the partner user reference is built from the Meld customer id, Coinbase's guest-checkout caps (weekly cap and 15-lifetime-transaction maximum) accrue **per Meld customer**.
