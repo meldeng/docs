@@ -137,6 +137,44 @@ Meld Checkout color theme.
 &theme=darkMode      # Dark theme
 ```
 
+### fullScreen
+
+Controls whether the Meld Checkout widget expands to fill the available viewport height. Use this when embedding the widget in a full-height iframe or native WebView where the default fixed card size (745px–790px with drop shadow) leaves empty space.
+
+```
+&fullScreen=true     # Stretch widget to 100vh, remove drop shadow
+&fullScreen=false    # Default boxed card layout (default)
+&fullScreen=1        # Same as true
+&fullScreen=0        # Same as false
+```
+
+**Behavior when enabled:**
+
+* Widget container uses `100vh` min/max height and removes the card drop shadow
+* Wizard sections are distributed vertically: header and quote at the top, form fields in the middle, continue button and footer at the bottom
+* Applies to the main checkout flow and the transaction status screen (`page=transaction`)
+* Desktop layout (two-column page shell) is preserved — only the inner widget sizing and vertical spacing change
+
+**Resolution order:**
+
+1. **URL parameter** — `fullScreen` in the query string (highest priority)
+2. **Account preference** — `fullScreen` on the account's `CRYPTO` preference (set by Meld support)
+3. **Default** — `false`
+
+Pass `fullScreen=false` in the URL to override an account-level `fullScreen` preference for a specific embed.
+
+> **Note:** Invalid or unrecognized values (for example `fullScreen=yes`) are treated as `false`. When the URL parameter is absent, the account preference is used if present.
+
+**Iframe embedding example:**
+
+```html
+<iframe
+  src="https://meldcrypto.com/?publicKey=YOUR_KEY&fullScreen=true"
+  style="width: 100%; max-width: 450px; height: 100vh; border: none;"
+  allow="camera; microphone; payment; encrypted-media">
+</iframe>
+```
+
 ### redirectUrl
 
 URL to redirect users after transaction completion. Supports deep links for mobile apps.
@@ -202,6 +240,14 @@ meldcrypto.com/?publicKey=your_public_key&destinationCurrencyCodeLocked=ETH&wall
 meldcrypto.com/?publicKey=your_public_key&externalCustomerId=user_12345&externalSessionId=session_abc789&redirectUrl=myapp://crypto-success&theme=lightMode
 ```
 
+### Full-Height Embed
+
+```
+meldcrypto.com/?publicKey=your_public_key&fullScreen=true&theme=lightMode
+```
+
+Use with an iframe or WebView sized to `100vh` so the widget fills the available height without a floating card or empty gap.
+
 ### Locked BONK Purchase on Solana
 
 ```
@@ -226,12 +272,13 @@ meldcrypto.com/?publicKey=your_public_key&destinationCurrencyCodeLocked=USDC&sou
 * **Locked parameters override unlocked versions**: If you pass in both the unlocked and locked version of a param (for example `countryCode` and `countryCodeLocked`), the locked param will be used
 * **Provider UI locking**: If you lock the sourceCurrencyCode/destinationCurrencyCode or walletAddress field in the Meld Checkout, then that field will also be locked in the partner's widget for the providers that support it
 * **Locked parameters take actual values**: Pass the actual value, not `=true` (e.g., `walletAddressLocked=6chn9n...` not `walletAddressLocked=true`)
+* **fullScreen URL parameter overrides account preference**: If `fullScreen` is set on the account's `CRYPTO` preference and you pass `fullScreen=false` (or `fullScreen=true`) in the URL, the URL value wins
 
 ### Invalid Parameter Handling:
 
 * **Unrecognized parameters** are ignored silently
 * **Invalid values** fall back to defaults
-* **Any param with unrecognized or unsupported values** will be ignored
+* **Any param with unrecognized or unsupported values** will be ignored (for `fullScreen`, invalid values resolve to `false`, or to the account preference when the URL parameter is absent)
 
 ## URL Encoding
 

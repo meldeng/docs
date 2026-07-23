@@ -51,6 +51,7 @@ Set account-wide defaults:
 
 * **Default redirect URL** - Fallback URL for transaction completion
 * **Theme defaults** - Account-wide light/dark mode preference
+* **Full-screen layout** - Enable `fullScreen` on the account's `CRYPTO` preference so every embed uses the full-viewport layout without passing `fullScreen=true` on each URL. Contact Meld support to configure. Override per embed with `fullScreen=false` in the query string. See [URL parameters → fullScreen](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters#fullscreen).
 
 ## Dashboard Customization
 
@@ -151,13 +152,25 @@ function getMobileOptimizedUrl() {
 ### Mobile iframe Considerations
 
 ```html
-<!-- Mobile-responsive iframe -->
+<!-- Default fixed-height card (745px–790px) -->
 <iframe 
   src="https://meldcrypto.com/?publicKey=YOUR_KEY"
   style="width: 100%; max-width: 450px; height: 790px; border: none;"
   allow="camera; microphone; payment; encrypted-media">
 </iframe>
 ```
+
+For full-viewport embeds, add `fullScreen=true` and size the iframe to the viewport height:
+
+```html
+<iframe
+  src="https://meldcrypto.com/?publicKey=YOUR_KEY&fullScreen=true"
+  style="width: 100%; max-width: 450px; height: 100vh; border: none;"
+  allow="camera; microphone; payment; encrypted-media">
+</iframe>
+```
+
+See [URL parameters → fullScreen](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters#fullscreen) for accepted values and account-level configuration.
 
 ## Analytics & Tracking
 
