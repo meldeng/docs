@@ -10,7 +10,7 @@ Headless Apple Pay is available through two providers, and each one has a differ
 | Provider | Integration model | What you build |
 | --- | --- | --- |
 | [Mercuryo](#mercuryo) | Native Apple Pay JS on your own domain | Apple Pay JS event handlers that proxy through two Meld endpoints |
-| [Coinbase](#coinbase) | Coinbase-hosted Apple Pay payment link | One API call, then render the returned link (iframe on web, direct launch on mobile) |
+| [Coinbase](#coinbase) | Coinbase-hosted Apple Pay payment link | OTP-verify the user via Coinbase's Verification API, one order call, then render the returned link (iframe on web, direct launch on mobile) |
 
 Both paths deliver the same UX goal: the user taps Apple Pay and the payment sheet opens — no second or intermediate screen.
 
@@ -18,7 +18,7 @@ Here is a demo video of how the headless Apple Pay flow works. This video is rec
 
 <iframe className="w-full aspect-video rounded-xl" src="https://www.youtube.com/embed/ruMWHFFIlpg" allowFullScreen />
 
-{/* TODO(NPI:COINBASEPAY) [PRODUCT] Confirm whether Coinbase headless Apple Pay is also surfaced in Meld Checkout, or Checkout remains Mercuryo-only for now. */}
+{/* TODO(NPI:COINBASEPAY) [PRODUCT] The backend now ships the Checkout-internal Coinbase verification and create-order session endpoints, but the Checkout/widget UI rollout (crypto-widget-web#239) is unconfirmed — update the Mercuryo-only statement below once Coinbase Apple Pay is live in Meld Checkout. */}
 If you would like to use headless Apple Pay via the Meld Checkout, all you have to do is make sure Mercuryo is enabled for your account.
 
 If you have built your own UI, follow the setup for the provider(s) you want to enable below.
@@ -91,22 +91,44 @@ Apple Pay has strict restrictions on iframe origins — the sheet checks the _pa
 
 ## Coinbase
 
-Coinbase headless Apple Pay works differently: there is no Apple Pay JS to implement, no domain association file to host, and no merchant validation to proxy. You create a headless order with one API call, and Meld returns a Coinbase-hosted payment link that renders the Apple Pay button. Embed that link inline in your checkout (web) or launch it directly (iOS, Android) — the user's only step is confirming in the Apple Pay sheet.
+Coinbase headless Apple Pay works differently: there is no Apple Pay JS to implement, no domain association file to host, and no merchant validation to proxy. You OTP-verify the customer's phone and email through Coinbase's Onramp Verification API (verifications stay valid for 60 days), then create a headless order with one API call, and Meld returns a Coinbase-hosted payment link that renders the Apple Pay button. Embed that link inline in your checkout (web) or launch it directly (iOS, Android) — the user's only step is confirming in the Apple Pay sheet.
 
 <Warning>
   **Requirements**
 
   - **US only.** Coinbase guest checkout is available to US users with a US phone number. It must be a real cell number — VoIP numbers are rejected.
-  - **Verified email and phone.** The customer's email address and phone number must be verified with a one-time passcode (OTP) before the order is created, and the verification timestamps must be recorded and sent on the order.
+  - **Verified email and phone.** The customer's email address and phone number must both be OTP-verified through Coinbase's Onramp Verification API before the order is created, and the resulting verification ids must be sent on the order (see Step 1 below).
   - **Guest limits.** Coinbase enforces a weekly spending cap and a lifetime maximum of 15 guest checkout transactions per user. Beyond those limits, the user must continue with a full Coinbase account.
   - **Domain allow-listing.** To render the payment link in an iframe on web, the parent page's domain must be allow-listed with Coinbase. Send the domain to Meld via your integration contact before you go live.
 </Warning>
 
-{/* TODO(NPI:COINBASEPAY) [PRODUCT] Decide and document who owns email/phone OTP verification: does the customer run OTP and pass verification timestamps to Meld, or does Meld run verification? The request example below assumes the customer verifies and passes timestamps. */}
-{/* TODO(NPI:COINBASEPAY) [PRODUCT] Document the customer-facing domain allow-listing process for Coinbase (how to submit, turnaround, sandbox vs production domains) once operations defines it. */}
+{/* TODO(NPI:COINBASEPAY) [BLOCKER] The order request does not yet carry the integrator's web domain (the backend sends domain=null to Coinbase), and Coinbase requires an allow-listed domain for the iframe to render — web embedding is not functional until Meld ships domain handling (account-level config or a request field). Also document the allow-listing process (how to submit, turnaround, sandbox vs production domains) once operations defines it. */}
 {/* TODO(NPI:COINBASEPAY) [VERIFY] Confirm the exact guest checkout weekly cap amount with Coinbase before publishing. */}
 
-### Step 1 — Create a headless order
+### Step 1 — Verify the customer's contact details
+
+Verification runs on Coinbase's rails: for each channel it is a two-step call to Coinbase's Onramp Verification API — initiate sends the user a 6-digit OTP, submit exchanges that code for a verification id. **Both channels — SMS and email — must be verified**, and each verification id is valid for **60 days**, after which you re-verify.
+
+1. **Initiate** — `POST https://api.cdp.coinbase.com/platform/v2/onramp/verifications` with the channel (`SMS` or `EMAIL`) and the destination (E.164 phone number or email address). Coinbase sends a 6-digit OTP to the destination and returns a `verificationId`.
+2. **Submit** — `POST https://api.cdp.coinbase.com/platform/v2/onramp/verifications/{verificationId}/submit` with the `otpCode` the user received. On success the verification is marked verified and the response carries the `verificationId` and its `verificationExpiresAt` (60 days out).
+
+Run the two steps once per channel: the SMS submit yields your `smsVerificationId`, the email submit yields your `emailVerificationId`. Separately, record the ISO-8601 timestamp at which the user accepted Coinbase's guest-checkout terms as `agreementAcceptedAt`. All three values go on the order in Step 2.
+
+See Coinbase's [Headless Onramp docs](https://docs.cdp.coinbase.com/onramp/headless-onramp/overview) and the [Submit onramp verification API reference](https://docs.cdp.coinbase.com/api-reference/v2/rest-api/onramp/submit-onramp-verification) for the full contract.
+
+{/* TODO(NPI:COINBASEPAY) [OPS] Document how integrators authenticate to Coinbase's Onramp Verification API (CDP API credentials, allowlisting) — Coinbase gates this API behind onboarding; define whether integrators use their own CDP project or coordinate through their Meld integration contact. */}
+
+<Note>
+  Calling Coinbase directly is the **interim** model. Meld-hosted verification endpoints for
+  white-label UIs are coming with the Meld OTP service, so you will be able to run the OTP flow
+  against Meld instead of Coinbase.
+</Note>
+
+{/* TODO(NPI:COINBASEPAY) [PRODUCT] Meld-hosted verification endpoints (Meld OTP service) are a pending decision — whether they replace or complement the Coinbase pass-through ids is undecided; update Step 1 when that lands. */}
+
+If you use **Meld Checkout** instead of your own UI, none of this section applies: Checkout runs the same Coinbase verification flow internally as part of its session flow — those session-scoped endpoints are not a customer-facing API.
+
+### Step 2 — Create a headless order
 
 When the user is ready to pay, create a headless order with `serviceProvider: "COINBASEPAY"` and `paymentMethodType: "APPLE_PAY"`:
 
@@ -128,7 +150,12 @@ This is the same generic headless-order endpoint the other headless providers us
   "destinationWalletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
   "customerPhoneNumber": "+12025550123",
   "externalOrderId": "your-order-ref-123",
-  "clientIpAddress": "203.0.113.10"
+  "clientIpAddress": "203.0.113.10",
+  "verification": {
+    "smsVerificationId": "onramp_verification_11111111-2222-3333-4444-555555555555",
+    "emailVerificationId": "onramp_verification_66666666-7777-8888-9999-000000000000",
+    "agreementAcceptedAt": "2026-07-28T12:00:00Z"
+  }
 }
 ```
 
@@ -138,18 +165,24 @@ This is the same generic headless-order endpoint the other headless providers us
 | `sourceAmount` / `sourceCurrencyCode` | Fiat amount and currency the user pays. USD only. |
 | `destinationCurrencyCode` | Crypto the user receives, network-qualified where applicable (e.g. `USDC_BASE`). |
 | `destinationWalletAddress` | Destination wallet address for the purchased crypto. |
-| `customerPhoneNumber` | The user's verified phone number (E.164, US cell). Falls back to the phone on the Meld customer record if omitted. |
+| `customerPhoneNumber` | The user's phone number (E.164, US cell) — send the same number you verified over SMS in Step 1. Falls back to the phone on the Meld customer record if omitted. |
 | `externalOrderId` | Your order reference; forwarded to Coinbase as the partner order reference. |
 | `clientIpAddress` | End-user IP, forwarded to Coinbase. |
+| `verification.smsVerificationId` | Verification id from the SMS channel's submit call in Step 1 (`onramp_verification_<uuid>`, valid 60 days). |
+| `verification.emailVerificationId` | Verification id from the email channel's submit call in Step 1 (`onramp_verification_<uuid>`, valid 60 days). |
+| `verification.agreementAcceptedAt` | ISO-8601 timestamp at which the customer accepted Coinbase's guest-checkout terms. |
 
-The customer's **email is not sent in the request body** — Meld pulls it from the Meld customer record.
+The customer's **email is not sent in the request body** — Meld pulls it from the Meld customer record, so make sure the record carries the address you verified in Step 1.
+
+{/* TODO(NPI:COINBASEPAY) [VERIFY] Confirm in sandbox whether Coinbase cross-checks the order's phone/email against the destinations verified in Step 1 — a mismatch (e.g. one number verified, another sent on the order) may be rejected server-side. */}
 
 <Note>
-  **Not final — pending PYMT-3968.** Coinbase guest checkout also requires OTP-verified phone/email
-  timestamps (`phoneNumberVerifiedAt`, `agreementAcceptedAt`) and, for the web iframe, an
-  allow-listed `domain`. The request contract does **not** accept these inputs yet, and ownership of
-  the OTP/ToS verification step is still being decided (see the requirements callout above). Do not
-  build against these fields until this note is removed.
+  The `verification` block is optional on the generic headless-order endpoint (other providers
+  ignore it) but **required for Coinbase Apple Pay**. If any of its three fields is missing — or
+  the request resolves to no phone number or no email at all — Meld rejects the order with an HTTP
+  400 validation error that names each missing field (e.g. `verification.smsVerificationId`,
+  `verification.emailVerificationId`, `verification.agreementAcceptedAt`) before anything is sent
+  to Coinbase.
 </Note>
 
 A successful request returns the headless-order envelope with a Coinbase-hosted Apple Pay payment link nested under `paymentMethodResponseDetails`:
@@ -163,7 +196,7 @@ A successful request returns the headless-order envelope with a Coinbase-hosted 
 }
 ```
 
-### Step 2 — Launch the payment link
+### Step 3 — Launch the payment link
 
 **Web** — embed the link in an iframe with `allow="payment"`:
 
@@ -183,7 +216,7 @@ The user taps to pay and the Apple Pay sheet opens over your page — there is n
 
 {/* TODO(NPI:COINBASEPAY) [VERIFY] Confirm direct launch on iOS/Android presents the Apple Pay sheet with no intermediate page, per the PYMT-3968 requirement ("no second or intermediate screen whatsoever"), and document any per-platform launch guidance (e.g. SFSafariViewController vs Custom Tabs). */}
 
-### Step 3 — Detect completion
+### Step 4 — Detect completion
 
 On web, the payment link posts messages to the parent window as the payment progresses:
 
@@ -239,6 +272,7 @@ Treat postMessage events as a UI signal only. The authoritative transaction stat
 ### Sandbox testing
 
 - Use the sandbox base URL `https://api-sb.meld.io` with your sandbox API key.
+- For the Step 1 OTP verification, use the sandbox test values: a `+1000`-prefixed phone number (e.g. `+10005550100`), an email address ending in `@sandbox.test`, and the OTP code `000000`.
 - Sandbox orders always succeed, so you can exercise the full flow end to end.
 - Sandbox `paymentLinkUrl` values **already include** `useApplePaySandbox=true` (Meld appends it server-side from the environment) — embed the link as-is. Do not add it yourself, or you'll double the parameter.
 - Meld also applies Coinbase's required `sandbox-` partner-user-reference prefix automatically in sandbox — no integrator action needed.
