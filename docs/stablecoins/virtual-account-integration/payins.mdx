@@ -15,8 +15,10 @@ Fetch deposit instructions **once** per customer \+ provider \+ payment method \
 ## Before you begin
 
 - You have a Meld API key with payment access (sandbox first, production for go-live)
+- You have a webhook endpoint configured in **Developer → Webhooks** in the dashboard
+- At least one headless-capable onramp provider is enabled on your account (for example Noah, Due Network, Brale, or Yellowcard)
 - Your account has headless onramps enabled (`account_preference.crypto.headlessOnrampsEnabled`). Reach out to Meld support to confirm this is enabled.
-- At least one virtual-account-capable onramp provider is enabled on your account.
+- If you are using Meld to KYC, then your Meld account must have Sumsub configured. Reach out to Meld for help enabling this if needed.
 
 ---
 
