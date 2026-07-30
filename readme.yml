@@ -29,7 +29,6 @@ sp_crypto: &supported_crypto_sp
   - SARDINE
   - SHIFT4
   - SIMPLEX
-  - SKRILLCRYPTO
   - STRIPE
   - SWAPPED
   - TOPPER
