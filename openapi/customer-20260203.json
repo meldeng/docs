@@ -69,7 +69,19 @@
         ],
         "x-mint": {
           "href": "/api-reference/customer/customers/accounts-customers-create"
-        }
+        },
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          }
+        ]
       },
       "get": {
         "tags": [
@@ -79,6 +91,16 @@
         "description": "Returns a list of customers that match the query parameters. The customers are sorted by external id.",
         "operationId": "accounts-customers-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
           {
             "name": "customerIds",
             "in": "query",
@@ -221,6 +243,16 @@
         "operationId": "accounts-customers-update",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
             "name": "customerId",
             "in": "path",
             "description": "Customer id",
@@ -300,6 +332,16 @@
         "description": "Use this endpoint to delete a customer with Meld and/or with any of the service providers it is linked to. This endpoint should only be used for customers using the Bank-Linking stack, as it is not yet compatible with the Payments or Crypto stack. If a customer is deleted that is linked to a Payments or Crypto service provider customer, it will still be deleted with Meld, but not with the provider.\n\n***Note:*** For customers using the Bank-Linking stack, this will delete all of the customer's connections and financial accounts as well.",
         "operationId": "accounts-customers-delete",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
           {
             "name": "customerId",
             "in": "path",
@@ -400,6 +442,16 @@
         "operationId": "accounts-customers-addresses-create",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
             "name": "customerId",
             "in": "path",
             "description": "Customer id",
@@ -473,6 +525,16 @@
         "description": "Retrieve a url that when launched displays a UI that commences KYC for your user",
         "operationId": "accounts-customers-kyc-initiate",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
           {
             "name": "customerId",
             "in": "path",

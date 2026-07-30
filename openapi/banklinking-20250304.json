@@ -73,7 +73,19 @@
         ],
         "x-mint": {
           "href": "/api-reference/bank-linking/2025-03-04/connect/bank-linking-connect-create"
-        }
+        },
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          }
+        ]
       }
     },
     "/bank-linking/connect/repair": {
@@ -125,7 +137,19 @@
         ],
         "x-mint": {
           "href": "/api-reference/bank-linking/2025-03-04/connect/bank-linking-connect-repair"
-        }
+        },
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          }
+        ]
       }
     },
     "/bank-linking/connections/{connectionId}": {
@@ -137,6 +161,16 @@
         "description": "Retrieve details of a specific institution connection.",
         "operationId": "bank-linking-connections-get",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
           {
             "name": "connectionId",
             "in": "path",
@@ -199,6 +233,16 @@
         "operationId": "bank-linking-connections-delete",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
+          {
             "name": "connectionId",
             "in": "path",
             "description": "Connection id",
@@ -254,6 +298,16 @@
         "description": "Retrieve institution connections filtered by various parameters.",
         "operationId": "bank-linking-connections-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
           {
             "name": "customerId",
             "in": "query",
@@ -401,6 +455,16 @@
         "operationId": "bank-linking-connection-update",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
+          {
             "name": "connectionId",
             "in": "path",
             "description": "Connection id",
@@ -476,6 +540,16 @@
         "description": "Trigger a refresh of all financial accounts for a given institution connection with the latest information from the service provider. This is a premium service for most service providers and should be used sparingly for requesting up-to-date data as of the time of the call to this endpoint. Transaction and balance data is updated daily by service providers, and Meld's webhooks will notify of these updates so that product data does not become stale.\n\n*Note:* By default, historical transactions are loaded upon initial connection for all providers. This is a premium service for Finicity and MX, so if this is not desired please reach out to Meld support to disable this feature. After doing so, then historical transactions will only be loaded after the first time a refresh is requested for a Finicity/MX connection that has transactions as an available product.\n\n*Note:* Duplicate provider connections occur when the same customer connects to the same institution using the same login credentials through the *same* service provider. In such cases, only the most recently refreshed of these duplicates is actively maintained and the rest are considered inactive. Choosing to refresh an inactive duplicate will cause it to become the new active duplicate and it will assume the same connection status as the previous active duplicate. The previous active duplicate will now be considered inactive.",
         "operationId": "bank-linking-connections-refresh",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
           {
             "name": "connectionId",
             "in": "path",
@@ -592,7 +666,19 @@
         ],
         "x-mint": {
           "href": "/api-reference/bank-linking/2025-03-04/connections/bank-linking-connections-import"
-        }
+        },
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          }
+        ]
       }
     },
     "/bank-linking/accounts/{financialAccountId}": {
@@ -604,6 +690,16 @@
         "description": "Use this endpoint to retrieve account information of a specific financial account.",
         "operationId": "bank-linking-accounts-get",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
           {
             "name": "financialAccountId",
             "in": "path",
@@ -667,6 +763,16 @@
         "description": "Use this endpoint to filter financial accounts by various parameters.",
         "operationId": "bank-linking-accounts-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
           {
             "name": "customerId",
             "in": "query",
@@ -776,6 +882,16 @@
         "operationId": "bank-linking-accounts-create-processor-token",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
+          {
             "name": "financialAccountId",
             "in": "path",
             "description": "Financial account id",
@@ -852,6 +968,16 @@
         "operationId": "bank-linking-transactions-get",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
+          {
             "name": "transactionId",
             "in": "path",
             "description": "Transaction id",
@@ -914,6 +1040,16 @@
         "description": "Use this endpoint to filter financial account transactions by various parameters.",
         "operationId": "bank-linking-transactions-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
           {
             "name": "customerId",
             "in": "query",
@@ -1065,6 +1201,16 @@
         "operationId": "bank-linking-investment-holdings-get",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
+          {
             "name": "investmentHoldingId",
             "in": "path",
             "description": "Investment Holding id",
@@ -1127,6 +1273,16 @@
         "description": "Use this endpoint to filter financial account investment holdings by various parameters.",
         "operationId": "bank-linking-investment-holdings-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
           {
             "name": "customerId",
             "in": "query",
@@ -1236,6 +1392,16 @@
         "operationId": "bank-linking-investment-transactions-get",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
+          {
             "name": "investmentTransactionId",
             "in": "path",
             "description": "Investment Transaction id",
@@ -1298,6 +1464,16 @@
         "description": "Use this endpoint to filter financial account investment transactions by various parameters.",
         "operationId": "bank-linking-investment-transactions-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
           {
             "name": "customerId",
             "in": "query",
@@ -1440,6 +1616,16 @@
         "operationId": "bank-linking-institutions-get",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
+          {
             "name": "institutionId",
             "in": "path",
             "description": "Institution id",
@@ -1502,6 +1688,16 @@
         "description": "Allows you to search across the list of Institutions supported by your service providers. This endpoint is only available in production.",
         "operationId": "bank-linking-institutions-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2025-03-04"
+            }
+          },
           {
             "name": "before",
             "in": "query",

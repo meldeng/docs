@@ -83,7 +83,19 @@
         ],
         "x-mint": {
           "href": "/api-reference/crypto/2023-12-19/retail-ramp/crypto-session-widget-create"
-        }
+        },
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          }
+        ]
       }
     },
     "/payments/transactions/{id}": {
@@ -95,6 +107,16 @@
         "description": "Search transaction by its Meld identifier",
         "operationId": "/payments-transactions-get",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "id",
             "in": "path",
@@ -159,6 +181,16 @@
         "description": "Search a list of transactions you've previously created. The transactions are ordered by the date of creation.",
         "operationId": "/payments-transactions-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "statuses",
             "in": "query",
@@ -384,6 +416,16 @@
         "operationId": "/payments-transactions-sessions-get",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
+          {
             "name": "sessionId",
             "in": "path",
             "description": "Session ID to fetch the transaction for",
@@ -455,6 +497,16 @@
         "description": "Creates a headless offramp order. Caller passes customer + provider + source crypto + fiat payout method and receives a provider-issued wallet address to send cryptocurrency to.",
         "operationId": "/crypto-order-headless-offramp-create",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "X-Idempotency-Key",
             "in": "header",
@@ -610,6 +662,16 @@
         "description": "Provisions a standing virtual bank account for recurring onramp deposits, or returns the existing instructions when the same customer, provider, payment method, currency pair, and destination wallet were already set up.",
         "operationId": "/payments-virtual-account-deposit-instructions-create",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "X-Idempotency-Key",
             "in": "header",

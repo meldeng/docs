@@ -31,6 +31,16 @@
         "operationId": "service-providers-search",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
+          {
             "name": "serviceProviders",
             "in": "query",
             "description": "A comma separated list of service providers.",
@@ -161,6 +171,16 @@
         "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
         "operationId": "service-providers-properties-country-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "serviceProviders",
             "in": "query",
@@ -303,6 +323,16 @@
         "operationId": "service-providers-properties-crypto-currency-search",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
+          {
             "name": "serviceProviders",
             "in": "query",
             "description": "A comma separated list of service providers.",
@@ -444,6 +474,16 @@
         "operationId": "service-providers-properties-defaults-by-country-search",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
+          {
             "name": "accountFilter",
             "in": "query",
             "description": "Filter by account configuration. Will only include properties supported by the service providers configured for the account of the API authentication token used.",
@@ -519,6 +559,16 @@
         "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
         "operationId": "service-providers-properties-fiat-currency-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "serviceProviders",
             "in": "query",
@@ -661,6 +711,16 @@
         "operationId": "service-providers-properties-payment-method-search",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
+          {
             "name": "serviceProviders",
             "in": "query",
             "description": "A comma separated list of service providers.",
@@ -801,6 +861,16 @@
         "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of limits (minimums and maximums) in terms of crypto tokens for selling crypto.",
         "operationId": "service-providers-limits-crypto-currency-sells-get",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "serviceProviders",
             "in": "query",
@@ -943,6 +1013,16 @@
         "operationId": "service-providers-limits-fiat-currency-purchase-get",
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
+          {
             "name": "serviceProviders",
             "in": "query",
             "description": "A comma separated list of service providers.",
@@ -1083,6 +1163,16 @@
         "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of KYC limits in terms of fiat currencies tokens for buying crypto.",
         "operationId": "service-providers-limits-kyc-fiat-level-get",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "serviceProviders",
             "in": "query",

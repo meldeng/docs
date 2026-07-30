@@ -19,6 +19,16 @@
         ],
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
             "description": "Provider category",
             "example": "CRYPTO_ONRAMP",
             "name": "category",
@@ -102,6 +112,16 @@
           "Supported"
         ],
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
           {
             "description": "Provider category",
             "example": "CRYPTO_ONRAMP",
@@ -251,6 +271,16 @@
         ],
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
             "description": "Provider category",
             "example": "CRYPTO_ONRAMP",
             "name": "category",
@@ -367,6 +397,16 @@
         ],
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
             "description": "Provider category",
             "example": "CRYPTO_ONRAMP",
             "name": "category",
@@ -465,6 +505,16 @@
           "Supported"
         ],
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
           {
             "description": "Provider category",
             "example": "CRYPTO_ONRAMP",
@@ -616,6 +666,16 @@
         ],
         "parameters": [
           {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
             "description": "Provider category",
             "example": "CRYPTO_ONRAMP",
             "name": "category",
@@ -725,6 +785,16 @@
           "Supported"
         ],
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
           {
             "description": "Provider category",
             "example": "CRYPTO_ONRAMP",
@@ -879,6 +949,16 @@
           "Supported"
         ],
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
           {
             "description": "Country code",
             "example": "US",

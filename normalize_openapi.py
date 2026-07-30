@@ -69,6 +69,41 @@ def sync_openapi_info_version(payload: dict, version: str) -> int:
     return updated + 1
 
 
+def inject_meld_version_header(payload: dict, version: str) -> int:
+    """Mintlify renders OpenAPI header parameters, not the Readme-only x-readme.headers
+    extension; without a real parameter the Meld-Version header disappears from the
+    generated API reference pages. Add it to every operation (same version already
+    synced into x-readme.headers by sync_openapi_info_version)."""
+    updated = 0
+    for operations in payload.get("paths", {}).values():
+        if not isinstance(operations, dict):
+            continue
+        for method, operation in operations.items():
+            if method.lower() not in HTTP_METHODS or not isinstance(operation, dict):
+                continue
+            parameters = operation.setdefault("parameters", [])
+            existing = next(
+                (
+                    param for param in parameters
+                    if isinstance(param, dict) and param.get("name") == "Meld-Version" and param.get("in") == "header"
+                ),
+                None,
+            )
+            if existing is None:
+                parameters.insert(0, {
+                    "name": "Meld-Version",
+                    "in": "header",
+                    "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+                    "required": False,
+                    "schema": {"type": "string", "example": version},
+                })
+                updated += 1
+            elif existing.get("schema", {}).get("example") != version:
+                existing.setdefault("schema", {})["example"] = version
+                updated += 1
+    return updated
+
+
 def fallback_operation_slug(method: str, path: str) -> str:
     path_slug = slugify(path.replace("{", "").replace("}", ""))
     return f"{method}-{path_slug}"
@@ -466,6 +501,7 @@ def normalize_spec(spec_path: Path, is_latest: bool = True) -> int:
     version_key = version_key_from_spec_path(spec_path)
     if version_key:
         updated += sync_openapi_info_version(payload, version_display(version_key))
+        updated += inject_meld_version_header(payload, version_display(version_key))
     updated += normalize_descriptions(payload)
     updated += sanitize_component_schemas(payload)
     updated += inject_required_only_request_examples(payload)
