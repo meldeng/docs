@@ -74,7 +74,7 @@
           {
             "name": "Meld-Version",
             "in": "header",
-            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
             "required": false,
             "schema": {
               "type": "string",
@@ -94,7 +94,7 @@
           {
             "name": "Meld-Version",
             "in": "header",
-            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
             "required": false,
             "schema": {
               "type": "string",
@@ -245,7 +245,7 @@
           {
             "name": "Meld-Version",
             "in": "header",
-            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
             "required": false,
             "schema": {
               "type": "string",
@@ -335,7 +335,7 @@
           {
             "name": "Meld-Version",
             "in": "header",
-            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
             "required": false,
             "schema": {
               "type": "string",
@@ -444,7 +444,7 @@
           {
             "name": "Meld-Version",
             "in": "header",
-            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
             "required": false,
             "schema": {
               "type": "string",
@@ -528,7 +528,7 @@
           {
             "name": "Meld-Version",
             "in": "header",
-            "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
             "required": false,
             "schema": {
               "type": "string",

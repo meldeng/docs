@@ -69,6 +69,9 @@ def sync_openapi_info_version(payload: dict, version: str) -> int:
     return updated + 1
 
 
+MELD_VERSION_HEADER_DESCRIPTION = "Dated API version to use for this request, e.g. `2026-02-03`."
+
+
 def inject_meld_version_header(payload: dict, version: str) -> int:
     """Mintlify renders OpenAPI header parameters, not the Readme-only x-readme.headers
     extension; without a real parameter the Meld-Version header disappears from the
@@ -93,14 +96,21 @@ def inject_meld_version_header(payload: dict, version: str) -> int:
                 parameters.insert(0, {
                     "name": "Meld-Version",
                     "in": "header",
-                    "description": "Dated API version to use for this request, e.g. `2026-02-03`. Defaults to the latest version when omitted.",
+                    "description": MELD_VERSION_HEADER_DESCRIPTION,
                     "required": False,
                     "schema": {"type": "string", "example": version},
                 })
                 updated += 1
-            elif existing.get("schema", {}).get("example") != version:
-                existing.setdefault("schema", {})["example"] = version
-                updated += 1
+            else:
+                changed = False
+                if existing.get("schema", {}).get("example") != version:
+                    existing.setdefault("schema", {})["example"] = version
+                    changed = True
+                if existing.get("description") != MELD_VERSION_HEADER_DESCRIPTION:
+                    existing["description"] = MELD_VERSION_HEADER_DESCRIPTION
+                    changed = True
+                if changed:
+                    updated += 1
     return updated
 
 
