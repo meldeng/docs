@@ -33,6 +33,10 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/WebhookProfileCreateRequest"
+              },
+              "example": {
+                "name": "<string>",
+                "url": "<string>"
               }
             }
           },
@@ -69,7 +73,19 @@
         ],
         "x-mint": {
           "href": "/api-reference/webhooks/2023-12-19/profile/webhooks-profiles-create"
-        }
+        },
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          }
+        ]
       },
       "get": {
         "tags": [
@@ -79,6 +95,16 @@
         "description": "Returns a list of webhook profiles that match the query parameters. The webhook profiles are sorted by name.",
         "operationId": "webhooks-profiles-search",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "before",
             "in": "query",
@@ -183,7 +209,19 @@
         ],
         "x-mint": {
           "href": "/api-reference/webhooks/2023-12-19/profile/webhooks-events-get"
-        }
+        },
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          }
+        ]
       }
     },
     "/notifications/webhooks/{webhookProfileId}": {
@@ -194,6 +232,16 @@
         "summary": "Get an existing webhook profile",
         "operationId": "webhooks-profiles-get",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "webhookProfileId",
             "in": "path",
@@ -254,6 +302,16 @@
         "summary": "Update an existing webhook profile",
         "operationId": "webhooks-profiles-update",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "webhookProfileId",
             "in": "path",
@@ -327,6 +385,16 @@
         "description": "Sends a WEBHOOK_TEST event to the URL in the profile",
         "operationId": "webhooks-profiles-test",
         "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2023-12-19"
+            }
+          },
           {
             "name": "webhookProfileId",
             "in": "path",
