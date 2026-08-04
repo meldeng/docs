@@ -6,36 +6,30 @@ title: "Ramp Intelligence"
 
 Meld's intelligent quote ranking system maximizes conversion rates by guiding users toward the most suitable payment providers. Through advanced algorithms analyzing user history, provider performance, and KYC requirements, Meld helps developers achieve significantly higher success rates.
 
-
 <Note>
-### **Proven Results**
-
   Meld's rampScore and lowKyc optimization features have enabled developers to achieve **69-94% end-to-end conversion rates** - a dramatic improvement over industry averages.
 </Note>
-
 
 ## Overview
 
 Every quote response includes intelligent ranking data to help you:
 
-* **Prioritize familiar providers** where users have succeeded before
-* **Identify low-friction options** requiring minimal verification
-* **Optimize for user success** based on historical performance
-* **Reduce abandonment rates** through smart provider selection
-
+- **Prioritize familiar providers** where users have succeeded before
+- **Identify low-friction options** requiring minimal verification
+- **Optimize for user success** based on historical performance
+- **Reduce abandonment rates** through smart provider selection
 
 <Note>
-### **Scope**: These optimization features apply to buy transactions only and are included automatically in all quote responses.
+  Scope: These optimization features apply to buy transactions only and are included automatically in all quote responses. **You must pass in a customerId or externalCustomerId when calling quotes for these features to have maximum effect.**
 </Note>
-
 
 ## Understanding KYC Impact
 
 **Know Your Customer (KYC)** verification significantly impacts conversion rates. Each provider has different requirements:
 
-* **Minimal KYC**: Email, phone, basic details (high conversion)
-* **Standard KYC**: Document uploads, identity verification (medium conversion)
-* **Enhanced KYC**: Bank statements, proof of funds (low conversion)
+- **Minimal KYC**: Email, phone, basic details (high conversion)
+- **Standard KYC**: Document uploads, identity verification (medium conversion)
+- **Enhanced KYC**: Bank statements, proof of funds (low conversion)
 
 Meld's optimization ensures users are directed to providers where they've already completed verification, dramatically reducing friction.
 
@@ -57,47 +51,45 @@ Meld's algorithm processes multiple data points, updated several times daily:
 
 **User History (Primary Factor)**
 
-* Previous successful transactions with each provider
-* Transaction recency and frequency
-* Failure patterns and recovery behavior
-* Cross-wallet transaction history within Meld network
+- Previous successful transactions with each provider
+- Transaction recency and frequency
+- Failure patterns and recovery behavior
+- Cross-wallet transaction history within Meld network
 
 **Provider Performance**
 
-* Historical success rates by geography and payment method
-* Average processing times and reliability metrics
-* Fee competitiveness and spread analysis
-* Payment method diversity and regional support
+- Historical success rates by geography and payment method
+- Average processing times and reliability metrics
+- Fee competitiveness and spread analysis
+- Payment method diversity and regional support
 
 **Market Dynamics**
 
-* Real-time provider availability and capacity
-* Regional regulatory compliance status
-* Seasonal performance variations
+- Real-time provider availability and capacity
+- Regional regulatory compliance status
+- Seasonal performance variations
 
 ### Score Interpretation
 
-| Score Range | Meaning             | Recommendation                                    |
-| ----------- | ------------------- | ------------------------------------------------- |
-| 70-100      | **Excellent Match** | Multiple recent successes, prioritize prominently |
-| 30-69       | **Good Match**      | Some success history, feature positively          |
-| 0-29        | **New/Unknown**     | No significant history, standard positioning      |
-
+| Score Range | Meaning | Recommendation |
+| --- | --- | --- |
+| 70-100 | **Excellent Match** | Multiple recent successes, prioritize prominently |
+| 30-69 | **Good Match** | Some success history, feature positively |
+| 0-29 | **New/Unknown** | No significant history, standard positioning |
 
 <Warning>
-**Implementation Note**: Always include the user's `walletAddress` in quote requests to enable personalized scoring.
+  **Implementation Note**: Always include the user's `walletAddress` in quote requests to enable personalized scoring.
 </Warning>
-
 
 ### Implementation Strategy
 
 **Primary Sorting**: Always rank quotes by `rampScore` (highest first)
 
-**Visual Emphasis**: Highlight providers with scores > 30 using:
+**Visual Emphasis**: Highlight providers with scores \> 30 using:
 
-* "⭐ Recommended" badges
-* Primary button styling
-* "You've used this before" messaging
+- "⭐ Recommended" badges
+- Primary button styling
+- "You've used this before" messaging
 
 **Code Example**:
 
@@ -124,11 +116,9 @@ function getRecommendationBadge(score: number): string {
 }
 ```
 
-
 <Note>
-### **Best Practice**: Never hide or de-emphasize high-scoring options, even if they have higher fees. User familiarity typically outweighs small price differences in conversion impact.
+  **Best Practice**: Never hide or de-emphasize high-scoring options, even if they have higher fees. User familiarity typically outweighs small price differences in conversion impact.
 </Note>
-
 
 ## Low KYC Optimization
 
@@ -138,33 +128,33 @@ The `lowKyc` flag identifies providers where new users can complete transactions
 
 **✅ Low KYC Requirements:**
 
-* Basic information: email, phone, name
-* Simple verification: SMS codes, email confirmation
-* Optional: SSN or tax ID (varies by country)
-* **No document uploads required**
+- Basic information: email, phone, name
+- Simple verification: SMS codes, email confirmation
+- Optional: SSN or tax ID (varies by country)
+- **No document uploads required**
 
 **❌ Standard KYC Requirements:**
 
-* Government ID photos (license, passport)
-* Proof of address documents
-* Bank statements or financial verification
-* Selfie verification
+- Government ID photos (license, passport)
+- Proof of address documents
+- Bank statements or financial verification
+- Selfie verification
 
 ### Response Values
 
-| Value   | Meaning                                              | User Experience                     |
-| ------- | ---------------------------------------------------- | ----------------------------------- |
-| `true`  | No documents needed for this amount                  | ⚡ Fast completion (2-5 minutes)     |
-| `false` | Documents required                                   | 📋 Standard process (10-30 minutes) |
-| `null`  | Provider doesn't specify or amount exceeds threshold | 🤷 Unknown requirements             |
+| Value | Meaning | User Experience |
+| --- | --- | --- |
+| `true` | No documents needed for this amount | ⚡ Fast completion (2-5 minutes) |
+| `false` | Documents required | 📋 Standard process (10-30 minutes) |
+| `null` | Provider doesn't specify or amount exceeds threshold | 🤷 Unknown requirements |
 
 ### Implementation Guidelines
 
 **Badge Messaging**:
 
-* `lowKyc: true` → "⚡ No Documents Required"
-* `lowKyc: false` → Standard presentation
-* `lowKyc: null` → No special treatment
+- `lowKyc: true` → "⚡ No Documents Required"
+- `lowKyc: false` → Standard presentation
+- `lowKyc: null` → No special treatment
 
 **Code Example**:
 
@@ -178,11 +168,9 @@ function shouldHighlightForSpeed(quote: Quote): boolean {
 }
 ```
 
-
 <Note>
-### **Conversion Impact**: Low KYC options can improve completion rates by 40-60% for new users, making them valuable for customer acquisition.
+  **Conversion Impact**: Low KYC options can improve completion rates by 40-60% for new users, making them valuable for customer acquisition.
 </Note>
-
 
 ## Implementation Example
 
@@ -244,21 +232,21 @@ Here's a realistic quote response showing how optimization parameters work toget
 
 **1. UNLIMIT (Score: 78.5)**
 
-* 🏆 **Primary Recommendation**: Highest customer score indicates strong success history
-* **UI Treatment**: Featured position, "Your Best Choice" badge
-* **Conversion Expectation**: Very high (user familiarity)
+- 🏆 **Primary Recommendation**: Highest customer score indicates strong success history
+- **UI Treatment**: Featured position, "Your Best Choice" badge
+- **Conversion Expectation**: Very high (user familiarity)
 
 **2. KRYPTONIM (Score: 45.2)**
 
-* ⚡ **Speed Advantage**: `lowKyc: true` means fast completion for new users
-* **UI Treatment**: "No Documents Required" badge
-* **Conversion Expectation**: Good for new users, moderate for returning
+- ⚡ **Speed Advantage**: `lowKyc: true` means fast completion for new users
+- **UI Treatment**: "No Documents Required" badge
+- **Conversion Expectation**: Good for new users, moderate for returning
 
 **3. STRIPE (Score: 12.1)**
 
-* **Standard Treatment**: Lowest score, no special advantages
-* **UI Treatment**: Regular presentation
-* **Conversion Expectation**: Lower (unknown user history)
+- **Standard Treatment**: Lowest score, no special advantages
+- **UI Treatment**: Regular presentation
+- **Conversion Expectation**: Lower (unknown user history)
 
 ### Optimal Implementation Strategy
 
@@ -277,11 +265,9 @@ function optimizeQuoteDisplay(quotes: Quote[]): Quote[] {
 }
 ```
 
-
 <Note>
-### **Key Principle**: Rank by `rampScore` first, then enhance with `lowKyc` badges. Never let low KYC override strong user history - familiarity typically wins over convenience.
+  **Key Principle**: Rank by `rampScore` first, then enhance with `lowKyc` badges. Never let low KYC override strong user history - familiarity typically wins over convenience.
 </Note>
-
 
 ## Summary
 
@@ -289,9 +275,9 @@ Meld's conversion optimization combines user history intelligence with friction 
 
 **Implementation Checklist:**
 
-* ✅ Always include `walletAddress` in quote requests
-* ✅ Sort quotes by `rampScore` (highest first)
-* ✅ Add visual badges for scores > 30
-* ✅ Highlight `lowKyc: true` options with speed messaging
-* ✅ Never override high rampScore with other factors
-* ✅ Monitor conversion metrics and iterate
+- ✅ Always include `walletAddress` in quote requests
+- ✅ Sort quotes by `rampScore` (highest first)
+- ✅ Add visual badges for scores \> 30
+- ✅ Highlight `lowKyc: true` options with speed messaging
+- ✅ Never override high rampScore with other factors
+- ✅ Monitor conversion metrics and iterate
