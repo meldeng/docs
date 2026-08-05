@@ -1,0 +1,427 @@
+---
+title: "Accept and Export KYC"
+hidden: true
+url: "docs/stablecoins/unified-kyc/accept-and-export-kyc"
+---
+
+This guide covers Meld's **Accept and Export Raw KYC Data** product. Use it when you already collect KYC with your own vendor and want to:
+
+1. **Accept** — push that KYC into Meld so Meld's KYC provider (currently Sumsub) can verify the user.
+2. **Export** — pull the verified KYC back out later as either raw applicant data \+ document images, or a Sumsub share token for another product that uses Sumsub.
+
+Meld does not store raw KYC field values or document images. Data is passed through to the KYC provider on submit, and fetched from the provider on export. Logs redact KYC fields entirely; Meld only retains metadata (customer id, timestamps, requesting party).
+
+Currently supported KYC provider: **Sumsub** only. Contact your account manager to enable this product on your account.
+
+## Flows at a glance
+
+| Flow | Endpoint | Content type | What you get |
+| --- | --- | --- | --- |
+| Accept raw KYC | `POST /accounts/customers/{customerId}/kyc/initiate` | `multipart/form-data` | KYC status `PENDING` \+ optional status URL |
+| Export as Sumsub token | `POST /accounts/customers/{customerId}/kyc/export` | JSON in / JSON out | `applicantId` \+ `shareToken` |
+| Export as raw data | `POST /accounts/customers/{customerId}/kyc/export` | JSON in / `multipart/form-data` out | JSON `data` part \+ document file parts |
+
+Raw-data export returns `multipart/form-data`, not JSON. Parse the response as multipart: a JSON `data` part plus one file part per document image.
+
+---
+
+## Prerequisites
+
+- Sumsub is enabled on your Meld account for raw KYC import/export
+- You can store the Meld `customerId` against each of your users
+- You gather end-user consent in your UI before sharing KYC data with Meld and downstream partners
+- You have a webhook endpoint for `CUSTOMER_KYC_STATUS_CHANGE` (or you plan to poll the customer)
+
+---
+
+## Step 1: Create a Meld customer
+
+Call `POST /accounts/customers` once per user.
+
+```json
+{
+  "name": {
+    "firstName": "Jane",
+    "lastName": "Doe"
+  },
+  "email": "jane.doe@example.com",
+  "dateOfBirth": "1990-01-30",
+  "phone": "+15551234567",
+  "externalId": "your-internal-user-id"
+}
+```
+
+| Field | Notes |
+| --- | --- |
+| `dateOfBirth` | ISO date `yyyy-MM-dd` |
+| `externalId` | Your internal user id (optional but recommended). Response echoes it as `externalId`. |
+| `phone` | E.164 format |
+
+Response (abbreviated):
+
+```json
+{
+  "id": "WmYumpKThCLWdgdK4fu2oh",
+  "accountId": "W932jkkjn2jnjn",
+  "externalId": "your-internal-user-id",
+  "name": {
+    "firstName": "Jane",
+    "lastName": "Doe"
+  },
+  "email": "jane.doe@example.com",
+  "dateOfBirth": "1990-01-30",
+  "phone": "+15551234567",
+  "status": "ACTIVE"
+}
+```
+
+Store `id` as the Meld `customerId`. You need it for initiate and export.
+
+With `Meld-Version` dated `2023-04-01` or later, the customer response also includes `serviceProviderCustomers` (used in Step 2 to read KYC status).
+
+---
+
+## Step 2: Accept raw KYC data
+
+Submit applicant PII and document images as **multipart/form-data** to:
+
+`POST /accounts/customers/{customerId}/kyc/initiate`
+
+Do **not** send this as JSON. Mode `RAW_DATA_IMPORT` is only accepted on the multipart route.
+
+### Multipart parts
+
+| Part | Type | Required | Description |
+| --- | --- | --- | --- |
+| `data` | JSON (string or file part) | Yes | Applicant metadata; see schema below |
+| One part per document | File (`image/jpeg`, `image/png`, etc.) | Yes | Named to match each `documents[].part` in `data` |
+
+### `data` JSON schema
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "RAW_DATA_IMPORT",
+  "applicantData": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "dob": "1990-01-15",
+    "nationality": "USA",
+    "phone": "+15551234567",
+    "email": "jane.doe@example.com",
+    "tin": "123-45-6789",
+    "taxResidenceCountry": "USA",
+    "address": {
+      "country": "USA",
+      "street": "1 Main St",
+      "subStreet": "Apt 4",
+      "town": "Springfield",
+      "state": "IL",
+      "postCode": "62704"
+    },
+    "documents": [
+      {
+        "part": "docFront",
+        "idDocType": "ID_CARD",
+        "idDocSubType": "FRONT_SIDE",
+        "country": "USA"
+      },
+      {
+        "part": "docBack",
+        "idDocType": "ID_CARD",
+        "idDocSubType": "BACK_SIDE",
+        "country": "USA"
+      },
+      {
+        "part": "selfie",
+        "idDocType": "SELFIE",
+        "country": "USA"
+      }
+    ]
+  }
+}
+```
+
+### Field notes
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `serviceProvider` | Yes | `SUMSUB` |
+| `mode` | Yes | Must be `RAW_DATA_IMPORT` |
+| `applicantData.firstName` / `lastName` | Yes |  |
+| `applicantData.dob` | Yes | ISO date `yyyy-MM-dd` |
+| `applicantData.nationality` | Yes | 3-letter country code (e.g. `USA`) |
+| `applicantData.email` | Yes |  |
+| `applicantData.phone` | No | E.164 when provided |
+| `applicantData.tin` | No | Tax id (e.g. SSN) |
+| `applicantData.taxResidenceCountry` | Yes | 3-letter country code |
+| `applicantData.address` | Yes | `country` required; `street`, `subStreet`, `town`, `state`, `postCode` optional |
+| `applicantData.documents` | Yes | At least one document |
+| `documents[].part` | Yes | Must match a file part name in the same request (`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`) |
+| `documents[].idDocType` | Yes | `PASSPORT`, `ID_CARD`, `DRIVERS`, `RESIDENCE_PERMIT`, or `SELFIE` |
+| `documents[].idDocSubType` | No | `FRONT_SIDE` / `BACK_SIDE` for double-sided docs; omit for single-sided types like `PASSPORT` and `SELFIE` |
+| `documents[].country` | No | 3-letter issuing country code |
+| `kycShareProviders` | No | Optional set of additional providers to share KYC with after approval |
+
+### Example (curl)
+
+```bash
+curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/initiate" \
+  -u "{apiKey}:{apiSecret}" \
+  -F 'data={
+    "serviceProvider":"SUMSUB",
+    "mode":"RAW_DATA_IMPORT",
+    "applicantData":{
+      "firstName":"Jane",
+      "lastName":"Doe",
+      "dob":"1990-01-15",
+      "nationality":"USA",
+      "phone":"+15551234567",
+      "email":"jane.doe@example.com",
+      "taxResidenceCountry":"USA",
+      "address":{"country":"USA","street":"1 Main St","town":"Springfield","state":"IL","postCode":"62704"},
+      "documents":[
+        {"part":"docFront","idDocType":"ID_CARD","idDocSubType":"FRONT_SIDE","country":"USA"},
+        {"part":"docBack","idDocType":"ID_CARD","idDocSubType":"BACK_SIDE","country":"USA"},
+        {"part":"selfie","idDocType":"SELFIE","country":"USA"}
+      ]
+    }
+  };type=application/json' \
+  -F "docFront=@./id-front.jpg;type=image/jpeg" \
+  -F "docBack=@./id-back.jpg;type=image/jpeg" \
+  -F "selfie=@./selfie.jpg;type=image/jpeg"
+```
+
+### Response
+
+```json
+{
+  "customerId": "WmYumpKThCLWdgdK4fu2oh",
+  "serviceProvider": "SUMSUB",
+  "status": "PENDING",
+  "url": "https://kyc-provider.example.com/verify/abc123"
+}
+```
+
+| Field | Notes |
+| --- | --- |
+| `status` | One of `PENDING`, `APPROVED`, `REJECTED`, `EXPIRED`, `UNKNOWN` |
+| `url` | Sumsub WebSDK link for reference/status. When a selfie is imported, the applicant does not need an extra liveness step in the WebSDK. |
+
+Meld creates (or reuses) a Sumsub applicant, uploads the documents, and requests review immediately.
+
+### Wait for approval
+
+Poll `GET /accounts/customers/{customerId}` (with a `Meld-Version` of `2023-04-01` or later) or listen for `CUSTOMER_KYC_STATUS_CHANGE` until `serviceProviderCustomers[].kyc.status` is `APPROVED`.
+
+Webhook payload example:
+
+```json
+{
+  "eventType": "CUSTOMER_KYC_STATUS_CHANGE",
+  "eventId": "4cWK83avakzy8jG4ztmBUk",
+  "timestamp": "2026-02-25T18:55:08.968360756Z",
+  "accountId": "W9jSUfLiRWx1GkaMGt7DTT",
+  "profileId": "WmZ1rqsv532RYW9ELxM4eo",
+  "version": "2026-02-02",
+  "payload": {
+    "requestId": "4456e4e9b0174c53b962227df6766ca7",
+    "customerId": "WmYumpKThCLWdgdK4fu2oh",
+    "serviceProvider": "SUMSUB",
+    "status": "APPROVED",
+    "statusUpdatedAt": "2026-02-25T18:55:08.960052Z"
+  }
+}
+```
+
+Customer lookup (abbreviated, versioned response):
+
+```json
+{
+  "id": "WmYumpKThCLWdgdK4fu2oh",
+  "externalId": "your-internal-user-id",
+  "serviceProviderCustomers": [
+    {
+      "serviceProvider": "SUMSUB",
+      "id": "65f3a9c1f0b3a12d34e56789",
+      "kyc": {
+        "status": "APPROVED",
+        "updatedAt": "2026-02-24T22:22:43.012616Z"
+      },
+      "status": "ACTIVE"
+    }
+  ]
+}
+```
+
+---
+
+## Step 3: Export KYC
+
+Once the customer has a Sumsub applicant (created by a successful accept), call:
+
+`POST /accounts/customers/{customerId}/kyc/export`
+
+Nothing is persisted during export. The customer must already have an applicant for the given `kycProvider`; otherwise the API returns `404`. Choose a mode:
+
+### Mode A — Sumsub share token (`TOKEN`)
+
+Use when the consuming product also uses Sumsub and can import via share token. No raw PII or images transit through your export response.
+
+**Request**
+
+```json
+{
+  "mode": "TOKEN",
+  "kycProvider": "SUMSUB",
+  "recipientClientId": "your.partner.client.id"
+}
+```
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `mode` | Yes | `TOKEN` |
+| `kycProvider` | Yes | `SUMSUB` |
+| `recipientClientId` | Yes for `TOKEN` | Sumsub client id the share token is issued for |
+
+**Response** (`application/json`)
+
+```json
+{
+  "mode": "TOKEN",
+  "applicantId": "65f3a9c1f0b3a12d34e56789",
+  "shareToken": "_act-sbx-jwt-…"
+}
+```
+
+Pass `shareToken` (and `applicantId` if needed) to the receiving Sumsub integration.
+
+### Mode B — Raw applicant data (`RAW_DATA`)
+
+Use when the consuming product needs PII and document images directly.
+
+**Request**
+
+```json
+{
+  "mode": "RAW_DATA",
+  "kycProvider": "SUMSUB"
+}
+```
+
+**Response** (`multipart/form-data`)
+
+| Part | Type | Description |
+| --- | --- | --- |
+| `data` | JSON | Applicant metadata in the same schema shape as raw import `data` (`mode` is `RAW_DATA_IMPORT`) |
+| One part per document | File | Image bytes. Part names are **generated on export** (see below), not the names you used on import |
+
+Example `data` part:
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "RAW_DATA_IMPORT",
+  "applicantData": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "dob": "1990-01-15",
+    "nationality": "USA",
+    "phone": "+15551234567",
+    "email": "jane.doe@example.com",
+    "tin": "123-45-6789",
+    "taxResidenceCountry": "USA",
+    "address": {
+      "country": "USA",
+      "street": "1 Main St",
+      "town": "Springfield",
+      "state": "US-IL",
+      "postCode": "62704"
+    },
+    "documents": [
+      {
+        "part": "ID_CARD_FRONT_SIDE_abc123",
+        "idDocType": "ID_CARD",
+        "idDocSubType": "FRONT_SIDE",
+        "country": "USA"
+      },
+      {
+        "part": "ID_CARD_BACK_SIDE_def456",
+        "idDocType": "ID_CARD",
+        "idDocSubType": "BACK_SIDE",
+        "country": "USA"
+      },
+      {
+        "part": "SELFIE_ghi789",
+        "idDocType": "SELFIE",
+        "country": "USA"
+      }
+    ]
+  }
+}
+```
+
+Notes on the raw export response:
+
+- Document part names follow `{idDocType}_{idDocSubType}_{imageId}` (or `{idDocType}_{imageId}` when there is no subtype). Use `applicantData.documents[].part` to match each file part.
+- `idDocType` / `idDocSubType` are passed through as returned by Sumsub (strings, not necessarily limited to Meld's import enums).
+- Fields not available from the provider may be `null`.
+- Address `state` may be an ISO 3166-2 code (e.g. `US-CA`) when Sumsub provides `stateCode`.
+
+### Example (curl) — token export
+
+```bash
+curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/export" \
+  -u "{apiKey}:{apiSecret}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mode": "TOKEN",
+    "kycProvider": "SUMSUB",
+    "recipientClientId": "your.partner.client.id"
+  }'
+```
+
+### Example (curl) — raw export
+
+```bash
+curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/export" \
+  -u "{apiKey}:{apiSecret}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: multipart/form-data" \
+  -d '{
+    "mode": "RAW_DATA",
+    "kycProvider": "SUMSUB"
+  }' \
+  --output kyc-export.multipart
+```
+
+Parse `kyc-export.multipart` as multipart: read the `data` JSON part, then each document file part named in `documents[].part`.
+
+---
+
+## Error cases
+
+| Situation | Typical result |
+| --- | --- |
+| `RAW_DATA_IMPORT` sent as JSON instead of multipart | `400` — must use multipart initiate |
+| Missing file part declared in `documents[]` | `400` — missing/empty file part |
+| Invalid `data` JSON or bean validation failure | `400` — invalid raw KYC request |
+| Customer has no Sumsub applicant yet | `404` — no KYC applicant for customer and provider |
+| `TOKEN` export without `recipientClientId` | `400` — `recipientClientId` is required |
+| `kycProvider` missing or not `SUMSUB` | `400` |
+| Customer already has KYC at a different level | Fail — cannot start `RAW_DATA_IMPORT` against an incompatible existing applicant |
+
+---
+
+## Data handling
+
+- Raw KYC data is never stored by Meld; it is passed through transiently on accept and fetched from the provider on export.
+- KYC fields are fully redacted in Meld logs.
+- Audit metadata (customer id, timestamp, requesting party) may be retained without field values.
+- Always obtain user consent before submitting or retrieving KYC on their behalf.
+
+---
+
+## Related flows
+
+If you already hold a Sumsub applicant and prefer not to resubmit raw images, you can instead initiate KYC with JSON mode `TOKEN_IMPORT` (share-token import). That path is covered under Unified KYC / sandbox KYC testing docs and is separate from raw-data accept.
