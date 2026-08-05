@@ -1,14 +1,16 @@
 ---
 title: "Accept and Export KYC"
-hidden: false
+hidden: true
 ---
 
 This guide covers Meld's **Accept and Export Raw KYC Data** product. Use it when you already collect KYC with your own vendor and want to:
 
 1. **Accept** — push that KYC into Meld so Meld's KYC provider (currently Sumsub) can verify the user.
-2. **Export** — pull the verified KYC back out later as either raw applicant data \+ document images, or a Sumsub share token for another product that uses Sumsub.
+2. **Export** — pull verified KYC back out later as either raw applicant data \+ document images, or a Sumsub share token for another product that uses Sumsub.
 
-Meld does not store raw KYC field values or document images. Data is passed through to the KYC provider on submit, and fetched from the provider on export. Logs redact KYC fields entirely; Meld only retains metadata (customer id, timestamps, requesting party).
+These are independent flows. You may use only accept, only export, or both — neither depends on running the other as a prior step on this page.
+
+Meld does not store raw KYC field values or document images. Data is passed through to the KYC provider on accept, and fetched from the provider on export. Logs redact KYC fields entirely; Meld only retains metadata (customer id, timestamps, requesting party). Always obtain user consent before accepting or exporting KYC on their behalf.
 
 Currently supported KYC provider: **Sumsub** only. Contact your account manager to enable this product on your account.
 
@@ -17,25 +19,28 @@ Currently supported KYC provider: **Sumsub** only. Contact your account manager 
 | Flow | Endpoint | Content type | What you get |
 | --- | --- | --- | --- |
 | Accept raw KYC | `POST /accounts/customers/{customerId}/kyc/initiate` | `multipart/form-data` | KYC status `PENDING` \+ optional status URL |
+| Accept Sumsub token | `POST /accounts/customers/{customerId}/kyc/initiate` | JSON (`TOKEN_IMPORT`) | Existing Sumsub applicant attached in Meld — see [You KYC the user](/docs/stablecoins/unified-kyc/you-kyc-the-user) and [KYC testing](/docs/stablecoins/sandbox-guide/kyc-testing) |
 | Export as Sumsub token | `POST /accounts/customers/{customerId}/kyc/export` | JSON in / JSON out | `applicantId` \+ `shareToken` |
 | Export as raw data | `POST /accounts/customers/{customerId}/kyc/export` | JSON in / `multipart/form-data` out | JSON `data` part \+ document file parts |
 
 Raw-data export returns `multipart/form-data`, not JSON. Parse the response as multipart: a JSON `data` part plus one file part per document image.
 
+This page documents **accept raw KYC** and **export** in full. For accepting an existing Sumsub share token instead of raw images, follow the Unified KYC guides linked above.
+
 ---
 
 ## Prerequisites
 
-- Sumsub is enabled on your Meld account for raw KYC import/export
+- Sumsub is enabled on your Meld account for raw KYC accept/export
 - You can store the Meld `customerId` against each of your users
 - You gather end-user consent in your UI before sharing KYC data with Meld and downstream partners
-- You have a webhook endpoint for `CUSTOMER_KYC_STATUS_CHANGE` (or you plan to poll the customer)
+- You have a webhook endpoint configured for `CUSTOMER_KYC_STATUS_CHANGE` — see [Webhook events](/docs/stablecoins/for-all-products/webhook-events) and [Webhook authentication](/docs/stablecoins/for-all-products/webhooks-authentication)
 
 ---
 
-## Step 1: Create a Meld customer
+## Create a Meld customer
 
-Call `POST /accounts/customers` once per user.
+Both flows need a Meld customer. Call `POST /accounts/customers` once per user (same pattern as [Meld KYCes the user](/docs/stablecoins/unified-kyc/meld-kyces-the-user)).
 
 ```json
 {
@@ -74,13 +79,13 @@ Response (abbreviated):
 }
 ```
 
-Store `id` as the Meld `customerId`. You need it for initiate and export.
+Store `id` as the Meld `customerId`. You need it for accept and export.
 
-With `Meld-Version` dated `2023-04-01` or later, the customer response also includes `serviceProviderCustomers` (used in Step 2 to read KYC status).
+With `Meld-Version` dated `2023-04-01` or later, the customer response also includes `serviceProviderCustomers` (including KYC status after accept).
 
 ---
 
-## Step 2: Accept raw KYC data
+## Flow: Accept raw KYC data
 
 Submit applicant PII and document images as **multipart/form-data** to:
 
@@ -205,15 +210,13 @@ curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/initiate" 
 | Field | Notes |
 | --- | --- |
 | `status` | One of `PENDING`, `APPROVED`, `REJECTED`, `EXPIRED`, `UNKNOWN` |
-| `url` | Sumsub WebSDK link for reference/status. When a selfie is imported, the applicant does not need an extra liveness step in the WebSDK. |
+| `url` | Sumsub WebSDK link for reference/status. When a selfie is accepted, the applicant does not need an extra liveness step in the WebSDK. |
 
 Meld creates (or reuses) a Sumsub applicant, uploads the documents, and requests review immediately.
 
 ### Wait for approval
 
-Poll `GET /accounts/customers/{customerId}` (with a `Meld-Version` of `2023-04-01` or later) or listen for `CUSTOMER_KYC_STATUS_CHANGE` until `serviceProviderCustomers[].kyc.status` is `APPROVED`.
-
-Webhook payload example:
+Listen for the `CUSTOMER_KYC_STATUS_CHANGE` webhook until `payload.status` is `APPROVED`. See [Webhook events](/docs/stablecoins/for-all-products/webhook-events) for the full event catalog and delivery behavior.
 
 ```json
 {
@@ -233,31 +236,15 @@ Webhook payload example:
 }
 ```
 
-Customer lookup (abbreviated, versioned response):
-
-```json
-{
-  "id": "WmYumpKThCLWdgdK4fu2oh",
-  "externalId": "your-internal-user-id",
-  "serviceProviderCustomers": [
-    {
-      "serviceProvider": "SUMSUB",
-      "id": "65f3a9c1f0b3a12d34e56789",
-      "kyc": {
-        "status": "APPROVED",
-        "updatedAt": "2026-02-24T22:22:43.012616Z"
-      },
-      "status": "ACTIVE"
-    }
-  ]
-}
-```
+If `payload.status` is `REJECTED`, the user failed KYC. They may retry accept with corrected data, but a rejection here often means they would also fail with onramps that rely on the same verification.
 
 ---
 
-## Step 3: Export KYC
+## Flow: Export KYC
 
-Once the customer has a Sumsub applicant (created by a successful accept), call:
+Export pulls KYC for a customer that already has a Sumsub applicant in Meld (for example after raw accept on this page, [token accept](/docs/stablecoins/unified-kyc/you-kyc-the-user), or [Meld-hosted KYC](/docs/stablecoins/unified-kyc/meld-kyces-the-user)).
+
+Call:
 
 `POST /accounts/customers/{customerId}/kyc/export`
 
@@ -312,8 +299,8 @@ Use when the consuming product needs PII and document images directly.
 
 | Part | Type | Description |
 | --- | --- | --- |
-| `data` | JSON | Applicant metadata in the same schema shape as raw import `data` (`mode` is `RAW_DATA_IMPORT`) |
-| One part per document | File | Image bytes. Part names are **generated on export** (see below), not the names you used on import |
+| `data` | JSON | Applicant metadata in the same schema shape as raw accept `data` (`mode` is `RAW_DATA_IMPORT`) |
+| One part per document | File | Image bytes. Part names are **generated on export** (see below), not the names you used on accept |
 
 Example `data` part:
 
@@ -363,7 +350,7 @@ Example `data` part:
 Notes on the raw export response:
 
 - Document part names follow `{idDocType}_{idDocSubType}_{imageId}` (or `{idDocType}_{imageId}` when there is no subtype). Use `applicantData.documents[].part` to match each file part.
-- `idDocType` / `idDocSubType` are passed through as returned by Sumsub (strings, not necessarily limited to Meld's import enums).
+- `idDocType` / `idDocSubType` are passed through as returned by Sumsub (strings, not necessarily limited to Meld's accept enums).
 - Fields not available from the provider may be `null`.
 - Address `state` may be an ISO 3166-2 code (e.g. `US-CA`) when Sumsub provides `stateCode`.
 
@@ -412,15 +399,11 @@ Parse `kyc-export.multipart` as multipart: read the `data` JSON part, then each 
 
 ---
 
-## Data handling
+## Related
 
-- Raw KYC data is never stored by Meld; it is passed through transiently on accept and fetched from the provider on export.
-- KYC fields are fully redacted in Meld logs.
-- Audit metadata (customer id, timestamp, requesting party) may be retained without field values.
-- Always obtain user consent before submitting or retrieving KYC on their behalf.
-
----
-
-## Related flows
-
-If you already hold a Sumsub applicant and prefer not to resubmit raw images, you can instead initiate KYC with JSON mode `TOKEN_IMPORT` (share-token import). That path is covered under Unified KYC / sandbox KYC testing docs and is separate from raw-data accept.
+- [Unified KYC overview](/docs/stablecoins/unified-kyc) — reuse one KYC across onramps
+- [You KYC the user](/docs/stablecoins/unified-kyc/you-kyc-the-user) — accept / pass a Sumsub token you already hold
+- [Meld KYCes the user](/docs/stablecoins/unified-kyc/meld-kyces-the-user) — Meld-hosted Sumsub link (`HOSTED_URL`)
+- [KYC testing](/docs/stablecoins/sandbox-guide/kyc-testing) — sandbox credentials and `TOKEN_IMPORT` examples
+- [Webhook events](/docs/stablecoins/for-all-products/webhook-events) — `CUSTOMER_KYC_STATUS_CHANGE` and other events
+- [Webhook authentication](/docs/stablecoins/for-all-products/webhooks-authentication) — verify webhook signatures
