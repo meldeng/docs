@@ -6,6 +6,13 @@ hidden: true
 
 This guide is for developers who want Meld to host the KYC flow. You'll call Meld's API to launch the KYC provider UI, KYC the user, then route them to an onramp that accepts the shared KYC token so they don't need to verify again.
 
+## Summary of the steps
+
+1. Create a Meld customer and store the `customerId`
+2. Check whether that customer is already KYC-approved
+3. If not, launch Meld's hosted KYC link and wait for the `APPROVED` webhook
+4. Start the transaction with `bypassKyc: true`
+
 ## Before you begin
 
 - You have contacted your Meld account manager to enable a KYC provider for you
@@ -24,7 +31,7 @@ To enable this flow, do the following:
 
 ## Step 1: Create a Meld customer
 
-This step is required for the user to skip logging into the onramp, and is a one-time setup per user. Call `POST /accounts/customers` and pass in the user's first name, last name, email address, phone number, and birthday. 
+This step is required for the user to skip logging into the onramp, and is a one-time setup per user. Call `POST /accounts/customers` and pass in the user's first name, last name, email address, phone number, and birthday.
 
 #### Request
 
@@ -125,7 +132,7 @@ _Note that Sumsub is being used as the sample KYC provider in these requests._
 }
 ```
 
-The response will include a `url` that you should then launch from your UI. 
+The response will include a `url` that you should then launch from your UI.
 
 #### Response
 
@@ -164,7 +171,7 @@ If the `serviceProviderCustomers.kyc.status` is `REJECTED`, this means the user 
 
 ## Step 4: Initiate a transaction
 
-Pass Meld the `customerId` of the user when you call `POST /crypto/session/widget`. Make sure to include the param `"bypassKyc": true`, which tells Meld to look up that customer's KYC information and forward it to the onramp. 
+Pass Meld the `customerId` of the user when you call `POST /crypto/session/widget`. Make sure to include the param `"bypassKyc": true`, which tells Meld to look up that customer's KYC information and forward it to the onramp.
 
 #### Request
 

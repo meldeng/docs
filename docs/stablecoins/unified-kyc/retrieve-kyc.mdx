@@ -11,12 +11,18 @@ This product is helpful for the use case where your user has already KYCed with 
 
 Meld does not store raw KYC field values or document images. Data is fetched from the KYC provider on export. Logs redact KYC fields entirely; Meld only retains metadata (customer id, timestamps, requesting party). Always obtain user consent before retrieving KYC on their behalf.
 
+## Summary of the steps
+
+1. Look up the Meld `customerId` for a user who has already been KYC-approved
+2. Get the user's consent to share their KYC data with the receiving product
+3. Call the export endpoint — either a share token or raw data plus documents
+4. Pass the result to your own KYC provider integration
+
 ## Before you begin
 
 - You have contacted your Meld account manager to enable this product for you
 - You can store the Meld `customerId` against each of your users
 - You gather end-user consent in your UI before sharing KYC data with Meld, yourself, and your downstream partners
-- You have a webhook endpoint configured for `CUSTOMER_KYC_STATUS_CHANGE` — see [Webhook events](/docs/stablecoins/for-all-products/webhook-events) and [Webhook authentication](/docs/stablecoins/for-all-products/webhooks-authentication)
 
 ## Flows at a glance
 
@@ -29,9 +35,9 @@ Raw-data export returns `multipart/form-data`, not JSON. Parse the response as m
 
 For broader Unified KYC context (reusing KYC across onramps), see [Unified KYC](/docs/stablecoins/unified-kyc).
 
-## Step 1: Create a Meld customer
+## Step 1: Retrieve Meld customer
 
-Call `POST /accounts/customers` once per user.
+Call `POST /accounts/customers` once per user. This will create the Meld customer if they don't exist, or fetch the existing customer if they exist.
 
 #### Request
 
@@ -41,10 +47,7 @@ Call `POST /accounts/customers` once per user.
     "firstName": "Jane",
     "lastName": "Doe"
   },
-  "email": "jane.doe@example.com",
-  "dateOfBirth": "1990-01-30",
-  "phone": "+15551234567",
-  "externalId": "your-internal-user-id"
+  "email": "jane.doe@example.com"
 }
 ```
 
@@ -65,10 +68,7 @@ Call `POST /accounts/customers` once per user.
     "firstName": "Jane",
     "lastName": "Doe"
   },
-  "email": "jane.doe@example.com",
-  "dateOfBirth": "1990-01-30",
-  "phone": "+15551234567",
-  "status": "ACTIVE"
+  "email": "jane.doe@example.com"
 }
 ```
 

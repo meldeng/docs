@@ -10,6 +10,14 @@ Passing Meld the KYC share token is preferable, but passing Meld the user's raw 
 
 Meld does not store raw KYC field values or document images. Data is passed through to the KYC provider on submit. Logs redact KYC fields entirely; Meld only retains metadata (customer id, timestamps, requesting party). Always obtain user consent before submitting KYC on their behalf.
 
+## Summary of the steps
+
+1. KYC the user with your own provider, and get their consent to share it
+2. Create a Meld customer and store the `customerId`
+3. Submit the KYC — either a share token or raw data plus documents
+4. Wait for `APPROVED`
+5. Start the transaction with `bypassKyc: true`
+
 ## Before you begin
 
 - You have contacted your Meld account manager to enable this product for you
@@ -79,7 +87,7 @@ All of this must be under a KYC level named `network-partner-level2.`
 
 ## Step 3: Create a Meld customer
 
-This step is required for the user to skip logging into the onramp, and is a one-time setup per user. Call `POST /accounts/customers` and pass in the user's first name, last name, email address, phone number, and birthday. 
+This step is required for the user to skip logging into the onramp, and is a one-time setup per user. Call `POST /accounts/customers` and pass in the user's first name, last name, email address, phone number, and birthday.
 
 #### Request
 
@@ -329,7 +337,7 @@ If `payload.status` is `REJECTED`, the user failed KYC. They may retry submit wi
 
 ## Step 5: Initiate a transaction
 
-Pass Meld the `customerId` of the user when you call `POST /crypto/session/widget`. Make sure to include the param `"bypassKyc": true`, which tells Meld to look up that customer's KYC information and forward it to the onramp. 
+Pass Meld the `customerId` of the user when you call `POST /crypto/session/widget`. Make sure to include the param `"bypassKyc": true`, which tells Meld to look up that customer's KYC information and forward it to the onramp.
 
 #### Request
 
