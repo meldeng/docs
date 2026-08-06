@@ -3,11 +3,12 @@ title: "Meld KYCes the User"
 description: "You call Meld's API to KYC the user"
 ---
 
-This guide is for developers who want Meld to host the KYC flow. You'll call Meld's API to launch the Sumsub UI, KYC the user, then route them to an onramp (currently Mercuryo and Topper) that accepts the shared KYC token so they don't need to verify again.
+This guide is for developers who want Meld to host the KYC flow. You'll call Meld's API to launch the KYC provider UI, KYC the user, then route them to an onramp that accepts the shared KYC token so they don't need to verify again.
 
 ## Before you begin
 
-- Sumsub must be enabled on your Meld account — contact your account manager
+- You have contacted your Meld account manager to enable a KYC provider for you
+
 - You can store the Meld `customerId` against each of your users
 - You have a webhook endpoint configured to receive `CUSTOMER_KYC_STATUS_CHANGE` events (or you plan to poll)
 
@@ -50,7 +51,7 @@ The response body will look like this:
   "dateOfBirth": "01-30-1980",
   "phone": "+1-111-222-3456",
   "externalCustomerId": "testUser1",
-  "id": "W912345678", // customerId to pass into /widget
+  "id": "WmYumpKThCLWdgdK4fu2oh", // customerId to pass into /widget
   "key": "N/A",
   "accountId": "W932jkkjn2jnjn",
   "addresses": {},
@@ -69,7 +70,7 @@ If the user has been KYCed successfully, then you do not have to KYC the user ag
 
 ```json
 {
-  "id": "W912345678",
+  "id": "WmYumpKThCLWdgdK4fu2oh",
   "accountId": "W932jkkjn2jnjn",
   "externalCustomerId": "testUser1",
 	"name": {
@@ -82,7 +83,7 @@ If the user has been KYCed successfully, then you do not have to KYC the user ag
 	"addresses": [],
 	"serviceProviderCustomers": [
 		{
-			"serviceProvider": "SUMSUB",
+			"serviceProvider": "SUMSUB",  // sample KYC provider
 			"id": "699e243ff55da9f719ad1d15",
 			"serviceProviderAccessProfileId": "WmZLEt7PVzFKYNvdyHLmc7",
 			"kyc": {
@@ -101,7 +102,7 @@ If the user has been KYCed successfully, then you do not have to KYC the user ag
 }
 ```
 
-If the user has not been successfully KYCed, then either `serviceProviderCustomers.kyc.status` will show a status other than `APPROVED`, or the `serviceProviderCustomers` object will be blank, depending on if the user has attempted KYC previously or not. Either way, this user will have to be KYCed.
+If the user has not been successfully KYCed, then either `serviceProviderCustomers.kyc.status` will show a status other than `APPROVED`, or the `serviceProviderCustomers` object will be blank, depending on if the user has attempted KYC previously or not. Either way, the user will have to be KYCed successfully with Meld first.
 
 ## Step 3: Have Meld KYC the User
 
@@ -109,18 +110,20 @@ This step is only needed if the user isn't already successfully KYCed. In other 
 
 To KYC the user, call `POST /accounts/customers/{customerId}/kyc/initiate`. The `customerId` is in the path, and your request body will look like this:
 
+_Note that Sumsub is being used as the sample KYC provider in these requests_
+
 ```json
 {
   "serviceProvider": "SUMSUB",
-	"mode": "HOSTED_URL"
+  "mode": "HOSTED_URL"
 }
 ```
 
-The response will be a Sumsub url that you should then launch from your UI. The response will look like this:
+The response will include a `url` that you should then launch from your UI. The response will look like this:
 
 ```json
 {
-	"customerId": "W912345678",
+	"customerId": "WmYumpKThCLWdgdK4fu2oh",
 	"serviceProvider": "SUMSUB",
 	"status": "PENDING",
 	"url": "https://kyclink.com"
@@ -139,7 +142,7 @@ As the user goes through the KYC flow, you will receive webhooks informing you t
     "version": "2026-02-02",
     "payload": {
       "requestId": "4456e4e9b0174c53b962227df6766ca7",
-      "customerId": "W912345678",
+      "customerId": "WmYumpKThCLWdgdK4fu2oh",
       "serviceProvider": "SUMSUB",
       "status": "APPROVED",
       "statusUpdatedAt": "2026-02-25T18:55:08.960052Z"
@@ -153,7 +156,7 @@ If the `serviceProviderCustomers.kyc.status` is `REJECTED`, this means the user 
 
 ## Step 4: Initiate a transaction
 
-If you send the user to an onramp that supports Sumsub token sharing, pass Meld the `customerId` of the user when you call `POST /crypto/session/widget`. Your request will look like this:
+Pass Meld the `customerId` of the user when you call `POST /crypto/session/widget`. Make sure to include the param `"bypassKyc": true`, which tells Meld to look up that customer's KYC information and forward it to the onramp. Your request will look like this:
 
 ```json
 {
@@ -167,7 +170,7 @@ If you send the user to an onramp that supports Sumsub token sharing, pass Meld 
   },
   "sessionType": "BUY",
   "bypassKyc": true,
-  "customerId": "W912345678"        // should be the same as the customer created above
+  "customerId": "WmYumpKThCLWdgdK4fu2oh"        // should be the same as the customer created above
 }
 ```
 
@@ -178,14 +181,14 @@ The response will look like this:
   "id": "WmYtVn52MCZkXQSdCFDU8N",
   "externalSessionId": null,
   "externalCustomerId": null,
-  "customerId": "W912345678",
+  "customerId": "WmYumpKThCLWdgdK4fu2oh",
   "widgetUrl": "https://meldcrypto.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ7.eyJpc3MiOiJtZWxkLmlvIiwiaWF0IjoxNzcxMjY3MDM4LCJzdWIiOiJjcnlwdG8iLCJleHAiOjE3NzEyNjg4MzgsImFjY291bnRJZCI6Ilc5a2c5aVAxc2JweVpwdFFEY0NNSnUiLCJzZXNzaW9uSWQiOiJXbVl0Vm41Mk1DWmtYUVNkQ0ZEVThOIn0.eqFYseggwUyv-F7WyO-LKEhwEqLiWVOmAV4lNjuth60",
   "serviceProviderWidgetUrl": "https://exchange.mercuryo.io?widget_id=34c04adf-d04a-42de-a4aa-609a302b24tz&currency=BTC&fiat_currency=USD&fiat_amount=100&address=1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F&type=buy&network=BITCOIN&merchant_transaction_id=WmYtVmRXgDnavemEzb3k6K&redirect_url=https%3A%2F%2Fmeldcrypto.com&country_code=US&email&payment_method=card&signature=zxcvbnmasdfghjkl",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtZWxkLmlvIiwiaWF0IjoxNzcxMjY3MDM4LCJzdWIiOiJjcnlwdG8iLCJleHAiOjE3NzEyNjg4MzgsImFjY291bnRJZCI6Ilc5a2c5aVAxc2JweVpwdFFEY0NNSnUiLCJzZXNzaW9uSWQiOiJXbVl0Vm41Mk1DWmtYUVNkQ0ZEVThOIn0.eqFYseggwUyv-F7WyO-LKEhwEqLiWVOmAV4lNjuth60"
 }
 ```
 
-If you executed every step correctly, then when you open either the `widgetUrl` or `serviceProviderWidgetUrl`, then the user go straight to the Mercuryo payment screen, as seen in this demo video.
+If you executed every step correctly, then when you open either the `widgetUrl` or `serviceProviderWidgetUrl`, then the user go straight to the onramp's payment screen, as seen in this demo video.
 
 <iframe src="https://www.youtube.com/embed/D1_sUa79Jik" title="YouTube video player" frameborder="0" className="w-full aspect-video rounded-xl" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen />
 

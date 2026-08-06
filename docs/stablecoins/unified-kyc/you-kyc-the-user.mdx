@@ -1,45 +1,56 @@
 ---
 title: "You KYC the User"
-description: "You integrate Sumsub to KYC the user"
+description: "You integrate a KYC provider to KYC the user"
 ---
 
-This guide is for developers who already KYC their users with Sumsub and want to reuse that verification with Meld onramps. You'll pass the user's Sumsub KYC token to Meld when creating a widget session, so the user can skip KYC on the onramp.
+This guide is for developers who already KYC their users using a KYC provider and want to reuse that verification with Meld onramps. You'll pass Meld the user's KYC data either via a KYC share token or via raw data, so the user can skip KYC on the onramp.
+
+Passing Meld the KYC share token is preferable, but passing Meld the user's raw KYC data instead can be used if you collect KYC using a KYC provider that Meld doesn't support, or if you collect KYC information directly from the user without using a KYC provider.
+
+Meld does not store raw KYC field values or document images. Data is passed through to the KYC provider on submit. Logs redact KYC fields entirely; Meld only retains metadata (customer id, timestamps, requesting party). Always obtain user consent before submitting KYC on their behalf.
 
 ## Before you begin
 
-- You have a Sumsub account and have integrated their KYC flow
-- You have requested Meld enable Sumsub token sharing for your account
-- You can obtain the Sumsub KYC token for each user
-- You get a 1 time token from each onramp you use and add it to your Sumsub dashboard
-- The onramp you plan to route to supports Sumsub token sharing (currently Mercuryo and Topper)
+- You have contacted your Meld account manager to enable this product for you
+- You have a KYC provider account and have integrated their KYC flow
+
+- You get a 1 time token from each onramp you use and add it to your KYC provider dashboard
+- **It is very important that you show the user a screen where they consent to having their KYC data shared with Meld and the onramps, which is what is happening in this flow. While the KYC provider stores the physical KYC data, they will share it with the onramp for the user to skip KYC in the onramp, and the user must consent to this data sharing.**
 
 <Note>
   For sandbox testing details, see [KYC testing](/docs/stablecoins/sandbox-guide/kyc-testing).
 </Note>
 
-**This flow works if you KYC the user via Sumsub and send them to the onramp Mercuryo or Topper.**
+## Flows at a glance
+
+| Flow | Endpoint | Content type | API Response Contains |
+| :-- | :-- | :-- | :-- |
+| Submit KYC provider token | `POST /accounts/customers/{customerId}/kyc/initiate` | JSON (`TOKEN_IMPORT`) | Existing Sumsub applicant attached in Meld |
+| Submit raw KYC | `POST /accounts/customers/{customerId}/kyc/initiate` | `multipart/form-data` (`RAW_DATA_IMPORT`) | KYC status `PENDING` \+ optional status URL |
 
 To enable this flow, do the following:
 
-## Step 1: Sumsub Setup
+## Step 1: KYC Provider Setup 
 
-This requires you to integrate [Sumsub](https://docs.sumsub.com/reference/about-sumsub-api), and use them to KYC your user.
+**This step is needed for token share. If you're passing the raw KYC data instead, you can skip this step.**
 
-Get a share token from each onramp you will pass the Sumsub KYC token to (Mercuryo and Topper for example) and add them in your Sumsub dashboard in the Partners tab.
+This requires you to integrate a KYC provider, and use them to KYC your user.
+
+_Note that the steps below show the Sumsub dashboard as an example_
+
+Get a share token from each onramp you will pass the KYC token to and add them in your KYC Provider dashboard in the Partners tab.
 
 <Frame>
   ![Image](/images/image.png "Image")
 </Frame>
 
-**It is very important that you show the user a screen where they consent to having their KYC data shared with another party (aka the onramps), which is what is happening in this flow. While Sumsub stores the physical KYC data, they will share it with the onramp for the user to skip KYC in the onramp, and the user must consent to this data sharing.**
+For example, [see Sumsub requirements for importing the applicant](https://docs.sumsub.com/docs/copy-applicant#how-to-enable-copy-applicant).
 
-[See Sumsub requirements for importing the applicant](https://docs.sumsub.com/docs/copy-applicant#how-to-enable-copy-applicant).
-
-You will need to pass the Sumsub KYC token, generated for client id **meld.io\_75082**. This is done in the Sumsub dashboard, as shown below.
+You will need to pass the KYC provider's KYC token, generated for client id **meld.io\_75082**. This is done in the KYC provider's dashboard, as shown below.
 
 ![](https://files.readme.io/2f594cd4940eca8be7c5a7e543a85ff06f8fda33c2fda70abc9e801fdc695d8d-image.png)
 
-## Step 2: KYC the user via Sumsub
+## Step 2: KYC the User
 
 In order for your user to not be asked for any additional KYC information by the onramp, you must collect, at minimum,
 
@@ -60,7 +71,7 @@ In order for your user to not be asked for any additional KYC information by the
    - Date of birth
    - Phone Number
 
-All of this must be under a KYC level named `network-partner-level2.`You will have to fetch the KYC token of the user from Sumsub.
+All of this must be under a KYC level named `network-partner-level2.`
 
 <Frame>
   ![Image](/images/image.png "Image")
@@ -73,42 +84,250 @@ This step is required for the user to skip logging into the onramp, and is a one
 ```json
 {
   "name": {
-    "firstName": "First",
-    "lastName": "Last"
+    "firstName": "Jane",
+    "lastName": "Doe"
   },
-  "email": "test@user.com",
-  "dateOfBirth": "01-30-1980",
-  "phone": "+1-111-222-3456",
-  "externalId": "testUser1"  // optional, for you to pass in your own reference id for the user
+  "email": "jane.doe@example.com",
+  "dateOfBirth": "1990-01-30",
+  "phone": "+15551234567",
+  "externalId": "your-internal-user-id"
 }
 ```
+
+| Field | Notes |
+| :-- | :-- |
+| `dateOfBirth` | ISO date `yyyy-MM-dd` |
+| `externalId` | Your internal user id (optional but recommended). Response echoes it as `externalId`. |
+| `phone` | E.164 format |
 
 The response body will look like this:
 
 ```json
 {
-  "name": {
-    "firstName": "First",
-    "lastName": "Last"
-  },
-  "email": "test@user.com",
-  "dateOfBirth": "01-30-1980",
-  "phone": "+1-111-222-3456",
-  "externalId": "testUser1",
-  "id": "W912345678", // customerId to pass into /widget
-  "key": "N/A",
+  "id": "WmYumpKThCLWdgdK4fu2oh",
   "accountId": "W932jkkjn2jnjn",
-  "addresses": {},
-  "serviceProviderCustomers": {},
-  "subAccountId": "N/A"
+  "externalId": "your-internal-user-id",
+  "name": {
+    "firstName": "Jane",
+    "lastName": "Doe"
+  },
+  "email": "jane.doe@example.com",
+  "dateOfBirth": "1990-01-30",
+  "phone": "+15551234567",
+  "status": "ACTIVE"
 }
 ```
 
-The `id` in the response is now the Meld `customerId` of that user. You will need to pass this to Meld every time that user wants to make a transaction.
+Store `id` as the Meld `customerId`. You need it for submit and export.
 
-## Step 4: Pass Meld the KYC token
+With `Meld-Version` dated `2023-04-01` or later, the customer response also includes `serviceProviderCustomers` (including KYC status after submit).
 
-If you send the user to an onramp that supports Sumsub token sharing, pass Meld the KYC token of the user when you call `POST /crypto/session/widget`. Your request will look like this:
+## Step 4: Submit KYC
+
+Here, there are 2 flows to pass Meld the user's KYC data. The first (and preferred) flow is via a KYC provider share token, which the second is via raw data.
+
+Call:
+
+`POST /accounts/customers/{customerId}/kyc/initiate`
+
+Choose a mode. Both modes return the same response shape and use the same webhook to signal approval.
+
+_Note that the steps below show the Sumsub as the KYC provider as an example_
+
+### Mode A — KYC provider share token (`TOKEN_IMPORT`)
+
+No raw PII or document images transit through this request.
+
+Generate the KYC share token for client id `meld.io_75082` (the exact steps depend on which KYC provider you use).
+
+#### **Request** (`application/json`)
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "TOKEN_IMPORT",
+  "serviceProviderDetails": {
+    "kycToken": "_act-sbx-jwt-…",
+    "applicantId": "65f3a9c1f0b3a12d34e56789"
+  }
+}
+```
+
+| Field | Required | Description |
+| :-- | :-- | :-- |
+| `serviceProvider` | Yes | KYC provider name |
+| `mode` | Yes | `TOKEN_IMPORT` |
+| `serviceProviderDetails.kycToken` | Yes | KYC provider share/access token issued for `meld.io_75082` |
+| `serviceProviderDetails.applicantId` | Yes | KYC provider's applicant id for the user |
+| `kycShareProviders` | No | Optional set of additional Meld onramps to share KYC with after approval |
+
+#### **Response**
+
+```json
+{
+  "customerId": "WmYumpKThCLWdgdK4fu2oh",
+  "serviceProvider": "SUMSUB",
+  "status": "APPROVED",
+  "url": "https://kyc-provider.example.com/verify/abc123"
+}
+```
+
+`status` is `APPROVED` when the imported applicant already matches Meld's verification level; otherwise it may be `PENDING`. `url` is a KYC provider WebSDK link when present — often not needed if status is already `APPROVED`.
+
+### Mode B — Raw applicant data (`RAW_DATA_IMPORT`)
+
+Use you collect KYC using a KYC provider that Meld doesn't support, or if you collect KYC information directly from the user without using a KYC provider.
+
+Send **multipart/form-data**. Do **not** send this mode as JSON — `RAW_DATA_IMPORT` is only accepted on the multipart route.
+
+#### Multipart parts
+
+| Part | Type | Required | Description |
+| :-- | :-- | :-- | :-- |
+| `data` | JSON (string or file part) | Yes | Applicant metadata; see schema below |
+| One part per document | File (`image/jpeg`, `image/png`, etc.) | Yes | Named to match each `documents[].part` in `data` |
+
+#### `data` JSON schema
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "RAW_DATA_IMPORT",
+  "applicantData": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "dob": "1990-01-15",
+    "nationality": "USA",
+    "phone": "+15551234567",
+    "email": "jane.doe@example.com",
+    "tin": "123-45-6789",
+    "taxResidenceCountry": "USA",
+    "address": {
+      "country": "USA",
+      "street": "1 Main St",
+      "subStreet": "Apt 4",
+      "town": "Springfield",
+      "state": "IL",
+      "postCode": "62704"
+    },
+    "documents": [
+      {
+        "part": "docFront",
+        "idDocType": "ID_CARD",
+        "idDocSubType": "FRONT_SIDE",
+        "country": "USA"
+      },
+      {
+        "part": "docBack",
+        "idDocType": "ID_CARD",
+        "idDocSubType": "BACK_SIDE",
+        "country": "USA"
+      },
+      {
+        "part": "selfie",
+        "idDocType": "SELFIE",
+        "country": "USA"
+      }
+    ]
+  }
+}
+```
+
+#### Field notes
+
+| Field | Required | Notes |
+| :-- | :-- | :-- |
+| `serviceProvider` | Yes | `SUMSUB` |
+| `mode` | Yes | Must be `RAW_DATA_IMPORT` |
+| `applicantData.firstName` / `lastName` | Yes |  |
+| `applicantData.dob` | Yes | ISO date `yyyy-MM-dd` |
+| `applicantData.nationality` | Yes | 3-letter country code (e.g. `USA`) |
+| `applicantData.email` | Yes |  |
+| `applicantData.phone` | No | E.164 when provided |
+| `applicantData.tin` | No | Tax id (e.g. SSN) |
+| `applicantData.taxResidenceCountry` | Yes | 3-letter country code |
+| `applicantData.address` | Yes | `country` required; `street`, `subStreet`, `town`, `state`, `postCode` optional |
+| `applicantData.documents` | Yes | At least one document |
+| `documents[].part` | Yes | Must match a file part name in the same request (`^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`) |
+| `documents[].idDocType` | Yes | `PASSPORT`, `ID_CARD`, `DRIVERS`, `RESIDENCE_PERMIT`, or `SELFIE` |
+| `documents[].idDocSubType` | No | `FRONT_SIDE` / `BACK_SIDE` for double-sided docs; omit for single-sided types like `PASSPORT` and `SELFIE` |
+| `documents[].country` | No | 3-letter issuing country code |
+| `kycShareProviders` | No | Optional set of additional providers to share KYC with after approval |
+
+#### Example (curl)
+
+```bash
+curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/initiate" \
+  -u "{apiKey}:{apiSecret}" \
+  -F 'data={
+    "serviceProvider":"SUMSUB",
+    "mode":"RAW_DATA_IMPORT",
+    "applicantData":{
+      "firstName":"Jane",
+      "lastName":"Doe",
+      "dob":"1990-01-15",
+      "nationality":"USA",
+      "phone":"+15551234567",
+      "email":"jane.doe@example.com",
+      "taxResidenceCountry":"USA",
+      "address":{"country":"USA","street":"1 Main St","town":"Springfield","state":"IL","postCode":"62704"},
+      "documents":[
+        {"part":"docFront","idDocType":"ID_CARD","idDocSubType":"FRONT_SIDE","country":"USA"},
+        {"part":"docBack","idDocType":"ID_CARD","idDocSubType":"BACK_SIDE","country":"USA"},
+        {"part":"selfie","idDocType":"SELFIE","country":"USA"}
+      ]
+    }
+  };type=application/json' \
+  -F "docFront=@./id-front.jpg;type=image/jpeg" \
+  -F "docBack=@./id-back.jpg;type=image/jpeg" \
+  -F "selfie=@./selfie.jpg;type=image/jpeg"
+```
+
+#### Response
+
+```json
+{
+  "customerId": "WmYumpKThCLWdgdK4fu2oh",
+  "serviceProvider": "SUMSUB",
+  "status": "PENDING",
+  "url": "https://kyc-provider.example.com/verify/abc123"
+}
+```
+
+| Field | Notes |
+| :-- | :-- |
+| `status` | One of `PENDING`, `APPROVED`, `REJECTED`, `EXPIRED`, `UNKNOWN` |
+| `url` | KYC provider WebSDK link for reference/status. When a selfie is submitted, the applicant does not need an extra liveness step in the WebSDK. |
+
+Meld creates (or reuses) the KYC provider's applicant, uploads the documents, and requests review immediately.
+
+### Wait for approval
+
+For either submit mode, listen for the `CUSTOMER_KYC_STATUS_CHANGE` webhook until `payload.status` is `APPROVED`. See [Webhook events](/docs/stablecoins/for-all-products/webhook-events) for the full event catalog and delivery behavior.
+
+```json
+{
+  "eventType": "CUSTOMER_KYC_STATUS_CHANGE",
+  "eventId": "4cWK83avakzy8jG4ztmBUk",
+  "timestamp": "2026-02-25T18:55:08.968360756Z",
+  "accountId": "W9jSUfLiRWx1GkaMGt7DTT",
+  "profileId": "WmZ1rqsv532RYW9ELxM4eo",
+  "version": "2026-02-02",
+  "payload": {
+    "requestId": "4456e4e9b0174c53b962227df6766ca7",
+    "customerId": "WmYumpKThCLWdgdK4fu2oh",
+    "serviceProvider": "SUMSUB",
+    "status": "APPROVED",
+    "statusUpdatedAt": "2026-02-25T18:55:08.960052Z"
+  }
+}
+```
+
+If `payload.status` is `REJECTED`, the user failed KYC. They may retry submit with corrected data, but a rejection here often means they would also fail with onramps that rely on the same verification.
+
+## Step 5: Initiate a transaction
+
+Pass Meld the `customerId` of the user when you call `POST /crypto/session/widget`. Make sure to include the param `"bypassKyc": true`, which tells Meld to look up that customer's KYC information and forward it to the onramp. Your request will look like this:
 
 ```json
 {
@@ -118,13 +337,11 @@ If you send the user to an onramp that supports Sumsub token sharing, pass Meld 
     "serviceProvider": "MERCURYO",
     "sourceAmount": "100",
     "sourceCurrencyCode": "USD",
-    "walletAddress": "1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F",
-    "kycInfo": {                      // optional field
-        "kycProvider": "SUMSUB",
-        "kycToken": "abcdefgh"        // the Sumsub KYC token for the user
-    },
-    "sessionType": "BUY",
-    "customerId": "W912345678"        // should be the same as the customer created above
+    "walletAddress": "1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F"
+  },
+  "sessionType": "BUY",
+  "bypassKyc": true,
+  "customerId": "WmYumpKThCLWdgdK4fu2oh"        // should be the same as the customer created above
 }
 ```
 
@@ -135,14 +352,14 @@ The response will look like this:
   "id": "WmYtVn52MCZkXQSdCFDU8N",
   "externalSessionId": null,
   "externalCustomerId": null,
-  "customerId": "WmYtVoa7bdzxJAT5ygt91s",
+  "customerId": "WmYumpKThCLWdgdK4fu2oh",
   "widgetUrl": "https://meldcrypto.com?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ7.eyJpc3MiOiJtZWxkLmlvIiwiaWF0IjoxNzcxMjY3MDM4LCJzdWIiOiJjcnlwdG8iLCJleHAiOjE3NzEyNjg4MzgsImFjY291bnRJZCI6Ilc5a2c5aVAxc2JweVpwdFFEY0NNSnUiLCJzZXNzaW9uSWQiOiJXbVl0Vm41Mk1DWmtYUVNkQ0ZEVThOIn0.eqFYseggwUyv-F7WyO-LKEhwEqLiWVOmAV4lNjuth60",
   "serviceProviderWidgetUrl": "https://exchange.mercuryo.io?widget_id=34c04adf-d04a-42de-a4aa-609a302b24tz&currency=BTC&fiat_currency=USD&fiat_amount=100&address=1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F&type=buy&network=BITCOIN&merchant_transaction_id=WmYtVmRXgDnavemEzb3k6K&redirect_url=https%3A%2F%2Fmeldcrypto.com&country_code=US&email&payment_method=card&signature=zxcvbnmasdfghjkl",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtZWxkLmlvIiwiaWF0IjoxNzcxMjY3MDM4LCJzdWIiOiJjcnlwdG8iLCJleHAiOjE3NzEyNjg4MzgsImFjY291bnRJZCI6Ilc5a2c5aVAxc2JweVpwdFFEY0NNSnUiLCJzZXNzaW9uSWQiOiJXbVl0Vm41Mk1DWmtYUVNkQ0ZEVThOIn0.eqFYseggwUyv-F7WyO-LKEhwEqLiWVOmAV4lNjuth60"
 }
 ```
 
-If you executed every step correctly, then when you open either the `widgetUrl` or `serviceProviderWidgetUrl`, then the user goes straight to the Mercuryo payment screen, as seen in this demo video.
+If you executed every step correctly, then when you open either the `widgetUrl` or `serviceProviderWidgetUrl`, then the user go straight to the onramp's payment screen, as seen in this demo video.
 
 <iframe src="https://www.youtube.com/embed/D1_sUa79Jik" title="YouTube video player" frameborder="0" className="w-full aspect-video rounded-xl" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen />
 
