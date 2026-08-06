@@ -19,3 +19,31 @@ There are 3 flows within Unified KYC:
 <br />
 
 <br />
+
+## Which flow should I use?
+
+```mermaid placement="top-right"
+flowchart TD
+    A[Which way does KYC data need to move?]:::root
+    A --> B[INTO Meld<br/>user skips KYC at the onramp]:::branch
+    A --> C[OUT of Meld<br/>reuse KYC in your own product]:::branch
+
+    B --> D{Do you already KYC<br/>your users today?}:::decision
+    D -->|No| E["<b>Meld KYCes the user</b><br/>mode: HOSTED_URL"]:::hosted
+    D -->|Yes| F{"Does your existing KYC meet<br/>Meld's required verification level?<br/><i>ID doc + liveness selfie<br/>+ full applicant data</i>"}:::decision
+    F -->|No| E
+    F -->|Yes| G{Can your KYC provider<br/>issue a share token to Meld?}:::decision
+    G -->|Yes| H["<b>You KYC the user</b><br/>mode: TOKEN_IMPORT<br/><i>no PII transits Meld</i>"]:::submit
+    G -->|"No — unsupported provider,<br/>or no provider at all"| I["<b>You KYC the user</b><br/>mode: RAW_DATA_IMPORT<br/><i>multipart/form-data</i>"]:::submit
+
+    C --> J{Can the consuming product<br/>import a share token?}:::decision
+    J -->|Yes| K["<b>Retrieve KYC</b><br/>mode: TOKEN<br/><i>needs recipientClientId</i>"]:::retrieve
+    J -->|"No — needs PII<br/>and document images"| L["<b>Retrieve KYC</b><br/>mode: RAW_DATA<br/><i>multipart response</i>"]:::retrieve
+
+    classDef root fill:#F1F5F9,stroke:#475569,stroke-width:2px,color:#0F172A
+    classDef branch fill:#E2E8F0,stroke:#475569,stroke-width:1px,color:#0F172A
+    classDef decision fill:#FEF3C7,stroke:#D97706,stroke-width:1px,color:#78350F
+    classDef hosted fill:#DBEAFE,stroke:#2563EB,stroke-width:2px,color:#1E3A8A
+    classDef submit fill:#D1FAE5,stroke:#059669,stroke-width:2px,color:#064E3B
+    classDef retrieve fill:#EDE9FE,stroke:#7C3AED,stroke-width:2px,color:#4C1D95
+```
