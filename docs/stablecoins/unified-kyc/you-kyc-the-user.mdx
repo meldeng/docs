@@ -1,6 +1,7 @@
 ---
 title: "You KYC the User"
 description: "You integrate a KYC provider to KYC the user"
+hidden: true
 ---
 
 This guide is for developers who already KYC their users using a KYC provider and want to reuse that verification with Meld onramps. You'll pass Meld the user's KYC data either via a KYC share token or via raw data, so the user can skip KYC on the onramp.
@@ -13,7 +14,6 @@ Meld does not store raw KYC field values or document images. Data is passed thro
 
 - You have contacted your Meld account manager to enable this product for you
 - You have a KYC provider account and have integrated their KYC flow
-
 - You get a 1 time token from each onramp you use and add it to your KYC provider dashboard
 - **It is very important that you show the user a screen where they consent to having their KYC data shared with Meld and the onramps, which is what is happening in this flow. While the KYC provider stores the physical KYC data, they will share it with the onramp for the user to skip KYC in the onramp, and the user must consent to this data sharing.**
 
@@ -30,7 +30,7 @@ Meld does not store raw KYC field values or document images. Data is passed thro
 
 To enable this flow, do the following:
 
-## Step 1: KYC Provider Setup 
+## Step 1: KYC Provider Setup
 
 **This step is needed for token share. If you're passing the raw KYC data instead, you can skip this step.**
 
