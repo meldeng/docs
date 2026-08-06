@@ -22,7 +22,7 @@ Meld does not store raw KYC field values or document images. Data is fetched fro
 
 | Flow | Endpoint | Content type | API Response Contains |
 | --- | --- | --- | --- |
-| Export as Sumsub token | `POST /accounts/customers/{customerId}/kyc/export` | JSON in / JSON out | `applicantId` \+ `shareToken` |
+| Export as KYC provider token | `POST /accounts/customers/{customerId}/kyc/export` | JSON in / JSON out | `applicantId` \+ `shareToken` |
 | Export as raw data | `POST /accounts/customers/{customerId}/kyc/export` | JSON in / `multipart/form-data` out | JSON `data` part \+ document file parts |
 
 Raw-data export returns `multipart/form-data`, not JSON. Parse the response as multipart: a JSON `data` part plus one file part per document image.
