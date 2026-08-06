@@ -23,7 +23,7 @@ When testing from the Meld Sandbox environment, you will be testing against Sums
 
 ## Before you begin
 
-The best KYC provider to test with in sandbox is Sumsub. Therefore, this page uses Sumsub for the KYC examples. Talk to your account manager to have Sumsub set up for your Meld account.
+The best KYC provider to test with in sandbox is Sumsub, and the best onramp to test with is Mercuryo (for retail ramps) and Noah (for virtual account providers). Therefore, this page uses Sumsub and a combination of Mercuryo and Noahfor the KYC examples. Talk to your account manager to have Sumsub and one of either Mercuryo or Noah set up for your Meld account.
 
 To make the user pass the KYC on Sumsub, there are 2 options:
 
@@ -120,13 +120,6 @@ If you completed the previous steps and successfully KYCed the user with Meld (o
 }
 ```
 
-Widget-based Onramps that currently support passing the user's KYC data:
-
-- Mercuryo
-- Paybis
-- Topper
-- Unlimit
-
 ## Sharing KYC with Virtual Account providers (asynchronous KYC)
 
 In both KYC initiation modes (**HOSTED\_URL** and **TOKEN\_IMPORT**), you can optionally specify Virtual Account providers to share the user's KYC with after Sumsub approves submission, via the `kycShareProviders` field. Alternatively, add share providers later by calling `PATCH /accounts/customers/{customerId}/kyc/initiate`.
@@ -135,7 +128,7 @@ In both KYC initiation modes (**HOSTED\_URL** and **TOKEN\_IMPORT**), you can op
 {
   "serviceProvider": "SUMSUB",
   "mode": "HOSTED_URL",
-  "kycShareProviders": ["NOAH", "DUENETWORK"]
+  "kycShareProviders": ["NOAH"]
 }
 ```
 
@@ -143,7 +136,7 @@ In both KYC initiation modes (**HOSTED\_URL** and **TOKEN\_IMPORT**), you can op
 {
   "serviceProvider": "SUMSUB",
   "mode": "TOKEN_IMPORT",
-  "kycShareProviders": ["NOAH", "DUENETWORK"],
+  "kycShareProviders": ["NOAH"],
   "serviceProviderDetails": {
     "kycToken": "_act-sbx-jwt-eyJhbGciOiJub25lIn0.eyJqdGkiOiJfYWN0LXNieC1mNGFlNWYwYy1iYjFmLTQwZmUtYTk1YS1jZWM0MmY3OTBjYmIiLCJ1cmwiOiJodHRwczovL2FwaS5zdW1zdWIuY29tIn0.",
       "applicantId": "Sumsub applicant id"
@@ -151,7 +144,7 @@ In both KYC initiation modes (**HOSTED\_URL** and **TOKEN\_IMPORT**), you can op
 }
 ```
 
-After Sumsub verifies the user's submission, the KYC token will be automatically shared with all specified share Virtual Account providers, effectively onboarding the user on Virtual Account's platforms. The Virtual Account provider may require additional KYC for users in case the data shared by Sumsub is insufficient. To track this, you can either accept webhook CUSTOMER\_KYC\_STATUS\_CHANGE events (recommended) or poll the Search Customer API
+After Sumsub verifies the user's submission, the KYC token will be automatically shared with all specified share Virtual Account providers, effectively onboarding the user on Virtual Account's platforms. The Virtual Account provider may require additional KYC for users in case the data shared by Sumsub is insufficient. To track this, you can should accept webhook CUSTOMER\_KYC\_STATUS\_CHANGE events.
 
 **Expected Webhook Response**
 
@@ -204,10 +197,3 @@ After receiving a webhook event, call `GET /accounts/customers` for more details
 ```
 
 You will need to direct your user to `HostedURL` so they can pass additional KYC on the Virtual Account provider's platform. After users complete additional KYC and the Virtual Account provider verifies it, you will receive another `CUSTOMER_KYC_STATUS_CHANGE` event with `kycRecepient.status=APPROVED`. The new status will also be reflected in `GET /accounts/customers` responses.
-
-Async KYC sharing is  currently supported with the following Virtual Account Onramps:
-
-- Noah
-- DueNetwork
-
-Brale **is not** supported in sandbox.
