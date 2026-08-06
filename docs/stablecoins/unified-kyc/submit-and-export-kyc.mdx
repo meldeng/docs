@@ -99,7 +99,7 @@ Use when the user already has a Sumsub applicant in your Sumsub account and you 
 
 Generate the Sumsub KYC token for client id **`meld.io_75082`**. For Sumsub partner setup and onramp reuse, see [You KYC the user](/docs/stablecoins/unified-kyc/you-kyc-the-user) and [KYC testing](/docs/stablecoins/sandbox-guide/kyc-testing).
 
-**Request** (`application/json`)
+#### **Request** (`application/json`)
 
 ```json
 {
@@ -120,7 +120,7 @@ Generate the Sumsub KYC token for client id **`meld.io_75082`**. For Sumsub part
 | `serviceProviderDetails.applicantId` | Yes | Sumsub applicant id |
 | `kycShareProviders` | No | Optional set of additional providers to share KYC with after approval |
 
-**Response**
+#### **Response**
 
 ```json
 {
@@ -300,7 +300,7 @@ Nothing is persisted during export. The customer must already have an applicant 
 
 Use when the consuming product also uses Sumsub and can import via share token. No raw PII or images transit through your export response.
 
-**Request**
+#### **Request**
 
 ```json
 {
@@ -316,7 +316,7 @@ Use when the consuming product also uses Sumsub and can import via share token. 
 | `kycProvider` | Yes | `SUMSUB` |
 | `recipientClientId` | Yes for `TOKEN` | Sumsub client id the share token is issued for |
 
-**Response** (`application/json`)
+#### **Response** (`application/json`)
 
 ```json
 {
@@ -332,7 +332,7 @@ Pass `shareToken` (and `applicantId` if needed) to the receiving Sumsub integrat
 
 Use when the consuming product needs PII and document images directly.
 
-**Request**
+#### **Request**
 
 ```json
 {
@@ -341,14 +341,14 @@ Use when the consuming product needs PII and document images directly.
 }
 ```
 
-**Response** (`multipart/form-data`)
+#### **Response** (`multipart/form-data`)
 
 | Part | Type | Description |
 | --- | --- | --- |
 | `data` | JSON | Applicant metadata in the same schema shape as raw submit `data` (`mode` is `RAW_DATA_IMPORT`) |
 | One part per document | File | Image bytes. Part names are **generated on export** (see below), not the names you used on submit |
 
-Example `data` part:
+#### Example `data` part:
 
 ```json
 {
