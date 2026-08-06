@@ -79,11 +79,7 @@ In order for your user to not be asked for any additional KYC information by the
    - Date of birth
    - Phone Number
 
-All of this must be under a KYC level named `network-partner-level2.`
-
-<Frame>
-  ![Image](/images/image.png "Image")
-</Frame>
+All of this must be under a KYC level named `network-partner-level2`.
 
 ## Step 3: Create a Meld customer
 
@@ -100,14 +96,14 @@ This step is required for the user to skip logging into the onramp, and is a one
   "email": "jane.doe@example.com",
   "dateOfBirth": "1990-01-30",
   "phone": "+15551234567",
-  "externalId": "your-internal-user-id"
+  "externalCustomerId": "your-internal-user-id"
 }
 ```
 
 | Field | Notes |
 | :-- | :-- |
 | `dateOfBirth` | ISO date `yyyy-MM-dd` |
-| `externalId` | Your internal user id (optional but recommended). Response echoes it as `externalId`. |
+| `externalCustomerId` | Your internal user id (optional but recommended). Response echoes it as `externalCustomerId`. |
 | `phone` | E.164 format |
 
 #### Response
@@ -116,7 +112,7 @@ This step is required for the user to skip logging into the onramp, and is a one
 {
   "id": "WmYumpKThCLWdgdK4fu2oh",
   "accountId": "W932jkkjn2jnjn",
-  "externalId": "your-internal-user-id",
+  "externalCustomerId": "your-internal-user-id",
   "name": {
     "firstName": "Jane",
     "lastName": "Doe"
@@ -134,7 +130,7 @@ With `Meld-Version` dated `2023-04-01` or later, the customer response also incl
 
 ## Step 4: Submit KYC
 
-Here, there are 2 flows to pass Meld the user's KYC data. The first (and preferred) flow is via a KYC provider share token, which the second is via raw data.
+Here, there are 2 flows to pass Meld the user's KYC data. The first (and preferred) flow is via a KYC provider share token, while the second is via raw data.
 
 Call:
 
@@ -186,7 +182,7 @@ Generate the KYC share token for client id `meld.io_75082` (the exact steps depe
 
 ### Mode B — Raw applicant data (`RAW_DATA_IMPORT`)
 
-Use you collect KYC using a KYC provider that Meld doesn't support, or if you collect KYC information directly from the user without using a KYC provider.
+Use when you collect KYC using a KYC provider that Meld doesn't support, or if you collect KYC information directly from the user without using a KYC provider.
 
 Send **multipart/form-data**. Do **not** send this mode as JSON — `RAW_DATA_IMPORT` is only accepted on the multipart route.
 
@@ -377,4 +373,11 @@ If you executed every step correctly, then when you open either the `widgetUrl` 
 
 And that's it! Congrats, you are now using Meld's Unified KYC product to enhance your users' experience!
 
-<br />
+## Error Cases
+
+| Situation | Typical result |
+| :-- | :-- |
+| `RAW_DATA_IMPORT` sent as JSON instead of multipart | `400` — must use multipart initiate |
+| Missing file part declared in `documents[]` | `400` — missing/empty file part |
+| Invalid `data` JSON or bean validation failure | `400` — invalid raw KYC request |
+| Customer already has KYC at a different level | Fail — cannot start `RAW_DATA_IMPORT` against an incompatible existing applicant |

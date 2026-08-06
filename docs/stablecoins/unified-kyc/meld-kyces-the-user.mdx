@@ -42,11 +42,17 @@ This step is required for the user to skip logging into the onramp, and is a one
     "lastName": "Last"
   },
   "email": "test@user.com",
-  "dateOfBirth": "01-30-1980",
-  "phone": "+1-111-222-3456",
+  "dateOfBirth": "1990-01-30",
+  "phone": "+15551234567",
   "externalCustomerId": "testUser1"  // optional, for you to pass in your own reference id for the user
 }
 ```
+
+| Field | Notes |
+| :-- | :-- |
+| `dateOfBirth` | ISO date `yyyy-MM-dd` |
+| `externalCustomerId` | Your internal user id (optional but recommended). Response echoes it as `externalCustomerId`. |
+| `phone` | E.164 format |
 
 #### Response
 
@@ -57,14 +63,14 @@ This step is required for the user to skip logging into the onramp, and is a one
     "lastName": "Last"
   },
   "email": "test@user.com",
-  "dateOfBirth": "01-30-1980",
-  "phone": "+1-111-222-3456",
+  "dateOfBirth": "1990-01-30",
+  "phone": "+15551234567",
   "externalCustomerId": "testUser1",
   "id": "WmYumpKThCLWdgdK4fu2oh", // customerId to pass into /widget
   "key": "N/A",
   "accountId": "W932jkkjn2jnjn",
-  "addresses": {},
-  "serviceProviderCustomers": {},
+  "addresses": [],
+  "serviceProviderCustomers": [],
   "subAccountId": "N/A"
 }
 ```
@@ -88,9 +94,9 @@ If the user has been KYCed successfully, then you do not have to KYC the user ag
 		"firstName": "First",
 		"lastName": "Last"
 	},
-	"dateOfBirth": "01-30-1980",
+	"dateOfBirth": "1990-01-30",
 	"email": "test@user.com",
-	"phone": "+1-111-222-3456",
+	"phone": "+15551234567",
 	"addresses": [],
 	"serviceProviderCustomers": [
 		{

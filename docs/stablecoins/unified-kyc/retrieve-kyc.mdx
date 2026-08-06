@@ -47,15 +47,14 @@ Call `POST /accounts/customers` once per user. This will create the Meld custome
     "firstName": "Jane",
     "lastName": "Doe"
   },
+  "externalCustomerId": "your-internal-user-id",
   "email": "jane.doe@example.com"
 }
 ```
 
 | Field | Notes |
 | --- | --- |
-| `dateOfBirth` | ISO date `yyyy-MM-dd` |
-| `externalId` | Your internal user id (optional but recommended). Response echoes it as `externalId`. |
-| `phone` | E.164 format |
+| `externalCustomerId` | Your internal user id (optional but recommended). Response echoes it as `externalCustomerId`. |
 
 #### Response
 
@@ -63,7 +62,7 @@ Call `POST /accounts/customers` once per user. This will create the Meld custome
 {
   "id": "WmYumpKThCLWdgdK4fu2oh",
   "accountId": "W932jkkjn2jnjn",
-  "externalId": "your-internal-user-id",
+  "externalCustomerId": "your-internal-user-id",
   "name": {
     "firstName": "Jane",
     "lastName": "Doe"
@@ -96,7 +95,7 @@ Use when the consuming product uses the same KYC provider as the one in your req
 {
   "mode": "TOKEN",
   "kycProvider": "SUMSUB",
-  "recipientClientId": "your.partner.client.id"
+  "recipientClientId": "receiving.partner's.client.id"
 }
 ```
 
@@ -104,7 +103,7 @@ Use when the consuming product uses the same KYC provider as the one in your req
 | --- | --- | --- |
 | `mode` | Yes | `TOKEN` |
 | `kycProvider` | Yes | KYC provider name |
-| `recipientClientId` | Yes for `TOKEN` | KYC provider client id of the user |
+| `recipientClientId` | Yes for `TOKEN` | Receiving KYC provider's client id |
 
 #### **Response** (`application/json`)
 
@@ -223,10 +222,6 @@ Parse `kyc-export.multipart` as multipart: read the `data` JSON part, then each 
 
 | Situation | Typical result |
 | --- | --- |
-| `RAW_DATA_IMPORT` sent as JSON instead of multipart | `400` — must use multipart initiate |
-| Missing file part declared in `documents[]` | `400` — missing/empty file part |
-| Invalid `data` JSON or bean validation failure | `400` — invalid raw KYC request |
 | Customer has no KYC provider applicant yet | `404` — no KYC applicant for customer and provider |
 | `TOKEN` export without `recipientClientId` | `400` — `recipientClientId` is required |
 | `kycProvider` missing or invalid | `400` |
-| Customer already has KYC at a different level | Fail — cannot start `RAW_DATA_IMPORT` against an incompatible existing applicant |

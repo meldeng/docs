@@ -9,7 +9,7 @@ This guide provides detailed testing instructions for the customer KYC process i
 
 Meld generally recommends testing the unified KYC flow in production for a realistic experience.
 
-However, if you would like to test the flow end-to-end Meld's sandbox, please follow this guide.
+However, if you would like to test the flow end-to-end in Meld's sandbox, please follow this guide.
 
 When testing from the Meld Sandbox environment, you will be testing against Sumsub and Virtual Account providers' Sandbox environments as well. This means you can enter fake data, provide fake documents, and provide any answers to the questionnaires. Only the liveliness check will be performed by Sumsub for real (you will need to perform simple moving actions in front of the camera).
 
@@ -17,13 +17,15 @@ When testing from the Meld Sandbox environment, you will be testing against Sums
 
 **New to testing?** Start with the [Sandbox Environment Guide](/docs/stablecoins/sandbox-guide) to understand sandbox limitations and best practices.
 
-**Ready to test?** This page contains specific testing credentials for each provider.
+**Ready to test?** Continue below.
 
 # KYC Flow Testing
 
 ## Before you begin
 
-Meld is currently integrated with a single KYC Provider, Sumsub. This means that the user's KYC data that is shared with Sumsub can later be automatically shared with onramps, which improves user experience and reduces the friction. To make the user pass the KYC on Sumsub, there are 2 options
+The best KYC provider to test with in sandbox is Sumsub. Therefore, this page uses Sumsub for the KYC examples. Talk to your account manager to have Sumsub set up for your Meld account.
+
+To make the user pass the KYC on Sumsub, there are 2 options:
 
 ### 1. Meld KYCes the user
 
@@ -108,7 +110,7 @@ If you completed the previous steps and successfully KYCed the user with Meld (o
   "sessionData": {
     "countryCode": "US",
     "destinationCurrencyCode": "BTC",
-    "serviceProvider": "TRANSAK",
+    "serviceProvider": "MERCURYO",
     "sourceAmount": "100",
     "sourceCurrencyCode": "USD",
     "walletAddress": "1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F"
@@ -157,17 +159,17 @@ After Sumsub verifies the user's submission, the KYC token will be automatically
 {
   "eventType": "CUSTOMER_KYC_STATUS_CHANGE",
   "eventId": "customerId",
-  "timestamp": "2022-02-24T16:36:41.717262Z",
+  "timestamp": "2026-02-24T16:36:41.717262Z",
   "payload": {
     "accountId": "WeP9eoFziQX4yXE5abcfec",
     "customerId": "customerId",
     "serviceProvider": "SUMSUB",
     "status": "APPROVED",
-    "kycRecepient": {
+    "kycRecipient": {
       "serviceProvider": "Virtual account provider",
 	  "status": "PENDING" // PENDING, REJECTED, APPROVED
     },
-    "statusUpdatedAt": "2022-02-24T16:36:41.717262Z"
+    "statusUpdatedAt": "2026-02-24T16:36:41.717262Z"
   }
 }
 ```
@@ -208,4 +210,4 @@ Async KYC sharing is  currently supported with the following Virtual Account Onr
 - Noah
 - DueNetwork
 
-Brale **is not** supported
+Brale **is not** supported in sandbox.
