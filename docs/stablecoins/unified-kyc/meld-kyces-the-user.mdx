@@ -24,7 +24,9 @@ To enable this flow, do the following:
 
 ## Step 1: Create a Meld customer
 
-This step is required for the user to skip logging into the onramp, and is a one-time setup per user. Call `POST /accounts/customers` and pass in the user's first name, last name, email address, phone number, and birthday. Your request will look like this:
+This step is required for the user to skip logging into the onramp, and is a one-time setup per user. Call `POST /accounts/customers` and pass in the user's first name, last name, email address, phone number, and birthday. 
+
+#### Request
 
 ```json
 {
@@ -39,7 +41,7 @@ This step is required for the user to skip logging into the onramp, and is a one
 }
 ```
 
-The response body will look like this:
+#### Response
 
 ```json
 {
@@ -67,6 +69,8 @@ The `id` in the response is now the Meld `customerId` of that user. The `custome
 You can keep track in your own system if a particular user has been KYCed via Meld. If you don't keep track, you can call `GET /accounts/customers`, passing the `customerId` of the user, to check whether the user has already been KYCed with Meld.
 
 If the user has been KYCed successfully, then you do not have to KYC the user again. The response will look something like this for a KYCed user, with the key field being `serviceProviderCustomers.kyc.status`.
+
+#### Response
 
 ```json
 {
@@ -108,9 +112,11 @@ If the user has not been successfully KYCed, then either `serviceProviderCustome
 
 This step is only needed if the user isn't already successfully KYCed. In other words, if the value of `serviceProviderCustomers.kyc.status` in the previous step is `APPROVED` then you can skip this step.
 
-To KYC the user, call `POST /accounts/customers/{customerId}/kyc/initiate`. The `customerId` is in the path, and your request body will look like this:
+To KYC the user, call `POST /accounts/customers/{customerId}/kyc/initiate`. The `customerId` is in the path.
 
 _Note that Sumsub is being used as the sample KYC provider in these requests._
+
+#### Request
 
 ```json
 {
@@ -119,7 +125,9 @@ _Note that Sumsub is being used as the sample KYC provider in these requests._
 }
 ```
 
-The response will include a `url` that you should then launch from your UI. The response will look like this:
+The response will include a `url` that you should then launch from your UI. 
+
+#### Response
 
 ```json
 {
@@ -156,7 +164,9 @@ If the `serviceProviderCustomers.kyc.status` is `REJECTED`, this means the user 
 
 ## Step 4: Initiate a transaction
 
-Pass Meld the `customerId` of the user when you call `POST /crypto/session/widget`. Make sure to include the param `"bypassKyc": true`, which tells Meld to look up that customer's KYC information and forward it to the onramp. Your request will look like this:
+Pass Meld the `customerId` of the user when you call `POST /crypto/session/widget`. Make sure to include the param `"bypassKyc": true`, which tells Meld to look up that customer's KYC information and forward it to the onramp. 
+
+#### Request
 
 ```json
 {
@@ -174,7 +184,7 @@ Pass Meld the `customerId` of the user when you call `POST /crypto/session/widge
 }
 ```
 
-The response will look like this:
+#### Response
 
 ```json
 {

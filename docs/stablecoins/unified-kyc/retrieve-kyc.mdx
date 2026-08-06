@@ -33,6 +33,8 @@ For broader Unified KYC context (reusing KYC across onramps), see [Unified KYC](
 
 Call `POST /accounts/customers` once per user.
 
+#### Request
+
 ```json
 {
   "name": {
@@ -52,7 +54,7 @@ Call `POST /accounts/customers` once per user.
 | `externalId` | Your internal user id (optional but recommended). Response echoes it as `externalId`. |
 | `phone` | E.164 format |
 
-Response (abbreviated):
+#### Response
 
 ```json
 {
@@ -226,5 +228,5 @@ Parse `kyc-export.multipart` as multipart: read the `data` JSON part, then each 
 | Invalid `data` JSON or bean validation failure | `400` — invalid raw KYC request |
 | Customer has no KYC provider applicant yet | `404` — no KYC applicant for customer and provider |
 | `TOKEN` export without `recipientClientId` | `400` — `recipientClientId` is required |
-| `kycProvider` missing or not | `400` |
+| `kycProvider` missing or invalid | `400` |
 | Customer already has KYC at a different level | Fail — cannot start `RAW_DATA_IMPORT` against an incompatible existing applicant |
