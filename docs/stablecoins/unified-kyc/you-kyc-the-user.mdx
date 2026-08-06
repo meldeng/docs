@@ -333,7 +333,7 @@ For either submit mode, listen for the `CUSTOMER_KYC_STATUS_CHANGE` webhook unti
 }
 ```
 
-If `payload.status` is `REJECTED`, the user failed KYC. They may retry submit with corrected data, but a rejection here often means they would also fail with onramps that rely on the same verification.
+If `payload.status` is `REJECTED`, the user failed KYC. They may retry submit with corrected data. If they still fail, then the user will have to try KYCing with the onramp directly, in the onramp's widget.
 
 ## Step 5: Initiate a transaction
 

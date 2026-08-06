@@ -167,7 +167,7 @@ As the user goes through the KYC flow, you will receive webhooks informing you t
 
 Each time you receive a webhook, repeat Step 2 until the `serviceProviderCustomers.kyc.status` shows as `APPROVED`.
 
-If the `serviceProviderCustomers.kyc.status` is `REJECTED`, this means the user has failed KYC. Either the user has to go through the KYC flow once again (repeat this step) or the user will be unable to use this flow, and is unlikely to be able to buy crypto. Note that a user who fails KYC in this flow will very likely also fail KYC directly with any onramp.
+If the `serviceProviderCustomers.kyc.status` is `REJECTED`, this means the user has failed KYC. They may retry submit with corrected data. If they still fail, then the user will have to try KYCing with the onramp directly, in the onramp's widget.
 
 ## Step 4: Initiate a transaction
 

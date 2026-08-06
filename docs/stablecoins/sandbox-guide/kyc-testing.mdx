@@ -21,7 +21,7 @@ When testing from the Meld Sandbox environment, you will be testing against Sums
 
 # KYC Flow Testing
 
-## Prerequisite
+## Before you begin
 
 Meld is currently integrated with a single KYC Provider, Sumsub. This means that the user's KYC data that is shared with Sumsub can later be automatically shared with onramps, which improves user experience and reduces the friction. To make the user pass the KYC on Sumsub, there are 2 options
 
@@ -34,7 +34,7 @@ To KYC the user, call `POST /accounts/customers/{customerId}/kyc/initiate`. The 
 ```json
 {
   "serviceProvider": "SUMSUB",
-	"mode": "HOSTED_URL"
+  "mode": "HOSTED_URL"
 }
 ```
 
@@ -42,10 +42,10 @@ The response will be a Sumsub URL that you should then launch from your UI. The 
 
 ```json
 {
-	"customerId": "W912345678",
-	"serviceProvider": "SUMSUB",
-	"status": "PENDING",
-	"url": "https://kyclink.com"
+  "customerId": "W912345678",
+  "serviceProvider": "SUMSUB",
+  "status": "PENDING",
+  "url": "https://kyclink.com"
 }
 ```
 
@@ -53,19 +53,19 @@ As the user goes through the KYC flow, you will receive webhooks informing you t
 
 ```json
 {
-    "eventType": "CUSTOMER_KYC_STATUS_CHANGE",
-    "eventId": "4cWK83avakzy8jG4ztmBUk",
-    "timestamp": "2026-02-25T18:55:08.968360756Z",
-    "accountId": "W9jSUfLiRWx1GkaMGt7DTT",
-    "profileId": "WmZ1rqsv532RYW9ELxM4eo",
-    "version": "2026-02-02",
-    "payload": {
-      "requestId": "4456e4e9b0174c53b962227df6766ca7",
-      "customerId": "W912345678",
-      "serviceProvider": "SUMSUB",
-      "status": "APPROVED",
-      "statusUpdatedAt": "2026-02-25T18:55:08.960052Z"
-    }
+  "eventType": "CUSTOMER_KYC_STATUS_CHANGE",
+  "eventId": "4cWK83avakzy8jG4ztmBUk",
+  "timestamp": "2026-02-25T18:55:08.968360756Z",
+  "accountId": "W9jSUfLiRWx1GkaMGt7DTT",
+  "profileId": "WmZ1rqsv532RYW9ELxM4eo",
+  "version": "2026-02-02",
+  "payload": {
+    "requestId": "4456e4e9b0174c53b962227df6766ca7",
+    "customerId": "W912345678",
+    "serviceProvider": "SUMSUB",
+    "status": "APPROVED",
+    "statusUpdatedAt": "2026-02-25T18:55:08.960052Z"
+  }
 }
 ```
 
@@ -73,9 +73,9 @@ If the `serviceProviderCustomers.kyc.status` is `REJECTED`, this means the user 
 
 ### 2. You already KYCed the user with your Sumsub account
 
-If you already have a user who has passed KYC on your Sumsub account, you can import it into Meld by sharing the Sumsub applicant token (TOKEN_SHARE mode). [See Sumsub requirements for importing the applicant](https://docs.sumsub.com/docs/copy-applicant#how-to-enable-copy-applicant).
+If you already have a user who has passed KYC on your Sumsub account, you can import it into Meld by sharing the Sumsub applicant token (TOKEN\_SHARE mode). [See Sumsub requirements for importing the applicant](https://docs.sumsub.com/docs/copy-applicant#how-to-enable-copy-applicant).
 
-To import the KYC of the user, call `POST /accounts/customers/{customerId}/kyc/initiate`. You will need to pass the Sumsub KYC token, generated for the **meld.io_75082** client. The `customerId` is in the path, and your request body will look like this:
+To import the KYC of the user, call `POST /accounts/customers/{customerId}/kyc/initiate`. You will need to pass the Sumsub KYC token, generated for the **meld.io\_75082** client. The `customerId` is in the path, and your request body will look like this:
 
 ```json
 {
@@ -83,8 +83,8 @@ To import the KYC of the user, call `POST /accounts/customers/{customerId}/kyc/i
   "mode": "TOKEN_IMPORT",
   "serviceProviderDetails": {
     "kycToken": "_act-sbx-jwt-eyJhbGciOiJub25lIn0.eyJqdGkiOiJfYWN0LXNieC1mNGFlNWYwYy1iYjFmLTQwZmUtYTk1YS1jZWM0MmY3OTBjYmIiLCJ1cmwiOiJodHRwczovL2FwaS5zdW1zdWIuY29tIn0.",
-		"applicantId": "Sumsub applicant id"
-	}
+      "applicantId": "Sumsub applicant id"
+    }
 }
 ```
 
@@ -92,10 +92,10 @@ The response will be a Sumsub URL that you should then launch from your UI. The 
 
 ```json
 {
-	"customerId": "W912345678",
-	"serviceProvider": "SUMSUB",
-	"status": "APPROVED",
-	"url": "https://kyclink.com"
+  "customerId": "W912345678",
+  "serviceProvider": "SUMSUB",
+  "status": "APPROVED",
+  "url": "https://kyclink.com"
 }
 ```
 
@@ -114,26 +114,26 @@ If you completed the previous steps and successfully KYCed the user with Meld (o
     "walletAddress": "1EEo4ioA4spdJ2ZxiSQ1hWsp3Ve81ZRZ2F"
   },
   "sessionType": "BUY",
-	"bypassKyc": true
+  "bypassKyc": true
 }
 ```
 
 Widget-based Onramps that currently support passing the user's KYC data:
 
-* Mercuryo
-* Paybis
-* Topper
-* Unlimit
+- Mercuryo
+- Paybis
+- Topper
+- Unlimit
 
 ## Sharing KYC with Virtual Account providers (asynchronous KYC)
 
-In both KYC initiation modes (**HOSTED_URL** and **TOKEN_IMPORT**), you can optionally specify Virtual Account providers to share the user's KYC with after Sumsub approves submission, via the `kycShareProviders` field. Alternatively, add share providers later by calling `PATCH /accounts/customers/{customerId}/kyc/initiate`.
+In both KYC initiation modes (**HOSTED\_URL** and **TOKEN\_IMPORT**), you can optionally specify Virtual Account providers to share the user's KYC with after Sumsub approves submission, via the `kycShareProviders` field. Alternatively, add share providers later by calling `PATCH /accounts/customers/{customerId}/kyc/initiate`.
 
 ```json
 {
   "serviceProvider": "SUMSUB",
   "mode": "HOSTED_URL",
-	"kycShareProviders": ["NOAH", "DUENETWORK"]
+  "kycShareProviders": ["NOAH", "DUENETWORK"]
 }
 ```
 
@@ -142,14 +142,14 @@ In both KYC initiation modes (**HOSTED_URL** and **TOKEN_IMPORT**), you can opti
   "serviceProvider": "SUMSUB",
   "mode": "TOKEN_IMPORT",
   "kycShareProviders": ["NOAH", "DUENETWORK"],
-	"serviceProviderDetails": {
+  "serviceProviderDetails": {
     "kycToken": "_act-sbx-jwt-eyJhbGciOiJub25lIn0.eyJqdGkiOiJfYWN0LXNieC1mNGFlNWYwYy1iYjFmLTQwZmUtYTk1YS1jZWM0MmY3OTBjYmIiLCJ1cmwiOiJodHRwczovL2FwaS5zdW1zdWIuY29tIn0.",
-		"applicantId": "Sumsub applicant id"
-	}
+      "applicantId": "Sumsub applicant id"
+    }
 }
 ```
 
-After Sumsub verifies the user's submission, the KYC token will be automatically shared with all specified share Virtual Account providers, effectively onboarding the user on Virtual Account's platforms. The Virtual Account provider may require additional KYC for users in case the data shared by Sumsub is insufficient. To track this, you can either accept webhook CUSTOMER_KYC_STATUS_CHANGE events (recommended) or poll the Search Customer API
+After Sumsub verifies the user's submission, the KYC token will be automatically shared with all specified share Virtual Account providers, effectively onboarding the user on Virtual Account's platforms. The Virtual Account provider may require additional KYC for users in case the data shared by Sumsub is insufficient. To track this, you can either accept webhook CUSTOMER\_KYC\_STATUS\_CHANGE events (recommended) or poll the Search Customer API
 
 **Expected Webhook Response**
 
@@ -165,7 +165,7 @@ After Sumsub verifies the user's submission, the KYC token will be automatically
     "status": "APPROVED",
     "kycRecepient": {
       "serviceProvider": "Virtual account provider",
-			"status": "PENDING" // PENDING, REJECTED, APPROVED
+	  "status": "PENDING" // PENDING, REJECTED, APPROVED
     },
     "statusUpdatedAt": "2022-02-24T16:36:41.717262Z"
   }
@@ -205,7 +205,7 @@ You will need to direct your user to `HostedURL` so they can pass additional KYC
 
 Async KYC sharing is  currently supported with the following Virtual Account Onramps:
 
-* Noah
-* DueNetwork
+- Noah
+- DueNetwork
 
 Brale **is not** supported
