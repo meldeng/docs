@@ -15,7 +15,7 @@ Meld does not store raw KYC field values or document images. Data is passed thro
 - You have contacted your Meld account manager to enable this product for you
 - You have a KYC provider account and have integrated their KYC flow
 - You get a 1 time token from each onramp you use and add it to your KYC provider dashboard
-- **It is very important that you show the user a screen where they consent to having their KYC data shared with Meld and the onramps, which is what is happening in this flow. While the KYC provider stores the physical KYC data, they will share it with the onramp for the user to skip KYC in the onramp, and the user must consent to this data sharing.**
+- You gather end-user consent in your UI before sharing KYC data with Meld and downstream partners
 
 <Note>
   For sandbox testing details, see [KYC testing](/docs/stablecoins/sandbox-guide/kyc-testing).
@@ -25,7 +25,7 @@ Meld does not store raw KYC field values or document images. Data is passed thro
 
 | Flow | Endpoint | Content type | API Response Contains |
 | :-- | :-- | :-- | :-- |
-| Submit KYC provider token | `POST /accounts/customers/{customerId}/kyc/initiate` | JSON (`TOKEN_IMPORT`) | Existing Sumsub applicant attached in Meld |
+| Submit KYC provider token | `POST /accounts/customers/{customerId}/kyc/initiate` | JSON (`TOKEN_IMPORT`) | Existing KYC provider applicant attached in Meld |
 | Submit raw KYC | `POST /accounts/customers/{customerId}/kyc/initiate` | `multipart/form-data` (`RAW_DATA_IMPORT`) | KYC status `PENDING` \+ optional status URL |
 
 To enable this flow, do the following:
@@ -36,9 +36,9 @@ To enable this flow, do the following:
 
 This requires you to integrate a KYC provider, and use them to KYC your user.
 
-_Note that the steps below show the Sumsub dashboard as an example_
+_Note that the steps below show the Sumsub dashboard as an example._
 
-Get a share token from each onramp you will pass the KYC token to and add them in your KYC Provider dashboard in the Partners tab.
+Get a share token from each onramp you will pass the KYC token to and add them in your KYC provider dashboard in the Partners tab.
 
 <Frame>
   ![Image](/images/image.png "Image")
@@ -132,7 +132,7 @@ Call:
 
 Choose a mode. Both modes return the same response shape and use the same webhook to signal approval.
 
-_Note that the steps below show the Sumsub as the KYC provider as an example_
+_Note that the steps below show the Sumsub as the KYC provider as an example._
 
 ### Mode A — KYC provider share token (`TOKEN_IMPORT`)
 
@@ -237,7 +237,7 @@ Send **multipart/form-data**. Do **not** send this mode as JSON — `RAW_DATA_IM
 
 | Field | Required | Notes |
 | :-- | :-- | :-- |
-| `serviceProvider` | Yes | `SUMSUB` |
+| `serviceProvider` | Yes | KYC provider name |
 | `mode` | Yes | Must be `RAW_DATA_IMPORT` |
 | `applicantData.firstName` / `lastName` | Yes |  |
 | `applicantData.dob` | Yes | ISO date `yyyy-MM-dd` |

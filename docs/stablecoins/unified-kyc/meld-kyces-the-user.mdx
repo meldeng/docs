@@ -9,7 +9,6 @@ This guide is for developers who want Meld to host the KYC flow. You'll call Mel
 ## Before you begin
 
 - You have contacted your Meld account manager to enable a KYC provider for you
-
 - You can store the Meld `customerId` against each of your users
 - You have a webhook endpoint configured to receive `CUSTOMER_KYC_STATUS_CHANGE` events (or you plan to poll)
 
@@ -111,7 +110,7 @@ This step is only needed if the user isn't already successfully KYCed. In other 
 
 To KYC the user, call `POST /accounts/customers/{customerId}/kyc/initiate`. The `customerId` is in the path, and your request body will look like this:
 
-_Note that Sumsub is being used as the sample KYC provider in these requests_
+_Note that Sumsub is being used as the sample KYC provider in these requests._
 
 ```json
 {

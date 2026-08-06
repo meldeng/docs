@@ -15,7 +15,7 @@ Meld does not store raw KYC field values or document images. Data is fetched fro
 
 - You have contacted your Meld account manager to enable this product for you
 - You can store the Meld `customerId` against each of your users
-- You gather end-user consent in your UI before sharing KYC data with Meld and downstream partners
+- You gather end-user consent in your UI before sharing KYC data with Meld, yourself, and your downstream partners
 - You have a webhook endpoint configured for `CUSTOMER_KYC_STATUS_CHANGE` — see [Webhook events](/docs/stablecoins/for-all-products/webhook-events) and [Webhook authentication](/docs/stablecoins/for-all-products/webhooks-authentication)
 
 ## Flows at a glance
@@ -82,7 +82,7 @@ Call:
 
 Nothing is persisted during retrieval. The customer must already have an applicant for the given `kycProvider`; otherwise the API returns `404`. Choose a mode:
 
-_Note that the steps below show the Sumsub as the KYC provider as an example_
+_Note that the steps below show the Sumsub as the KYC provider as an example._
 
 ### Mode A — KYC provider share token (`TOKEN`)
 
@@ -101,7 +101,7 @@ Use when the consuming product uses the same KYC provider as the one in your req
 | Field | Required | Description |
 | --- | --- | --- |
 | `mode` | Yes | `TOKEN` |
-| `kycProvider` | Yes | `SUMSUB` |
+| `kycProvider` | Yes | KYC provider name |
 | `recipientClientId` | Yes for `TOKEN` | KYC provider client id of the user |
 
 #### **Response** (`application/json`)
@@ -226,5 +226,5 @@ Parse `kyc-export.multipart` as multipart: read the `data` JSON part, then each 
 | Invalid `data` JSON or bean validation failure | `400` — invalid raw KYC request |
 | Customer has no KYC provider applicant yet | `404` — no KYC applicant for customer and provider |
 | `TOKEN` export without `recipientClientId` | `400` — `recipientClientId` is required |
-| `kycProvider` missing or not `SUMSUB` | `400` |
+| `kycProvider` missing or not | `400` |
 | Customer already has KYC at a different level | Fail — cannot start `RAW_DATA_IMPORT` against an incompatible existing applicant |
