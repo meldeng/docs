@@ -485,5 +485,3 @@ Errors return a consistent shape:
 | Users always get the fallback flow after an app update | The PassKit module is not in the running binary. A JS-only OTA cannot ship native code. Release a native build. |
 | Duplicate charges reported | Your app treated `pending` as a failure and users retried. `pending` **is** success. Fix the status handling. |
 | Process call fails with an expired-token error | More than 30 minutes passed between order creation and authorization. Create the order at checkout tap, not earlier. |
-
-## Integration checklist
