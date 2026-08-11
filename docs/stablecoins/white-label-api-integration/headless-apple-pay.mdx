@@ -1,78 +1,489 @@
 ---
-title: "Headless Apple Pay"
-hidden: true
+title: "Native Apple Pay (Mercuryo)"
+sidebarTitle: "Native Apple Pay"
+description: "Headless integration guide for accepting crypto purchases with a native Apple Pay sheet inside your iOS app."
 ---
 
-Meld supports headless Apple Pay, where you can launch the Apple Pay card of the provider directly in your application. This is great for first time users to be able to buy crypto as easily as possible.
+Accept crypto purchases with a **native Apple Pay sheet presented directly in your iOS app**. No widget, no redirect, no web checkout. You own the entire UI; Meld and Mercuryo handle payment processing and settlement.
 
-Right now, this is supported only for Mercuryo, although Meld will be adding more providers. Note that users can make transactions up to \$700 (total) using headless Apple Pay with Mercuryo without having to KYC. After this threshold, users will have to KYC with Mercuryo in order to continue buying crypto.
+<Note>
+  **Platform:** Apple Pay is iOS-only. On Android, and on iOS devices without Apple Pay, fall back to your card or hosted checkout flow.
+</Note>
 
-Here is a demo video of how the headless Apple Pay flow works. This video is recorded in the Meld Checkout, which is Meld's UI.
+**Integration style — headless.** Your backend talks to the Meld API with your secret key. Your app presents the payment sheet with Apple's native PassKit framework and submits the encrypted Apple Pay token to Meld with a short-lived session token. No Meld SDK or widget is involved.
+
+Here is a demo of the Apple Pay flow (recorded inside Meld Checkout, Meld's hosted UI). The native-app experience your users see is the same Apple sheet, launched directly from your app.
 
 <iframe className="w-full aspect-video rounded-xl" src="https://www.youtube.com/embed/ruMWHFFIlpg" allowFullScreen />
 
-If you would like to use headless Apple Pay via the Meld Checkout, all you have to do is make sure Mercuryo is enabled for your account.
+## How it works
 
-If you have built your own UI and would like to enable headless Apple Pay, you must follow these setup steps:
+```text
+Your app                Your backend               Meld                    Mercuryo
+   |                        |                        |                        |
+   |-- 1. Buy tapped ------>|                        |                        |
+   |                        |-- 2. Create order ---->|-- verify KYC, quote -->|
+   |<-- sessionToken -------|<-- sessionToken -------|                        |
+   |                        |                        |                        |
+   |-- 3. Present native Apple Pay sheet (PassKit)   |                        |
+   |-- 4. POST encrypted token to /process --------->|-- decrypt & charge --->|
+   |<-- accepted (show "processing") ----------------|                        |
+   |                        |                        |                        |
+   |                        |<-- 5. Settlement webhooks (async) --------------|
+```
 
-### Phase 1 — Domain registration (one-time, with Meld)
+1. **Your backend** creates a headless order with your secret API key and receives a short-lived `sessionToken`.
+2. **Your app** presents the native Apple Pay sheet with PassKit.
+3. On authorization, **your app** posts the encrypted Apple Pay token to Meld's process endpoint, authenticated with the `sessionToken` only. Your API key never ships in the app binary.
+4. **Settlement** is confirmed asynchronously to your backend via webhooks.
 
-1. **Pick the domain** where the Apple Pay sheet will run (e.g., pay.yourcompany.com). It must be HTTPS with a valid certificate. Subdomains are fine, but each one is registered separately.
-2. **Send the domain to Meld** via your integration contact.
-3. **Meld adds your domain to our Apple Pay Merchant ID** (merchant.io.meld.cryptowidget) in Apple Developer.
-4. **Meld sends you the domain association file** — a small binary blob Apple issues for your specific domain.
-5. **You host the file** at the exact path:
-   ```text
-   https://pay.yourcompany.com/.well-known/apple-developer-merchantid-domain-association
-   ```
-   Requirements:
-   - HTTP 200, no redirects.
-   - Bytes returned must be byte-for-byte identical to the file we sent — no minification, no whitespace tweaks, no transformation.
-   - Content-Type doesn't strictly matter but text/plain or application/octet-stream is safe.
-   - Publicly reachable (no auth, no IP restrictions).
-6. **Confirm with Meld** the file is live. Meld clicks **Verify** in Apple Developer → status goes from Pending to Verified.
-7. **Meld asks Mercuryo to add your domain** to the NAP widget's Additional URL list. (Once.)
+## Before you begin
 
-After Phase 1, your domain is set up for life (Apple's verification typically lasts ~6 months and re-verifies automatically as long as the file stays live).
+### Meld account
 
-### Phase 2 — Implement Apple Pay on your domain (one-time, in your frontend)
+- A Meld API key with payment access (start in sandbox, promote to production for go-live).
+- Headless onramps enabled on your account, with **Mercuryo** enabled as a provider and **native Apple Pay** enabled for your target corridors.
 
-1. **Call our session endpoint** when the user is ready to pay:
-   ```text
-   POST https://api.meld.io/crypto/session/widget
-   ```
-   In the response, check isNativeApplePaySupported (or equivalently look at whether serviceProviderWidgetUrl points at meldcrypto.com vs exchange.mercuryo.io).
-2. **If** isNativeApplePaySupported: true — your page implements Apple Pay JS:
-   - From a user click handler, construct new ApplePaySession(version, paymentRequest).
-   - Implement onmerchantvalidation:
-     - POST the validationURL (Apple gives you in the event) to our endpoint:
-       ```text
-       POST https://api.meld.io/crypto/session/mercuryo/apple-pay/validate-merchant
-       Body: { "validationURL": "<the URL Apple gave you>" }
-       Header: X-Crypto-Session-Token: <session token from step 1>
-       ```
-     - Pass the returned merchantSession to session.completeMerchantValidation(merchantSession).
-   - Implement onpaymentauthorized:
-     - POST the encrypted Apple Pay token \+ buyer info to:
-       ```text
-       POST https://api.meld.io/crypto/session/mercuryo/apple-pay/process
-       Body: { payToken, buyToken, email, firstName, lastName, billingAddress, address, ip, merchantTransactionId }
-       Header: X-Crypto-Session-Token: <session token>
-       ```
-     - On success (status is pending / paid / completed) → call session.completePayment(ApplePaySession.STATUS\_SUCCESS).
-     - If response includes redirect\_url → call session.completePayment(ApplePaySession.STATUS\_FAILURE) and redirect the user to that URL (Mercuryo's hosted widget, where they finish the payment).
-     - On any other failure → STATUS\_FAILURE and show an error.
-3. **If** isNativeApplePaySupported: false — no Apple Pay JS needed. Just open the serviceProviderWidgetUrl from the session response (it'll point to Mercuryo's hosted widget). User completes the payment there.
+Contact your Meld representative to have these switched on. Until they are, order creation fails with `WHITELABEL_NOT_ENABLED` (HTTP 403).
 
-### What Meld handles for you (so you don't have to)
+### Base URLs
 
-- mTLS to Apple's startSession endpoint (your onmerchantvalidation POSTs to us, we do the secure call to Apple, we return merchantSession).
-- Forwarding the Apple Pay token to Mercuryo's /native-mobile-pay endpoint.
-- Handling Mercuryo's response shape (success vs redirect\_url).
-- Renewing the Merchant Identity cert and Apple's annual cert chain rotations.
+| Environment | Base URL |
+| --- | --- |
+| Sandbox | `https://api-sb.meld.io` |
+| Production | `https://api.meld.io` |
 
-You only need to: serve the well-known file, and implement the Apple Pay JS event handlers that proxy through our two endpoints.
+Send `Meld-Version: 2026-05-01` (or later) on every request. Some endpoints in this guide require it, and sending it everywhere keeps response shapes consistent.
 
-### Why not just iframe meldcrypto.com?
+<Note>
+  **API compatibility.** New fields may appear in responses without a version bump. Use flexible JSON parsing and do not reject unknown properties.
+</Note>
 
-Apple Pay has strict restrictions on iframe origins — the sheet checks the _parent_ frame's domain. So even if you iframe our hosted widget, Apple still validates against your domain, and you'd still need the same Phase 1 work. There's no shortcut.
+### Supported corridors
+
+- Mercuryo native Apple Pay does **not** process US or GB users, and it does not accept US or GB-issued cards. Use a supported corridor (for example EUR to BTC in France, or CAD corridors).
+- Direct onramps only. Routes that swap into the destination asset are not eligible.
+- Cards: Visa and Mastercard.
+
+### Apple Developer setup (one-time)
+
+You need your own Apple **Merchant ID** and an Apple Pay **Payment Processing certificate** issued against a certificate signing request (CSR) that Meld provides.
+
+<Warning>
+  **Golden rule.** The Apple Pay token is decrypted by the payment processor, so the processor generates the CSR and holds the private key. **Never generate the Payment Processing key yourself.** If you do, the token cannot be decrypted and every payment fails.
+</Warning>
+
+<Steps>
+  <Step title="Create a Merchant ID">
+    In Apple Developer, go to **Certificates, Identifiers & Profiles → Identifiers → \+ → Merchant IDs** and register a reverse-DNS, globally-unique ID such as `merchant.com.yourcompany.app`.
+  </Step>
+  <Step title="Enable Apple Pay on your App ID">
+    Under **Identifiers → your App ID → Capabilities**, tick **Apple Pay Payment Processing**, click **Configure**, select your Merchant ID, and save.
+
+    <Note>
+      "In-App Purchase" is a different capability, used for digital goods sold through Apple. It does nothing for Apple Pay.
+    </Note>
+  </Step>
+  <Step title="Request the CSR from Meld">
+    Ask your Meld representative for the Apple Pay Payment Processing CSR (a `.certSigningRequest` file) tied to your merchant ID.
+  </Step>
+  <Step title="Issue the certificate">
+    In Apple Developer, go to **Identifiers → Merchant IDs → your merchant ID → Apple Pay Payment Processing Certificate → Create Certificate**. Answer **No** to the China-mainland question, upload Meld's CSR, and download the issued `.cer`.
+  </Step>
+  <Step title="Return the .cer to Meld">
+    Meld pairs the certificate with the private key held by the processor and registers your merchant ID on your account.
+  </Step>
+  <Step title="Add the app entitlement">
+    In Xcode, open your app target's **Signing & Capabilities** tab, add **\+ Apple Pay**, and include your merchant ID. This adds the `com.apple.developer.in-app-payments` entitlement. Regenerate provisioning profiles afterwards.
+  </Step>
+</Steps>
+
+A **Merchant Identity certificate and domain verification are not needed** for native in-app Apple Pay. Those apply only to Apple Pay on the web. Native PassKit validates the merchant on-device.
+
+<Warning>
+  **Ship a native build, not an OTA update.** PassKit code lives in the app binary. A JavaScript-only over-the-air update (EAS Update, CodePush, and similar) cannot add or change it. Every Apple Pay change must go out through a native build. Users on an older binary keep seeing your fallback flow until they update.
+</Warning>
+
+#### Who does what
+
+| Step | You | Meld | Processor |
+| --- | :-: | :-: | :-: |
+| Create Merchant ID and enable the App ID capability | ✅ |  |  |
+| Generate the Payment Processing CSR and hold the private key |  | relay | ✅ |
+| Upload the CSR to Apple, return the issued `.cer` | ✅ |  |  |
+| Pair the certificate for token decryption |  | ✅ | ✅ |
+| Enable headless, native Apple Pay, and corridors on your account |  | ✅ | ✅ |
+| App entitlement, native build, backend routes | ✅ |  |  |
+
+## Step 1 — Customer setup (once per user)
+
+Every purchase needs a Meld customer that is **KYC-approved** and has an **email on its Meld record**. Mercuryo provisions its own customer record automatically on the first order using that email and the approved verification. There is no separate registration call, but if either prerequisite is missing the order fails.
+
+### 1a. Create the customer (with email)
+
+```http
+POST /accounts/customers
+```
+
+```json Request body
+{
+  "externalId": "your-user-42",
+  "name": { "firstName": "Jane", "lastName": "Doe" },
+  "email": "jane@example.com"
+}
+```
+
+- **Get-or-create** is keyed on `externalId`. Reposting with the same `externalId` returns the existing customer and fills in any fields (such as `email`) that were previously blank, without overwriting existing values.
+- `name` is a **nested object**, not top-level `firstName` / `lastName` fields.
+- The response includes the Meld `id` (this is the `customerId`). Store it against your user record.
+
+<Warning>
+  **The email must be on the _Meld_ customer record.** If your users sign in wallet-first or through a social provider, the email you display in-app may live only in your own database. Sync it to Meld at customer creation, or patch it in later:
+
+  ```http
+  PATCH /accounts/customers/{customerId}
+  ```
+
+  ```json
+  { "email": "jane@example.com" }
+  ```
+</Warning>
+
+### 1b. Run KYC (Meld-hosted)
+
+There is no provider widget in a headless flow, so identity verification runs through Meld's unified KYC:
+
+```http
+POST /accounts/customers/{customerId}/kyc/initiate
+```
+
+```json Request body
+{ "serviceProvider": "SUMSUB", "mode": "HOSTED_URL" }
+```
+
+```json Response
+{
+  "customerId": "W9...",
+  "serviceProvider": "SUMSUB",
+  "status": "PENDING",
+  "url": "https://..."
+}
+```
+
+Open `url` for the user (an in-app browser is fine) and let them complete verification.
+
+- If KYC was already initiated for this customer, the `POST` returns **HTTP 409**. Call `PATCH /accounts/customers/{customerId}/kyc/initiate` with the same body to fetch a fresh URL for the existing verification.
+- KYC statuses: `PENDING`, `APPROVED`, `REJECTED`, `EXPIRED`.
+
+### 1c. Wait for approval
+
+There are two ways to know a customer is approved:
+
+- **Webhook (recommended).** Subscribe to `CUSTOMER_KYC_STATUS_CHANGE`. The payload includes `customerId`, `serviceProvider`, `status`, and `statusUpdatedAt`.
+- **Poll.** Call `GET /accounts/customers/{customerId}` **with the `Meld-Version` header**. The response then includes `serviceProviderCustomers`, and the customer is ready when the `SUMSUB` entry shows `kyc.status: "APPROVED"`. Without the version header the response omits KYC information entirely.
+
+The same response also shows the `email` field, so you can verify both prerequisites in a single call.
+
+## Step 2 — Check corridor eligibility (optional)
+
+```http
+POST /payments/crypto/quote?integrationMode=HEADLESS
+```
+
+Send `Meld-Version: 2026-05-01`:
+
+```json Request body
+{
+  "countryCode": "FR",
+  "sourceAmount": 15,
+  "sourceCurrencyCode": "EUR",
+  "destinationCurrencyCode": "BTC",
+  "paymentMethodType": "APPLE_PAY"
+}
+```
+
+A quote row with `serviceProvider: "MERCURYO"`, `paymentMethodType: "APPLE_PAY"`, and `integrationMode: "HEADLESS"` means the corridor is catalog-eligible, and it gives you the live rate and fees to display.
+
+<Warning>
+  **The quote is not a guarantee.** Live native-Apple-Pay availability is only confirmed at order creation. If it is not available for the corridor at that moment, order creation fails with `INVALID_PAYMENT_METHOD`. Treat that as your signal to fall back to a card flow. Also gate the Apple Pay button client-side with PassKit's `PKPaymentAuthorizationController.canMakePayments()`.
+</Warning>
+
+## Step 3 — Create the order (your backend)
+
+Create the order **when the user taps Buy**, not ahead of time. The order embeds a live Mercuryo quote and the session token expires after about **30 minutes**. A pre-created order can go stale before the user authorizes.
+
+```http
+POST /crypto/order/headless/onramp
+```
+
+| Header | Value |
+| --- | --- |
+| `Authorization` | `BASIC <YOUR_API_KEY>` |
+| `Content-Type` | `application/json` |
+| `X-Idempotency-Key` | a UUID (optional, recommended) |
+
+```json Request body
+{
+  "customerId": "W9...",
+  "externalOrderId": "order-123",
+  "serviceProvider": "MERCURYO",
+  "paymentMethodType": "APPLE_PAY",
+  "sourceCurrencyCode": "EUR",
+  "sourceAmount": "15",
+  "destinationCurrencyCode": "BTC",
+  "destinationWalletAddress": "bc1q...",
+  "countryCode": "FR",
+  "clientIpAddress": "203.0.113.4"
+}
+```
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `customerId` or `externalCustomerId` | one of the two | Resolve server-side from your authenticated user. Never trust a client-supplied id. |
+| `externalOrderId` | no | Your order id. Must be unique per account (`EXTERNAL_ORDER_ID_NOT_UNIQUE` on reuse). |
+| `serviceProvider` | yes | `MERCURYO` |
+| `paymentMethodType` | yes | `APPLE_PAY` |
+| `sourceCurrencyCode` | yes | Fiat, ISO 4217 (e.g. `EUR`). |
+| `sourceAmount` | yes | Amount to charge, greater than 0. |
+| `destinationCurrencyCode` | yes | Crypto currency (e.g. `BTC`). |
+| `destinationWalletAddress` | yes | Destination wallet. |
+| `countryCode` | yes | The **user's** country, ISO 3166-1 alpha-2. |
+| `clientIpAddress` | strongly recommended | The **end user's device public IP**. Mercuryo binds the transaction to it, and the app must send the same IP when processing (Step 5). If omitted, Meld sees your server's IP instead. Resolve the device's public IP in the app and pass it through. |
+
+<Warning>
+  Do **not** send `redirectUrl` with `APPLE_PAY`. It is rejected with `INVALID_REDIRECT_URL`.
+</Warning>
+
+```json Response (201 Created)
+{
+  "id": "WeP9...",
+  "customerId": "W9...",
+  "externalOrderId": "order-123",
+  "paymentMethodType": "APPLE_PAY",
+  "paymentMethodResponseDetails": {
+    "sessionToken": "eyJ...",
+    "merchantTransactionId": "...",
+    "merchantIdentifier": "merchant.com.yourcompany.app"
+  }
+}
+```
+
+- **`sessionToken`** — short-lived (roughly 30 minutes) token the app uses to authenticate the process call. Safe to hand to the device: it is scoped to this order only.
+- **`merchantTransactionId`** — echo it back verbatim on the process call.
+- **`merchantIdentifier`** — your merchant ID as configured on your Meld account. May be omitted if it is not configured; in that case your app should fall back to the merchant ID it already knows from its own entitlement.
+
+<Note>
+  **Idempotency.** Retrying with the **same** `X-Idempotency-Key` after a success returns HTTP 200 with the original body (no duplicate order). A retry while the first request is still in flight returns HTTP 425 (Too Early). Retry shortly or mint a new key. Each _user-initiated_ new attempt should use a fresh key and a fresh `externalOrderId`.
+</Note>
+
+Expose all of this behind a thin authenticated route on your backend (for example `POST /api/apple-pay-order`) that injects `customerId` and returns the order JSON to your app. The secret API key never reaches the device.
+
+## Step 4 — Present the Apple Pay sheet (your app)
+
+Use PassKit directly. The exact request configuration matters. These values are what Mercuryo expects:
+
+| `PKPaymentRequest` property | Value |
+| --- | --- |
+| `merchantIdentifier` | Your merchant ID (from the order response, falling back to your entitlement value). |
+| `countryCode` | `"LT"` — the **merchant's** (Mercuryo's) country. **Not** the user's country. |
+| `currencyCode` | The order's `sourceCurrencyCode` (for example `"EUR"`). |
+| `supportedNetworks` | `[.visa, .masterCard]` |
+| `merchantCapabilities` | `[.threeDSecure, .credit, .debit]` |
+| `requiredBillingContactFields` | `[.name, .postalAddress, .emailAddress]` (used to prefill the process call). |
+| `paymentSummaryItems` | One final item: your label plus the fiat amount. Apple renders it as "Pay ...". |
+
+```swift Swift (PassKit)
+import PassKit
+
+let request = PKPaymentRequest()
+request.merchantIdentifier = merchantIdentifier          // your merchant id
+request.countryCode = "LT"                               // merchant country, always "LT"
+request.currencyCode = "EUR"                             // order's source currency
+request.supportedNetworks = [.visa, .masterCard]
+request.merchantCapabilities = [.threeDSecure, .credit, .debit]
+request.requiredBillingContactFields = [.name, .postalAddress, .emailAddress]
+request.paymentSummaryItems = [
+  PKPaymentSummaryItem(label: "Acme - Buy BTC",
+                       amount: NSDecimalNumber(string: "15.00"),
+                       type: .final)
+]
+
+let controller = PKPaymentAuthorizationController(paymentRequest: request)
+controller.delegate = self
+controller.present()
+```
+
+- Gate the button with `PKPaymentAuthorizationController.canMakePayments()` and use Apple's `PKPaymentButton` for the button itself (required for App Store review and Human Interface Guidelines compliance).
+- Merchant validation happens **on-device**. There is no merchant-validation network call in the native flow.
+- React Native and Expo apps wrap this in a small native module. The configuration is identical.
+
+## Step 5 — Process the payment (your app)
+
+In the delegate's `didAuthorizePayment`, post the encrypted token to Meld. This call is authenticated by the **session token** from the order, not your API key.
+
+```http
+POST /crypto/session/mercuryo/apple-pay/process
+```
+
+| Header | Value |
+| --- | --- |
+| `X-Crypto-Session-Token` | the order's `sessionToken` |
+| `Content-Type` | `application/json` |
+
+```json Request body
+{
+  "pay_token": "<base64 of payment.token.paymentData>",
+  "merchant_transaction_id": "<from the order response>",
+  "first_name": "Jane",
+  "last_name": "Doe",
+  "email": "jane@example.com",
+  "address": "bc1q...",
+  "ip": "203.0.113.4",
+  "billing_address": {
+    "country_code": "FR",
+    "street_line_1": "1 Rue Example",
+    "street_line_2": "",
+    "state_code": "",
+    "city": "Paris",
+    "zip_code": "75001"
+  }
+}
+```
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `pay_token` | yes | Base64 of `payment.token.paymentData` (the encrypted payload **only**, not the whole `PKPaymentToken` envelope). |
+| `merchant_transaction_id` | yes | Verbatim from `paymentMethodResponseDetails.merchantTransactionId`. |
+| `first_name` / `last_name` | yes | From the sheet's billing contact (`payment.billingContact.name`). |
+| `email` | recommended | Billing contact email from the sheet, falling back to the customer's email. |
+| `address` | yes | The **destination crypto wallet address**, not a postal address. |
+| `ip` | yes | The device's public IP. **The same value** you sent as `clientIpAddress` at order creation. |
+| `billing_address` | recommended | From `payment.billingContact.postalAddress`. All sub-fields are optional; `country_code` is two uppercase letters. |
+
+<Warning>
+  Do not send a `buy_token` field. The quote is already bound to the session server-side and any client-supplied value is ignored.
+</Warning>
+
+```json Response (200 OK)
+{
+  "status": 200,
+  "data": {
+    "id": "...",
+    "status": "pending",
+    "payment_status": "..."
+  }
+}
+```
+
+### Interpreting the result — read this twice
+
+Treat the payment as **accepted** when the HTTP status is 200 and `data.status` is one of:
+
+```text
+order_scheduled | pending | paid | completed
+```
+
+<Warning>
+  **`pending` is a success.** It is Mercuryo's normal synchronous response to an accepted Apple Pay payment. Treating `pending` as a failure makes users retry and **charges their card twice**. This is the single most important rule in this guide.
+</Warning>
+
+Anything else (an HTTP error, or another `status` value) is a failure: complete the sheet with `.failure` and show an error.
+
+Whatever the outcome, an accepted payment means **"processing," not "success."** Show a processing state; funds are only confirmed by webhook (Step 6).
+
+```swift Swift (delegate)
+func paymentAuthorizationController(
+    _ controller: PKPaymentAuthorizationController,
+    didAuthorizePayment payment: PKPayment,
+    handler completion: @escaping (PKPaymentAuthorizationResult) -> Void) {
+
+  let payToken = payment.token.paymentData.base64EncodedString()
+  let contact = payment.billingContact
+  // POST /crypto/session/mercuryo/apple-pay/process (see body above), then:
+  //   accepted -> completion(.init(status: .success, errors: nil)); show "processing"
+  //   failed   -> completion(.init(status: .failure, errors: nil)); show error
+}
+```
+
+A sheet dismissed without authorization is a **user cancellation**. Return to checkout quietly, without an error state.
+
+## Step 6 — Settlement (your backend)
+
+Settlement is always confirmed **server-side via webhooks**, never from the app's process response.
+
+Subscribe to the transaction lifecycle events:
+
+| Webhook event | Fires when the transaction is |
+| --- | --- |
+| `TRANSACTION_CRYPTO_PENDING` | Created or authorized (`PENDING_CREATED`, `PENDING`, `AUTHORIZED`) |
+| `TRANSACTION_CRYPTO_TRANSFERRING` | Fiat captured, crypto being sent (`SETTLING`, ...) |
+| `TRANSACTION_CRYPTO_COMPLETE` | `SETTLED`. Crypto delivered. Mark the order paid here. |
+| `TRANSACTION_CRYPTO_FAILED` | Terminal failure (`FAILED`, `DECLINED`, `CANCELLED`, `REFUNDED`, `AUTHORIZATION_EXPIRED`) |
+
+The payload includes `paymentTransactionId`, `paymentTransactionStatus`, `customerId`, `externalCustomerId`, `transactionType`, and `headlessOrderId`. Correlate on `headlessOrderId` (the order `id` from Step 3) or on your `externalOrderId` via the transaction.
+
+You can also poll (with `Meld-Version: 2026-05-01`):
+
+- `GET /payments/transactions?customerIds={customerId}` — list a customer's transactions.
+- `GET /payments/transactions/{transactionId}` — one transaction.
+
+Transaction statuses you will see include `PENDING`, `AUTHORIZED`, `SETTLING`, `SETTLED`, `DECLINED`, `CANCELLED`, `REFUNDED`, and `FAILED`.
+
+## Error reference
+
+Errors return a consistent shape:
+
+```json
+{
+  "code": "INVALID_PAYMENT_METHOD",
+  "message": "Mercuryo native Apple Pay is not available for this order",
+  "requestId": "...",
+  "timestamp": "2026-08-10T12:00:00Z"
+}
+```
+
+### Order creation (`POST /crypto/order/headless/onramp`)
+
+| `code` | HTTP | Meaning and action |
+| --- | --- | --- |
+| `WHITELABEL_NOT_ENABLED` | 403 | Headless onramps are not enabled on your account. Contact Meld. |
+| `KYC_NOT_COMPLETED` | 403 | Customer has no approved verification. Run Step 1b and wait for `APPROVED`. |
+| `INVALID_PAYMENT_METHOD` | 400 | Native Apple Pay is not available for this corridor or order (for example US or GB, or a swap route). **Fall back to your card flow.** |
+| `CUSTOMER_NOT_FOUND` / `CUSTOMER_ID_REQUIRED` | 400 | Bad or missing customer reference. |
+| `SERVICE_PROVIDER_NOT_ENABLED` | 403 | Mercuryo is not enabled on your account. |
+| `EXTERNAL_ORDER_ID_NOT_UNIQUE` | 400 / 409 | Reused `externalOrderId`. Use a fresh one per attempt. |
+| `INVALID_REDIRECT_URL` | 400 | `redirectUrl` was sent with `APPLE_PAY`. Omit it. |
+| `404` "ServiceProviderCustomer not found" | 404 | The customer could not be provisioned with the provider. Almost always a missing **email** on the Meld customer record, or missing KYC. Fix per Step 1 and retry. |
+
+### Payment processing (`POST /crypto/session/mercuryo/apple-pay/process`)
+
+| `code` | Meaning and action |
+| --- | --- |
+| `INVALID_SESSION_ID` | Session token does not match a live order. Mint a new order. |
+| Token expired (401 / 403) | The 30-minute session token lapsed. Mint a new order. |
+| `TRANSACTION_INVALID_PROVIDER` | The session's order is not a Mercuryo order. |
+| `INCOMPATIBLE_REQUEST` | The session has no stored quote (the order was not created as a Mercuryo Apple Pay order). |
+| `TRANSACTION_EXCEPTION` | Downstream processing failure. Complete the sheet with `.failure`. |
+
+## Testing
+
+1. **Real device required.** The iOS Simulator cannot produce a usable Apple Pay token.
+2. Sign into the device with an **Apple sandbox tester** and add an Apple test card to Wallet.
+3. Use a sandbox Meld customer that is **KYC-approved with an email on the record**, and a **non-US, non-GB corridor** (for example EUR to BTC, `countryCode: "FR"`).
+4. Tap Buy. The native sheet opens directly, you authorize, and the process call returns `pending` (success). Show "processing."
+5. **Simulate settlement** in sandbox with `POST /payments/mock/headless/simulate` and body `{ "externalOrderId": "order-123" }`. Your webhook receives the `SETTLING` then `SETTLED` transitions.
+
+## Troubleshooting
+
+| Symptom | Likely cause and fix |
+| --- | --- |
+| `404 ServiceProviderCustomer not found` at order creation | No **email** on the Meld customer record, or KYC not approved. The email your app displays may live only in your own auth store; it must be written onto the _Meld_ customer (Step 1a). |
+| `KYC_NOT_COMPLETED` | Verification not approved yet. Check `GET /accounts/customers/{id}` (with `Meld-Version`) for the `SUMSUB` entry's `kyc.status`. |
+| `INVALID_PAYMENT_METHOD` | Corridor not eligible (US or GB), a swap route, or native availability turned off at the provider. Fall back to card. |
+| Sheet opens, then processing fails after authorization | Payment Processing certificate was not issued from Meld's CSR, or was not returned and paired (see Apple Developer setup). The processor cannot decrypt the token. Also check `countryCode: "LT"`, the `pay_token` encoding, and the `billing_address` field names. |
+| Sheet never opens, or `canMakePayments()` is false | No card in Wallet, Apple Pay restricted on the device, or the entitlement or capability is missing from the build. |
+| Users always get the fallback flow after an app update | The PassKit module is not in the running binary. A JS-only OTA cannot ship native code. Release a native build. |
+| Duplicate charges reported | Your app treated `pending` as a failure and users retried. `pending` **is** success. Fix the status handling. |
+| Process call fails with an expired-token error | More than 30 minutes passed between order creation and authorization. Create the order at checkout tap, not earlier. |
+
+## Integration checklist
