@@ -563,12 +563,19 @@ curl 'https://api-sb.meld.io/network-partner/supported/routes/CRYPTO_OFFRAMP/US/
           "paymentMethodType": "CREDIT_DEBIT_CARD",
           "serviceProvider": "TRANSAK",
           "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
+          "clientIpAddress": "203.0.113.42",
           "redirectUrl": "https://your-domain.example/transaction-complete"
         },
         "externalCustomerId": "user_123",
         "externalSessionId": "session_456"
       }'
     ```
+
+    <Note>
+      **Always send `sessionData.clientIpAddress`.** Pass the end user's public IP (not your server's). Both IPv4 and IPv6 are accepted. Some ramp providers reject or fail sessions without it because they use it for geo and fraud checks; sending it by default keeps the widest set of providers routable.
+
+      If you don't already track the user's IP, resolve it client-side with a free lookup like [`https://api.ipify.org`](https://api.ipify.org) (or an equivalent paid service) and forward it to your backend before creating the session.
+    </Note>
 
     The response returns `serviceProviderWidgetUrl` (preferred — the provider's hosted checkout), `widgetUrl` (Meld-hosted fallback), `token`, `id`, and `externalSessionId`.
   </Step>
@@ -666,12 +673,15 @@ curl 'https://api-sb.meld.io/network-partner/supported/routes/CRYPTO_OFFRAMP/US/
           "paymentMethodType": "ACH",
           "serviceProvider": "TRANSAK",
           "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
+          "clientIpAddress": "203.0.113.42",
           "redirectUrl": "https://your-domain.example/transaction-complete"
         },
         "externalCustomerId": "user_123",
         "externalSessionId": "session_789"
       }'
     ```
+
+    Send `sessionData.clientIpAddress` here for the same reason as on-ramp — some providers require the end user's IP for geo and fraud checks (see the on-ramp [note](#on-ramp-flow-buy)).
 
     Open `serviceProviderWidgetUrl`; the provider collects payout-bank details and runs KYC. After the widget completes, fetch the transaction (or look it up by your `externalSessionId`) and read the **deposit address** from `cryptoDetails.offrampDestinationWalletAddress`:
 
