@@ -54,16 +54,234 @@
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\nThe webhook profile could not be tested as configured. Check the destination URL and that the profile is complete.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[name] must not be blank`\n- `[url] must not be blank`\n- `[Meld-Version] is invalid`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00",
+                  "errors": [
+                    "[name] must not be blank"
+                  ]
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNEXPECTED_ERROR`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Unexpected error"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -146,16 +364,234 @@
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[Meld-Version] is invalid`\n- `[before] is invalid`\n- `[after] is invalid`\n- `[limit] value is not a number`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00",
+                  "errors": [
+                    "[Meld-Version] is invalid"
+                  ]
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNEXPECTED_ERROR`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Unexpected error"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -190,16 +626,234 @@
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "`[Meld-Version] is invalid`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00",
+                  "errors": [
+                    "[Meld-Version] is invalid"
+                  ]
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNEXPECTED_ERROR`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Unexpected error"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -264,26 +918,289 @@
             }
           },
           "404": {
-            "description": "Webhook profile cannot be found",
+            "description": "Webhook profile cannot be found\n\nVerify the identifier in the request.",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`NOT_FOUND`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Resource not found"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Resource not found",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[Meld-Version] is invalid`\n- `Required parameter [webhookProfileId] is missing`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00",
+                  "errors": [
+                    "[Meld-Version] is invalid"
+                  ]
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNEXPECTED_ERROR`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Unexpected error"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -344,26 +1261,289 @@
             }
           },
           "404": {
-            "description": "Webhook profile cannot be found",
+            "description": "Webhook profile cannot be found\n\nVerify the identifier in the request.",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`NOT_FOUND`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Resource not found"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Resource not found",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\nThe webhook profile could not be tested as configured. Check the destination URL and that the profile is complete.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[Meld-Version] is invalid`\n- `Required parameter [webhookProfileId] is missing`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00",
+                  "errors": [
+                    "[Meld-Version] is invalid"
+                  ]
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNEXPECTED_ERROR`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Unexpected error"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -417,26 +1597,289 @@
             }
           },
           "404": {
-            "description": "Webhook profile cannot be found",
+            "description": "Webhook profile cannot be found\n\nVerify the identifier in the request.",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`NOT_FOUND`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Resource not found"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Resource not found",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[Meld-Version] is invalid`\n- `Required parameter [webhookProfileId] is missing`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00",
+                  "errors": [
+                    "[Meld-Version] is invalid"
+                  ]
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNEXPECTED_ERROR`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Unexpected error"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -826,30 +2269,48 @@
         "type": "object",
         "properties": {
           "code": {
-            "type": "string"
-          },
-          "displayMessage": {
-            "type": "string"
+            "type": "string",
+            "description": "Stable identifier for the failure."
           },
           "errors": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "What was rejected, one entry per field or rule."
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "description": "A description of what went wrong."
           },
           "requestId": {
-            "type": "string"
+            "type": "string",
+            "description": "Quote this when asking Meld about a specific failure."
           },
           "serviceProviderDetails": {
             "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "The provider's own error code, when it sent one."
+              },
+              "message": {
+                "type": "string",
+                "description": "The provider's own message."
+              }
+            },
+            "example": {
+              "code": "5034",
+              "message": "Digital currency and blockchain combination is restricted for customer's country"
+            },
+            "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear.",
             "additionalProperties": {}
           },
           "timestamp": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`).",
+            "example": "2026-08-14T09:41:22.482+00:00"
           }
         }
       },

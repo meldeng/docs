@@ -1,0 +1,94 @@
+---
+title: "Error responses"
+description: "Every error code the Crypto, Customer, Network Partner and Webhooks APIs can return, and what to do about each."
+---
+
+Every error response carries the same envelope:
+
+```json
+{
+  "code": "INVALID_AMOUNT_TOO_LOW",
+  "message": "Source amount is below the minimum allowed",
+  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+  "timestamp": "2026-08-18T09:41:22Z"
+}
+```
+
+`code` is the stable identifier — branch on it. `message` is human-readable and may be
+reworded without notice, so do not match on it. `requestId` is the value to quote when
+you contact support about a specific failure.
+
+Some responses carry two more fields. `errors[]` lists one entry per invalid field where
+a request failed validation. `serviceProviderDetails` names the service provider whose
+call failed, and is present only when the failure came from one.
+
+<Note>
+New codes can appear as providers and features are added. Treat an unrecognised `code`
+as a failure of its HTTP status class rather than an error in itself.
+</Note>
+
+
+## Crypto
+
+| Code | HTTP | Meaning | What to do |
+| :--- | :--- | :--- | :--- |
+| `ACCOUNT_OFFRAMP_NOT_ENABLED` | 400 | Selling crypto is not enabled for your account, please enable it on the Meld dashboard to receive quotes. | Offramp is not enabled for this account. Enable it on the Meld dashboard. |
+| `ACCOUNT_ONRAMP_NOT_ENABLED` | 400 | Buying crypto is not enabled for your account, please enable it on the Meld dashboard to receive quotes. | Onramp is not enabled for this account. Enable it on the Meld dashboard. |
+| `BAD_REQUEST` | 400 | Bad request | Send customerIds or externalCustomerIds, not both. |
+| `CONFLICT` | 409 | Conflict |  |
+| `CUSTOMER_ID_REQUIRED` | 400 | Either customerId or externalCustomerId is required | Send either customerId or externalCustomerId. Both were blank. |
+| `CUSTOMER_KYC_NOT_APPROVED` | 400 | Customer has not completed KYC verification | bypassKyc requires a customer with approved KYC at a provider. Complete KYC first. |
+| `CUSTOMER_NOT_FOUND` | 400 | Customer not found | bypassKyc needs a valid customerId or externalCustomerId, and neither resolved. |
+| `DUPLICATE_EXTERNAL_SESSION_ID` | 400 | Duplicate external session ID | A session already exists with this externalSessionId. Reuse it, or send a new identifier. |
+| `EXTERNAL_ORDER_ID_NOT_UNIQUE` | 400 | externalOrderId must be unique per account | This externalOrderId is already used on the account. Send a different one, or fetch the existing order rather than recreating it. |
+| `FAILED_GETTING_TRANSACTION` | 500 | Failed getting transaction | The query failed on Meld's side and nothing was changed. Contact Meld support with the requestId. |
+| `HEADLESS_NOT_SUPPORTED` | 400 | Provider does not support headless onramp orders |  |
+| `INCOMPATIBLE_REQUEST` | 400 | Incompatible request: Body does not match service providers | A provider rejected the combination of values as unusable together. Change the currency pair, payment method or country. |
+| `INVALID_AMOUNT` | 400 | Invalid currency amount | A provider rejected the amount for this route. Adjust it and request a new quote. |
+| `INVALID_AMOUNT_OR_CURRENCY` | 400 | Invalid amount or currency |  |
+| `INVALID_AMOUNT_TOO_HIGH` | 400 | Source amount is above the maximum allowed | The amount is above the maximum for every provider that covers this route. Lower it. |
+| `INVALID_AMOUNT_TOO_LOW` | 400 | Source amount is below the minimum allowed | The amount is below the minimum for every provider that covers this route. Raise it. |
+| `INVALID_CRYPTO_CURRENCY` | 400 | Invalid Crypto Currency requested | The cryptocurrency code is not one Meld supports. Check it against the supported-crypto list. |
+| `INVALID_FIAT_CURRENCY` | 400 | Invalid Fiat Currency requested | The fiat currency code is not one Meld supports. Check it against the supported-fiat list. |
+| `INVALID_PAYMENT_METHOD` | 400 | Invalid Payment Method requested | The payment method could not be resolved for this offramp order. |
+| `INVALID_QUERY_PARAMETER` | 400 | Invalid query parameter | Read errors[] — it names each search parameter that failed validation. |
+| `JSON_PROCESSING_ERROR` | 500 | Error processing JSON | Meld could not serialise the response. Your request is not at fault — contact Meld support with the requestId. |
+| `KYC_NOT_COMPLETED` | 403 | Customer has not completed KYC for the requested provider | The customer's KYC is not approved. Complete it before requesting deposit instructions. |
+| `KYC_TOKEN_GENERATION_FAILED` | 500 | Failed to generate KYC share token | The customer's KYC is approved; generating the share token failed on Meld's side. Contact Meld support with the requestId. |
+| `NOT_FOUND` | 404 | Resource not found | No provider could produce a quote for this combination. Adjust the amount, currency pair or country, or request a different provider. |
+| `NOT_SUPPORTED` | 501 | Operation not supported | This provider does not support fetching a transaction this way. Use the headless order endpoints instead. |
+| `PASSTHROUGH_CREDENTIALS_INVALID` | 400 | Passthrough credentials invalid | Read errors[] — it names each passthrough credential field that is missing or conflicting. Which fields are required varies by provider. |
+| `PAYMENT_METHOD_NOT_SUPPORTED` | 400 | Requested payment method is not supported for this provider in headless mode |  |
+| `PHONE_NUMBER_REQUIRED` | 400 | customerPhoneNumber is required for the requested payment method | Send customerPhoneNumber. It is required when paymentMethodType is MOBILE_MONEY. |
+| `PRIOR_AUTHENTICATION_ERROR` | 500 | Error retrieving prior authentication | No stored provider authorisation matches the id supplied for this customer. |
+| `QUOTE_TIMEOUT` | 408 | Service provider took too long to respond | Providers did not respond in time. Retry with backoff. |
+| `SERVICE_PROVIDER_AUTHENTICATION_EXCEPTION` | 401 | Authentication error on service provider | Meld could not authenticate with the provider. Your credentials are not at fault — contact Meld support with the requestId. |
+| `SERVICE_PROVIDER_ERROR` | 500 | Service provider error | The provider failed while quoting. Retry, then contact Meld support with the requestId. |
+| `SERVICE_PROVIDER_NOT_ENABLED` | 403 | Service provider is not enabled for this account | The provider is not enabled for this account. Enable it on the Meld dashboard. |
+| `TRANSACTION_EXCEPTION` | 500 | Exception in transaction | The provider could not be reached to read this transaction. Retry — the transaction itself is unaffected. |
+| `TRANSACTION_FAILED_GETTING_CRYPTO_QUOTE` | 500 | Failed getting crypto quote | The provider returned no quote where one was expected. Contact Meld support with the requestId. |
+| `TRANSACTION_FAILED_GETTING_CRYPTO_QUOTE_FROM_PROVIDER` | 422 | Failed getting crypto quote from provider | No provider returned a quote and none reported a reason. Adjust the amount, currency pair or country, or request a different provider. |
+| `TRANSACTION_FETCH_BY_SESSION_NOT_YET_CREATED_WITH_PROVIDER` | 404 | Transaction associated with this session/order has not been created with the service provider yet | Temporary, not permanent: the transaction does not exist yet. Keep polling — it appears once the provider creates it. |
+| `TRANSACTION_FETCH_BY_SESSION_PROVIDER_UNSUPPORTED` | 404 | Provider doesn't support fetching a transaction by session until it is created with Meld | This provider cannot look a transaction up by sessionId before it exists. Wait for it to be created, then fetch it. |
+| `TRANSACTION_INVALID_PARAMETER` | 400 | Invalid parameter to create transaction | The transaction category could not be resolved from the request. |
+| `TRANSACTION_INVALID_PROVIDER` | 400 | Invalid service provider | No service provider was supplied on the request. |
+| `TRANSACTION_PROPERTY_COMBINATION_NOT_SUPPORTED_BY_SERVICE_PROVIDER` | 400 | Property combination not supported |  |
+| `UNKNOWN` | 3000 | Unknown Error |  |
+| `VERIFICATION_REQUIRED` | 403 | Customer verification is required for this service provider | The customer has not met this provider's verification requirements. Read errors[] for the unsatisfied fields, then call the requirements endpoint named in the message for what the provider needs. |
+| `WHITELABEL_NOT_ENABLED` | 403 | Headless integration is not enabled for this account/provider pair | White-label virtual accounts are not enabled for this account. Contact Meld to enable them. |
+
+
+## Customer
+
+| Code | HTTP | Meaning | What to do |
+| :--- | :--- | :--- | :--- |
+| `BAD_REQUEST` | 400 | Bad request | A search parameter is not accepted. Check the query values against the documented parameters for this version. |
+| `CONFLICT` | 409 | Conflict |  |
+
+
+## Webhooks
+
+| Code | HTTP | Meaning | What to do |
+| :--- | :--- | :--- | :--- |
+| `BAD_REQUEST` | 400 | Bad request | The webhook profile could not be tested as configured. Check the destination URL and that the profile is complete. |
+

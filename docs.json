@@ -72,7 +72,8 @@
               {
                 "group": "Meld API",
                 "pages": [
-                  "docs/meld-api/getting-started"
+                  "docs/meld-api/getting-started",
+                  "docs/meld-api/error-responses"
                 ]
               },
               {
@@ -483,7 +484,8 @@
               {
                 "group": "Meld API",
                 "pages": [
-                  "docs/meld-api/getting-started"
+                  "docs/meld-api/getting-started",
+                  "docs/meld-api/error-responses"
                 ]
               },
               {
@@ -879,7 +881,8 @@
               {
                 "group": "Meld API",
                 "pages": [
-                  "docs/meld-api/getting-started"
+                  "docs/meld-api/getting-started",
+                  "docs/meld-api/error-responses"
                 ]
               },
               {
