@@ -98,7 +98,7 @@
             }
           },
           "400": {
-            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -276,7 +276,7 @@
             }
           },
           "400": {
-            "description": "Invalid filter combination\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Invalid filter combination\n\nRead message for the value that was rejected, then correct it.",
             "content": {
               "application/json": {
                 "examples": {
@@ -418,7 +418,7 @@
             }
           },
           "400": {
-            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -563,7 +563,7 @@
             }
           },
           "400": {
-            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -759,7 +759,7 @@
             }
           },
           "400": {
-            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -915,7 +915,7 @@
             }
           },
           "400": {
-            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1115,7 +1115,7 @@
             }
           },
           "400": {
-            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
             "content": {
               "application/json": {
                 "schema": {
