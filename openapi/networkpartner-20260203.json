@@ -132,6 +132,96 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "operationId": "list-supported-countries",
@@ -287,6 +377,96 @@
                 },
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
                 }
               }
             }
@@ -452,6 +632,96 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "operationId": "list-supported-fiat-limits",
@@ -594,6 +864,96 @@
                   "message": "Bad request",
                   "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
                   "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
                 }
               }
             }
@@ -793,6 +1153,96 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "operationId": "list-supported-partners",
@@ -946,6 +1396,96 @@
                   "message": "Bad request",
                   "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
                   "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
                 }
               }
             }
@@ -1149,6 +1689,96 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "operationId": "find-supported-routes",
@@ -1262,6 +1892,126 @@
                   "message": "Resource not found",
                   "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
                   "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected - see the code and message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
                 }
               }
             }
