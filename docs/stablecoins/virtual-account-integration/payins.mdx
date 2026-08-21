@@ -412,6 +412,8 @@ For SEPA, show `iban` / `bic` (and bank / account-holder name) from `receivingBa
 2. On later deposits: optional quote → show the same account / routing (or IBAN) → user sends fiat.
 3. Listen for transaction webhooks — no new deposit-instructions call unless destination wallet, currencies, provider, or payment method changes.
 
+> **Testing in sandbox:** you cannot send real fiat to the account, so call the simulate endpoint to create a test deposit instead — see [Simulate a deposit](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials#simulate-a-deposit).
+
 ## 6. Tracking
 
 ### Webhook sample (buy)
@@ -503,4 +505,4 @@ Correlate with `paymentTransactionId`.
 - Standing virtual accounts require `headlessOnrampsEnabled` on the account.
 - Primary API: `POST /payments/virtual-account/deposit-instructions` (fetch once, reuse).
 - Supported payment methods for this flow: `ACH`, `SEPA`, `PIX`, `MOBILE_MONEY`.
-- Provider sandboxes often cannot complete full settlement — you may stop at instruction issuance.
+- Provider sandboxes do not move real money, but you can still complete a full onramp in sandbox for Noah and Due Network — see [Simulate a deposit](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials#simulate-a-deposit). For other providers you may stop at instruction issuance.
