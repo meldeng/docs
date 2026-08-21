@@ -96,6 +96,42 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "operationId": "list-supported-countries",
@@ -240,7 +276,7 @@
             }
           },
           "400": {
-            "description": "Invalid filter combination",
+            "description": "Invalid filter combination\n\nRead errors[] and message for the field that failed, then correct it.",
             "content": {
               "application/json": {
                 "examples": {
@@ -380,6 +416,42 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "operationId": "list-supported-fiat-limits",
@@ -486,6 +558,42 @@
                 },
                 "schema": {
                   "$ref": "#/components/schemas/Response1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -649,6 +757,42 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "operationId": "list-supported-partners",
@@ -766,6 +910,42 @@
                   "items": {
                     "$ref": "#/components/schemas/SupportedPaymentMethod"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -933,6 +1113,42 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request\n\nRead errors[] and message for the field that failed, then correct it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Bad request"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "operationId": "find-supported-routes",
@@ -1010,6 +1226,42 @@
                 },
                 "schema": {
                   "$ref": "#/components/schemas/CountryDefaults"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found\n\nVerify the identifier in the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`NOT_FOUND`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Resource not found"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Resource not found",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1781,6 +2033,55 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Stable identifier for the failure."
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What was rejected, one entry per field or rule."
+          },
+          "message": {
+            "type": "string",
+            "description": "A description of what went wrong."
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Quote this when asking Meld about a specific failure."
+          },
+          "serviceProviderDetails": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "The provider's own error code, when it sent one."
+              },
+              "message": {
+                "type": "string",
+                "description": "The provider's own message."
+              }
+            },
+            "additionalProperties": {},
+            "example": {
+              "code": "5034",
+              "message": "Digital currency and blockchain combination is restricted for customer's country"
+            },
+            "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-08-14T09:41:22.482+00:00",
+            "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
           }
         }
       }
