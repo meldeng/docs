@@ -142,11 +142,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNAUTHORIZED`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -159,6 +159,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -172,11 +178,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`FORBIDDEN`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -189,6 +195,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -202,11 +214,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNEXPECTED_ERROR`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Unexpected error"
                     },
                     "requestId": {
                       "type": "string",
@@ -219,6 +231,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -369,14 +387,34 @@
             "description": "Invalid filter combination\n\nRead message for the value that was rejected, then correct it.",
             "content": {
               "application/json": {
-                "examples": {
-                  "invalidFiatFilters": {
-                    "summary": "Crypto-only filters supplied for a fiat search",
-                    "value": "network is only supported for CRYPTO searches"
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`BAD_REQUEST`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "network is only supported for CRYPTO searches"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
                   }
                 },
-                "schema": {
-                  "type": "string"
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "network is only supported for CRYPTO searches",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -390,11 +428,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNAUTHORIZED`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -407,6 +445,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -420,11 +464,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`FORBIDDEN`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -437,6 +481,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -450,11 +500,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNEXPECTED_ERROR`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Unexpected error"
                     },
                     "requestId": {
                       "type": "string",
@@ -467,6 +517,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -642,11 +698,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNAUTHORIZED`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -659,6 +715,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -672,11 +734,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`FORBIDDEN`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -689,6 +751,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -702,11 +770,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNEXPECTED_ERROR`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Unexpected error"
                     },
                     "requestId": {
                       "type": "string",
@@ -719,6 +787,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -877,11 +951,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNAUTHORIZED`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -894,6 +968,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -907,11 +987,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`FORBIDDEN`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -924,6 +1004,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -937,11 +1023,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNEXPECTED_ERROR`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Unexpected error"
                     },
                     "requestId": {
                       "type": "string",
@@ -954,6 +1040,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1163,11 +1255,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNAUTHORIZED`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -1180,6 +1272,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1193,11 +1291,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`FORBIDDEN`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -1210,6 +1308,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1223,11 +1327,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNEXPECTED_ERROR`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Unexpected error"
                     },
                     "requestId": {
                       "type": "string",
@@ -1240,6 +1344,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1409,11 +1519,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNAUTHORIZED`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -1426,6 +1536,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1439,11 +1555,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`FORBIDDEN`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -1456,6 +1572,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1469,11 +1591,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNEXPECTED_ERROR`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Unexpected error"
                     },
                     "requestId": {
                       "type": "string",
@@ -1486,6 +1608,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1699,11 +1827,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNAUTHORIZED`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -1716,6 +1844,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1729,11 +1863,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`FORBIDDEN`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -1746,6 +1880,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1759,11 +1899,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNEXPECTED_ERROR`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Unexpected error"
                     },
                     "requestId": {
                       "type": "string",
@@ -1776,6 +1916,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1905,11 +2051,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`BAD_REQUEST`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Bad request"
                     },
                     "requestId": {
                       "type": "string",
@@ -1922,6 +2068,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "BAD_REQUEST",
+                  "message": "Bad request",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1935,11 +2087,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNAUTHORIZED`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -1952,6 +2104,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1965,11 +2123,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`FORBIDDEN`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Access denied"
                     },
                     "requestId": {
                       "type": "string",
@@ -1982,6 +2140,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -1995,11 +2159,11 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`UNEXPECTED_ERROR`"
                     },
                     "message": {
                       "type": "string",
-                      "description": "A description of what went wrong."
+                      "description": "Unexpected error"
                     },
                     "requestId": {
                       "type": "string",
@@ -2012,6 +2176,12 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "UNEXPECTED_ERROR",
+                  "message": "Unexpected error",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -2793,13 +2963,6 @@
             "type": "string",
             "description": "Stable identifier for the failure."
           },
-          "errors": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "What was rejected, one entry per field or rule."
-          },
           "message": {
             "type": "string",
             "description": "A description of what went wrong."
@@ -2807,25 +2970,6 @@
           "requestId": {
             "type": "string",
             "description": "Quote this when asking Meld about a specific failure."
-          },
-          "serviceProviderDetails": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string",
-                "description": "The provider's own error code, when it sent one."
-              },
-              "message": {
-                "type": "string",
-                "description": "The provider's own message."
-              }
-            },
-            "additionalProperties": {},
-            "example": {
-              "code": "5034",
-              "message": "Digital currency and blockchain combination is restricted for customer's country"
-            },
-            "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
           },
           "timestamp": {
             "type": "string",
