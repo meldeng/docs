@@ -19,6 +19,11 @@
     {
       "source": "/",
       "destination": "/docs/welcome/overview"
+    },
+    {
+      "source": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/untitled-page",
+      "destination": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/quickstart",
+      "permanent": true
     }
   ],
   "navbar": {
@@ -110,7 +115,7 @@
                           "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters",
                           "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/meld-checkout-customization",
                           "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/full-integration-guide",
-                          "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/untitled-page"
+                          "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/quickstart"
                         ]
                       }
                     ]
