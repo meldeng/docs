@@ -1,0 +1,342 @@
+---
+title: "full-integration-guide"
+hidden: true
+description: "This guide is for developers who have completed the [Quickstart](/docs/stablecoins/meld-checkout-integration/server-minted-url/quickstart) and want a production integration: server-minted widget URL, prefilled and locked values authored by your backend, embedding, mobile returns, and go-live checks."
+---
+
+## Before you begin
+
+- A backend that can make an authenticated HTTPS request
+- You have private and public keys for both sandbox and production
+- You know where in your app users should land before and after the checkout
+
+## Step 1: Mint a widget URL
+
+<Warning>
+  Minting requires a **secret** key and must happen on your server. Never ship a secret key to a browser or mobile app. That restriction is the point of the feature: it is what stops someone who scraped your public key from crafting their own prefilled checkout URL.
+</Warning>
+
+Call `POST /crypto/session/widget/url` from your backend. Use you private/secret key for authorization and public key in the reqesut bodt,For the basic flow the body needs one field — your public key:
+
+<CodeGroup>
+
+```bash cURL
+curl --location --request POST 'https://api-sb.meld.io/crypto/session/widget/url' \
+  --header 'Authorization: BASIC {{your_secret_key}}' \
+  --header 'Content-Type: application/json' \
+  --header 'Meld-Version: 2026-02-03' \
+  --data '{
+    "publicKey": "{{your_public_key}}"
+  }'
+```
+
+```javascript Node.js
+async function mintCheckoutUrl() {
+  const response = await fetch('https://api-sb.meld.io/crypto/session/widget/url', {
+    method: 'POST',
+    headers: {
+      Authorization: `BASIC ${process.env.MELD_SECRET_KEY}`,
+      'Content-Type': 'application/json',
+      'Meld-Version': '2026-02-03',
+    },
+    body: JSON.stringify({ publicKey: process.env.MELD_PUBLIC_KEY }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Meld mint failed: ${response.status} ${await response.text()}`);
+  }
+
+  const { widgetUrl } = await response.json();
+  return widgetUrl;
+}
+```
+
+```python Python
+import os
+import requests
+
+def mint_checkout_url():
+    response = requests.post(
+        "https://api-sb.meld.io/crypto/session/widget/url",
+        headers={
+            "Authorization": f"BASIC {os.environ['MELD_SECRET_KEY']}",
+            "Content-Type": "application/json",
+            "Meld-Version": "2026-02-03",
+        },
+        json={"publicKey": os.environ["MELD_PUBLIC_KEY"]},
+        timeout=10,
+    )
+    response.raise_for_status()
+    return response.json()["widgetUrl"]
+```
+
+</CodeGroup>
+
+**Response:**
+
+```json
+{
+  "widgetUrl": "https://meldcrypto.com?wt=3Qm9ZP2r8yVtNn6bK1sWfDcXhLqA7uJeR4gTmB5oYvS"
+}
+```
+
+<Note>
+  Use the URL exactly as returned. The host comes from your account's configured checkout domain — if you are on a white-labeled domain, the minted URL already points at it, so do not rebuild the link from `meldcrypto.com`.
+</Note>
+
+<Warning>
+  Treat the minted URL like a session link: anyone holding it can open your checkout. Serve it over HTTPS and hand it to one customer. Meld stores only a hash of the token, so nobody — including Meld — can recover a live URL from the database.
+</Warning>
+
+Everything you want prefilled goes in `prefill`. Everything the customer must not change goes in `locked`, by field name.
+
+<CodeGroup>
+
+```bash cURL
+curl --location --request POST 'https://api-sb.meld.io/crypto/session/widget/url' \
+  --header 'Authorization: BASIC {{your_secret_key}}' \
+  --header 'Content-Type: application/json' \
+  --header 'Meld-Version: 2026-02-03' \
+  --data '{
+    "publicKey": "{{your_public_key}}",
+    "sessionType": "BUY",
+    "prefill": {
+      "countryCode": "DE",
+      "sourceCurrencyCode": "EUR",
+      "destinationCurrencyCode": "ETH",
+      "sourceAmount": 250,
+      "paymentMethodType": "CARD",
+      "walletAddress": "0x9FC3da866e7DF3a1c57adE1a97c9f00a70f010c8"
+    },
+    "locked": ["walletAddress", "sourceAmount"],
+    "redirectUrl": "https://yourapp.com/crypto/complete",
+    "externalCustomerId": "user_789",
+    "externalSessionId": "checkout_abc123"
+  }'
+```
+
+```javascript Node.js
+async function mintCheckoutUrl({ customerId, walletAddress, amount }) {
+  const response = await fetch('https://api-sb.meld.io/crypto/session/widget/url', {
+    method: 'POST',
+    headers: {
+      Authorization: `BASIC ${process.env.MELD_SECRET_KEY}`,
+      'Content-Type': 'application/json',
+      'Meld-Version': '2026-02-03',
+    },
+    body: JSON.stringify({
+      publicKey: process.env.MELD_PUBLIC_KEY,
+      sessionType: 'BUY',
+      prefill: {
+        countryCode: 'DE',
+        sourceCurrencyCode: 'EUR',
+        destinationCurrencyCode: 'ETH',
+        sourceAmount: amount,
+        paymentMethodType: 'CARD',
+        walletAddress,
+      },
+      // The wallet is ours, so the customer must not be able to retarget the payout.
+      locked: ['walletAddress', 'sourceAmount'],
+      redirectUrl: 'https://yourapp.com/crypto/complete',
+      externalCustomerId: customerId,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Meld mint failed: ${response.status} ${await response.text()}`);
+  }
+
+  const { widgetUrl } = await response.json();
+  return widgetUrl;
+}
+```
+
+</CodeGroup>
+
+**Response:**
+
+```json
+{
+  "widgetUrl": "https://meldcrypto.com?wt=3Qm9ZP2r8yVtNn6bK1sWfDcXhLqA7uJeR4gTmB5oYvS"
+}
+```
+
+### Request fields
+
+| Field | Type | Notes |
+| :-- | :-- | :-- |
+| `publicKey` | string | **Required.** Your publishable key. Must belong to the same account as the secret key making the call, be active, and not itself be a secret key. Returned to the checkout so it can authorize its own calls. |
+| `sessionType` | `BUY` \| `SELL` | Fixes the flow and hides the buy/sell toggle. Omit to let the customer choose. Also selects the accepted range for `prefill.sourceAmount`. A minted URL cannot open a transfer session. |
+| `prefill` | object | Values to prefill into the wizard. See the table below. |
+| `locked` | array of string | Names of `prefill` fields the customer cannot change. Every name listed must carry a non-blank value in `prefill`. |
+| `redirectUrl` | string | Where the checkout returns the customer when the flow finishes. Supports mobile deep links. |
+| `accountLogoUrl` | string | Logo to show instead of your account's configured one. |
+| `externalCustomerId` | string | Your customer reference, carried through to transactions and webhooks. |
+| `externalSessionId` | string | Your session reference. See the warning below — it limits the URL to one session. |
+
+### Prefill fields
+
+| Field | Format | Lockable |
+| :-- | :-- | :-- |
+| `countryCode` | ISO 3166-1 alpha-2, e.g. `DE` | Yes |
+| `sourceCurrencyCode` | Upper case, no whitespace, e.g. `EUR` | Yes |
+| `destinationCurrencyCode` | Upper case, no whitespace, e.g. `ETH`, `USDC_BASE` | Yes |
+| `sourceAmount` | Number. Fiat for a `BUY`, crypto for a `SELL` | Yes |
+| `paymentMethodType` | Upper case letters, digits, underscores, e.g. `CARD` | Yes |
+| `walletAddress` | 10–100 characters, no whitespace | Yes |
+| `walletTag` | Tag or memo for chains that need one (XRP, XLM, HBAR, and so on) | No |
+
+<Note>
+  **`sourceAmount` ranges depend on `sessionType`,** because the field means different things in each flow. An out-of-range value is **rejected, never adjusted**:
+
+  - `BUY` — 1 to 10,000,000
+  - `SELL` — 0.0001 to 1,000,000
+  - `sessionType` omitted — 0.0001 to 10,000,000, the widest of the two
+</Note>
+
+### Locking fields
+
+`locked` takes field names, not the value-carrying `*Locked` parameter names from the query-string era:
+
+```json
+"prefill": { "destinationCurrencyCode": "BTC", "walletAddress": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh" },
+"locked": ["destinationCurrencyCode", "walletAddress"]
+```
+
+Valid names: `walletAddress`, `destinationCurrencyCode`, `sourceCurrencyCode`, `sourceAmount`, `paymentMethodType`, `countryCode`. Names are case-insensitive, but anything else — including the old `walletAddressLocked` and `lockWalletAddress` forms — fails the request with a `400` rather than being silently dropped.
+
+<Warning>
+  Field locking applies to the Meld Checkout interface. If you lock `sourceCurrencyCode`, `destinationCurrencyCode`, or `walletAddress`, the field is also locked in the provider's own widget for the providers that support it. See [White-Label customization → Locking fields](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/white-label-customization) for the provider list.
+</Warning>
+
+<Warning>
+  **`externalSessionId` limits the URL to a single session.** The value is not checked for uniqueness when you mint, but session creation rejects a reused one with `DUPLICATE_EXTERNAL_SESSION_ID` — including when the same customer retries after a failed attempt on the same URL. Set it only when you want exactly one session per minted URL. Otherwise omit it and correlate on the session id from webhooks.
+</Warning>
+
+## Step 2: Get the customer to the checkout
+
+Mint when the customer acts, then hand the URL to the browser. Do not mint on page load and cache the URL across customers.
+
+```javascript
+// Your backend
+app.post('/api/checkout-url', async (req, res) => {
+  const widgetUrl = await mintCheckoutUrl({
+    customerId: req.user.id,
+    walletAddress: await getCustodyAddress(req.user.id),
+    amount: req.body.amount,
+  });
+  res.json({ widgetUrl });
+});
+```
+
+<CodeGroup>
+
+```javascript Redirect
+document.getElementById('buy-crypto-btn').addEventListener('click', async () => {
+  const { widgetUrl } = await fetch('/api/checkout-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount: 250 }),
+  }).then((r) => r.json());
+
+  window.location.href = widgetUrl;
+});
+```
+
+```javascript New window
+const { widgetUrl } = await fetch('/api/checkout-url', { method: 'POST' }).then((r) => r.json());
+window.open(widgetUrl, 'meld-checkout', 'width=450,height=790,scrollbars=yes,resizable=yes');
+```
+
+```javascript Iframe
+const { widgetUrl } = await fetch('/api/checkout-url', { method: 'POST' }).then((r) => r.json());
+document.getElementById('meld-checkout').src = widgetUrl;
+```
+
+</CodeGroup>
+
+### Iframe best practices
+
+- **Minimum width:** 450px
+- **Minimum height:** 790px, to prevent UI overlap
+- **Permissions:** include `camera`, `microphone`, and `payment` for KYC and payments
+- **Full height:** append `&fullScreen=true` to the minted URL and size the frame to `100vh`
+
+```html
+<iframe
+  id="meld-checkout"
+  width="450"
+  height="790"
+  frameborder="0"
+  allow="camera; microphone; payment">
+</iframe>
+```
+
+## Step 3: Adjust presentation on the minted URL
+
+Presentation parameters have no equivalent in a stored configuration, so append them to the URL Meld returned:
+
+```javascript
+const url = new URL(widgetUrl);
+url.searchParams.set('theme', 'darkMode');
+url.searchParams.set('fullScreen', 'true');
+window.location.href = url.toString();
+```
+
+| Parameter | Values | Effect |
+| :-- | :-- | :-- |
+| `theme` | `lightMode` \| `darkMode` | Color theme. Defaults to `lightMode`. |
+| `fullScreen` | `true` \| `false` \| `1` \| `0` | Stretches the widget to the viewport height and drops the card shadow. |
+| `width` | `full` | Forces the mobile layout regardless of viewport width. |
+| `page` | `transaction` | Opens the transaction status screen. Needs `externalSessionId`. |
+
+Never append prefill or lock parameters to a minted URL — they are ignored. Mint again with different values instead.
+
+Mobile considerations:
+
+- Mint on your server, not in the app — the app cannot hold a secret key
+- Test the deep-link return on both iOS and Android
+- Pass `theme` on the URL to match your app's appearance
+
+## Step 4: Test in sandbox
+
+<Steps>
+  <Step title="Mint with your real prefill shape">
+    Use the same payload your production code will send, against `https://api-sb.meld.io`.
+  </Step>
+  <Step title="Verify locks in the UI">
+    Open the URL and confirm every field in `locked` is read-only, and that the buy/sell toggle is hidden if you set `sessionType`.
+  </Step>
+  <Step title="Confirm query parameters are ignored">
+    Append `&walletAddress=SOMETHING_ELSE` to the minted URL. The stored wallet must win — that is the security property you are shipping.
+  </Step>
+  <Step title="Complete a transaction">
+    Use the [sandbox test credentials](/docs/stablecoins/sandbox-guide/test), then check webhooks and the dashboard **Transactions** tab.
+  </Step>
+</Steps>
+
+## Step 5: Go live
+
+- ✅ Minting runs on your server with a production secret key held outside your source tree
+- ✅ Production public key is paired with the production secret key (mints are rejected across accounts)
+- ✅ URLs are minted per checkout, not cached or shared
+- ✅ Locks verified in the UI for every field you rely on
+- ✅ `redirectUrl` and webhooks tested end to end
+- ✅ First real transactions monitored
+
+## Troubleshooting
+
+**Mint returns 400 on** `publicKey`**.** You might be sending the secret key twice, or mixing a sandbox key with a production key. The public and secret keys must be two different profiles on the same account and environment.
+
+**Nothing is prefilled when the URL opens.** Either the token has aged out of its retention window, or the URL was altered in transit — a modified token cannot be resolved, and the checkout then denies prefill rather than trusting the query string. Mint a fresh URL.
+
+**Locks are not applied.** Confirm the field name is in `locked` and that the same field carries a value in `prefill`; a lock without a value is rejected at mint time, so a successful mint means both are present.
+
+**Checkout will not load in an iframe.** Check the frame permissions (`camera`, `microphone`, `payment`), the 450×790 minimum, and any popup blocker on the parent page.
+
+## Next steps
+
+- [**Request reference**](/docs/stablecoins/meld-checkout-integration/server-minted-url/url-parameters) — every field and query parameter in one place
+- [**Customization**](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/meld-checkout-customization) — styling and advanced options
+- [**Webhook events**](/docs/stablecoins/for-all-products/webhook-events) — real-time notifications
+- [**Transaction statuses**](/docs/stablecoins/for-all-products/transaction-statuses) — understanding transaction states
