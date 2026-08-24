@@ -16,7 +16,7 @@ description: "This guide is for developers who have completed the [Quickstart](/
   Minting requires a **secret** key and must happen on your server. Never ship a secret key to a browser or mobile app. That restriction is the point of the feature: it is what stops someone who scraped your public key from crafting their own prefilled checkout URL.
 </Warning>
 
-Call `POST /crypto/session/widget/url` from your backend. Use you private/secret key for authorization and public key in the reqesut bodt,For the basic flow the body needs one field — your public key:
+Call `POST /crypto/session/widget/url` from your backend. Use your private/secret key for authorization and your public key in the request body. For the basic flow, the body needs one field — your public key:
 
 <CodeGroup>
 
@@ -88,7 +88,7 @@ def mint_checkout_url():
   Treat the minted URL like a session link: anyone holding it can open your checkout. Serve it over HTTPS and hand it to one customer. Meld stores only a hash of the token, so nobody — including Meld — can recover a live URL from the database.
 </Warning>
 
-Everything you want prefilled goes in `prefill`. Everything the customer must not change goes in `locked`, by field name.
+Everything you want prefilled goes in `prefill`. Everything the customer must not change goes in`locked`, by field name.
 
 <CodeGroup>
 
@@ -330,7 +330,7 @@ Mobile considerations:
 
 **Nothing is prefilled when the URL opens.** Either the token has aged out of its retention window, or the URL was altered in transit — a modified token cannot be resolved, and the checkout then denies prefill rather than trusting the query string. Mint a fresh URL.
 
-**Locks are not applied.** Confirm the field name is in `locked` and that the same field carries a value in `prefill`; a lock without a value is rejected at mint time, so a successful mint means both are present.
+**Locks are not applied.** Confirm the field name is in `locked` and that the same field carries a value in`prefill`; a lock without a value is rejected at mint time, so a successful mint means both are present.
 
 **Checkout will not load in an iframe.** Check the frame permissions (`camera`, `microphone`, `payment`), the 450×790 minimum, and any popup blocker on the parent page.
 
