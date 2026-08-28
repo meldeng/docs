@@ -21,8 +21,13 @@
       "destination": "/docs/welcome/overview"
     },
     {
-      "source": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/untitled-page",
-      "destination": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/quickstart",
+      "source": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/full-integration-guide",
+      "destination": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/quickstart",
+      "destination": "/docs/stablecoins/meld-checkout-integration/meld-checkout-quickstart",
       "permanent": true
     }
   ],
@@ -114,8 +119,8 @@
                           "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/index",
                           "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters",
                           "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/meld-checkout-customization",
-                          "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/full-integration-guide",
-                          "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/quickstart"
+                          "docs/stablecoins/meld-checkout-integration/legacy/meld-checkout-quickstart",
+                          "docs/stablecoins/meld-checkout-integration/legacy/meld-checkout-guide/index"
                         ]
                       }
                     ]

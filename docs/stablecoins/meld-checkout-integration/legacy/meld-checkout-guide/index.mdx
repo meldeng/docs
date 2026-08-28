@@ -1,0 +1,224 @@
+---
+title: "Full Integration Guide (Legacy)"
+sidebarTitle: "Full Integration Guide"
+hidden: true
+description: "Legacy full end-to-end integration guide for the query-string-based Meld Checkout flow. Kept for reference; new integrations should follow the current guide."
+---
+
+This guide is for developers who have already completed the [Meld Checkout Quickstart](/docs/stablecoins/meld-checkout-integration/meld-checkout-quickstart) and want to take their integration to production. It covers embedding, URL customization, mobile handling, and go-live checks.
+
+## Before you begin
+
+- You have a Meld Checkout URL from the dashboard's **Developer** tab
+- You have access to both sandbox and production dashboards
+- You know where in your app users should land before and after the checkout
+
+## Step 1: Get users to the Meld Checkout widget
+
+Now that you have your Meld Checkout widget URL (see [Quickstart Step 1](/docs/stablecoins/meld-checkout-integration/meld-checkout-quickstart) if not), here are code examples for embedding the URL in your application or redirecting users to it.
+
+## Redirection Examples
+
+### HTML Link Integration
+
+The simplest integration - redirect users to the widget:
+
+```html
+<a href="meldcrypto.com/?publicKey=your_public_key" target="_blank">
+  Buy Crypto
+</a>
+```
+
+### JavaScript Redirect
+
+For programmatic control:
+
+```javascript
+function launchCryptoWidget() {
+  window.location.href = 'meldcrypto.com/?publicKey=your_public_key';
+}
+
+// Usage
+document.getElementById('buy-crypto-btn').addEventListener('click', launchCryptoWidget);
+```
+
+### New Tab/Window Opening
+
+Open widget in a new window:
+
+```javascript
+function openCryptoWidget() {
+  window.open(
+    'meldcrypto.com/?publicKey=your_public_key',
+    'meld-widget',
+    'width=450,height=790,scrollbars=yes,resizable=yes'
+  );
+}
+```
+
+## Iframe Embedding Examples
+
+For embedded experience within your application:
+
+```html
+<iframe 
+  src="meldcrypto.com/?publicKey=your_public_key"
+  width="450" 
+  height="790"
+  frameborder="0"
+  allow="camera; microphone; payment">
+</iframe>
+```
+
+### Iframe Best Practices:
+
+- **Minimum width:** 450px for optimal display
+- **Minimum height:** 790px to prevent UI overlap
+- **Allow permissions:** Include `camera`, `microphone`, `payment` for KYC and transactions
+- **Responsive design:** Consider dynamic sizing for mobile
+
+## Step 2: Customization with URL Parameters
+
+Add optional parameters to your Meld Widget URL for customization:
+
+```javascript
+// Your complete Meld Widget URL with optional parameters
+const dashboardUrl = 'meldcrypto.com/?publicKey=your_public_key'; // From Meld Dashboard Developer tab
+const customizedUrl = `${dashboardUrl}&sourceAmount=100&destinationCurrencyCode=BTC&countryCode=US`;
+
+window.location.href = customizedUrl;
+```
+
+### Key Parameters:
+
+- **sourceAmount** - Pre-fill purchase amount (e.g., 100)
+- **destinationCurrencyCode** - Pre-select cryptocurrency (e.g., BTC, ETH\_ETHEREUM)
+- **walletAddress** - Pre-fill destination wallet if known
+- **countryCode** - Override auto-detected country (rarely needed)
+
+➡️ [**Complete parameter reference**](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters)
+
+## Step 3: Testing Your Integration
+
+### Sandbox Testing
+
+Always test in sandbox environment first:
+
+```javascript
+// Use your sandbox Meld Widget URL (from Developer tab in sandbox environment)
+const sandboxUrl = 'meldcrypto.com/?publicKey=your_public_key';
+```
+
+### Test Workflow:
+
+1. **Redirect to sandbox widget** with your parameters
+2. **Complete the test transaction** using the [sandbox testing credentials](/docs/stablecoins/sandbox-guide/test)
+3. **Verify webhook reception** (if implemented)
+4. **Test all user flows** (buy/sell as applicable)
+
+## Step 6: Mobile Implementation
+
+### React Native Example:
+
+```javascript
+import { Linking } from 'react-native';
+
+const openMeldWidget = () => {
+  const widgetUrl = `meldcrypto.com/?publicKey=your_public_key&redirectUrl=myapp://crypto-complete`;
+  Linking.openURL(widgetUrl);
+};
+```
+
+### Deep Link Return:
+
+```javascript
+// Handle return from widget
+const handleDeepLink = (url) => {
+  if (url.includes('crypto-complete')) {
+    // User completed transaction, update UI
+    navigateToCryptoSuccess();
+  }
+};
+```
+
+### Mobile Considerations:
+
+- **Use redirectUrl** with deep links to return users to your app
+- **Consider theme parameter** to match your app's appearance
+- **Test on both iOS and Android** for compatibility
+
+## Step 4: Go Live
+
+### Production Checklist:
+
+- ✅ **Use production Meld Widget URL** (from Developer tab in production environment)
+- ✅ **Test with small real transaction**
+- ✅ **Verify webhook endpoints** are working
+- ✅ **Monitor first transactions** for issues
+
+### Production URL:
+
+```javascript
+const productionUrl = 'meldcrypto.com/?publicKey=your_public_key';
+```
+
+## Troubleshooting Common Issues
+
+### Widget Won't Load
+
+- ✅ Verify Meld Widget URL is correct and from the right environment
+- ✅ Check for browser popup blockers
+- ✅ Ensure iframe permissions are set correctly
+
+### Parameters Not Working
+
+- ✅ URL encode parameter values
+- ✅ Check parameter spelling and case sensitivity
+- ✅ Verify parameter combinations are valid
+
+### Mobile Issues
+
+- ✅ Test deep link return flow
+- ✅ Verify redirectUrl format is correct
+- ✅ Check mobile browser compatibility
+
+## Error Handling
+
+### JavaScript Error Handling:
+
+```javascript
+try {
+  window.location.href = widgetUrl;
+} catch (error) {
+  console.error('Failed to open widget:', error);
+  // Fallback: show error message to user
+  alert('Unable to open crypto purchase. Please try again.');
+}
+```
+
+### Iframe Error Handling:
+
+```javascript
+const iframe = document.getElementById('meld-widget');
+iframe.onerror = () => {
+  console.error('Widget failed to load');
+  // Show error message or fallback content
+};
+```
+
+## Next Steps
+
+### Optimize your integration
+
+- [**URL parameters**](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters) — complete parameter reference
+- [**Customization**](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/meld-checkout-customization) — styling and advanced options
+
+### Monitor and improve
+
+- [**Webhook events**](/docs/stablecoins/for-all-products/webhook-events) — real-time notifications
+- [**Transaction statuses**](/docs/stablecoins/for-all-products/transaction-statuses) — understanding transaction states
+- [**Dashboard data**](/docs/stablecoins/additional-information/dashboard-data) — analytics and reporting
+
+---
+
+_Your Widget Integration is now live! Users can purchase crypto directly through your application with Meld's secure, compliant widget._
