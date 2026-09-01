@@ -64,16 +64,635 @@
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nThe customer has not met this provider's verification requirements. Read errors[] for the unsatisfied fields, then call the requirements endpoint named in the message for what the provider needs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`VERIFICATION_REQUIRED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Customer verification is required for this service provider"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "VERIFICATION_REQUIRED",
+                  "message": "Customer verification is required for this service provider",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nMeld could not authenticate with the provider. Your credentials are not at fault \u2014 contact Meld support with the requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`SERVICE_PROVIDER_AUTHENTICATION_EXCEPTION`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Authentication error on service provider"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "SERVICE_PROVIDER_AUTHENTICATION_EXCEPTION",
+                  "message": "Authentication error on service provider",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\n- `ACCOUNT_OFFRAMP_NOT_ENABLED` \u2014 Offramp is not enabled for this account. Enable it on the Meld dashboard.\n- `ACCOUNT_ONRAMP_NOT_ENABLED` \u2014 Onramp is not enabled for this account. Enable it on the Meld dashboard.\n- `BAD_REQUEST` \u2014 Send either customerId or externalCustomerId \u2014 this operation needs one of them and neither was supplied.\n- `CUSTOMER_KYC_NOT_APPROVED` \u2014 bypassKyc requires a customer with approved KYC at a provider. Complete KYC first.\n- `CUSTOMER_NOT_FOUND` \u2014 bypassKyc needs a valid customerId or externalCustomerId, and neither resolved.\n- `DUPLICATE_EXTERNAL_SESSION_ID` \u2014 A session already exists with this externalSessionId. Reuse it, or send a new identifier.\n- `INCOMPATIBLE_REQUEST` \u2014 The values are individually valid but cannot be used together by this provider. Change the combination \u2014 currency pair, payment method or country \u2014 or request a different provider.\n- `INVALID_AMOUNT` \u2014 A provider rejected the amount for this route. Adjust it and request a new quote.\n- `INVALID_AMOUNT_OR_CURRENCY` \u2014 Correct the named value and send the request again.\n- `INVALID_AMOUNT_TOO_HIGH` \u2014 The amount is above the maximum for every provider that covers this route. Lower it.\n- `INVALID_AMOUNT_TOO_LOW` \u2014 The amount is below the minimum for every provider that covers this route. Raise it.\n- `INVALID_CRYPTO_CURRENCY` \u2014 Correct the named value and send the request again.\n- `INVALID_FIAT_CURRENCY` \u2014 The fiat currency code is not one Meld supports. Check it against the supported-fiat list.\n- `INVALID_QUERY_PARAMETER` \u2014 Read errors[] \u2014 it names each query parameter that failed validation.\n- `NOT_SUPPORTED` \u2014 This quote type is not offered for the chosen provider.\n- `PASSTHROUGH_CREDENTIALS_INVALID` \u2014 Read errors[] \u2014 it names each passthrough credential field that is missing or conflicting. Which fields are required varies by provider.\n- `TRANSACTION_INVALID_PARAMETER` \u2014 The transaction category could not be resolved from the request.\n- `TRANSACTION_INVALID_PROVIDER` \u2014 Correct the named value and send the request again.\n- `TRANSACTION_PROPERTY_COMBINATION_NOT_SUPPORTED_BY_SERVICE_PROVIDER` \u2014 Not supported for this provider or combination. Choose another.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `ACCOUNT_OFFRAMP_NOT_ENABLED`\n- `ACCOUNT_ONRAMP_NOT_ENABLED`\n- `BAD_REQUEST`\n- `CUSTOMER_KYC_NOT_APPROVED`\n- `CUSTOMER_NOT_FOUND`\n- `DUPLICATE_EXTERNAL_SESSION_ID`\n- `INCOMPATIBLE_REQUEST`\n- `INVALID_AMOUNT`\n- `INVALID_AMOUNT_OR_CURRENCY`\n- `INVALID_AMOUNT_TOO_HIGH`\n- `INVALID_AMOUNT_TOO_LOW`\n- `INVALID_CRYPTO_CURRENCY`\n- `INVALID_FIAT_CURRENCY`\n- `INVALID_QUERY_PARAMETER`\n- `NOT_SUPPORTED`\n- `PASSTHROUGH_CREDENTIALS_INVALID`\n- `TRANSACTION_INVALID_PARAMETER`\n- `TRANSACTION_INVALID_PROVIDER`\n- `TRANSACTION_PROPERTY_COMBINATION_NOT_SUPPORTED_BY_SERVICE_PROVIDER`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[Meld-Version] is invalid`\n- `Cannot use both passthrough key private and oauth at the same time`\n- `Missing either passthrough key private or oauth`\n- `Missing passthrough key id`\n- `Missing passthrough key private`\n- `Missing passthrough key public`\n- `Missing passthrough oauth`\n- `Missing passthrough reference`\n- `Missing service provider`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Bad request\n- Buying crypto is not enabled for your account, please enable it on the Meld dashboard to receive quotes.\n- Customer has not completed KYC verification\n- Customer not found\n- Duplicate external session ID\n- Incompatible request: Body does not match service providers\n- Invalid Crypto Currency requested\n- Invalid Fiat Currency requested\n- Invalid amount or currency\n- Invalid currency amount\n- Invalid parameter to create transaction\n- Invalid query parameter\n- Invalid service provider\n- Operation not supported for service provider\n- Passthrough credentials invalid\n- Property combination not supported\n- Selling crypto is not enabled for your account, please enable it on the Meld dashboard to receive quotes.\n- Source amount is above the maximum allowed\n- Source amount is below the minimum allowed"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "examples": {
+                  "ACCOUNT_OFFRAMP_NOT_ENABLED": {
+                    "value": {
+                      "code": "ACCOUNT_OFFRAMP_NOT_ENABLED",
+                      "message": "Selling crypto is not enabled for your account, please enable it on the Meld dashboard to receive quotes.",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "ACCOUNT_ONRAMP_NOT_ENABLED": {
+                    "value": {
+                      "code": "ACCOUNT_ONRAMP_NOT_ENABLED",
+                      "message": "Buying crypto is not enabled for your account, please enable it on the Meld dashboard to receive quotes.",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "BAD_REQUEST": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "message": "Bad request",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "CUSTOMER_KYC_NOT_APPROVED": {
+                    "value": {
+                      "code": "CUSTOMER_KYC_NOT_APPROVED",
+                      "message": "Customer has not completed KYC verification",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "CUSTOMER_NOT_FOUND": {
+                    "value": {
+                      "code": "CUSTOMER_NOT_FOUND",
+                      "message": "Customer not found",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "DUPLICATE_EXTERNAL_SESSION_ID": {
+                    "value": {
+                      "code": "DUPLICATE_EXTERNAL_SESSION_ID",
+                      "message": "Duplicate external session ID",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INCOMPATIBLE_REQUEST": {
+                    "value": {
+                      "code": "INCOMPATIBLE_REQUEST",
+                      "message": "Incompatible request: Body does not match service providers",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_AMOUNT": {
+                    "value": {
+                      "code": "INVALID_AMOUNT",
+                      "message": "Invalid currency amount",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_AMOUNT_OR_CURRENCY": {
+                    "value": {
+                      "code": "INVALID_AMOUNT_OR_CURRENCY",
+                      "message": "Invalid amount or currency",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_AMOUNT_TOO_HIGH": {
+                    "value": {
+                      "code": "INVALID_AMOUNT_TOO_HIGH",
+                      "message": "Source amount is above the maximum allowed",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_AMOUNT_TOO_LOW": {
+                    "value": {
+                      "code": "INVALID_AMOUNT_TOO_LOW",
+                      "message": "Source amount is below the minimum allowed",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_CRYPTO_CURRENCY": {
+                    "value": {
+                      "code": "INVALID_CRYPTO_CURRENCY",
+                      "message": "Invalid Crypto Currency requested",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_FIAT_CURRENCY": {
+                    "value": {
+                      "code": "INVALID_FIAT_CURRENCY",
+                      "message": "Invalid Fiat Currency requested",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_QUERY_PARAMETER": {
+                    "value": {
+                      "code": "INVALID_QUERY_PARAMETER",
+                      "message": "Invalid query parameter",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "NOT_SUPPORTED": {
+                    "value": {
+                      "code": "NOT_SUPPORTED",
+                      "message": "Operation not supported for service provider",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "PASSTHROUGH_CREDENTIALS_INVALID": {
+                    "value": {
+                      "code": "PASSTHROUGH_CREDENTIALS_INVALID",
+                      "message": "Passthrough credentials invalid",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_INVALID_PARAMETER": {
+                    "value": {
+                      "code": "TRANSACTION_INVALID_PARAMETER",
+                      "message": "Invalid parameter to create transaction",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_INVALID_PROVIDER": {
+                    "value": {
+                      "code": "TRANSACTION_INVALID_PROVIDER",
+                      "message": "Invalid service provider",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_PROPERTY_COMBINATION_NOT_SUPPORTED_BY_SERVICE_PROVIDER": {
+                    "value": {
+                      "code": "TRANSACTION_PROPERTY_COMBINATION_NOT_SUPPORTED_BY_SERVICE_PROVIDER",
+                      "message": "Property combination not supported",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\n- `KYC_TOKEN_GENERATION_FAILED` \u2014 The customer's KYC is approved; generating the share token failed on Meld's side. Contact Meld support with the requestId.\n- `PRIOR_AUTHENTICATION_ERROR` \u2014 No stored provider authorisation matches the id supplied for this customer.\n- `SERVICE_PROVIDER_ERROR` \u2014 The provider failed while quoting. Retry, then contact Meld support with the requestId.\n- `TRANSACTION_EXCEPTION` \u2014 The provider's widget URL could not be resolved for this session. Start a new session; if it persists, contact Meld support with the requestId.\n- `TRANSACTION_FAILED_GETTING_CRYPTO_QUOTE` \u2014 The provider returned no quote where one was expected. Contact Meld support with the requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `KYC_TOKEN_GENERATION_FAILED`\n- `PRIOR_AUTHENTICATION_ERROR`\n- `SERVICE_PROVIDER_ERROR`\n- `TRANSACTION_EXCEPTION`\n- `TRANSACTION_FAILED_GETTING_CRYPTO_QUOTE`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Error retrieving prior authentication\n- Exception in transaction\n- Failed getting crypto quote\n- Failed to generate KYC share token\n- Service Provider Error"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "examples": {
+                  "KYC_TOKEN_GENERATION_FAILED": {
+                    "value": {
+                      "code": "KYC_TOKEN_GENERATION_FAILED",
+                      "message": "Failed to generate KYC share token",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "PRIOR_AUTHENTICATION_ERROR": {
+                    "value": {
+                      "code": "PRIOR_AUTHENTICATION_ERROR",
+                      "message": "Error retrieving prior authentication",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "SERVICE_PROVIDER_ERROR": {
+                    "value": {
+                      "code": "SERVICE_PROVIDER_ERROR",
+                      "message": "Service Provider Error",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_EXCEPTION": {
+                    "value": {
+                      "code": "TRANSACTION_EXCEPTION",
+                      "message": "Exception in transaction",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_FAILED_GETTING_CRYPTO_QUOTE": {
+                    "value": {
+                      "code": "TRANSACTION_FAILED_GETTING_CRYPTO_QUOTE",
+                      "message": "Failed getting crypto quote",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource Not Found\n\nNo provider could produce a quote for this combination. Adjust the amount, currency pair or country, or request a different provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`NOT_FOUND`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Resource Not Found"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Resource Not Found",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Service provider took too long to respond\n\nProviders did not respond in time. Retry with backoff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`QUOTE_TIMEOUT`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Service provider took too long to respond"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "QUOTE_TIMEOUT",
+                  "message": "Service provider took too long to respond",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Failed getting crypto quote from provider\n\nNo provider returned a quote and none reported a reason. Adjust the amount, currency pair or country, or request a different provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`TRANSACTION_FAILED_GETTING_CRYPTO_QUOTE_FROM_PROVIDER`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Failed getting crypto quote from provider"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "TRANSACTION_FAILED_GETTING_CRYPTO_QUOTE_FROM_PROVIDER",
+                  "message": "Failed getting crypto quote from provider",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict\n\nResolve the conflicting state, then retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`CONFLICT`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Conflict"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "CONFLICT",
+                  "message": "Conflict",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -140,26 +759,451 @@
             }
           },
           "404": {
-            "description": "Payment transaction with the id informed was not found",
+            "description": "Payment transaction with the id informed was not found\n\nVerify the identifier in the request.",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaymentTransactionResponse20230401"
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`NOT_FOUND`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Resource not found"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Resource not found",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\n- `PASSTHROUGH_CREDENTIALS_INVALID` \u2014 Read errors[] \u2014 it names each passthrough credential field that is missing or conflicting. Which fields are required varies by provider.\n- `TRANSACTION_INVALID_PROVIDER` \u2014 Correct the named value and send the request again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `PASSTHROUGH_CREDENTIALS_INVALID`\n- `TRANSACTION_INVALID_PROVIDER`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[Meld-Version] is invalid`\n- `Required parameter [id] is missing`\n- `Cannot use both passthrough key private and oauth at the same time`\n- `Missing either passthrough key private or oauth`\n- `Missing passthrough key id`\n- `Missing passthrough key private`\n- `Missing passthrough key public`\n- `Missing passthrough oauth`\n- `Missing passthrough reference`\n- `Missing service provider`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Invalid service provider\n- Passthrough credentials invalid"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "examples": {
+                  "PASSTHROUGH_CREDENTIALS_INVALID": {
+                    "value": {
+                      "code": "PASSTHROUGH_CREDENTIALS_INVALID",
+                      "message": "Passthrough credentials invalid",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_INVALID_PROVIDER": {
+                    "value": {
+                      "code": "TRANSACTION_INVALID_PROVIDER",
+                      "message": "Invalid service provider",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nThe provider could not be reached to read this transaction. Retry \u2014 the transaction itself is unaffected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`TRANSACTION_EXCEPTION`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Exception in transaction"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "TRANSACTION_EXCEPTION",
+                  "message": "Exception in transaction",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict\n\nRead message \u2014 it names which condition applied, from the values listed under `message`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`CONFLICT`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Conflict"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "CONFLICT",
+                  "message": "Conflict",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -384,16 +1428,451 @@
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\n- `BAD_REQUEST` \u2014 Send customerIds or externalCustomerIds, not both.\n- `INVALID_QUERY_PARAMETER` \u2014 Read errors[] \u2014 it names each search parameter that failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `BAD_REQUEST`\n- `INVALID_QUERY_PARAMETER`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[Meld-Version] is invalid`\n- `[statuses] is invalid`\n- `[serviceProviders] is invalid`\n- `[limit] is invalid`\n- `[amountFrom] is invalid`\n- `[amountTo] is invalid`\n- `[from] is invalid`\n- `[to] is invalid`\n- `[before] is invalid`\n- `[after] is invalid`\n- `[apiAccessProfileIds] is invalid`\n- `[customerIds] is invalid`\n- `[externalCustomerIds] is invalid`\n- `[sessionIds] is invalid`\n- `[externalSessionIds] is invalid`\n- `[externalReferenceIds] is invalid`\n- `[types] is invalid`\n- `[orderIds] is invalid`\n- `[serviceProviderTransactionId] is invalid`\n- `[subaccountCustomerIds] is invalid`\n- `[externalSubaccountCustomerIds] is invalid`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Bad request\n- Invalid query parameter"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "examples": {
+                  "BAD_REQUEST": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "message": "Bad request",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_QUERY_PARAMETER": {
+                    "value": {
+                      "code": "INVALID_QUERY_PARAMETER",
+                      "message": "Invalid query parameter",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nThe query failed on Meld's side and nothing was changed. Contact Meld support with the requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FAILED_GETTING_TRANSACTION`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Failed getting transaction"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FAILED_GETTING_TRANSACTION",
+                  "message": "Failed getting transaction",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found\n\nVerify the identifier in the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`NOT_FOUND`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Resource not found"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Resource not found",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict\n\nResolve the conflicting state, then retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`CONFLICT`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Conflict"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "CONFLICT",
+                  "message": "Conflict",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -448,34 +1927,471 @@
             }
           },
           "404": {
-            "description": "Session not found or transaction not yet created with provider",
+            "description": "Session not found or transaction not yet created with provider\n\n- `TRANSACTION_FETCH_BY_SESSION_NOT_YET_CREATED_WITH_PROVIDER` \u2014 Temporary, not permanent: the transaction does not exist yet. Keep polling \u2014 it appears once the provider creates it.\n- `TRANSACTION_FETCH_BY_SESSION_PROVIDER_UNSUPPORTED` \u2014 This provider cannot look a transaction up by sessionId before it exists. Wait for it to be created, then fetch it.",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `TRANSACTION_FETCH_BY_SESSION_NOT_YET_CREATED_WITH_PROVIDER`\n- `TRANSACTION_FETCH_BY_SESSION_PROVIDER_UNSUPPORTED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Provider doesn't support fetching a transaction by session until it is created with Meld\n- Transaction associated with this session/order has not been created with the service provider yet"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
-                  ]
+                  }
+                },
+                "examples": {
+                  "TRANSACTION_FETCH_BY_SESSION_NOT_YET_CREATED_WITH_PROVIDER": {
+                    "value": {
+                      "code": "TRANSACTION_FETCH_BY_SESSION_NOT_YET_CREATED_WITH_PROVIDER",
+                      "message": "Transaction associated with this session/order has not been created with the service provider yet",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_FETCH_BY_SESSION_PROVIDER_UNSUPPORTED": {
+                    "value": {
+                      "code": "TRANSACTION_FETCH_BY_SESSION_PROVIDER_UNSUPPORTED",
+                      "message": "Provider doesn't support fetching a transaction by session until it is created with Meld",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\n- `NOT_SUPPORTED` \u2014 This provider does not support fetching a transaction this way. Use the headless order endpoints instead.\n- `PASSTHROUGH_CREDENTIALS_INVALID` \u2014 Read errors[] \u2014 it names each passthrough credential field that is missing or conflicting. Which fields are required varies by provider.\n- `TRANSACTION_INVALID_PROVIDER` \u2014 Correct the named value and send the request again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `NOT_SUPPORTED`\n- `PASSTHROUGH_CREDENTIALS_INVALID`\n- `TRANSACTION_INVALID_PROVIDER`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[Meld-Version] is invalid`\n- `Required parameter [sessionId] is missing`\n- `Cannot use both passthrough key private and oauth at the same time`\n- `Missing either passthrough key private or oauth`\n- `Missing passthrough key id`\n- `Missing passthrough key private`\n- `Missing passthrough key public`\n- `Missing passthrough oauth`\n- `Missing passthrough reference`\n- `Missing service provider`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Invalid service provider\n- Operation not supported for service provider\n- Passthrough credentials invalid"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "examples": {
+                  "NOT_SUPPORTED": {
+                    "value": {
+                      "code": "NOT_SUPPORTED",
+                      "message": "Operation not supported for service provider",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "PASSTHROUGH_CREDENTIALS_INVALID": {
+                    "value": {
+                      "code": "PASSTHROUGH_CREDENTIALS_INVALID",
+                      "message": "Passthrough credentials invalid",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_INVALID_PROVIDER": {
+                    "value": {
+                      "code": "TRANSACTION_INVALID_PROVIDER",
+                      "message": "Invalid service provider",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nThe provider could not be reached to read this transaction. Retry \u2014 the transaction itself is unaffected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`TRANSACTION_EXCEPTION`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Exception in transaction"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "TRANSACTION_EXCEPTION",
+                  "message": "Exception in transaction",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict\n\nRead message \u2014 it names which condition applied, from the values listed under `message`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`CONFLICT`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Conflict"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "CONFLICT",
+                  "message": "Conflict",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "408": {
+            "description": "Request timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Stable identifier for the failure."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A description of what went wrong."
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -616,31 +2532,369 @@
             }
           },
           "500": {
-            "description": "Internal Error",
+            "description": "Internal Error\n\nMeld could not serialise the response. Your request is not at fault \u2014 contact Meld support with the requestId.",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`JSON_PROCESSING_ERROR`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Error processing JSON"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
-                  ]
+                  }
+                },
+                "example": {
+                  "code": "JSON_PROCESSING_ERROR",
+                  "message": "Error processing JSON",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`FORBIDDEN`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\n- `INVALID_CRYPTO_CURRENCY` \u2014 The cryptocurrency code is not one Meld supports. Check it against the supported-crypto list.\n- `INVALID_PAYMENT_METHOD` \u2014 The payment method could not be resolved for this offramp order.\n- `PASSTHROUGH_CREDENTIALS_INVALID` \u2014 Read errors[] \u2014 it names each passthrough credential field that is missing or conflicting. Which fields are required varies by provider.\n- `TRANSACTION_INVALID_PROVIDER` \u2014 Correct the named value and send the request again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `INVALID_CRYPTO_CURRENCY`\n- `INVALID_PAYMENT_METHOD`\n- `PASSTHROUGH_CREDENTIALS_INVALID`\n- `TRANSACTION_INVALID_PROVIDER`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[Meld-Version] is invalid`\n- `[X-Idempotency-Key] is invalid`\n- `Cannot use both passthrough key private and oauth at the same time`\n- `Missing either passthrough key private or oauth`\n- `Missing passthrough key id`\n- `Missing passthrough key private`\n- `Missing passthrough key public`\n- `Missing passthrough oauth`\n- `Missing passthrough reference`\n- `Missing service provider`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Invalid Crypto Currency requested\n- Invalid Payment Method requested\n- Invalid service provider\n- Passthrough credentials invalid"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "examples": {
+                  "INVALID_CRYPTO_CURRENCY": {
+                    "value": {
+                      "code": "INVALID_CRYPTO_CURRENCY",
+                      "message": "Invalid Crypto Currency requested",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_PAYMENT_METHOD": {
+                    "value": {
+                      "code": "INVALID_PAYMENT_METHOD",
+                      "message": "Invalid Payment Method requested",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "PASSTHROUGH_CREDENTIALS_INVALID": {
+                    "value": {
+                      "code": "PASSTHROUGH_CREDENTIALS_INVALID",
+                      "message": "Passthrough credentials invalid",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_INVALID_PROVIDER": {
+                    "value": {
+                      "code": "TRANSACTION_INVALID_PROVIDER",
+                      "message": "Invalid service provider",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found\n\nVerify the identifier in the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`NOT_FOUND`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Resource not found"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Resource not found",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict\n\nResolve the conflicting state, then retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`CONFLICT`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Conflict"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "CONFLICT",
+                  "message": "Conflict",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -712,31 +2966,347 @@
             }
           },
           "500": {
-            "description": "Internal Error",
+            "description": "Internal Error\n\n- `JSON_PROCESSING_ERROR` \u2014 A value could not be serialised on Meld's side. Contact Meld support with the requestId; a retry may not clear it.\n- `SERVICE_PROVIDER_ERROR` \u2014 The provider did not return deposit instructions. Retry, then contact Meld support with the requestId.",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `JSON_PROCESSING_ERROR`\n- `SERVICE_PROVIDER_ERROR`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Error processing JSON\n- Service Provider Error"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
-                  ]
+                  }
+                },
+                "examples": {
+                  "JSON_PROCESSING_ERROR": {
+                    "value": {
+                      "code": "JSON_PROCESSING_ERROR",
+                      "message": "Error processing JSON",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "SERVICE_PROVIDER_ERROR": {
+                    "value": {
+                      "code": "SERVICE_PROVIDER_ERROR",
+                      "message": "Service Provider Error",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access"
+            "description": "Unauthenticated or authenticated with insufficient access\n\n- `KYC_NOT_COMPLETED` \u2014 The customer's KYC is not approved. Complete it before requesting deposit instructions.\n- `SERVICE_PROVIDER_NOT_ENABLED` \u2014 The provider is not enabled for this account. Enable it on the Meld dashboard.\n- `WHITELABEL_NOT_ENABLED` \u2014 White-label virtual accounts are not enabled for this account. Contact Meld to enable them.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `KYC_NOT_COMPLETED`\n- `SERVICE_PROVIDER_NOT_ENABLED`\n- `WHITELABEL_NOT_ENABLED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Customer has not completed KYC for the requested provider\n- Headless integration is not enabled for this account/provider pair\n- Service provider is not enabled for this account"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "examples": {
+                  "KYC_NOT_COMPLETED": {
+                    "value": {
+                      "code": "KYC_NOT_COMPLETED",
+                      "message": "Customer has not completed KYC for the requested provider",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "SERVICE_PROVIDER_NOT_ENABLED": {
+                    "value": {
+                      "code": "SERVICE_PROVIDER_NOT_ENABLED",
+                      "message": "Service provider is not enabled for this account",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "WHITELABEL_NOT_ENABLED": {
+                    "value": {
+                      "code": "WHITELABEL_NOT_ENABLED",
+                      "message": "Headless integration is not enabled for this account/provider pair",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
-            "description": "Invalid credentials"
+            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "`UNAUTHORIZED`"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Access denied"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "message": "Access denied",
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request : check request values and format"
+            "description": "Bad Request : check request values and format\n\n- `CUSTOMER_ID_REQUIRED` \u2014 Send either customerId or externalCustomerId. Both were blank.\n- `CUSTOMER_NOT_FOUND` \u2014 No customer matched the identifier supplied. Verify it before retrying.\n- `EXTERNAL_ORDER_ID_NOT_UNIQUE` \u2014 This externalOrderId is already used on the account. Send a different one, or fetch the existing order rather than recreating it.\n- `HEADLESS_NOT_SUPPORTED` \u2014 Not supported for this provider or combination. Choose another.\n- `INVALID_CRYPTO_CURRENCY` \u2014 The cryptocurrency code is not one Meld supports. Check it against the supported-crypto list.\n- `INVALID_PAYMENT_METHOD` \u2014 Correct the named value and send the request again.\n- `NOT_SUPPORTED` \u2014 This combination is not offered for the chosen provider or transaction type. Choose a different one.\n- `PASSTHROUGH_CREDENTIALS_INVALID` \u2014 Read errors[] \u2014 it names each passthrough credential field that is missing or conflicting. Which fields are required varies by provider.\n- `PAYMENT_METHOD_NOT_SUPPORTED` \u2014 Not supported for this provider or combination. Choose another.\n- `PHONE_NUMBER_REQUIRED` \u2014 Send customerPhoneNumber. It is required when paymentMethodType is MOBILE_MONEY.\n- `TRANSACTION_INVALID_PROVIDER` \u2014 No service provider was supplied on the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Any of:\n\n- `CUSTOMER_ID_REQUIRED`\n- `CUSTOMER_NOT_FOUND`\n- `EXTERNAL_ORDER_ID_NOT_UNIQUE`\n- `HEADLESS_NOT_SUPPORTED`\n- `INVALID_CRYPTO_CURRENCY`\n- `INVALID_PAYMENT_METHOD`\n- `NOT_SUPPORTED`\n- `PASSTHROUGH_CREDENTIALS_INVALID`\n- `PAYMENT_METHOD_NOT_SUPPORTED`\n- `PHONE_NUMBER_REQUIRED`\n- `TRANSACTION_INVALID_PROVIDER`"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "description": "Any of:\n\n- `[customerId] must not be blank`\n- `[destinationCurrencyCode] must not be blank`\n- `[destinationWalletAddress] must not be blank`\n- `[paymentMethodType] must not be null`\n- `[serviceProvider] must not be null`\n- `[sourceCurrencyCode] must not be blank`\n- `[Meld-Version] is invalid`\n- `[X-Idempotency-Key] is invalid`\n- `Cannot use both passthrough key private and oauth at the same time`\n- `Missing either passthrough key private or oauth`\n- `Missing passthrough key id`\n- `Missing passthrough key private`\n- `Missing passthrough key public`\n- `Missing passthrough oauth`\n- `Missing passthrough reference`\n- `Missing service provider`",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Any of:\n\n- Customer not found\n- Either customerId or externalCustomerId is required\n- Invalid Crypto Currency requested\n- Invalid Payment Method requested\n- Invalid service provider\n- Operation not supported for service provider\n- Passthrough credentials invalid\n- Provider does not support headless onramp orders\n- Requested payment method is not supported for this provider in headless mode\n- customerPhoneNumber is required for the requested payment method\n- externalOrderId must be unique per account"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Quote this when asking Meld about a specific failure."
+                    },
+                    "serviceProviderDetails": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "The provider's own error code, when it sent one."
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The provider's own message."
+                        }
+                      },
+                      "additionalProperties": {},
+                      "example": {
+                        "code": "5034",
+                        "message": "Digital currency and blockchain combination is restricted for customer's country"
+                      },
+                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-08-14T09:41:22.482+00:00",
+                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                    }
+                  }
+                },
+                "examples": {
+                  "CUSTOMER_ID_REQUIRED": {
+                    "value": {
+                      "code": "CUSTOMER_ID_REQUIRED",
+                      "message": "Either customerId or externalCustomerId is required",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "CUSTOMER_NOT_FOUND": {
+                    "value": {
+                      "code": "CUSTOMER_NOT_FOUND",
+                      "message": "Customer not found",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "EXTERNAL_ORDER_ID_NOT_UNIQUE": {
+                    "value": {
+                      "code": "EXTERNAL_ORDER_ID_NOT_UNIQUE",
+                      "message": "externalOrderId must be unique per account",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "HEADLESS_NOT_SUPPORTED": {
+                    "value": {
+                      "code": "HEADLESS_NOT_SUPPORTED",
+                      "message": "Provider does not support headless onramp orders",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_CRYPTO_CURRENCY": {
+                    "value": {
+                      "code": "INVALID_CRYPTO_CURRENCY",
+                      "message": "Invalid Crypto Currency requested",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "INVALID_PAYMENT_METHOD": {
+                    "value": {
+                      "code": "INVALID_PAYMENT_METHOD",
+                      "message": "Invalid Payment Method requested",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "NOT_SUPPORTED": {
+                    "value": {
+                      "code": "NOT_SUPPORTED",
+                      "message": "Operation not supported for service provider",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "PASSTHROUGH_CREDENTIALS_INVALID": {
+                    "value": {
+                      "code": "PASSTHROUGH_CREDENTIALS_INVALID",
+                      "message": "Passthrough credentials invalid",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "PAYMENT_METHOD_NOT_SUPPORTED": {
+                    "value": {
+                      "code": "PAYMENT_METHOD_NOT_SUPPORTED",
+                      "message": "Requested payment method is not supported for this provider in headless mode",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "PHONE_NUMBER_REQUIRED": {
+                    "value": {
+                      "code": "PHONE_NUMBER_REQUIRED",
+                      "message": "customerPhoneNumber is required for the requested payment method",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  },
+                  "TRANSACTION_INVALID_PROVIDER": {
+                    "value": {
+                      "code": "TRANSACTION_INVALID_PROVIDER",
+                      "message": "Invalid service provider",
+                      "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                      "timestamp": "2026-08-14T09:41:22.482+00:00"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -887,30 +3457,48 @@
         "type": "object",
         "properties": {
           "code": {
-            "type": "string"
-          },
-          "displayMessage": {
-            "type": "string"
+            "type": "string",
+            "description": "Stable identifier for the failure."
           },
           "errors": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "What was rejected, one entry per field or rule."
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "description": "A description of what went wrong."
           },
           "requestId": {
-            "type": "string"
+            "type": "string",
+            "description": "Quote this when asking Meld about a specific failure."
           },
           "serviceProviderDetails": {
             "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "The provider's own error code, when it sent one."
+              },
+              "message": {
+                "type": "string",
+                "description": "The provider's own message."
+              }
+            },
+            "example": {
+              "code": "5034",
+              "message": "Digital currency and blockchain combination is restricted for customer's country"
+            },
+            "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear.",
             "additionalProperties": {}
           },
           "timestamp": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`).",
+            "example": "2026-08-14T09:41:22.482+00:00"
           }
         }
       },

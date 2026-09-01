@@ -2105,9 +2105,6 @@
           "code": {
             "type": "string"
           },
-          "displayMessage": {
-            "type": "string"
-          },
           "errors": {
             "type": "array",
             "items": {
@@ -2121,8 +2118,7 @@
             "type": "string"
           },
           "serviceProviderDetails": {
-            "type": "object",
-            "additionalProperties": {}
+            "type": "object"
           },
           "timestamp": {
             "type": "string",
