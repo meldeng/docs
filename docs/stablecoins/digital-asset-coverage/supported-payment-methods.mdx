@@ -21,7 +21,11 @@ Service Providers accessed through Meld support a wide variety of payment method
 
 [Supported Payment Methods for Offramps](#supported-payment-methods-for-offramps)
 
-The `GET /service-providers/properties/payment-methods` endpoint can also be used to obtain this information.
+The `GET /network-partner/supported/payment-methods?category={CATEGORY}&country={c}&currencyCode={f}` endpoint can also be used to obtain this information.
+
+<Warning>
+`GET /service-providers/properties/payment-methods` is **deprecated** and slated for removal. Use `GET /network-partner/supported/payment-methods?category={CATEGORY}&country={c}&currencyCode={f}` instead — see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Migrate as soon as you can.
+</Warning>
 
 <Note>
   Type vs. Subtype
@@ -33,7 +37,7 @@ The `GET /service-providers/properties/payment-methods` endpoint can also be use
   Meld accepts both Type and Subtype as valid strings within the `paymentMethodType` parameter on the `POST /payments/crypto/quote` and `POST /crypto/session/widget` endpoints.
 </Note>
 
-_Note: The `GET /service-providers/properties/payment-methods` endpoint can be used to get a list of countries a payment method supports._
+_Note: The `GET /network-partner/supported/payment-methods` endpoint can be used to get a list of countries a payment method supports._
 
 ## Supported Payment Methods for Offramps
 

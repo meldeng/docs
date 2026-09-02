@@ -125,7 +125,7 @@ All discovery is parameterized by a `category`. Retail ramp uses exactly two:
 
 ### Upgrading from the Service Provider API?
 
-If you previously integrated against the legacy `/service-providers/*` discovery endpoints, they are replaced by the category-scoped `/network-partner/*` family used throughout this guide.
+If you previously integrated against the legacy `/service-providers/*` discovery endpoints, they are deprecated and slated for removal, and are replaced by the category-scoped `/network-partner/*` family used throughout this guide. Migrate as soon as you can — see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).
 
 The three transaction endpoints are unchanged: `POST /payments/crypto/quote`, `POST /crypto/session/widget`, and `GET /payments/transactions/{transactionId}`.
 

@@ -38,9 +38,9 @@ Authentication is also unchanged: `Authorization: BASIC {apiKey}` on every reque
 | `GET /service-providers/properties/payment-methods` | `GET /network-partner/supported/payment-methods?category={CATEGORY}&country={c}&currencyCode={f}` |
 | `GET /service-providers/limits/fiat-currency-purchases` | `GET /network-partner/supported/routes/{category}/{country}/{source}/{destination}` |
 
-<Note>
-The legacy `/service-providers/properties/*` and `/service-providers/limits/fiat-currency-purchases` endpoints are still live and fully functional — they are deprecated and being phased out in favor of the Network Partner API, not removed. You can migrate on your own timeline.
-</Note>
+<Warning>
+The legacy `/service-providers/properties/*` and `/service-providers/limits/*` endpoints are **deprecated** and slated for removal. Migrate to the Network Partner API as soon as you can — do not build anything new against the legacy endpoints.
+</Warning>
 
 The rest of this page walks each row in detail.
 

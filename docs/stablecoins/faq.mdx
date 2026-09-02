@@ -26,15 +26,17 @@ The Virtual Account flow is only supported via a white-label integration.
 
 ### How do I find supported countries, payment methods, and currencies?
 
-Use Meld's service provider properties endpoints to query available options:
+Use Meld's Network Partner endpoints to query available options:
 
-* Add `accountFilter=true` parameter to see only providers enabled for your account
-* Filter by specific providers or query all available options
+* Scope the query with `category` (for example `CRYPTO_ONRAMP`) and `country`
+* Narrow to specific providers with `partners`, or query all available options
 * Results show supported countries, payment methods, fiat currencies, and tokens
 
 
 <Note>
-### **API Reference:** `GET /service-providers/properties/...` endpoints
+### **API Reference:** `GET /network-partner/supported/...` endpoints
+
+  The legacy `GET /service-providers/properties/...` endpoints are deprecated and slated for removal — see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).
 </Note>
 
 

@@ -3,6 +3,10 @@ title: "Recommended White Label Flow"
 noindex: true
 ---
 
+<Warning>
+This page describes the flow against the legacy Service Provider API. Every `/service-providers/properties/*` and `/service-providers/limits/*` endpoint referenced below is **deprecated** and slated for removal — use the `/network-partner/*` endpoints instead and migrate as soon as you can. See the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner) and the current [White-Label API guide](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide).
+</Warning>
+
 If you are building a UI for your users to buy / sell / transfer crypto using Meld's APIs, here is the recommended flow to show your users. As example of this flow can be seen at [meldcrypto](https://meldcrypto.com/). You can get the data to populate in your UI for the following fields (countries, fiat currencies, purchase limits, cryptocurrencies, payment methods) from the service provider properties [endpoints](/api-reference/service-providers). Your end flow will likely look something like this:
 
 1. **Country**: Get the user's location (country) from their device or browser. Meld recommends also letting the user override the default choice and choose the country if they want, because the country should be based on the user's billing address. By letting a user choose their country, a US resident on vacation in Mexico will be able to buy crypto from an onramp that supports the US. To populate the list of supported countries, call Meld's [/service-providers/properties/countries?accountFilter=true](/api-reference/service-providers/service-provider/service-providers-properties-country-search). This will return a list of countries the onramps you have configured support, along with their display names and flags. For speed and to save resources, Meld recommends caching this response and updating it once a week.
