@@ -29,7 +29,7 @@ Authentication is also unchanged: `Authorization: BASIC {apiKey}` on every reque
 
 ## Endpoint mapping
 
-| Legacy endpoint (removed) | New endpoint |
+| Legacy endpoint (deprecated) | New endpoint |
 |---|---|
 | `GET /service-providers/properties/countries` | `GET /network-partner/supported/countries?category={CATEGORY}` |
 | `GET /service-providers/properties/defaults/by-country` | `GET /network-partner/defaults/{country}/{category}` |
@@ -37,6 +37,10 @@ Authentication is also unchanged: `Authorization: BASIC {apiKey}` on every reque
 | `GET /service-providers/properties/crypto-currencies` | `GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type=CRYPTO` |
 | `GET /service-providers/properties/payment-methods` | `GET /network-partner/supported/payment-methods?category={CATEGORY}&country={c}&currencyCode={f}` |
 | `GET /service-providers/limits/fiat-currency-purchases` | `GET /network-partner/supported/routes/{category}/{country}/{source}/{destination}` |
+
+<Note>
+The legacy `/service-providers/properties/*` and `/service-providers/limits/fiat-currency-purchases` endpoints are still live and fully functional — they are deprecated and being phased out in favor of the Network Partner API, not removed. You can migrate on your own timeline.
+</Note>
 
 The rest of this page walks each row in detail.
 
@@ -186,7 +190,7 @@ GET /network-partner/supported/currencies?category=CRYPTO_ONRAMP&country=US&type
       "name": "USD Coin",
       "decimalPlaces": 6,
       "type": "CRYPTO",
-      "symbol": "USDC",
+      "symbol": "https://cdn.meld.io/images-currency/crypto/USDC/symbol.png",
       "chainCode": "ETHEREUM",
       "contract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
     }
@@ -201,7 +205,7 @@ GET /network-partner/supported/currencies?category=CRYPTO_ONRAMP&country=US&type
 * One endpoint for both sides — pass `type=FIAT` or `type=CRYPTO`. `category` and `country` are required.
 * The legacy crypto list was returned under a `cryptoCurrencies` wrapper; both fiat and crypto now return a single `currencies` wrapper.
 * `currencyName` → `name`; `networkCode` → `chainCode`; `networkName` is dropped.
-* New fields: `decimalPlaces` (use it for client-side formatting), `symbol`, and `contract` (token contract address) to disambiguate tokens on the same chain.
+* New fields: `decimalPlaces` (use it for client-side formatting), `symbol` (a CDN image URL for the currency's icon, not a ticker string), and `contract` (token contract address) to disambiguate tokens on the same chain.
 * Optional filters: `network` (e.g. `ETHEREUM`, `SOLANA`), `partner`, `paymentType`, `providerCurrencyCode`.
 
 <Note>

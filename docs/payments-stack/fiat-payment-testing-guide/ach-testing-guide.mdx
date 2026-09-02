@@ -9,8 +9,8 @@ Testing ACH differs from testing cards because the supported sandboxes vary by p
 
 <Info>
 - A sandbox API key from your Meld dashboard.
-- At least one ACH-capable service provider (Coinflow or Moov) enabled on your account.
-- A Meld `customerId` for the buyer (Moov requires a Meld-supplied test `customerId`).
+- At least one ACH-capable service provider (Coinflow or Plaid) enabled on your account.
+- A Meld `customerId` for the buyer.
 </Info>
 
 # Coinflow
@@ -34,39 +34,6 @@ ACH test details:
 
 ACH transactions for Coinflow that are submitted successfully will only ever show status `PENDING`, in both sandbox and production. Coinflow does not return a `SETTLED` transaction status.
 </Warning>
-
-# Moov
-
-Moov's sandbox allows you to complete ACH transactions end-to-end. Submitted transactions move from `PENDING` to `SETTLED` in about 30 minutes. You must use the `customerId` Meld provides you for testing.
-
-To test payouts for Moov, use the endpoints listed in [Making ACH Payments](/docs/payments-stack/fiat-payment-quickstart/making-ach-payments/index).
-
-| customerId   | Account Type | Account Number | Routing Number |
-| :----------- | :----------- | :------------- | :------------- |
-| Sent by Meld | `CHECKING`   | `0004321567002`  | `091101455`      |
-
-To make a Payin in Moov's sandbox, use the following call to `POST /payments/transactions`:
-
-```json
-{
-    "customerId": "WXDeHGgNJ1t1nFnoVY43Bh",
-    "sourceAmount": "10.00",
-    "sourceCurrencyCode": "USD",
-    "paymentMethod": {
-        "type": "SERVICE_PROVIDER_TOKEN",
-        "details": {
-            "serviceProviderToken": "725890e3-3b34-4eef-be65-509830584123"
-        }
-    },
-    "serviceProvider": "MOOV"
-}
-```
-
-| customerId   | serviceProviderToken |
-| :----------- | :------------------- |
-| Sent by Meld | Sent by Meld         |
-
-This is required to get past Moov's account verification step in their sandbox.
 
 # Triggering specific ACH scenarios
 

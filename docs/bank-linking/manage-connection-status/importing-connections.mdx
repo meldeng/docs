@@ -2,18 +2,18 @@
 title: "Importing Connections"
 ---
 
-If you already have connections with a service provider — for example, because you previously integrated directly with Plaid or Akoya — you can bring them into Meld. Importing a connection does not involve the customer; there is no widget flow and no re-authentication required. This page is for developers migrating from a direct provider integration to Meld.
+If you already have connections with a service provider — for example, because you previously integrated directly with Plaid or Finicity — you can bring them into Meld. Importing a connection does not involve the customer; there is no widget flow and no re-authentication required. This page is for developers migrating from a direct provider integration to Meld.
 
 ## Before you begin
 
 <Info>
-- You have provider-level credentials (Plaid `access_token`, Akoya equivalent) for each connection you want to import
+- You have the provider-level identifiers for each connection you want to import — a Plaid `accessToken`, or a Finicity `customerId` and `institutionLoginId`
 - The corresponding service provider is enabled on your Meld account
 - You have decided what `externalCustomerId` to associate with each imported connection
 </Info>
 
 <Note>
-**Importing is currently supported for Plaid and Akoya only.** For other providers, the customer must complete the standard widget flow.
+**Currently, importing connections is supported for Finicity and Plaid.** For other providers, the customer must complete the standard widget flow.
 </Note>
 
 ## How to import a connection
@@ -40,6 +40,6 @@ For the full request and response schema, refer to the [Bank Linking API referen
 
 | Symptom                                              | Likely cause                                                                  | Developer action                                                                                                                                  |
 | :--------------------------------------------------- | :---------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `400 Bad Request` — provider not supported           | Importing only works for Plaid and Akoya                                      | Use the standard widget flow for other providers.                                                                                                  |
+| `400 Bad Request` — provider not supported           | Importing only works for Finicity and Plaid                                   | Use the standard widget flow for other providers.                                                                                                  |
 | `401` or `403` from the underlying provider          | Provider-level credentials supplied are invalid or expired                    | Verify the `access_token` is valid for the environment; re-issue if needed.                                                                       |
 | Import succeeds but no webhooks arrive               | Meld webhook profile not configured for bank-linking events                   | Configure the webhook profile per [Webhook Quickstart](/docs/bank-linking/onboarding/step-5-setting-up-webhooks/webhook-quickstart).               |

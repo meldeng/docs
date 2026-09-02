@@ -12,7 +12,6 @@ The most common lifecycle of a successful ACH transaction is `PENDING` → `SETT
 | `PENDING`  | The transaction has been created in Meld's system and submitted to the service provider for review.              | TEMPORARY |
 | `SETTLING` | The service provider has accepted the transaction but it has not yet been batched.                               | TEMPORARY |
 | `SETTLED`  | The transaction has been batched and has completed successfully.                                                 | TERMINAL  |
-| `DISPUTED` | The account holder whose money was debited has disputed the transaction and it is under review.                  | TEMPORARY |
 | `FAILED`   | The transaction has been declined by external payment systems and/or cannot be processed.                        | TERMINAL  |
 
 <Note>

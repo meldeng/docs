@@ -36,10 +36,6 @@ For ACH transaction status definitions and the typical lifecycle, see [ACH Trans
 
 Sample request to `POST /payments/transactions`:
 
-<Note>
-The Moov sandbox requires a different request shape. See the [ACH Testing Guide — Moov](/docs/payments-stack/fiat-payment-testing-guide/ach-testing-guide) for details.
-</Note>
-
 ```json
 {
     "customerId": "WXDeHGgNJ1t1nFnoVY43Bh",
@@ -53,7 +49,7 @@ The Moov sandbox requires a different request shape. See the [ACH Testing Guide 
             "accountNumber": "12341234"
         }
     },
-    "serviceProvider": "MOOV"
+    "serviceProvider": "PLAID"
 }
 ```
 
@@ -102,7 +98,7 @@ Sample response:
         "destinationAmount": null,
         "destinationCurrencyCode": null,
         "paymentMethodType": "ACH",
-        "serviceProvider": "MOOV",
+        "serviceProvider": "PLAID",
         "serviceTransactionId": "91f290b1-3f82-4353-a319-996ace69ca6c",
         "description": null,
         "externalReferenceId": null,
@@ -174,7 +170,7 @@ Call `GET /payments/transactions/{transactionId}` to fetch the latest details fo
         "destinationAmount": null,
         "destinationCurrencyCode": null,
         "paymentMethodType": "ACH",
-        "serviceProvider": "MOOV",
+        "serviceProvider": "PLAID",
         "serviceTransactionId": "91f290b1-3f82-4353-a319-996ace69ca6c",
         "description": null,
         "externalReferenceId": null,
