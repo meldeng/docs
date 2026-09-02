@@ -7,7 +7,11 @@ Service Providers accessed through Meld support a wide variety of fiat currencie
 
 [Supported Fiat Currencies for Onramps](#supported-fiat-currencies-for-onramps)<br />[Supported Fiat Currencies for Offramps](#supported-fiat-currencies-for-offramps)
 
-The `GET /service-providers/properties/fiat-currencies` endpoint can also be used to obtain this information.
+The `GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type=FIAT` endpoint can also be used to obtain this information.
+
+<Warning>
+`GET /service-providers/properties/fiat-currencies` is **deprecated** and slated for removal. Use `GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type=FIAT` instead — see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Migrate as soon as you can.
+</Warning>
 
 <Note>
   Interacting with our Coverage docs

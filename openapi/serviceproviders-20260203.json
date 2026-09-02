@@ -8,7 +8,7 @@
       "url": "https://springdoc.org"
     },
     "version": "2026-02-03",
-    "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\n"
+    "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\n"
   },
   "servers": [
     {
@@ -27,7 +27,7 @@
           "Service Provider"
         ],
         "summary": "Search service providers",
-        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of service providers which meet the search criteria.",
+        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\nReturns a list of service providers which meet the search criteria.",
         "operationId": "service-providers-search",
         "parameters": [
           {
@@ -168,7 +168,7 @@
           "Service Provider"
         ],
         "summary": "Search countries",
-        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
+        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
         "operationId": "service-providers-properties-country-search",
         "parameters": [
           {
@@ -319,7 +319,7 @@
           "Service Provider"
         ],
         "summary": "Search crypto currencies",
-        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
+        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
         "operationId": "service-providers-properties-crypto-currency-search",
         "parameters": [
           {
@@ -470,7 +470,7 @@
           "Service Provider"
         ],
         "summary": "Search defaults by country",
-        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of default fiat currencies and payment methods per country.",
+        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\nReturns a list of default fiat currencies and payment methods per country.",
         "operationId": "service-providers-properties-defaults-by-country-search",
         "parameters": [
           {
@@ -556,7 +556,7 @@
           "Service Provider"
         ],
         "summary": "Search fiat currencies",
-        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
+        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
         "operationId": "service-providers-properties-fiat-currency-search",
         "parameters": [
           {
@@ -707,7 +707,7 @@
           "Service Provider"
         ],
         "summary": "Search payment methods",
-        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
+        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\nReturns a list of properties which meet the search criteria.",
         "operationId": "service-providers-properties-payment-method-search",
         "parameters": [
           {
@@ -858,7 +858,7 @@
           "Service Provider"
         ],
         "summary": "Get crypto sell limits for crypto currencies",
-        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of limits (minimums and maximums) in terms of crypto tokens for selling crypto.",
+        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\nReturns a list of limits (minimums and maximums) in terms of crypto tokens for selling crypto.",
         "operationId": "service-providers-limits-crypto-currency-sells-get",
         "parameters": [
           {
@@ -1009,7 +1009,7 @@
           "Service Provider"
         ],
         "summary": "Get crypto purchase limits for fiat currencies",
-        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of limits (minimums and maximums) in terms of fiat currencies tokens for buying crypto.",
+        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\nReturns a list of limits (minimums and maximums) in terms of fiat currencies tokens for buying crypto.",
         "operationId": "service-providers-limits-fiat-currency-purchase-get",
         "parameters": [
           {
@@ -1160,7 +1160,7 @@
           "Service Provider"
         ],
         "summary": "Get KYC levels for fiat currencies",
-        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint will be removed on July 31, 2026.** Migrate to the [Network Partner API](/api-reference/network-partners); see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner).\n\n</Warning>\n\nReturns a list of KYC limits in terms of fiat currencies tokens for buying crypto.",
+        "description": "<Warning>\n\n**\u26a0\ufe0f Deprecated \u2014 this endpoint is slated for removal.** Migrate to the [Network Partner API](/api-reference/network-partners) as soon as you can; see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Do not build new integrations against this endpoint.\n\n</Warning>\n\nReturns a list of KYC limits in terms of fiat currencies tokens for buying crypto.",
         "operationId": "service-providers-limits-kyc-fiat-level-get",
         "parameters": [
           {

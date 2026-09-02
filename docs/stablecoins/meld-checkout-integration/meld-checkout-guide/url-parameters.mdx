@@ -104,6 +104,10 @@ How the user plans to pay for cryptocurrency.
 
 Meld's internal customer ID. Do not use with externalCustomerId.
 
+<Note>
+`customerId` is applied to quote requests, where [Ramp Intelligence](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence) uses it to score providers for a returning customer. It is not attached to the checkout session that is created afterwards — use `externalCustomerId` to tie the session and its transactions back to your own user record.
+</Note>
+
 ```
 &customerId=cust_abc123def456
 ```
@@ -157,13 +161,12 @@ Controls whether the Meld Checkout widget expands to fill the available viewport
 
 **Resolution order:**
 
-1. **URL parameter** — `fullScreen` in the query string (highest priority)
-2. **Account preference** — `fullScreen` on the account's `CRYPTO` preference (set by Meld support)
-3. **Default** — `false`
+1. **URL parameter** — `fullScreen` in the query string
+2. **Default** — `false`
 
-Pass `fullScreen=false` in the URL to override an account-level `fullScreen` preference for a specific embed.
+Full screen is set per URL. There is no account-level `fullScreen` preference today, so pass the parameter on every embed that needs it.
 
-> **Note:** Invalid or unrecognized values (for example `fullScreen=yes`) are treated as `false`. When the URL parameter is absent, the account preference is used if present.
+> **Note:** Invalid or unrecognized values (for example `fullScreen=yes`) are treated as `false`.
 
 **Iframe embedding example:**
 
@@ -207,7 +210,6 @@ The locked params are as follows:
 * `sourceCurrencyCodeLocked` - Pass the currency code value (e.g., `sourceCurrencyCodeLocked=USD`)
 * `destinationCurrencyCodeLocked` - Pass the crypto code value (e.g., `destinationCurrencyCodeLocked=BTC`)
 * `walletAddressLocked` - Pass the wallet address value (e.g., `walletAddressLocked=bc1qxy2k...`)
-* `themeLocked` - Pass the theme value (e.g., `themeLocked=darkMode`)
 
 ### Important Rules:
 
@@ -231,7 +233,7 @@ meldcrypto.com/?publicKey=your_public_key&sourceAmount=100&destinationCurrencyCo
 ### Locked Ethereum Purchase
 
 ```
-meldcrypto.com/?publicKey=your_public_key&destinationCurrencyCodeLocked=ETH&walletAddressLocked=0x742c8f2e0ce07Dd3f7E78A31E5A97D45c50fF2c8&themeLocked=darkMode
+meldcrypto.com/?publicKey=your_public_key&destinationCurrencyCodeLocked=ETH&walletAddressLocked=0x742c8f2e0ce07Dd3f7E78A31E5A97D45c50fF2c8&theme=darkMode
 ```
 
 ### Mobile App Integration
@@ -251,7 +253,7 @@ Use with an iframe or WebView sized to `100vh` so the widget fills the available
 ### Locked BONK Purchase on Solana
 
 ```
-meldcrypto.com/?publicKey=your_public_key&destinationCurrencyCodeLocked=BONK_SOLANA&walletAddressLocked=6chn9n4CLhNdyBpiLLj9ouUUUmEQYBLWfpUMMuHB9K3k&themeLocked=darkMode
+meldcrypto.com/?publicKey=your_public_key&destinationCurrencyCodeLocked=BONK_SOLANA&walletAddressLocked=6chn9n4CLhNdyBpiLLj9ouUUUmEQYBLWfpUMMuHB9K3k&theme=darkMode
 ```
 
 ### Marketplace Token Sale

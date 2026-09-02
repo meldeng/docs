@@ -11,7 +11,11 @@ Service Providers accessed through Meld support a wide variety of cryptocurrenci
 
 [Supported Cryptocurrencies for Onramps](#supported-cryptocurrencies-for-onramps)<br />[Supported Cryptocurrencies for Offramps](#supported-cryptocurrencies-for-offramps)
 
-The `GET /service-providers/properties/crypto-currencies` endpoint can also be used to obtain this information.
+The `GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type=CRYPTO` endpoint can also be used to obtain this information.
+
+<Warning>
+`GET /service-providers/properties/crypto-currencies` is **deprecated** and slated for removal. Use `GET /network-partner/supported/currencies?category={CATEGORY}&country={c}&type=CRYPTO` instead — see the [migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). Migrate as soon as you can.
+</Warning>
 
 <Note>
   Interacting with our Coverage docs

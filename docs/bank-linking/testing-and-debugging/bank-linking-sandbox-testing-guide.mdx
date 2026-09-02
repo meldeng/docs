@@ -32,21 +32,6 @@ In addition to Sandbox and Production, Plaid also has a third environment, Devel
 
 Plaid's sandbox supports creating [custom users](https://plaid.com/docs/sandbox/user-custom/) with custom data that Plaid will return when you successfully connect. This can be useful when wanting to test a specific feature with fake data, such as Investments from Plaid. Simply create a user with a custom username and pass that username instead of `user_good` when creating a connection.
 
-## Mesh
-
-Mesh's sandbox supports the same list of institutions as in production (with a few exceptions). What differentiates sandbox connections from production connections are the credentials entered. These test credentials are institution-dependent, but are provided as "hints" in the Mesh widget. The username/password combinations are typically either of the following:
-
-| Service Provider | Test Institution Type          | Username      | Password         |
-| :--------------- | :----------------------------- | ------------- | :--------------- |
-| Mesh             | Username/Password integrations | SandboxUser   | SandboxPassword  |
-| Mesh             | API key integrations           | SandboxApiKey | SandboxSecretKey |
-
-If there are any exceptions, they will still be displayed as "hints" in the Mesh widget.
-
-### Mesh Investments Testing
-
-Mesh's sandbox supports testing investments with the above test credentials.
-
 ## Finicity
 
 Finicity does not support using the same customer ID for connecting to a test account and to a real bank account, so if you see the error "Existing Finicity customer is not a test customer so cannot connect with test institutions" while trying to make a connection, use a different customer ID. Only Finicity's production environment supports connecting to real bank accounts.
@@ -104,27 +89,6 @@ MX does finish their aggregation within their widget, so if you are connecting a
 ### MX Investments Testing
 
 MX does have some investment data that can be accessed with the above test credentials, but it's pretty spotty. Meld recommends testing MX Investments with real investment accounts.
-
-## Akoya
-
-Akoya has several test accounts in their sandbox environment that can be used to test different data types. You can check out their [testing guide](https://docs.akoya.com/docs/mikomo), or see the test credentials below. The only test institution Akoya supports is `Mikomo`. Meld recommends testing with `mikomo_9` as some Akoya test accounts return data in a different format from what is documented, which can cause errors.
-
-| Service Provider | Test Institutions | Username      | Password      | Account Types                                                |
-| :--------------- | :---------------- | ------------- | :------------ | :----------------------------------------------------------- |
-| Akoya            | `Mikomo`          | `mikomo_1`    | `mikomo_1`    | Investment (I, TODI)                                         |
-| Akoya            | `Mikomo`          | `mikomo_2`    | `mikomo_2`    | Investment (HSA, I, TODI)                                    |
-| Akoya            | `Mikomo`          | `mikomo_3`    | `mikomo_3`    | Investment (I, IRRL, TIC, IRAB, IRA, TODJ, ROTH, TODI, 401K) |
-| Akoya            | `Mikomo`          | `mikomo_5`    | `mikomo_5`    | Investment (J, HSA, ROTH)                                    |
-| Akoya            | `Mikomo`          | `mikomo_6`    | `mikomo_6`    | Investment (HSA, TODI, IRA, IRRL, NONP, NRMA, 401K)          |
-| Akoya            | `Mikomo`          | `mikomo_7`    | `mikomo_7`    | Checking, Commercial Loan, Credit Card, 401k, J              |
-| Akoya            | `Mikomo`          | `mikomo_9`    | `mikomo_9`    | Checking                                                     |
-| Akoya            | `Mikomo`          | `mikomo_10`   | `mikomo_10`   | Checking, College Savings, Brokerage, CD, Savings            |
-| Akoya            | `Mikomo`          | `mikomo_11`   | `mikomo_11`   | Checking                                                     |
-| Akoya            | `Mikomo`          | `mikomo_2023` | `mikomo_2023` | Checking, College Savings, Brokerage, CD, Savings            |
-
-### Akoya Investments Testing
-
-Akoya supports testing investments through certain test users, such as mikomo\_2023. However some fields that would appear with real investment data may be missing in the test data.
 
 ## Yodlee
 

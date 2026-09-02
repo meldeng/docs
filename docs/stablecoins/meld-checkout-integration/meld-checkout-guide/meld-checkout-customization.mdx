@@ -27,31 +27,34 @@ Control which transaction types are available:
 
 * **Disable Buy Flow** - Show only sell/offramp functionality
 * **Disable Sell Flow** - Show only buy/onramp functionality
-* **Custom Flow Logic** - Advanced routing based on user profile
-
-### Token Restrictions
-
-Limit available cryptocurrencies:
-
-* **Chain-specific tokens** - Only show tokens from specific blockchains
-* **Curated token list** - Custom selection of supported cryptocurrencies
-* **Partner tokens** - Highlight specific tokens for partnerships
 
 ### Quote Management
 
 Customize provider quote display:
 
-* **Provider prioritization** - Promote specific providers to top of list
-* **Quote limits** - Control number of quotes shown to users
-* **Custom provider branding** - Special provider highlighting
+* **Quote limits** - Cap the number of quotes returned to the checkout. Applied when quotes are generated, so the cap holds for every Meld Checkout embed on the account.
+
+<Note>
+Quotes are ordered by [Ramp Intelligence](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence) `rampScore`, best first, and the quote limit keeps the top-scoring entries. Ordering is not configurable per account.
+</Note>
 
 ### Default Settings
 
 Set account-wide defaults:
 
-* **Default redirect URL** - Fallback URL for transaction completion
+* **Default redirect URL** - Fallback URL used when an embed does not pass its own `redirectUrl`. Applied when the provider session is created, so it covers every Meld Checkout embed on the account.
+
+<Note>
+Full-screen layout is a per-URL setting, not an account preference. Pass `fullScreen=true` on each Meld Checkout URL. See [URL parameters → fullScreen](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters#fullscreen).
+</Note>
+
+### Not Currently Available
+
+* **Provider prioritization** - Promoting specific providers to the top of the list. Quote order is set by `rampScore` and cannot be overridden per account.
+* **Custom Flow Logic** - Advanced routing based on user profile
+* **Token Restrictions** - Chain-specific tokens, a curated token list, or highlighting partner tokens
+* **Custom provider branding** - Special provider highlighting
 * **Theme defaults** - Account-wide light/dark mode preference
-* **Full-screen layout** - Enable `fullScreen` on the account's `CRYPTO` preference so every embed uses the full-viewport layout without passing `fullScreen=true` on each URL. Contact Meld support to configure. Override per embed with `fullScreen=false` in the query string. See [URL parameters → fullScreen](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters#fullscreen).
 
 ## Dashboard Customization
 
@@ -102,14 +105,6 @@ const darkThemeUrl = `https://meldcrypto.com/?publicKey=${publicKey}&theme=darkM
 // Dynamic theme based on user preference
 const userTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'darkMode' : 'lightMode';
 const dynamicUrl = `https://meldcrypto.com/?publicKey=${publicKey}&theme=${userTheme}`;
-```
-
-### Theme Locking
-
-Prevent users from changing the theme:
-
-```javascript
-const lockedThemeUrl = `https://meldcrypto.com/?publicKey=${publicKey}&theme=darkMode&themeLocked=true`;
 ```
 
 ## Mobile Optimization
@@ -308,7 +303,7 @@ For advanced customizations requiring Meld support:
 ```
 Subject: Meld Checkout Customization Request - [Your Account Name]
 
-Customization Type: [Logo Update/Flow Management/Token Restrictions/etc.]
+Customization Type: [Logo Update/Flow Management/Quote Limits/Default Redirect URL/etc.]
 Current Setup: [Description of current checkout configuration]
 Desired Changes: [Specific requirements and use case]
 Timeline: [When you need changes implemented]
