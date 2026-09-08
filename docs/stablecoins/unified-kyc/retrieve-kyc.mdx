@@ -23,6 +23,7 @@ Meld does not store raw KYC field values or document images. Data is fetched fro
 - You have contacted your Meld account manager to enable this product for you
 - You have an agreement with the onramps to be able to fetch KYC data from them
 - You can store the Meld `customerId` against each of your users
+- The Meld `customerId` is tied to the email address of the user, and you have OTPed the user to prove they have access to that email
 - You gather end-user consent in your UI before sharing KYC data with Meld, yourself, and your downstream partners
 
 ## Flows at a glance
@@ -82,7 +83,7 @@ Call:
 
 `POST /accounts/customers/{customerId}/kyc/export`
 
-Nothing is persisted during retrieval. The customer must already have an applicant for the given `kycProvider`; otherwise the API returns `404`. Choose a mode:
+Nothing is persisted during retrieval. The customer must already have been KYCed by Meld or by the onramp; otherwise the API returns `404`. Choose a mode:
 
 _Note that the steps below show the Sumsub as the KYC provider as an example._
 
