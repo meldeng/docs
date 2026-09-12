@@ -78,6 +78,39 @@ sp_all: &supported_all_sp
   - TRANSFI
   - UNLIMIT
   - YODLEE
+# Providers carrying @Deprecated in service-provider-domain's ServiceProvider enum. The constant is
+# never deleted (historical rows and serialized events must keep deserializing), so the generated OAS
+# enumerates it like any other value. strip_deprecated_service_providers() in UpdateReadMeOAS.py
+# removes these from every service-provider enum it can identify, which catches the schemas that have
+# no components_to_modify entry of their own. Keep in sync with the enum.
+deprecated_service_providers: &deprecated_sp
+  - AKOYA
+  - AUTHORIZENET
+  - BILIRA
+  - BOOMFI
+  - CASHAPP
+  - CHECKOUT
+  - CIRCLE
+  - COINFLOW
+  - HARBOUR
+  - MESH
+  - MESO
+  - MOONPAY
+  - MOOV
+  - NMI
+  - RAMP
+  - SARDINE
+  - SHIFT4
+  - SHOPIFY
+  - SIMPLEX
+  - SQUARE
+  - TANGOCARD
+  - TELLER
+  - TRANSFI
+  - TREMENDOUS
+  - WYRE
+  - XANPOOL
+
 sp_virtual_account: &supported_virtual_account_sp
   - BRALE
   - NOAH
