@@ -114,6 +114,8 @@ def get_configs(service):
                 configs[section][version]['paths_to_remove']      = config_content[service][section]['versions'][version].get('paths_to_remove', {})
                 configs[section][version]['components_to_modify'] = config_content[service][section]['versions'][version].get('components_to_modify', {})
                 configs[section][version]['components_defaults']  = config_content[service][section]['versions'][version].get('components_defaults', {})
+                # Top-level, not per-section: the deprecated set is a property of the enum, not of an API section.
+                configs[section][version]['deprecated_service_providers'] = config_content.get('deprecated_service_providers', [])
                 configs[section][version]['output_file_name']     = section.lower().replace(' ', '') + "-" + version.lower().replace('-', '')
 
                 # *Need* to do a deepcopy(), as the following IF-ELSE will modify the value, but we
@@ -287,6 +289,14 @@ def prep_meld_oas_file(meld_oas_file, configs):
     #     Get the reference to the JSON block that contains the property
     #     Set the default value in the JSON block
     #
+    # Drop @Deprecated providers from every service-provider enum, including the schemas that have
+    # no components_to_modify entry of their own. Runs after the curated replacements so an explicit
+    # replace_with list still wins on shape, and this only ever removes from the result.
+    strip_deprecated_service_providers(
+        meld_oas_file.get('components', {}).get('schemas', {}),
+        configs.get('deprecated_service_providers', []),
+    )
+
     # Apply default values to schemas
     apply_defaults_to_schemas(meld_oas_file, configs)
 
@@ -299,6 +309,63 @@ def prep_meld_oas_file(meld_oas_file, configs):
     )
 
     return meld_oas_file
+
+
+'''
+Removes @Deprecated service providers from every service-provider enum in the component schemas.
+
+The ServiceProvider enum constant is deliberately never deleted upstream — historical rows and
+serialized messagebus events must keep deserializing — so the generated OAS lists deprecated
+providers as accepted values. readme.yml's components_to_modify fixes only the schemas someone
+remembered to list; as of 2026-09-12 that left 34 (schema, enum) pairs still advertising them.
+
+Only enums whose owning property is recognisably a service-provider field are touched. That
+exclusion is load-bearing: FinancialAccountProcessorCreateTokenRequest/Response carry a
+`processor` enum of fintech processors (Atomic, Bakkt, Dwolla, Galileo...) that legitimately
+contains names like CHECKOUT, CIRCLE, MOOV and WYRE and must not be filtered.
+
+An enum is never emptied — if every value would be stripped the enum is left untouched and a
+warning printed, since that means the property list is out of date rather than genuinely empty.
+'''
+SERVICE_PROVIDER_ENUM_PROPERTIES = frozenset({
+    'serviceProvider',
+    'serviceProviders',
+    'topServiceProviders',
+    'otherAvailableServiceProviders',
+    'kycShareProviders',
+})
+
+
+def strip_deprecated_service_providers(node, deprecated, _property_name=None):
+    if not deprecated:
+        return
+
+    deprecated = set(deprecated)
+
+    if isinstance(node, dict):
+        enum_values = node.get('enum')
+        if (
+            _property_name in SERVICE_PROVIDER_ENUM_PROPERTIES
+            and isinstance(enum_values, list)
+            and any(value in deprecated for value in enum_values)
+        ):
+            kept = [value for value in enum_values if value not in deprecated]
+            if kept:
+                node['enum'] = kept
+            else:
+                print(
+                    f"WARN: every value of '{_property_name}' is deprecated - leaving the enum "
+                    f"untouched rather than emitting an empty one"
+                )
+
+        for key, value in node.items():
+            # 'items' inherits its parent's property name so serviceProviders.items.enum is caught.
+            strip_deprecated_service_providers(
+                value, deprecated, _property_name if key == 'items' else key
+            )
+    elif isinstance(node, list):
+        for value in node:
+            strip_deprecated_service_providers(value, deprecated, _property_name)
 
 
 '''
