@@ -35,7 +35,20 @@ Meld's optimization ensures users are directed to providers where they've alread
 
 ## Key Optimization Parameters
 
-Every quote includes these conversion-critical fields:
+Every quote carries these conversion-critical fields inside a `rampIntelligence` object — they are **not** top-level properties of the quote:
+
+```json
+{
+  "serviceProvider": "TRANSAK",
+  "rampIntelligence": {
+    "rampScore": 85.53,
+    "lowKyc": null,
+    "previouslyUsed": null
+  }
+}
+```
+
+Read them as `quote.rampIntelligence.rampScore`, and so on. Reading `quote.rampScore` yields `undefined`, which fails quietly: a comparator built on it returns `NaN` and leaves the list unsorted.
 
 ### `rampScore` (0-100)
 
@@ -43,7 +56,13 @@ Meld's proprietary recommendation engine that predicts conversion likelihood for
 
 ### `lowKyc` (boolean)
 
-Indicates whether the transaction can complete without document uploads for new users.
+Indicates whether the transaction can complete without document uploads for new users. `null` means unknown — treat it as "no special treatment" rather than `false`.
+
+### `previouslyUsed` (timestamp)
+
+When this customer has already completed a purchase with this provider, this is the **ISO-8601 timestamp of the most recent one**; otherwise it is `null`.
+
+It is a timestamp, not a boolean — test it for presence (`if (previouslyUsed)`), never `=== true`. Use it to drive "You've used this before" messaging, and note that scoring already folds this history into `rampScore`, so `previouslyUsed` is for the label rather than for re-ranking.
 
 ### Calculation Factors
 
@@ -89,15 +108,20 @@ Meld's algorithm processes multiple data points, updated several times daily:
 
 - "⭐ Recommended" badges
 - Primary button styling
-- "You've used this before" messaging
+- "You've used this before" messaging, driven by a non-null [`previouslyUsed`](#previouslyused-timestamp)
 
 **Code Example**:
 
 ```typescript
-interface Quote {
-  rampScore: number;
-  serviceProvider: string;
+interface RampIntelligence {
+  rampScore: number | null;
   lowKyc: boolean | null;
+  previouslyUsed: string | null; // ISO-8601 timestamp, or null
+}
+
+interface Quote {
+  serviceProvider: string;
+  rampIntelligence: RampIntelligence;
   partnerFee: number | null;
   sourceAmount: number;
   destinationAmount: number;
@@ -105,8 +129,11 @@ interface Quote {
   // ... other fields
 }
 
+// rampScore is null when scoring could not run, and nulls sort last.
 function sortQuotesByRecommendation(quotes: Quote[]): Quote[] {
-  return quotes.sort((a, b) => b.rampScore - a.rampScore);
+  return [...quotes].sort(
+    (a, b) => (b.rampIntelligence.rampScore ?? -1) - (a.rampIntelligence.rampScore ?? -1),
+  );
 }
 
 function getRecommendationBadge(score: number): string {
@@ -164,7 +191,7 @@ function getLowKycBadge(lowKyc: boolean | null): string {
 }
 
 function shouldHighlightForSpeed(quote: Quote): boolean {
-  return quote.lowKyc === true;
+  return quote.rampIntelligence.lowKyc === true;
 }
 ```
 
@@ -252,16 +279,20 @@ Here's a realistic quote response showing how optimization parameters work toget
 
 ```typescript
 // Sort quotes optimally
-function optimizeQuoteDisplay(quotes: Quote[]): Quote[] {
-  return quotes
-    .sort((a, b) => b.rampScore - a.rampScore)
-    .map(quote => ({
+function optimizeQuoteDisplay(quotes: Quote[]) {
+  return sortQuotesByRecommendation(quotes).map(quote => {
+    const { rampScore, lowKyc, previouslyUsed } = quote.rampIntelligence;
+    const score = rampScore ?? 0;
+
+    return {
       ...quote,
-      recommendationBadge: getRecommendationBadge(quote.rampScore),
-      speedBadge: getLowKycBadge(quote.lowKyc),
-      isPrimary: quote.rampScore >= 70,
-      isRecommended: quote.rampScore >= 30
-    }));
+      recommendationBadge: getRecommendationBadge(score),
+      speedBadge: getLowKycBadge(lowKyc),
+      familiarityBadge: previouslyUsed ? "You've used this before" : "",
+      isPrimary: score >= 70,
+      isRecommended: score >= 30
+    };
+  });
 }
 ```
 
