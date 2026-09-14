@@ -260,7 +260,7 @@ You can also react to `CUSTOMER_KYC_STATUS_CHANGE` webhooks and re-fetch the cus
 
 `customerId` is optional. Pass it when available so ramp intelligence / previously-used scoring can use it.
 
-Use quotes to show rates, fees, available providers / methods, and each provider’s `kycMode`.
+Use quotes to show rates, fees, and the available providers and payment methods.
 
 ```json
 {
@@ -297,11 +297,11 @@ Response:
       "paymentMethodType": "ACH",
       "serviceProvider": "NOAH",
       "rampIntelligence": {
-        "rampScore": 0.82,
+        "rampScore": 76.19,
+        "lowKyc": null,
         "previouslyUsed": null
       },
-      "integrationMode": "HEADLESS",
-      "kycMode": "ASYNC"
+      "isNativeAvailable": null
     }
   ]
 }
@@ -331,18 +331,20 @@ Response:
   "paymentMethodType": "ACH",
   "sourceCurrencyCode": "USD",
   "destinationCurrencyCode": "USDC",
-  "destinationWalletAddress": "0x51FB80013111111111111112121111111"
+  "destinationWalletAddress": "0x51FB80013111111111111112121111111",
+  "countryCode": "US"
 }
 ```
 
 | Field | Required | Notes |
 | --- | --- | --- |
-| `customerId` | yes | Meld customer id |
+| `customerId` | yes | Meld customer id. This endpoint does **not** accept `externalCustomerId` — resolve yours first via `GET /accounts/customers?externalCustomerId=...` |
 | `serviceProvider` | yes | From quote / capability discovery |
 | `paymentMethodType` | yes | `ACH`, `SEPA`, `PIX`, or `MOBILE_MONEY` |
 | `sourceCurrencyCode` | yes | Fiat |
 | `destinationCurrencyCode` | yes | Crypto |
 | `destinationWalletAddress` | yes | Where crypto is delivered |
+| `countryCode` | yes | The customer's country of residence (ISO 3166-1 alpha-2). Used to check the provider offers this payment method to residents of that country — not where the user is sitting, and not the country of the provider's receiving account |
 | `customerPhoneNumber` | conditional | Required for `MOBILE_MONEY` |
 
 ### Response (ACH example)

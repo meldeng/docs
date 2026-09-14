@@ -245,17 +245,17 @@ Response:
       "paymentMethodType": "ACH",
       "serviceProvider": "NOAH",
       "rampIntelligence": {
-        "rampScore": 0.82,
+        "rampScore": 76.19,
+        "lowKyc": null,
         "previouslyUsed": null
       },
-      "integrationMode": "HEADLESS",
-      "kycMode": "ASYNC"
+      "isNativeAvailable": null
     }
   ]
 }
 ```
 
-Capture the selected `serviceProvider` and amounts for order creation. Quote coverage varies by provider and rail. Headless rows include `kycMode` (`ASYNC` or `SYNC`).
+Capture the selected `serviceProvider` and amounts for order creation. Quote coverage varies by provider and rail.
 
 ---
 
@@ -365,6 +365,10 @@ Provider support for each type is account- and rail-specific.
 | `id` | Meld headless order id — correlate with webhooks as `headlessOrderId` |
 | `paymentMethodType` | Fiat payout rail used |
 | `walletAddress` | Provider-issued address the user must send **crypto** to |
+
+<Warning>
+**`SERVICE_PROVIDER_ERROR` on create.** A `500` reading `CryptoAuthorizedAmount <n> exceeds customer deposit <m> — rate may have moved` means the provider re-priced between your quote and the order. Take a fresh quote and submit the order with the amount from that quote rather than a rounded figure, and mint a new `X-Idempotency-Key` for the retry.
+</Warning>
 
 ---
 
