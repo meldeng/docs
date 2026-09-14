@@ -24,8 +24,8 @@ If the buyer is a repeat customer and you already know their Meld `customerId`, 
 
 ## Steps
 
-1. Call Meld's update customer endpoint (`PATCH /customers/{customerId}`) to update the existing `customerId` (from the bank linking connection) with at least the customer's first name, last name, and email address. If the bank account has several names on it, any one of the names is sufficient.
-2. Call Meld's create customer address endpoint (`POST /customers/{customerId}/addresses`) to add an address to the customer. `lineOne`, `city`, `country`, `postalCode`, and `region` (state) are required.
+1. Call Meld's update customer endpoint (`PATCH /accounts/customers/{customerId}`) to update the existing `customerId` (from the bank linking connection) with at least the customer's first name, last name, and email address. If the bank account has several names on it, any one of the names is sufficient.
+2. Call Meld's create customer address endpoint (`POST /accounts/customers/{customerId}/addresses`) to add an address to the customer. `lineOne`, `city`, `country`, `postalCode`, and `region` (state) are required.
 
 An ACH customer must have a name, email address, and address. Once both calls succeed, you are ready to make an ACH transaction.
 
@@ -35,7 +35,7 @@ The Meld `customerId` is a path parameter for both of the following calls.
 
 ## Update a customer's name and email address
 
-Sample request to `PATCH /customers/{customerId}`:
+Sample request to `PATCH /accounts/customers/{customerId}`:
 
 ```json
 {
@@ -68,7 +68,7 @@ Sample response:
 
 ## Update a customer's address
 
-Sample request to `POST /customers/{customerId}/addresses`:
+Sample request to `POST /accounts/customers/{customerId}/addresses`:
 
 ```json
 {

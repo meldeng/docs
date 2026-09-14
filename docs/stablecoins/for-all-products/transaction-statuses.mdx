@@ -33,12 +33,21 @@ The typical successful transaction follows this progression:
 
 | Status            | Description                                                      | Type      | User Action                  |
 | ----------------- | ---------------------------------------------------------------- | --------- | ---------------------------- |
-| `PENDING CREATED` | Transaction created in Meld system, awaiting provider processing | TEMPORARY | Wait for processing          |
+| `PENDING_CREATED` | Transaction created in Meld system, awaiting provider processing | TEMPORARY | Wait for processing          |
 | `PENDING`         | Submitted to provider for review and verification                | TEMPORARY | Wait for approval            |
 | `SETTLING`        | Provider approved transaction, crypto transfer in progress       | TEMPORARY | Wait for completion          |
 | `TWO_FA_REQUIRED` | Payment info provided, awaiting 2FA verification                 | TEMPORARY | Complete 2FA verification    |
 | `TWO_FA_PROVIDED` | 2FA submitted, provider validating with card issuer              | TEMPORARY | Wait for validation          |
 | `ERROR`           | Technical error during processing - transaction may retry        | TEMPORARY | Monitor for retry or failure |
+
+### Ramp-swap States
+
+Only seen on [ramp-swap](/docs/stablecoins/ramp-swap-flow) transactions, where a ramp leg is followed by a token swap.
+
+| Status           | Description                                        | Type      | User Action         |
+| ---------------- | -------------------------------------------------- | --------- | ------------------- |
+| `ONRAMP_SETTLED` | Ramp leg settled, crypto arrived, swap still pending | TEMPORARY | Wait for the swap   |
+| `SWAPPING`       | Swap provider is swapping tokens                    | TEMPORARY | Wait for completion |
 
 ### Final States
 
@@ -49,6 +58,12 @@ The typical successful transaction follows this progression:
 | `DECLINED`  | Declined by provider or bank (insufficient funds, invalid card, etc.) | TERMINAL | User should check payment method     |
 | `CANCELLED` | Cancelled by user during payment process                              | TERMINAL | User can start new transaction       |
 | `REFUNDED`  | Crypto not delivered, full refund issued to customer                  | TERMINAL | Refund processed                     |
+| `PARTIALLY_REFUNDED` | Part of the transaction amount has been refunded to the customer | TERMINAL | Refund processed                     |
+| `VOIDED`    | Terminated early in the payment lifecycle; no funds moved             | TERMINAL | User can start new transaction       |
+
+<Note>
+The table above is the complete set a current transaction can report, so a `switch` over it needs no catch-all beyond the [legacy statuses](#legacy-statuses) below. `VOIDED` overlaps with `CANCELLED` — treat both as "ended before settlement, nothing moved."
+</Note>
 
 ## Legacy Statuses
 
