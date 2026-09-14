@@ -245,17 +245,18 @@ Response:
       "paymentMethodType": "ACH",
       "serviceProvider": "NOAH",
       "rampIntelligence": {
-        "rampScore": 76.19,
+        "rampScore": 80.71,
         "lowKyc": null,
         "previouslyUsed": null
       },
-      "isNativeAvailable": null
+      "integrationMode": "HEADLESS",
+      "kycMode": "ASYNC"
     }
   ]
 }
 ```
 
-Capture the selected `serviceProvider` and amounts for order creation. Quote coverage varies by provider and rail.
+Capture the selected `serviceProvider` and amounts for order creation. Quote coverage varies by provider and rail. Headless rows include `kycMode` (`ASYNC` or `SYNC`).
 
 ---
 

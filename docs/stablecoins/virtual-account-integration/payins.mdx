@@ -260,7 +260,7 @@ You can also react to `CUSTOMER_KYC_STATUS_CHANGE` webhooks and re-fetch the cus
 
 `customerId` is optional. Pass it when available so ramp intelligence / previously-used scoring can use it.
 
-Use quotes to show rates, fees, and the available providers and payment methods.
+Use quotes to show rates, fees, available providers / methods, and each provider’s `kycMode`.
 
 ```json
 {
@@ -297,11 +297,12 @@ Response:
       "paymentMethodType": "ACH",
       "serviceProvider": "NOAH",
       "rampIntelligence": {
-        "rampScore": 76.19,
+        "rampScore": 80.71,
         "lowKyc": null,
         "previouslyUsed": null
       },
-      "isNativeAvailable": null
+      "integrationMode": "HEADLESS",
+      "kycMode": "ASYNC"
     }
   ]
 }
