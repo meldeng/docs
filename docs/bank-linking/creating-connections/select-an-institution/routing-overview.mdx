@@ -21,9 +21,9 @@ If you have multiple providers of a domain (such as Bank Linking) configured, a 
 If the default rule is the only rule established, then the above rule would be used as follows:
 
 1. The user selects an institution, and if Plaid supports it, the user is routed to Plaid for their connection.
-2. If Plaid does not support the institution, if Yodlee does support it, the user is routed to Yodlee for their connection.
-3. If both Plaid and Yodlee do not support the institution, if Finicity supports the institution, then the user is routed to Finicity for their connection.
-4. If Plaid, Yodlee, and Finicity don't support the institution, then the user cannot connect to their bank unless another integration that does support the institution (for example, MX) is added to the account.
+2. If Plaid does not support the institution, if Finicity does support it, the user is routed to Finicity for their connection.
+3. If both Plaid and Finicity do not support the institution, if MX supports the institution, then the user is routed to MX for their connection.
+4. If Plaid, Finicity, and MX don't support the institution, then the user cannot connect to their bank unless another integration that does support the institution (for example, Salt Edge) is added to the account.
 
 Besides the default routing rule, each domain offers its own set of custom rules that can be created and ordered. These custom rules will all take precedence over the default routing rule.
 

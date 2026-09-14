@@ -28,7 +28,6 @@ sp_crypto: &supported_crypto_sp
   - UNLIMIT
   - YELLOWCARD
 sp_fiat: &supported_fiat_sp
-  - BRAINTREE
   - STRIPE
 sp_banklinking: &supported_banklinking_sp
   - FINICITY
@@ -36,11 +35,9 @@ sp_banklinking: &supported_banklinking_sp
   - PLAID
   - SALTEDGE
   - SALTEDGEPARTNERS
-  - YODLEE
 sp_all: &supported_all_sp
   - BANXA
   - BINANCECONNECT
-  - BRAINTREE
   - BLOCKCHAINDOTCOM
   - BTCDIRECT
   - FINICITY
@@ -54,17 +51,18 @@ sp_all: &supported_all_sp
   - TOPPER
   - TRANSAK
   - UNLIMIT
-  - YODLEE
 # Providers carrying @Deprecated in service-provider-domain's ServiceProvider enum. The constant is
 # never deleted (historical rows and serialized events must keep deserializing), so the generated OAS
 # enumerates it like any other value. strip_deprecated_service_providers() in UpdateReadMeOAS.py
 # removes these from every service-provider enum it can identify, which catches the schemas that have
 # no components_to_modify entry of their own. Keep in sync with the enum.
 deprecated_service_providers: &deprecated_sp
+  - AEROPAY
   - AKOYA
   - AUTHORIZENET
   - BILIRA
   - BOOMFI
+  - BRAINTREE
   - CASHAPP
   - CHECKOUT
   - CIRCLE
@@ -87,6 +85,7 @@ deprecated_service_providers: &deprecated_sp
   - TREMENDOUS
   - WYRE
   - XANPOOL
+  - YODLEE
 
 sp_virtual_account: &supported_virtual_account_sp
   - BRALE
