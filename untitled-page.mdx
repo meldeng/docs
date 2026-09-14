@@ -7,12 +7,11 @@ This page outlines the best practices for building your own UI, especially to ma
 
 Do
 
-- X
-- Y
-- Z
+- Tie each user to a customerId (Meld generated) or externalCustomerId (your own reference id).
+- Pass in the customerId or externalCustomerId when asking for quotes or making a transaction. This allows Meld to recognize a returning user and suggest onramps they've used before for highest conversion.
+- Rank quotes in your UI by rampScore (the higher the better) to optimize conversion.
+- Show all available payment methods to the user.
 
 Do not
 
-- A
-- B
-- C
+- Rank quotes solely by price. What is most important is the user being able to complete the transaction, hence past conversion data should be used. Both past conversion and price are factored into rampScore.
