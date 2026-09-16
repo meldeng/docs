@@ -7,13 +7,24 @@ description: "This discusses the customization options available to you for the 
 
 Customize your Meld Checkout Integration appearance, behavior, and user experience through dashboard settings and advanced configuration options.
 
+Every option on this page is a field on your account's `CRYPTO` preference. Read your current values at any time — this is the same call the checkout itself makes at boot:
+
+```bash
+curl -s "https://api-sb.meld.io/accounts/{accountId}/preferences/public" \
+  -H "Authorization: BASIC $MELD_API_KEY" \
+  -H "Meld-Version: 2026-05-01" \
+  | jq '.preferences[] | select(.type=="CRYPTO") | .preference'
+```
+
+Each option below names the field it maps to, so you can match what support sets against what the API returns.
+
 ## Meld Support Required
 
 Contact Meld for these advanced customizations:
 
 ### Account Logo
 
-Update your account logo in the top-left corner of the UI.
+Update your account logo in the top-left corner of the UI. Field: `accountLogoUrl`.
 
 **Process:** Send your logo file (PNG/SVG preferred) to Meld support with specifications:
 
@@ -21,18 +32,26 @@ Update your account logo in the top-left corner of the UI.
 * **Format:** PNG with transparent background or SVG
 * **Colors:** Optimized for both light and dark themes
 
+Support can also move the logo above the form rather than inline, via `showAccountLogoOnTop`.
+
 ### Flow Management
 
 Control which transaction types are available:
 
-* **Disable Buy Flow** - Show only sell/offramp functionality
-* **Disable Sell Flow** - Show only buy/onramp functionality
+* **Disable Buy Flow** (`onrampEnabled: false`) - Show only sell/offramp functionality
+* **Disable Sell Flow** (`offrampEnabled: false`) - Show only buy/onramp functionality
+
+When exactly one of the two is disabled, the checkout hides the buy/sell toggle rather than showing a dead option.
+
+### Navigation
+
+* **Hide the back button** (`hideBackButton`) - Remove the back control from the checkout header, for embeds where your own UI owns navigation.
 
 ### Quote Management
 
 Customize provider quote display:
 
-* **Quote limits** - Cap the number of quotes returned to the checkout. Applied when quotes are generated, so the cap holds for every Meld Checkout embed on the account.
+* **Quote limits** (`maxQuotes`) - Cap the number of quotes returned to the checkout. Applied when quotes are generated, so the cap holds for every Meld Checkout embed on the account. Defaults to 15.
 
 <Note>
 Quotes are ordered by [Ramp Intelligence](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence) `rampScore`, best first, and the quote limit keeps the top-scoring entries. Ordering is not configurable per account.
@@ -42,7 +61,7 @@ Quotes are ordered by [Ramp Intelligence](/docs/stablecoins/white-label-api-inte
 
 Set account-wide defaults:
 
-* **Default redirect URL** - Fallback URL used when an embed does not pass its own `redirectUrl`. Applied when the provider session is created, so it covers every Meld Checkout embed on the account.
+* **Default redirect URL** (`returnUrl`) - Fallback URL used when an embed does not pass its own `redirectUrl`. Applied when the provider session is created, so it covers every Meld Checkout embed on the account.
 
 <Note>
 Full-screen layout is a per-URL setting, not an account preference. Pass `fullScreen=true` on each Meld Checkout URL. See [URL parameters → fullScreen](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters#fullscreen).
@@ -50,7 +69,7 @@ Full-screen layout is a per-URL setting, not an account preference. Pass `fullSc
 
 ### Not Currently Available
 
-* **Provider prioritization** - Promoting specific providers to the top of the list. Quote order is set by `rampScore` and cannot be overridden per account.
+* **Provider prioritization** - Promoting specific providers to the top of the list. The `topServiceProviders` field exists on the preference but the checkout does not apply it: quote order is set by `rampScore` and cannot be overridden per account.
 * **Custom Flow Logic** - Advanced routing based on user profile
 * **Token Restrictions** - Chain-specific tokens, a curated token list, or highlighting partner tokens
 * **Custom provider branding** - Special provider highlighting
@@ -64,7 +83,11 @@ Access these options in the **Meld Dashboard → Developer Tab → Preferences**
 
 #### Button Color
 
-Customize the primary **Buy** or **Sell** CTA button color at the bottom of the UI.
+Customize the primary **Buy** or **Sell** CTA button color at the bottom of the UI. Field: `buttonColor`.
+
+<Note>
+  An unset button color reads back as the sentinel **`#zzzzzz`**, not `null` or an empty string. The checkout treats that value as "use the default color". If you are reading preferences over the API, test for `#zzzzzz` rather than assuming a colour is configured.
+</Note>
 
 ```css
 /* Example color values */
@@ -76,7 +99,11 @@ Button Color: #9b59b6    /* Purple */
 
 #### Button Text Color
 
-Set the text color inside the CTA button for optimal contrast.
+Set the text color inside the CTA button for optimal contrast. Field: `buttonTextColor`.
+
+#### Border Color
+
+Set the color of the checkout's outer border, and the text drawn on it. Fields: `borderColor` and `borderTextColor`. Both default to Meld's palette (`#0c112a` on `#ffffff`).
 
 ```css
 /* Common combinations */
