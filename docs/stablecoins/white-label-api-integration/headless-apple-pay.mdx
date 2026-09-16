@@ -424,7 +424,13 @@ Subscribe to the transaction lifecycle events:
 | `TRANSACTION_CRYPTO_COMPLETE` | `SETTLED`. Crypto delivered. Mark the order paid here. |
 | `TRANSACTION_CRYPTO_FAILED` | Terminal failure (`FAILED`, `DECLINED`, `CANCELLED`, `REFUNDED`, `AUTHORIZATION_EXPIRED`) |
 
-The payload includes `paymentTransactionId`, `paymentTransactionStatus`, `customerId`, `externalCustomerId`, `transactionType`, and `headlessOrderId`. Correlate on `headlessOrderId` (the order `id` from Step 3) or on your `externalOrderId` via the transaction.
+The payload includes `requestId`, `accountId`, `paymentTransactionId`, `paymentTransactionStatus`, `customerId`, `externalCustomerId`, and `transactionType`.
+
+<Warning>
+  **The payload does not carry the order id.** Correlate on `paymentTransactionId`, then call `GET /payments/transactions/{paymentTransactionId}` and read `orderId` — that value is the `id` the order returned in Step 3, and the same transaction carries your `externalOrderId`. Store the pair on the first event you receive and the lookup happens once per transaction.
+
+  `sessionId` and `externalSessionId` are absent too: they are only populated for widget transactions created from a session, and the payload omits empty fields rather than sending them as `null`.
+</Warning>
 
 You can also poll (with `Meld-Version: 2026-05-01`):
 
