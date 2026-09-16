@@ -297,7 +297,8 @@ Response:
       "paymentMethodType": "ACH",
       "serviceProvider": "NOAH",
       "rampIntelligence": {
-        "rampScore": 0.82,
+        "rampScore": 80.71,
+        "lowKyc": null,
         "previouslyUsed": null
       },
       "integrationMode": "HEADLESS",
@@ -331,18 +332,20 @@ Response:
   "paymentMethodType": "ACH",
   "sourceCurrencyCode": "USD",
   "destinationCurrencyCode": "USDC",
-  "destinationWalletAddress": "0x51FB80013111111111111112121111111"
+  "destinationWalletAddress": "0x51FB80013111111111111112121111111",
+  "countryCode": "US"
 }
 ```
 
 | Field | Required | Notes |
 | --- | --- | --- |
-| `customerId` | yes | Meld customer id |
+| `customerId` | yes | Meld customer id. This endpoint does **not** accept `externalCustomerId` — resolve yours first via `GET /accounts/customers?externalCustomerId=...` |
 | `serviceProvider` | yes | From quote / capability discovery |
 | `paymentMethodType` | yes | `ACH`, `SEPA`, `PIX`, or `MOBILE_MONEY` |
 | `sourceCurrencyCode` | yes | Fiat |
 | `destinationCurrencyCode` | yes | Crypto |
 | `destinationWalletAddress` | yes | Where crypto is delivered |
+| `countryCode` | yes | The customer's country of residence (ISO 3166-1 alpha-2). Used to check the provider offers this payment method to residents of that country — not where the user is sitting, and not the country of the provider's receiving account |
 | `customerPhoneNumber` | conditional | Required for `MOBILE_MONEY` |
 
 ### Response (ACH example)
@@ -421,9 +424,18 @@ For SEPA, show `iban` / `bic` (and bank / account-holder name) from `receivingBa
 
 ## 6. Tracking
 
-### Webhook sample (buy)
+### Webhook events (buy)
 
-Correlate with `paymentTransactionId`.
+A deposit produces this sequence. Correlate every one of them with `paymentTransactionId`.
+
+| Event | `paymentTransactionStatus` | Meaning |
+| --- | --- | --- |
+| `TRANSACTION_CRYPTO_PENDING` | `PENDING` | Meld has seen the deposit and created the transaction |
+| `TRANSACTION_CRYPTO_TRANSFERRING` | `SETTLING` | The provider is delivering crypto to the destination wallet |
+| `TRANSACTION_CRYPTO_COMPLETE` | `SETTLED` | Crypto delivered. This is the terminal success event |
+| `TRANSACTION_CRYPTO_FAILED` | `FAILED` | The deposit could not be completed |
+
+Every event uses the same envelope and payload shape, with `eventType` and `payload.paymentTransactionStatus` moving together:
 
 ```json
 {
@@ -431,8 +443,11 @@ Correlate with `paymentTransactionId`.
   "eventId": "AAsuLXHXD3mS1cjNBuHHzv",
   "timestamp": "2025-02-24T16:36:41.717262Z",
   "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+  "profileId": "W9ka8vLE4ufBkSg3BEciZb",
   "version": "2025-03-01",
   "payload": {
+    "requestId": "f07f1accb7404aec9bd9a5d64975eed1",
+    "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
     "paymentTransactionId": "WePZCYJW7cdXR7SxUMp8mE",
     "customerId": "WmYYgvN8ukpV62N3m4u3ee",
     "externalCustomerId": "your-internal-user-id-123",
@@ -441,6 +456,34 @@ Correlate with `paymentTransactionId`.
   }
 }
 ```
+
+The terminal event is the same shape:
+
+```json
+{
+  "eventType": "TRANSACTION_CRYPTO_COMPLETE",
+  "eventId": "AAsuLXHXD3mS1cjNBuHHzv",
+  "timestamp": "2025-02-24T16:41:02.118445Z",
+  "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+  "profileId": "W9ka8vLE4ufBkSg3BEciZb",
+  "version": "2025-03-01",
+  "payload": {
+    "requestId": "f07f1accb7404aec9bd9a5d64975eed1",
+    "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+    "paymentTransactionId": "WePZCYJW7cdXR7SxUMp8mE",
+    "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+    "externalCustomerId": "your-internal-user-id-123",
+    "paymentTransactionStatus": "SETTLED",
+    "transactionType": "CRYPTO_PURCHASE"
+  }
+}
+```
+
+<Note>
+  **Virtual account payloads carry no session fields.** `sessionId` and `externalSessionId` only exist for widget transactions, which are created from a session. A virtual account deposit has none, and the payload omits empty fields entirely rather than sending them as `null` — so do not key your handler on their presence.
+
+  The payload also does not carry the order id. To go from a webhook back to the order, take `paymentTransactionId`, call `GET /payments/transactions/{paymentTransactionId}`, and read `orderId` from the transaction.
+</Note>
 
 ### Fetch the full transaction
 

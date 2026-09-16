@@ -245,7 +245,8 @@ Response:
       "paymentMethodType": "ACH",
       "serviceProvider": "NOAH",
       "rampIntelligence": {
-        "rampScore": 0.82,
+        "rampScore": 80.71,
+        "lowKyc": null,
         "previouslyUsed": null
       },
       "integrationMode": "HEADLESS",
@@ -362,9 +363,13 @@ Provider support for each type is account- and rail-specific.
 
 | Field | Meaning |
 | --- | --- |
-| `id` | Meld headless order id — correlate with webhooks as `headlessOrderId` |
+| `id` | Meld headless order id. Webhooks do not carry it — match them via `paymentTransactionId`, then read `orderId` from `GET /payments/transactions/{paymentTransactionId}` |
 | `paymentMethodType` | Fiat payout rail used |
 | `walletAddress` | Provider-issued address the user must send **crypto** to |
+
+<Warning>
+**`SERVICE_PROVIDER_ERROR` on create.** A `500` reading `CryptoAuthorizedAmount <n> exceeds customer deposit <m> — rate may have moved` means the provider re-priced between your quote and the order. Take a fresh quote and submit the order with the amount from that quote rather than a rounded figure, and mint a new `X-Idempotency-Key` for the retry.
+</Warning>
 
 ---
 
@@ -380,11 +385,16 @@ This is a required human (or treasury) action after order create — the order a
 
 ### Webhooks
 
-Correlate using **`headlessOrderId`** (same as response `id`).
+An offramp produces this sequence. Correlate every one of them with `paymentTransactionId`. For sell flows, `transactionType` is `CRYPTO_SELL`.
 
-For sell flows, `transactionType` is `CRYPTO_SELL`.
+| Event | `paymentTransactionStatus` | Meaning |
+| --- | --- | --- |
+| `TRANSACTION_CRYPTO_PENDING` | `PENDING` | Meld has seen the customer's crypto and created the transaction |
+| `TRANSACTION_CRYPTO_TRANSFERRING` | `SETTLING` | The provider is paying fiat out to the details on the order |
+| `TRANSACTION_CRYPTO_COMPLETE` | `SETTLED` | Fiat paid out. This is the terminal success event |
+| `TRANSACTION_CRYPTO_FAILED` | `FAILED` | The payout could not be completed |
 
-Sample:
+Every event uses the same envelope and payload shape, with `eventType` and `payload.paymentTransactionStatus` moving together:
 
 ```json
 {
@@ -392,9 +402,11 @@ Sample:
   "eventId": "AAsuLXHXD3mS1cjNBuHHzv",
   "timestamp": "2025-02-24T16:36:41.717262Z",
   "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+  "profileId": "W9ka8vLE4ufBkSg3BEciZb",
   "version": "2025-03-01",
   "payload": {
-    "headlessOrderId": "WfR7abcDEF12345xyz9876",
+    "requestId": "f07f1accb7404aec9bd9a5d64975eed1",
+    "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
     "paymentTransactionId": "WePZCYJW7cdXR7SxUMp8mE",
     "customerId": "WmYYgvN8ukpV62N3m4u3ee",
     "externalCustomerId": "your-internal-user-id-123",
@@ -403,6 +415,16 @@ Sample:
   }
 }
 ```
+
+<Warning>
+  **The webhook payload does not carry the order id.** To match an event back to the order you created in Step 5, take `paymentTransactionId` from the payload, call `GET /payments/transactions/{paymentTransactionId}`, and read `orderId` from the transaction — that value is the `id` the order returned.
+
+  Store the order id against `paymentTransactionId` on the first event you receive, and you only pay for that lookup once per transaction.
+</Warning>
+
+<Note>
+  **Headless payloads carry no session fields.** `sessionId` and `externalSessionId` only exist for widget transactions, which are created from a session. A headless order has none, and the payload omits empty fields entirely rather than sending them as `null` — so do not key your handler on their presence.
+</Note>
 
 ### Fetch the full transaction
 
