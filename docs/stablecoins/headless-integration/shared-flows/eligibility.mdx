@@ -1,0 +1,171 @@
+---
+title: "Eligibility"
+description: "What the customer still has to do before a provider will accept the order."
+---
+
+A provider being able to take the order does not mean it will accept this customer. Check what is still outstanding before you create the order, so you collect it while the customer is still in the flow rather than surfacing a rejection once they think they are done.
+
+---
+
+## Check the requirements
+
+**Endpoint:** [`GET /crypto/onramp/{serviceProvider}/requirements`](/api-reference/crypto/headless/crypto-onramp-verification-requirements-get)
+
+Returns everything standing between this customer and an accepted order with that provider: agreements to sign, contacts to verify, and KYC still outstanding.
+
+| Query parameter | Required | Description |
+| --- | --- | --- |
+| `customerId` | yes | The Meld customer you are checking |
+| `paymentMethodType` | yes | How the customer will pay, e.g. `CREDIT_DEBIT_CARD` |
+| `sourceCurrencyCode` | yes | Fiat they pay in, ISO 4217 |
+| `sourceAmount` | yes | What they pay |
+| `destinationCurrencyCode` | yes | Token they are buying, as Meld names it |
+| `countryCode` | yes | Where the customer is, ISO 3166-1 alpha-2 |
+| `destinationNetworkCode` | optional | Chain, as Meld names it |
+| `subdivision` | optional | State or province, ISO 3166-2 — `US-CA` |
+
+```
+GET /crypto/onramp/BANXA/requirements
+  ?customerId=WmYYgvN8ukpV62N3m4u3ee
+  &paymentMethodType=CREDIT_DEBIT_CARD
+  &sourceCurrencyCode=EUR
+  &sourceAmount=100
+  &destinationCurrencyCode=USDC
+  &countryCode=FR
+```
+
+Response:
+
+```json
+{
+  "serviceProvider": "BANXA",
+  "legalAgreements": [
+    { "type": "TERMS_OF_SERVICE", "url": "https://provider.example/terms", "region": "EU" }
+  ],
+  "verificationRequirements": {
+    "email": { "required": true },
+    "phone": { "required": true, "reverifyWithinDays": 180, "requireLineType": "MOBILE" },
+    "enforced": true
+  },
+  "customerStatus": {
+    "email": { "satisfied": true },
+    "phone": { "satisfied": false, "reason": "MISSING" }
+  },
+  "kycRequirements": [
+    { "code": "MELD_KYC_APPROVED", "status": "SATISFIED" },
+    { "code": "PROVIDER_KYC_SHARE", "status": "PENDING" },
+    { "code": "PROVIDER_EXTRA_KYC", "status": "REQUIRED", "missingFields": ["occupation", "sourceOfFunds"] }
+  ]
+}
+```
+
+---
+
+## What comes back, and what to do
+
+Four things, independent of each other. A customer can be through KYC and still be blocked on an unaccepted agreement. Work through them in the order below, then re-check.
+
+---
+
+### Legal agreements
+
+Terms this provider wants the customer to see before it will take the order.
+
+```json
+"legalAgreements": [
+  { "type": "TERMS_OF_SERVICE", "url": "https://provider.example/terms", "region": "EU" }
+]
+```
+
+Render each `url` in your own UI and gate your own flow on the customer accepting. An empty array means there is nothing to show.
+
+---
+
+### Contact verification
+
+Whether the provider wants the customer's email or phone confirmed by a one-time code. Two keys work together: `verificationRequirements` is what the provider asks for, `customerStatus` is how far this customer has got.
+
+```json
+"verificationRequirements": {
+  "email": { "required": true },
+  "phone": { "required": true, "reverifyWithinDays": 180, "requireLineType": "MOBILE" },
+  "enforced": true
+},
+"customerStatus": {
+  "email": { "satisfied": true },
+  "phone": { "satisfied": false, "reason": "MISSING" }
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `email.required` / `phone.required` | The provider wants this channel verified |
+| `phone.reverifyWithinDays` | Verification goes stale after this many days |
+| `phone.requireLineType` | The line type the provider will accept, for example `MOBILE` |
+| `enforced` | Whether the provider rejects orders that fall short, or merely prefers it |
+
+`satisfied` is about verification, not about whether the value is on the customer. `MISSING` means never verified — the customer may well have an email on record. A customer with no value at all has to have one [set on the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) before there is anything to verify.
+
+Verify only the channels that are `required` and not yet `satisfied`:
+
+[`POST /accounts/customers/{customerId}/verifications`](/api-reference/customer/customers/accounts-customers-verifications-create), then [`POST /accounts/customers/{customerId}/verifications/{verificationId}/confirm`](/api-reference/customer/customers/accounts-customers-verifications-confirm)
+
+See [Email and phone verification](/docs/stablecoins/headless-integration/shared-flows/verification).
+
+| `reason` | What to do |
+| --- | --- |
+| `MISSING` | Never verified. Run the two calls above |
+| `STALE` | Verified, but outside `reverifyWithinDays`. Run them again |
+| `VOIP` | The number is the wrong **kind** of line. Ask for a different number, and say why |
+
+`STALE` and `VOIP` both describe a customer who has verified before. A bare "verify your phone" reads as a bug to them unless you explain it.
+
+**On `VOIP`.** A phone number has a line type — mobile, landline, or a virtual number from an internet calling service. A provider that sets `requireLineType: "MOBILE"` will not accept the last two, because a number anyone can mint for free is weak evidence of who the customer is. The reason is named after the common case rather than the rule: it means "not the line type this provider requires", so it would also cover a landline.
+
+It only fires when the line type is actually known. An unscreened number is left alone instead of being refused; otherwise a `requireLineType` policy would fail every customer. That makes `VOIP` rare in practice, and a provider that cares usually enforces its own rule on its side instead, so a number can still be refused later without this ever appearing. Expect `MISSING` and `STALE`.
+
+---
+
+### KYC requirements
+
+One entry per KYC step this provider needs, each reported independently.
+
+| `code` | What it covers |
+| --- | --- |
+| `MELD_KYC_APPROVED` | Meld's own KYC has cleared the customer |
+| `PROVIDER_KYC_SHARE` | That verification has been shared with this provider, and accepted |
+| `PROVIDER_EXTRA_KYC` | The provider wants details of its own beyond the share |
+
+| Field | Meaning |
+| --- | --- |
+| `status` | `REQUIRED`, `PENDING`, `SATISFIED` or `BLOCKED` |
+| `missingFields` | The fields to collect |
+| `processes` / `processStates` | Provider-side steps, where the provider exposes them |
+| `reason` | Why, on a `BLOCKED` requirement |
+
+Collect everything in `missingFields` across all requirements in one pass, then send it as `serviceProviderDetails` on:
+
+[`PATCH /accounts/customers/{customerId}/kyc/initiate`](/api-reference/customer/customers/accounts-customers-kyc-update)
+
+`PATCH`, not `POST`. The customer already has a KYC session by this point — `POST` starts one. This adds the provider's own extra details to the session that exists. See [Unified KYC](/docs/stablecoins/unified-kyc) for the modes and the payload.
+
+#### Reading `status`
+
+| `status` | What it means | What to do |
+| --- | --- | --- |
+| `REQUIRED` | Nothing submitted, or something was rejected | Collect `missingFields` and submit |
+| `PENDING` | Submitted, provider still reviewing | Wait. Show a pending state and re-check |
+| `SATISFIED` | Done | Nothing. Do not re-prompt |
+| `BLOCKED` | This provider will not proceed for this customer | Read `reason`, offer another provider from the quote |
+
+Two of these are easy to get wrong.
+
+**`PENDING` is not failure.** Treating it as `REQUIRED` sends the customer back through a form they have already filled in, and some providers review asynchronously, so it can last minutes.
+
+**`BLOCKED` is not retryable.** Re-submitting will not clear it. It is provider-specific, so the other providers in the quote are usually still open.
+
+---
+
+### Re-check before you create the order
+
+Call the endpoint again with the same five order parameters. Submitting is not the same as satisfied: a provider may still be reviewing, and `PENDING` will not accept an order.

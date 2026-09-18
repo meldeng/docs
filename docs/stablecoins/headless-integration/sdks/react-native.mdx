@@ -1,0 +1,123 @@
+---
+title: "React Native SDK"
+description: "One component for card and Apple Pay, on iOS and Android, with the same API on both."
+---
+
+It wraps the native iOS and Android SDKs. The SDK does not render card input or carry card data; capture happens on the provider's own surface.
+
+---
+
+## Install
+
+```bash
+npm install @meldcrypto/react-native-sdk
+```
+
+The wrapper autolinks. The native SDK it depends on is not an RN module, so wire it per platform.
+
+### iOS
+
+The pod resolves by name from CocoaPods trunk, so there is nothing to add to your `Podfile`. Install with static frameworks — the native SDK is a Swift pod:
+
+```bash
+cd ios && USE_FRAMEWORKS=static pod install
+```
+
+### Android
+
+Nothing beyond autolinking. The wrapper's Gradle module pulls the native Android SDK from Maven Central. Requires `minSdk 24`. The library declares `INTERNET` and `CAMERA`; camera is used for KYC capture inside a provider's surface and merges into your manifest automatically.
+
+---
+
+## Create the order on your backend
+
+The order comes from your server. Your API key never ships in the app binary.
+
+See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request.
+
+---
+
+## Mount the order
+
+```tsx
+import { Meld, MeldWidget } from '@meldcrypto/react-native-sdk';
+
+Meld.configure('sandbox'); // or 'production' — call once, before you mount
+
+<MeldWidget
+  order={order}
+  onReady={() => setReady(true)}
+  onStatusChange={(s) => track(s)}
+  onPaymentSubmitted={() => showProcessing()}
+  onCancel={() => backToCheckout()}
+  onError={(e) => showError(e.message)}
+/>
+```
+
+Keep the component mounted until the user finishes paying — unmounting tears the surface down. On `onPaymentSubmitted`, navigating away is how you unmount it.
+
+---
+
+## Apple Pay
+
+Same component, plus an `applePay` prop carrying what the order does not:
+
+```tsx
+if (await Meld.canPresentApplePay()) {
+  <MeldWidget
+    order={order}
+    applePay={{
+      amount: '100.00',              // must match the order
+      currencyCode: 'EUR',
+      walletAddress: '0x51FB…',
+      clientIpAddress: deviceIp,     // the SAME IP the order was created with
+      summaryItemLabel: 'Acme — Buy USDC',
+    }}
+    onPaymentSubmitted={() => showProcessing()}
+    onCancel={() => backToCheckout()}
+    onError={(e) => showError(e.message)}
+  />
+}
+```
+
+Pass `applePay` for any Apple Pay order without checking which provider it routed to. Choosing the surface is the SDK's job.
+
+A native sheet is modal, so nothing draws into the view while it is up — mount the component off-screen if you trigger it from a button.
+
+### Expo config plugin
+
+A native sheet needs the Apple Pay entitlement in your app. The merchant id is yours, paired with the payment processing certificate issued from the CSR Meld provides.
+
+```json
+"plugins": [
+  ["@meldcrypto/react-native-sdk/plugin", { "merchantIds": ["merchant.com.yourcompany.app"] }]
+]
+```
+
+Bare React Native projects add the same entitlement in Xcode. A provider that hosts the sheet itself needs none of this — it runs under its own merchant id on its own domain.
+
+<Note>
+  The iOS Simulator presents the sheet and can authorise it, which exercises mounting, events and the cancel path. It cannot produce a decryptable payment token, so completing a real payment needs a device.
+</Note>
+
+---
+
+## Events
+
+| Event | Meaning |
+| --- | --- |
+| `onReady` | The surface has loaded |
+| `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
+| `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
+| `onCancel` | The user backed out, or dismissed the Apple Pay sheet |
+| `onError` | Carries a code and message |
+
+[The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
+
+---
+
+## Settlement
+
+Settlement is your webhook, never an SDK event. On `onPaymentSubmitted`, unmount and show a pending state.
+
+See [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks).

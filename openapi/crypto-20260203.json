@@ -3981,6 +3981,270 @@
           "href": "/api-reference/crypto/headless/payments-virtual-account-deposit-instructions-create"
         }
       }
+    },
+    "/crypto/order/headless/onramp": {
+      "post": {
+        "tags": [
+          "Headless"
+        ],
+        "summary": "Create a headless onramp order",
+        "description": "Creates a headless onramp order. Caller passes customer + provider + payment method and receives a method-specific payload in paymentMethodResponseDetails:\n\n- ACH/SEPA/PIX \u2192 bank-transfer details to display.\n- CREDIT_DEBIT_CARD \u2192 a provider-hosted widget, or `NativeSdkOrder` when renderMode=SDK_NATIVE.\n- STRIPE + CREDIT_DEBIT_CARD/APPLE_PAY \u2192 one `NativeSdkOrder` shape; `paymentMethodType` selects the method. `destinationNetworkCode` and `X-Idempotency-Key` are required. Stripe remains disabled until rollout gates clear.\n- MERCURYO + APPLE_PAY \u2192 native (non-widget) flow: a `sessionToken` (JWT) + `merchantTransactionId`. No redirect URL. The caller renders the Apple Pay sheet itself (Safari/WebView via ApplePaySession) and drives these endpoints, authenticated with header `X-Crypto-Session-Token: <sessionToken>`: on `onvalidatemerchant` call POST /crypto/session/mercuryo/apple-pay/validate-merchant with the event's validationURL; on `onpaymentauthorized` call POST /crypto/session/mercuryo/apple-pay/process with the Apple payToken + the `merchantTransactionId` from this response. The Mercuryo buy_token is fetched and stored server-side, so the caller never handles it. If native Apple Pay is unavailable for the route the call fails with INVALID_PAYMENT_METHOD (no redirect fallback).",
+        "operationId": "/crypto-order-headless-onramp-create",
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeadlessOrderOnrampRequest"
+              },
+              "example": {
+                "countryCode": "US",
+                "destinationCurrencyCode": "USDC",
+                "destinationWalletAddress": "<string>",
+                "paymentMethodType": "CREDIT_DEBIT_CARD",
+                "serviceProvider": "NOAH",
+                "sourceAmount": 200,
+                "sourceCurrencyCode": "USD"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Headless order created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeadlessOrderOnrampResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request : check request values and format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/crypto/headless/crypto-order-headless-onramp-create"
+        }
+      }
+    },
+    "/crypto/onramp/{serviceProvider}/requirements": {
+      "get": {
+        "tags": [
+          "Headless"
+        ],
+        "summary": "Get a provider's verification requirements",
+        "description": "Returns the provider's customer-verification requirements and legal agreements. Pass customerId to additionally get the customer's current (advisory) per-field verification status. Pass the order you intend to create \u2014 payment method, amount and corridor \u2014 to additionally get the provider's own outstanding KYC details: those are jurisdiction-, amount- and method-dependent, so they can only be reported against a concrete intent.",
+        "operationId": "/crypto-onramp-verification-requirements-get",
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
+            "name": "serviceProvider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paymentMethodType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sourceCurrencyCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sourceAmount",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "destinationCurrencyCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationNetworkCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "countryCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subdivision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Requirements returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationRequirementsResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request : check request values and format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/crypto/headless/crypto-onramp-verification-requirements-get"
+        }
+      }
     }
   },
   "components": {
@@ -9839,6 +10103,163 @@
           "transactionType",
           "updatedAt"
         ]
+      },
+      "VerificationRequirementsResponse": {
+        "type": "object",
+        "properties": {
+          "customerStatus": {
+            "$ref": "#/components/schemas/CustomerStatus"
+          },
+          "kycRequirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KycRequirement"
+            }
+          },
+          "legalAgreements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegalAgreement"
+            }
+          },
+          "serviceProvider": {
+            "type": "string"
+          },
+          "verificationRequirements": {
+            "$ref": "#/components/schemas/VerificationRequirements"
+          }
+        }
+      },
+      "LegalAgreement": {
+        "type": "object",
+        "properties": {
+          "region": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "KycRequirement": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "processStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProcessState"
+            }
+          },
+          "processes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "REQUIRED",
+              "PENDING",
+              "SATISFIED",
+              "BLOCKED"
+            ]
+          }
+        }
+      },
+      "CustomerStatus": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/FieldStatus"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/FieldStatus"
+          }
+        }
+      },
+      "FieldStatus": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "satisfied": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VerificationRequirements": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/EmailRequirement"
+          },
+          "enforced": {
+            "type": "boolean"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/PhoneRequirement"
+          }
+        }
+      },
+      "PhoneRequirement": {
+        "type": "object",
+        "properties": {
+          "requireLineType": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "reverifyWithinDays": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "EmailRequirement": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProcessState": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "submittable": {
+            "type": "boolean"
+          }
+        }
       }
     },
     "securitySchemes": {

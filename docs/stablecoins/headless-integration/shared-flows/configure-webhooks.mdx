@@ -1,0 +1,53 @@
+---
+title: "Configure webhooks"
+description: "Where Meld tells your backend an order settled. Set this up before your first order."
+---
+
+Set webhooks up **before KYC** so you receive `CUSTOMER_KYC_STATUS_CHANGE` as well as transaction events.
+
+In the Meld dashboard (**Developer → Webhooks**), subscribe at minimum to:
+
+- `CUSTOMER_KYC_STATUS_CHANGE`
+- `TRANSACTION_CRYPTO_PENDING`
+- `TRANSACTION_CRYPTO_TRANSFERRING`
+- `TRANSACTION_CRYPTO_COMPLETE`
+- `TRANSACTION_CRYPTO_FAILED`
+
+Verify signatures per [Webhooks authentication](/docs/stablecoins/for-all-products/webhooks-authentication).
+
+---
+
+## Correlating an event to your order
+
+Correlate on `paymentTransactionId`, and on `externalCustomerId` when you passed one.
+
+```json
+{
+  "eventType": "TRANSACTION_CRYPTO_PENDING",
+  "eventId": "AAsuLXHXD3mS1cjNBuHHzv",
+  "timestamp": "2025-02-24T16:36:41.717262Z",
+  "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
+  "version": "2025-03-01",
+  "payload": {
+    "paymentTransactionId": "WePZCYJW7cdXR7SxUMp8mE",
+    "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+    "externalCustomerId": "your-internal-user-id-123",
+    "paymentTransactionStatus": "PENDING",
+    "transactionType": "CRYPTO_PURCHASE"
+  }
+}
+```
+
+The transaction is created asynchronously after the order. Store the order id you get back from order creation, then join it to the first `TRANSACTION_CRYPTO_PENDING` you receive for that customer.
+
+---
+
+## Fetch the full transaction
+
+**Endpoint:** [`GET /payments/transactions/{paymentTransactionId}`](/api-reference/crypto/retail-ramp/payments-transactions-get)
+
+Use this to read final amounts, fees, provider references and the destination transaction hash. Webhook payloads carry status, not detail.
+
+---
+
+See [Webhook events](/docs/stablecoins/for-all-products/webhook-events) for the full payload reference and [Transaction statuses](/docs/stablecoins/for-all-products/transaction-statuses) for the state machine.

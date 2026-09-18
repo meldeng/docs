@@ -1,0 +1,117 @@
+---
+title: "Email and phone verification"
+description: "One-time code to a customer's email or phone. Meld triggers it and checks it, so no code passes through your systems."
+---
+
+Some providers require a verified contact before they will accept an order. [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) tells you whether the provider you picked is one of them, so you do not have to verify everyone.
+
+Verified state is stored on the customer and reused. A customer whose email is already verified costs nothing to re-check.
+
+---
+
+## 1. Trigger
+
+**Endpoint:** [`POST /accounts/customers/{customerId}/verifications`](/api-reference/customer/customers/accounts-customers-verifications-create)
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `channel` | yes | `EMAIL` or `PHONE` |
+| `target` | yes | The address or number to verify. A phone number goes in international form — a `+`, the country code, then the number, with no spaces, dashes or brackets: `+14155550123` |
+
+```json
+{
+  "channel": "EMAIL",
+  "target": "user@example.com"
+}
+```
+
+Response:
+
+```json
+{
+  "verificationId": "WmZQqoh77QpYGQdwa3uJXN",
+  "channel": "EMAIL",
+  "target": "u•••@example.com",
+  "status": "PENDING",
+  "expiresAt": "2026-08-25T02:57:26Z",
+  "resendAvailableAt": "2026-08-25T02:47:56Z"
+}
+```
+
+`target` comes back masked. A trigger always returns `PENDING`, which means the code was dispatched — delivery is asynchronous and outside Meld's control, so it may not have arrived yet.
+
+The code is single-use and valid until `expiresAt`.
+
+---
+
+## 2. Confirm
+
+**Endpoint:** [`POST /accounts/customers/{customerId}/verifications/{verificationId}/confirm`](/api-reference/customer/customers/accounts-customers-verifications-confirm)
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `code` | yes | Exactly as the user typed it |
+
+```json
+{
+  "code": "316856"
+}
+```
+
+Success:
+
+```json
+{
+  "verificationId": "WmZQqoh77QpYGQdwa3uJXN",
+  "status": "VERIFIED",
+  "verifiedAt": "2026-09-01T20:39:34Z"
+}
+```
+
+A wrong code is not an error status. Re-prompt the user, and show `attemptsRemaining`:
+
+```json
+{
+  "verificationId": "WmZQqoh77QpYGQdwa3uJXN",
+  "status": "FAILED",
+  "attemptsRemaining": 14
+}
+```
+
+Confirm returns one of two statuses:
+
+| `status` | Meaning | What to do |
+| --- | --- | --- |
+| `VERIFIED` | The code matched. The verified-at stamp is written and the code is consumed | Carry on to the order |
+| `FAILED` | The code did not match | Re-prompt. Trigger a new one once `attemptsRemaining` reaches zero |
+
+An **expired** code is not a `FAILED` body — confirming against a verification that is no longer pending is a `400`. Trigger a new one rather than re-prompting for the same code.
+
+---
+
+## Limits and errors
+
+| Response | Meaning |
+| --- | --- |
+| `429` `TOO_MANY_REQUESTS` | Cooldown or daily cap. Body carries `resendAvailableAt`; `null` means a hard cap rather than a wait |
+| `502` `VERIFICATION_SEND_FAILED` | The code could not be sent. Opaque by design — show a generic retry |
+| `409` | A verification is already in progress for this contact |
+| `404` | Customer or verification not found — uniform, to avoid enumeration |
+
+---
+
+## Audit
+
+**Endpoint:** [`GET /accounts/customers/{customerId}/verifications`](/api-reference/customer/customers/accounts-customers-verifications-search)`?channel=EMAIL&status=VERIFIED`
+
+Returns history with targets masked, newest first. The history is append-only, so it carries statuses the two calls above never return:
+
+| `status` | Meaning |
+| --- | --- |
+| `PENDING` | Triggered, not yet confirmed |
+| `VERIFIED` | Confirmed |
+| `FAILED` | Attempts were exhausted |
+| `EXPIRED` | Superseded — a new code was triggered for the same channel, or the contact value changed while this one was outstanding |
+| `INVALIDATED` | A receipt written when a **verified** contact value is changed |
+
+`INVALIDATED` is the one worth handling. Changing a customer's email or phone clears the verified state for that channel, so a customer who was cleared to order is no longer verified and has to go through both calls again. Re-check [eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) after any contact change rather than assuming the earlier verification still stands.

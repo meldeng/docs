@@ -1,5 +1,20 @@
 ---
 title: "Coverage"
+description: "Supported countries, tokens, payment methods, fiat currencies, and limits."
 ---
 
-You can see Meld's coverage [here](https://www.meld.io/coverage), including supported countries, tokens, payment methods, fiat currencies, and limits.
+Meld's full coverage is at [meld.io/coverage](https://www.meld.io/coverage) — supported countries, tokens, payment methods, fiat currencies, and limits. It is generated from live data, so it does not go stale.
+
+| | |
+| --- | --- |
+| [Network partners](https://www.meld.io/coverage/service-providers) | Who Meld routes to |
+| [Countries](https://www.meld.io/coverage/countries) | Where each provider operates |
+| [Payment methods](https://www.meld.io/coverage/payment-methods) | Card, Apple Pay, bank rails |
+| [Fiat currencies](https://www.meld.io/coverage/fiat-currencies) | What users can pay with |
+| [Tokens](https://www.meld.io/coverage/cryptocurrencies) | What they can buy |
+
+<Tip>
+  **Query it from the API.** The same data is available through the Network Partner [endpoints](https://docs.meld.io/api-reference/network-partners/supported/list-supported-countries) — a normalized way to work out which providers serve a given token, payment method, country and currency, without hardcoding a list that will drift.
+</Tip>
+
+Sandbox coverage is intentionally narrower than production. See the [Sandbox testing guide](/docs/stablecoins/sandbox-guide) for supported test combinations.

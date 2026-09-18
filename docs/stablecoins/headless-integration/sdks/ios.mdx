@@ -1,0 +1,93 @@
+---
+title: "iOS SDK"
+description: "Mount a provider’s payment surface into a view you own, or present a native Apple Pay sheet."
+---
+
+The SDK is a container and an event relay. It does not render card input or carry card data; capture happens on the provider's own surface.
+
+Building in React Native? Use the [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native) instead; it wraps this one.
+
+---
+
+## Install
+
+**Swift Package Manager.** In Xcode: **File → Add Package Dependencies…**, paste the repository URL and add the **MeldSDK** library to your app target.
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/meldeng/meldsdk-ios", from: "0.1.1"),
+],
+targets: [
+    .target(name: "YourApp", dependencies: [
+        .product(name: "MeldSDK", package: "meldsdk-ios"),
+    ]),
+]
+```
+
+**CocoaPods.**
+
+```ruby
+pod 'MeldSDK', '~> 0.1.1'
+```
+
+Then `import MeldSDK`.
+
+```swift
+Meld.configure(environment: .sandbox) // or .production
+```
+
+---
+
+## Create the order on your backend
+
+The order comes from your server. Your API key never ships in the app binary.
+
+See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request.
+
+---
+
+## Mount the order
+
+```swift
+let handle = try Meld.mount(order, into: containerView, handlers: MeldEventHandlers(
+    onReady:            { _ in hideSpinner() },
+    onPaymentSubmitted: { _ in showProcessing() },
+    onStatusChange:     { status in track(status) },
+    onCancel:           { _ in showRetryCta() },
+    onError:            { error in show(error.message) }
+))
+```
+
+Apple Pay uses the same call with an `applePay:` argument — see [Apple Pay](/docs/stablecoins/headless-integration/apple-pay).
+
+Keep the handle until the user finishes paying. Releasing it tears the surface down, and `handle.unmount()` does the same on demand.
+
+---
+
+## Events
+
+| Event | Meaning |
+| --- | --- |
+| `onReady` | The surface has loaded |
+| `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
+| `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
+| `onCancel` | The user backed out, or dismissed the Apple Pay sheet |
+| `onError` | Carries a code and message |
+
+[The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
+
+---
+
+## Permissions
+
+Providers that run KYC inside their surface need camera access. Declare `NSCameraUsageDescription` in your `Info.plist` with a string that explains the document and selfie capture, or that step fails silently for the user.
+
+Apple Pay needs the Apple Pay capability on your target, with the merchant identifier you registered. See [Apple Pay](/docs/stablecoins/headless-integration/apple-pay).
+
+---
+
+## Settlement
+
+Settlement is your webhook. `onPaymentSubmitted` fires when the user finishes paying, which is earlier: unmount and show a pending state until the webhook arrives.
+
+See [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks).

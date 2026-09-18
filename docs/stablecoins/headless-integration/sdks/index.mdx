@@ -1,0 +1,57 @@
+---
+title: "Meld SDK"
+sidebarTitle: "Overview"
+---
+
+The Meld SDK puts a provider's payment surface inside your UI. You create the order on your backend, hand the response to the SDK, and it mounts the card form or presents the Apple Pay sheet.
+
+It is a container and an event relay. It does not render card input, does not read or transport card data, and does not reach into the provider's content. Capture happens on the provider's PCI surface.
+
+| Platform | Package | Guide |
+| --- | --- | --- |
+| Web | `@meldcrypto/sdk` | [Web SDK](/docs/stablecoins/headless-integration/sdks/web) |
+| iOS | `MeldSDK` | [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios) |
+| React Native | `@meldcrypto/react-native-sdk` | [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native) |
+
+The API is the same shape on all three: configure the environment once, mount an order, handle five events, tear down. Only the install and the platform setup differ.
+
+---
+
+## The five events
+
+| Event | Fires when | Typical action |
+| --- | --- | --- |
+| `onReady` | The surface has loaded and the user can interact with it | Hide your spinner |
+| `onStatusChange` | The order's status changed | Track it |
+| `onPaymentSubmitted` | The user finished paying | Unmount, show processing |
+| `onCancel` | The user backed out | Return them to your amount screen |
+| `onError` | The order failed, or the surface could not load | Show a failure, offer a retry |
+
+`onReady` and `onPaymentSubmitted` are lifecycle moments, not statuses. Where a provider never reports readiness, the SDK synthesises `onReady` so your spinner still clears.
+
+**`onPaymentSubmitted` fires exactly once per order.** Providers disagree on how the end of a payment arrives: some send their own "payment finished" message and never a status, some report a `completed` status and never a finished message, some send both, in an order that is not fixed. The SDK collapses that into a single callback, so you can act on it directly and do not need a guard of your own. A failure or a cancellation closes it, so a failed payment is never followed by a submission.
+
+## Status
+
+`onStatusChange` is the one event that carries state. It delivers a status from a fixed set, whichever provider the order routed to:
+
+| Status | Meaning |
+| --- | --- |
+| `pending` | In flight. Also where any status the SDK does not recognise lands |
+| `completed` | The provider considers the order complete |
+| `failed` | Terminal failure |
+| `cancelled` | The user or the provider cancelled |
+
+Providers each have their own vocabulary — `paid`, `order_completed`, `succeeded` all arrive as `completed` — and the SDK maps them before you see them, so you never write a per-provider status table. The raw code rides along as `providerStatus` for your logs.
+
+**`onCancel` and `onError` are derived from the same statuses.** A `failed` status fires `onStatusChange` *and* `onError`; a `cancelled` status fires `onStatusChange` *and* `onCancel`. Handle a terminal state in one place or the other, not both, or you will run it twice. `onError` also fires for a failure that never reached the provider, such as its surface failing to load, which is the recoverable case.
+
+`completed` has no dedicated handler — it arrives through `onStatusChange` only.
+
+It is also not the signal to act on. Drive your flow from `onPaymentSubmitted`, which fires once whether or not the provider reports a status, and read `completed` as the provider's own view of its order.
+
+<Note>
+  None of this is settlement. `completed` is the provider's view of its own order; the money moving is Meld's [`TRANSACTION_CRYPTO_COMPLETE` webhook](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks) to your backend. Credit users there and nowhere else.
+</Note>
+
+Bank transfer and offramp need no SDK. Those flows return details you display, and are server-side only.

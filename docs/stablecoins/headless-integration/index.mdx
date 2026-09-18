@@ -1,0 +1,111 @@
+---
+title: "Product 4: Headless Card and Apple Pay"
+sidebarTitle: "Overview"
+---
+
+Headless Card and Apple Pay is for teams who want the whole purchase to happen in their own app or site, payment included. White-Label API and Meld Checkout both hand the user to the onramp's UI to pay; headless keeps them in yours. Your backend creates an order, your client mounts the [Meld SDK](/docs/stablecoins/headless-integration/sdks), and the SDK draws the provider's card form or raises the system Apple Pay sheet in place.
+
+Meld keeps the parts you would rather not: routing between providers, KYC, compliance, and settlement tracking. Card details go straight to the provider's PCI surface, so they never reach your servers and your compliance scope does not widen.
+
+---
+
+## The order model
+
+One endpoint creates both kinds of order:
+
+**Endpoint:** [`POST /crypto/order/headless/onramp`](/api-reference/crypto/headless/crypto-order-headless-onramp-create)
+
+`paymentMethodType` selects the method:
+
+| `paymentMethodType` | What comes back | Guide |
+| --- | --- | --- |
+| `CREDIT_DEBIT_CARD` | Provider card surface for the SDK to mount | [Cards](/docs/stablecoins/headless-integration/cards) |
+| `APPLE_PAY` | Apple Pay surface for the SDK to present | [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) |
+
+### The order
+
+Every order comes back in the same envelope. Only `paymentMethodResponseDetails` differs by method, and fields with nothing in them are omitted rather than returned null.
+
+```json
+{
+  "id": "WoRdErabcexample0000001",
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "externalCustomerId": "your-internal-user-id-123",
+  "externalOrderId": "order-8f21c0",
+  "paymentMethodType": "CREDIT_DEBIT_CARD",
+  "paymentMethodResponseDetails": { },
+  "payload": { }
+}
+```
+
+| Field | What it is |
+| --- | --- |
+| `id` | Meld's order id. Keep it — it is how you tie the order to the transaction later |
+| `customerId` | Meld's id for the customer |
+| `externalCustomerId` | Your own id for them, echoed back when you sent one |
+| `externalOrderId` | Your own reference, echoed back |
+| `paymentMethodType` | The method this order was created for |
+| `paymentMethodResponseDetails` | The method-specific part of the order. Its shape varies by method and provider |
+| `payload` | A verbatim echo of the request you sent, so you can correlate without re-threading your own state |
+
+Pass the whole response to the [Meld SDK](/docs/stablecoins/headless-integration/sdks). Do not read individual fields to decide how to render: the SDK dispatches on the shape it is given, so adding a provider that uses an existing shape needs no change in your client.
+
+### External order IDs and idempotency
+
+`externalOrderId` is your own reference. It must be unique per account; reusing one is rejected. Generate a fresh id for every attempt.
+
+Send `X-Idempotency-Key: <uuid>` on order creation. A repeated key returns the original order rather than creating a second one.
+
+---
+
+## Before you start
+
+- A Meld API key with payment access (sandbox first, production for go-live)
+- Headless onramps enabled on your account. Contact your Meld representative to enable Headless for your Meld account
+- Your own account and credentials with each provider you want to use
+- A webhook endpoint configured in **Developer → Webhooks** in the dashboard
+
+Card and Apple Pay are independent — integrate either on its own, or both. They share everything above and differ only in the surface the SDK presents, so adding the second later is a payment method and a capture surface, not a second integration.
+
+Both need the [Meld SDK](/docs/stablecoins/headless-integration/sdks) in your client.
+
+### Your customer must be KYC'd first
+
+[Create the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and verify them through [Unified KYC](/docs/stablecoins/unified-kyc) before their first order. Almost every provider refuses an order for a customer Meld has not cleared, and the refusal arrives at order creation — after the customer has entered an amount and expects to pay.
+
+Two providers differ, and neither is a choice you make:
+
+| Provider | When identity is verified |
+| --- | --- |
+| Stripe | In Stripe's own screens, inside the flow the SDK presents |
+| Coinbase | Not at first. Required once the customer crosses Coinbase's spend or transaction thresholds |
+
+Everywhere else, run Unified KYC up front and treat an approved customer as something you check before offering the flow at all.
+
+<Note>
+  Some providers provision their own customer record at order time and reject the call without an email. If your users can sign up without one, sync it onto the Meld customer with `PATCH /accounts/customers/{customerId}` before the first order — a missing email surfaces later as a `404` naming a service-provider customer, which is harder to read than it sounds.
+</Note>
+
+### You bring your own provider credentials
+
+Headless is not a shared-key product. Every order is placed against your own merchant account at the provider, using credentials registered to your Meld account.
+
+---
+
+## Environments and versioning
+
+| Environment | Base URL |
+| --- | --- |
+| Sandbox | `https://api-sb.meld.io` |
+| Production | `https://api.meld.io` |
+
+---
+
+## Next steps
+
+Pick the method you are integrating:
+
+1. [Cards](/docs/stablecoins/headless-integration/cards) — the provider's card form, mounted inside your checkout
+2. [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) — present the system sheet in your app or site
+
+Each guide opens with the setup you do once — customer, webhooks, KYC, quote and eligibility — then covers the order and the capture surface for that method.

@@ -1,0 +1,98 @@
+---
+title: "Headless Card and Apple Pay Testing"
+description: "Sandbox testing for headless card and Apple Pay, run from your own UI."
+---
+
+This page is for developers and QA running sandbox orders through headless card and Apple Pay. Separate from the [White-Label API and Meld Checkout testing credentials](/docs/stablecoins/sandbox-guide/test), which cover the widget flows, and from [Virtual Account Flow Testing Credentials](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials).
+
+## What you can verify
+
+The order call, the capture surface appearing in your app, the [SDK](/docs/stablecoins/headless-integration/sdks)'s events, and the webhook chain. How far past that you can go depends on the provider's own sandbox, and differs by payment method — see each section below.
+
+---
+
+## Before you start
+
+**Base URL:** `https://api-sb.meld.io`
+
+- A sandbox API key with payment access
+- Headless onramps enabled on your sandbox account
+- Sandbox credentials for the provider you are testing, on your Meld account
+- A webhook endpoint reachable from the internet, configured in the dashboard
+- A test customer, KYC-approved — see [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing)
+
+<Warning>
+  Sandbox coverage is narrower than production, and a US test customer is the most common reason an otherwise correct integration returns no quotes. Quote first and use whatever country and currency pair comes back with the provider you intend to test.
+</Warning>
+
+---
+
+## Test the card flow
+
+Test cards against **Banxa**. It is the provider with a published headless card sandbox, and the cards below are its.
+
+1. Quote for your country, currency pair and amount, and pick the Banxa quote.
+2. Create the order with `paymentMethodType: CREDIT_DEBIT_CARD`.
+3. Mount the order in your client.
+4. Pay with one of the cards below.
+
+### Successful authorization
+
+| Card network | Card number | CVV | Expiry date | Account type |
+| --- | --- | --- | --- | --- |
+| Visa | 4111 1111 1111 1111 | Any 3 digits | Any future date | Debit |
+| Visa | 4242 4242 4242 4242 | Any 3 digits | Any future date | Credit |
+| Mastercard | 5252 5252 5252 5258 | Any 3 digits | Any future date | Debit |
+| Mastercard | 5555 5555 5555 4444 | Any 3 digits | Any future date | Credit |
+| Visa / Cartes Bancaires | 4035 5000 0000 0000 | Any 3 digits | Any future date | |
+| Mastercard / Cartes Bancaires | 5132 0000 0000 0000 | Any 3 digits | Any future date | |
+| Cartes Bancaires | 4970 0000 0000 0008 | Any 3 digits | Any future date | |
+
+### Failed and declined authorization
+
+| Scenario | Card network | Card number |
+| --- | --- | --- |
+| Generic decline | Visa | 4000 0000 0000 0002 |
+| Generic decline | Mastercard | 5100 0000 0000 0008 |
+| Generic fail | Visa | 4000 0000 0000 0010 |
+| Generic fail | Mastercard | 5100 0000 0000 0016 |
+
+Run at least one decline as well as one success. A decline is the path most integrations get wrong: the surface stays mounted and the customer retries, so nothing should be torn down and no order should be credited.
+
+<Note>
+  Other providers' card sandboxes behave differently and some reject transactions that would succeed in production. Where a provider publishes test cards, they are listed under its section in [White-Label API and Meld Checkout testing credentials](/docs/stablecoins/sandbox-guide/test).
+</Note>
+
+---
+
+## Test Apple Pay
+
+**You can present the sheet in sandbox. You cannot settle a payment with it.** Presentation is the whole of what sandbox Apple Pay verifies — the order, the sheet, and the events around it. Treat a settled Apple Pay purchase as a production check.
+
+1. Quote for a country and currency pair that return an Apple Pay provider.
+2. Create the order with `paymentMethodType: APPLE_PAY`.
+3. Check `canPresentApplePay()`, then mount.
+
+What to confirm:
+
+| Check | What it proves |
+| --- | --- |
+| The sheet appears | The order was accepted and carries a surface the SDK could present |
+| The amount and label are right | You passed the sheet inputs that match the order |
+| Dismissing fires `onCancel` | Your UI returns the customer to the amount screen rather than showing a failure |
+
+The iOS Simulator presents and authorises the sheet but cannot produce a decryptable payment token, so it exercises mounting, events and the cancel path and nothing beyond. A real device with an Apple sandbox tester account gets you a genuine authorisation, and still no settlement.
+
+---
+
+## Verify the result
+
+For card, check all three. Each catches something the others do not.
+
+| Check | What it proves |
+| --- | --- |
+| Webhook received | Your endpoint is reachable and your signature check passes |
+| `GET /payments/transactions/{id}` | The transaction exists with the amounts you expect |
+| Dashboard | The transaction is attributed to the right account and provider |
+
+The transaction is created asynchronously, so it will not exist the instant the order call returns. Wait for `TRANSACTION_CRYPTO_PENDING`.
