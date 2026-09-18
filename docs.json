@@ -29,10 +29,54 @@
       "source": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/quickstart",
       "destination": "/docs/stablecoins/meld-checkout-integration/meld-checkout-quickstart",
       "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/index",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-crypto-currencies",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-countries",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-payment-methods",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-network-partners",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/coverage-nav",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/headless-integration/shared-flows/quotes-and-eligibility",
+      "destination": "/docs/stablecoins/headless-integration/shared-flows/quotes",
+      "permanent": true
     }
   ],
   "navbar": {
     "links": [
+      {
+        "label": "Coverage",
+        "href": "https://www.meld.io/coverage"
+      },
       {
         "label": "Support",
         "href": "mailto:support@meld.io"
@@ -137,6 +181,32 @@
                     ]
                   },
                   {
+                    "group": "Product 4: Headless Card and Apple Pay",
+                    "pages": [
+                      "docs/stablecoins/headless-integration/index",
+                      "docs/stablecoins/headless-integration/cards",
+                      "docs/stablecoins/headless-integration/apple-pay",
+                      {
+                        "group": "Shared flows",
+                        "pages": [
+                          "docs/stablecoins/headless-integration/shared-flows/eligibility",
+                          "docs/stablecoins/headless-integration/shared-flows/configure-webhooks",
+                          "docs/stablecoins/headless-integration/shared-flows/verification",
+                          "docs/stablecoins/headless-integration/shared-flows/quotes"
+                        ]
+                      },
+                      {
+                        "group": "SDKs",
+                        "pages": [
+                          "docs/stablecoins/headless-integration/sdks/index",
+                          "docs/stablecoins/headless-integration/sdks/web",
+                          "docs/stablecoins/headless-integration/sdks/ios",
+                          "docs/stablecoins/headless-integration/sdks/react-native"
+                        ]
+                      }
+                    ]
+                  },
+                  {
                     "group": "For All Products",
                     "pages": [
                       "docs/stablecoins/for-all-products/index",
@@ -163,20 +233,11 @@
                       "docs/stablecoins/sandbox-guide/index",
                       "docs/stablecoins/sandbox-guide/test",
                       "docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials",
-                      "docs/stablecoins/sandbox-guide/kyc-testing"
+                      "docs/stablecoins/sandbox-guide/kyc-testing",
+                      "docs/stablecoins/sandbox-guide/headless-testing"
                     ]
                   },
-                  {
-                    "group": "Coverage",
-                    "pages": [
-                      "docs/stablecoins/digital-asset-coverage/index",
-                      "docs/stablecoins/digital-asset-coverage/supported-crypto-currencies",
-                      "docs/stablecoins/digital-asset-coverage/supported-countries",
-                      "docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
-                      "docs/stablecoins/digital-asset-coverage/supported-payment-methods",
-                      "docs/stablecoins/digital-asset-coverage/supported-network-partners"
-                    ]
-                  },
+                  "docs/stablecoins/coverage",
                   {
                     "group": "Additional Information",
                     "pages": [
@@ -573,17 +634,7 @@
                       "docs/stablecoins/sandbox-guide/kyc-testing"
                     ]
                   },
-                  {
-                    "group": "Coverage",
-                    "pages": [
-                      "docs/stablecoins/digital-asset-coverage/index",
-                      "docs/stablecoins/digital-asset-coverage/supported-crypto-currencies",
-                      "docs/stablecoins/digital-asset-coverage/supported-countries",
-                      "docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
-                      "docs/stablecoins/digital-asset-coverage/supported-payment-methods",
-                      "docs/stablecoins/digital-asset-coverage/supported-network-partners"
-                    ]
-                  },
+                  "docs/stablecoins/coverage",
                   {
                     "group": "Additional Information",
                     "pages": [
@@ -971,17 +1022,7 @@
                       "docs/stablecoins/sandbox-guide/kyc-testing"
                     ]
                   },
-                  {
-                    "group": "Coverage",
-                    "pages": [
-                      "docs/stablecoins/digital-asset-coverage/index",
-                      "docs/stablecoins/digital-asset-coverage/supported-crypto-currencies",
-                      "docs/stablecoins/digital-asset-coverage/supported-countries",
-                      "docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
-                      "docs/stablecoins/digital-asset-coverage/supported-payment-methods",
-                      "docs/stablecoins/digital-asset-coverage/supported-network-partners"
-                    ]
-                  },
+                  "docs/stablecoins/coverage",
                   {
                     "group": "Additional Information",
                     "pages": [

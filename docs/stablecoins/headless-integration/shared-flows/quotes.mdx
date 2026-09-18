@@ -1,0 +1,41 @@
+---
+title: "Quotes"
+description: "What an order would cost, and which providers can take it."
+---
+
+Quote before every order. The response prices the order and tells you which providers can serve it — and for headless, which of them can serve it *headlessly*, which is a smaller set.
+
+The endpoint, its parameters and the full response are in the [API reference](/api-reference/crypto/retail-ramp/crypto-quote-get). Two things differ on the headless path.
+
+---
+
+## 1. Ask for headless quotes
+
+**Endpoint:** [`POST /payments/crypto/quote`](/api-reference/crypto/retail-ramp/crypto-quote-get)`?integrationMode=HEADLESS`
+
+`integrationMode` decides which providers are queried and whether the headless-support filter is applied. It takes `WIDGET` (the default), `HEADLESS`, or `ALL`.
+
+At `2026-05-01` each quote also carries fields the order needs:
+
+| Field | Use |
+| --- | --- |
+| `destinationNetworkCode` | The chain selected for this quote. Carry it into the order rather than choosing one |
+| `integrationMode` | Which mode this quote is for, when you asked for `ALL` |
+| `kycMode` | Who runs KYC for this provider |
+| `isNativeAvailable` | Whether this quote can present a native Apple Pay sheet |
+
+Pass `customerId` whenever you have one, so ramp intelligence and previously-used scoring apply.
+
+## 2. Send the version header
+
+**Header:** `Meld-Version: 2026-05-01`
+
+<Warning>
+  `integrationMode` arrived in `2026-05-01`. An older version **silently ignores it** — no error, no warning, just widget quotes. You then create a headless order against a provider that never offered one, and the failure surfaces at order creation instead.
+</Warning>
+
+---
+
+## Next
+
+Check [eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) for the provider you chose, then create the order.

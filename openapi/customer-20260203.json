@@ -2555,6 +2555,421 @@
         "x-mint": {
           "href": "/api-reference/customer/customers/accounts-customers-kyc-initiate"
         }
+      },
+      "patch": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Update customer KYC",
+        "description": "Retrieve a fresh url for an existing KYC session",
+        "operationId": "accounts-customers-kyc-update",
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "description": "Customer id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateKycRequest"
+              },
+              "example": {
+                "mode": "HOSTED_URL",
+                "serviceProvider": "SUMSUB"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitiateKycResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Customer is not compliant for KYC sharing",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Customer or KYC not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/customer/customers/accounts-customers-kyc-update"
+        }
+      }
+    },
+    "/accounts/customers/{customerId}/verifications": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Send a verification code to a customer's email or phone",
+        "description": "Sends a one-time code to the given target over the given channel and returns the verification to confirm it against. While a resend cooldown is active the pending verification is returned without sending a new code.",
+        "operationId": "accounts-customers-verifications-create",
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "description": "Customer id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVerificationRequest"
+              },
+              "example": {
+                "channel": "EMAIL"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Verification is returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "404": {
+            "description": "Customer cannot be found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited; resendAvailableAt indicates when a resend is possible",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/customer/customers/accounts-customers-verifications-create"
+        }
+      },
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "List a customer's verification receipts",
+        "description": "Audit listing of the customer's contact-verification attempts, newest first. Targets are masked.",
+        "operationId": "accounts-customers-verifications-search",
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "description": "Customer id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "description": "Contact channel",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "EMAIL",
+                "PHONE"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Verification status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "VERIFIED",
+                "EXPIRED",
+                "FAILED",
+                "INVALIDATED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verifications are returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VerificationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Customer cannot be found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/customer/customers/accounts-customers-verifications-search"
+        }
+      }
+    },
+    "/accounts/customers/{customerId}/verifications/{verificationId}/confirm": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Confirm a verification with the code the customer received",
+        "description": "Returns VERIFIED with the verification timestamp, or FAILED with the confirm attempts remaining. Codes are single-use.",
+        "operationId": "accounts-customers-verifications-confirm",
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "path",
+            "description": "Customer id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "verificationId",
+            "in": "path",
+            "description": "Verification id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmVerificationRequest"
+              },
+              "example": {
+                "code": "<string>"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Confirm outcome is returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmVerificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request : check request values and format"
+          },
+          "404": {
+            "description": "Verification cannot be found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many confirm attempts for this contact",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated or authenticated with insufficient access"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/customer/customers/accounts-customers-verifications-confirm"
+        }
       }
     }
   },
@@ -10899,6 +11314,120 @@
             "description": "Number of remaining customers before/after this page, depending the direction this page was selected."
           }
         }
+      },
+      "CreateVerificationRequest": {
+        "type": "object",
+        "description": "Request to send a verification code to a customer's email or phone",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "Contact channel to verify",
+            "enum": [
+              "EMAIL",
+              "PHONE"
+            ],
+            "minLength": 1
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Optional service provider context for the verification",
+            "example": "COINBASEPAY"
+          },
+          "target": {
+            "type": "string",
+            "description": "Email address or E.164 phone number to send the code to. Optional for widget sessions with locked targets, where the customer's stored contact value is used."
+          }
+        },
+        "required": [
+          "channel"
+        ]
+      },
+      "VerificationResponse": {
+        "type": "object",
+        "description": "State of a contact verification",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "Contact channel",
+            "enum": [
+              "EMAIL",
+              "PHONE"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "When the code expires (ISO-8601)"
+          },
+          "resendAvailableAt": {
+            "type": "string",
+            "description": "When a new code can be requested (ISO-8601)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Verification status",
+            "enum": [
+              "PENDING",
+              "VERIFIED",
+              "EXPIRED",
+              "FAILED",
+              "INVALIDATED"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "description": "Masked contact value the code was sent to",
+            "example": "j\u2022\u2022\u2022@example.com"
+          },
+          "verificationId": {
+            "type": "string",
+            "description": "Verification id"
+          }
+        }
+      },
+      "ConfirmVerificationResponse": {
+        "type": "object",
+        "description": "Outcome of a verification confirm attempt",
+        "properties": {
+          "attemptsRemaining": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Confirm attempts remaining before the contact is locked out; only for FAILED"
+          },
+          "lineType": {
+            "type": "string",
+            "description": "Phone line type when known (e.g. mobile); only for VERIFIED"
+          },
+          "status": {
+            "type": "string",
+            "description": "Outcome status",
+            "enum": [
+              "VERIFIED",
+              "FAILED"
+            ]
+          },
+          "verificationId": {
+            "type": "string",
+            "description": "Verification id"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "description": "When the contact was verified (ISO-8601); only for VERIFIED"
+          }
+        }
+      },
+      "ConfirmVerificationRequest": {
+        "type": "object",
+        "description": "Request to confirm a verification with the code the customer received",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "The one-time code the customer received",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "code"
+        ]
       }
     },
     "securitySchemes": {

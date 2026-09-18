@@ -1,0 +1,98 @@
+---
+title: "Web SDK"
+description: "Mount a provider’s payment surface into an element you own, and relay its lifecycle events."
+---
+
+The SDK is a container and an event relay. It does not render card input, read card data, or reach into the provider's content. Capture happens on the provider's PCI surface.
+
+---
+
+## Install
+
+```bash
+npm install @meldcrypto/sdk
+```
+
+```js
+import Meld from '@meldcrypto/sdk';
+
+Meld.configure({ environment: 'sandbox' }); // or 'production'
+```
+
+Use it with a bundler — the SDK is bundled into your app.
+
+---
+
+## Create the order on your backend
+
+The order comes from your server, never from the browser. Your API key stays server-side.
+
+See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request.
+
+---
+
+## Mount the order
+
+```js
+const order = await fetch('/your-backend/order').then(r => r.json());
+
+const handle = Meld.mount(order, document.getElementById('widget-container'), {
+  onReady:            ()  => hideSpinner(),
+  onStatusChange:     (s) => { if (s.status === 'completed') showProcessing(); },
+  onPaymentSubmitted: ()  => showProcessing(),
+  onCancel:           ()  => showRetryCta(),
+  onError:            (e) => showError(e.message),
+});
+```
+
+Check `Meld.capabilities(order).embeddable` first if you handle order types this SDK does not embed.
+
+---
+
+## Events
+
+| Event | Meaning |
+| --- | --- |
+| `onReady` | The surface has loaded. Hide your spinner |
+| `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
+| `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
+| `onCancel` | The user backed out |
+| `onError` | Carries `code`, `message` and `recoverable` |
+
+[The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
+
+---
+
+## Tear down
+
+```js
+handle.unmount();
+```
+
+Unmount on `onPaymentSubmitted`, on `onCancel`, and when you navigate away. Leaving a mounted surface behind holds provider resources open, and leaves the user sitting on the provider's post-submit screen.
+
+---
+
+## Content Security Policy
+
+If your page sets a CSP, ask the SDK what the providers need rather than hard-coding hosts:
+
+```js
+const csp = Meld.requiredCsp(['MERCURYO']);
+```
+
+| Field | Use |
+| --- | --- |
+| `frameSrc` | append to your `frame-src` directive |
+| `scriptSrc` | append to your `script-src` directive |
+| `iframeAllow` | set as the iframe's `allow` attribute |
+
+The result is read from the SDK's provider registry and reflects the environment set in `Meld.configure`, so there is nothing provider-specific for you to maintain. Providers whose KYC runs inside the surface need `camera` in `iframeAllow`.
+
+---
+
+## Settlement
+
+Settlement is your webhook. `onPaymentSubmitted` and a `completed` status change are both UX signals: unmount and show a pending state, never credit a user.
+
+See [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks).

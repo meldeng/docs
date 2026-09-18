@@ -31,6 +31,44 @@ PATH_PRIORITY_BY_SERVICE = {
     ],
 }
 
+OVERLAY_PATH = Path(__file__).with_name("openapi-error-overlay.json")
+
+
+def apply_error_overlay(payload: dict, spec_path: Path) -> int:
+    """Re-attach error responses the backend export does not declare.
+
+    Several statuses (404/408/409/422) are documented per operation in this repo but are not
+    emitted by springdoc, so a plain regeneration silently drops them — 33 responses across the
+    current specs at the time of writing. The overlay records those bodies per
+    spec/path/method/status; this puts them back after each sync, without touching anything the
+    export does declare.
+
+    Regenerate the overlay when the export starts declaring a status itself: the entry becomes a
+    no-op, and deleting it keeps the export authoritative.
+    """
+    if not OVERLAY_PATH.exists():
+        return 0
+    overlay = json.loads(OVERLAY_PATH.read_text(encoding="utf-8"))
+    spec = overlay.get(spec_path.stem)
+    if not spec:
+        return 0
+    restored = 0
+    for path, methods in spec.items():
+        operations = payload.get("paths", {}).get(path)
+        if not operations:
+            continue
+        for method, responses in methods.items():
+            operation = operations.get(method)
+            if not isinstance(operation, dict):
+                continue
+            existing = operation.setdefault("responses", {})
+            for status, body in responses.items():
+                if status not in existing:
+                    existing[status] = body
+                    restored += 1
+    return restored
+
+
 def slugify(text: str) -> str:
     text = text.lower().replace("&", " and ")
     text = re.sub(r"[^a-z0-9]+", "-", text)
@@ -542,6 +580,10 @@ def normalize_spec(spec_path: Path, is_latest: bool = True) -> int:
             if mint_config.get("href") != href:
                 mint_config["href"] = href
                 updated += 1
+
+    restored = apply_error_overlay(payload, spec_path)
+    if restored:
+        print(f"  {spec_path.name}: restored {restored} error responses from the overlay")
 
     spec_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return updated

@@ -457,6 +457,16 @@ payment-http:
               - get
             tags:
               - Retail Ramp
+          /crypto/order/headless/onramp:
+            methods:
+              - post
+            tags:
+              - Headless
+          /crypto/onramp/{serviceProvider}/requirements:
+            methods:
+              - get
+            tags:
+              - Headless
           /crypto/order/headless/offramp:
             methods:
               - post
@@ -675,6 +685,16 @@ payment-http:
               - get
             tags:
               - Retail Ramp
+          /crypto/order/headless/onramp:
+            methods:
+              - post
+            tags:
+              - Headless
+          /crypto/onramp/{serviceProvider}/requirements:
+            methods:
+              - get
+            tags:
+              - Headless
           /crypto/order/headless/offramp:
             methods:
               - post
@@ -891,6 +911,18 @@ account-http:
           /accounts/customers/{customerId}/kyc/initiate:
             methods:
               - post
+              - patch
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/verifications:
+            methods:
+              - post
+              - get
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/verifications/{verificationId}/confirm:
+            methods:
+              - post
             tags:
               - Customers
         components_to_modify:
@@ -1026,6 +1058,18 @@ account-http:
             tags:
               - Customers
           /accounts/customers/{customerId}/kyc/initiate:
+            methods:
+              - post
+              - patch
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/verifications:
+            methods:
+              - post
+              - get
+            tags:
+              - Customers
+          /accounts/customers/{customerId}/verifications/{verificationId}/confirm:
             methods:
               - post
             tags:
