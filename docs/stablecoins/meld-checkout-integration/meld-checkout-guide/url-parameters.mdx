@@ -1,11 +1,36 @@
 ---
 title: "URL Parameters"
-description: "Review the URL params you can use to prefill the Meld Checkout UI"
+description: "Reference for the legacy query-string parameters that prefill the Meld Checkout UI"
 ---
 
 # Meld Checkout URL Parameters Reference
 
-Complete technical reference for all Meld Checkout Integration URL parameters. Use these parameters to prefill information and customize the user experience.
+<Warning>
+**Deprecated — prefilling by query string is being phased out.** Build new integrations against the server-minted URL in the [Full Integration Guide](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide), which carries the same values in a `prefill` object and locks them with `locked`.
+
+This page remains for integrations already built on query strings.
+</Warning>
+
+<Warning>
+**These parameters are ignored unless your account allows them.** The `widgetUrlGenerationEnforced` preference on your account's `CRYPTO` settings controls this, and it is **`true` for every account created after this setting shipped**. While it is `true`, Meld Checkout ignores query-string prefill entirely and only honours values from a server-minted URL — silently, with no error on the page.
+
+Check your account before relying on anything below:
+
+```bash
+curl -s "https://api-sb.meld.io/accounts/{accountId}/preferences/public" \
+  -H "Authorization: BASIC $MELD_API_KEY" \
+  -H "Meld-Version: 2026-05-01" \
+  | jq '.preferences[] | select(.type=="CRYPTO") | .preference.widgetUrlGenerationEnforced'
+```
+
+`false` means the parameters below apply. `true` means they do not — use the [Full Integration Guide](/docs/stablecoins/meld-checkout-integration/meld-checkout-guide) instead. The check also fails closed: if Meld cannot read the preference, it behaves as though enforcement is on.
+</Warning>
+
+Complete technical reference for the Meld Checkout query-string parameters. Use these to prefill information and customize the user experience.
+
+<Note>
+**Sandbox uses a different host.** Examples below use the production host `meldcrypto.com`. In sandbox, use the host from your account's `widgetUrl` preference — `https://sb.meldcrypto.com` for most accounts. A sandbox public key against `meldcrypto.com` will not resolve to your account.
+</Note>
 
 ## Transaction Parameters
 
