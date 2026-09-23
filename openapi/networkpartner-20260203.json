@@ -1,19 +1,1185 @@
 {
   "openapi": "3.1.0",
-  "info": {
-    "title": "Network Partners",
-    "version": "2026-02-03"
+  "components": {
+    "schemas": {
+      "AccountHolderType": {
+        "description": "Customer type for a payment method field requirement slice",
+        "type": "string",
+        "enum": [
+          "INDIVIDUAL",
+          "BUSINESS"
+        ]
+      },
+      "CardRenderMode": {
+        "description": "Render mode for CREDIT_DEBIT_CARD payment method in headless flows",
+        "type": "string",
+        "enum": [
+          "IFRAME",
+          "REDIRECT",
+          "SDK_NATIVE"
+        ]
+      },
+      "Category": {
+        "description": "Categories of functionality offered by a service provider",
+        "type": "string",
+        "enum": [
+          "CRYPTO_ONRAMP",
+          "CRYPTO_OFFRAMP",
+          "CRYPTO_TRANSFER",
+          "BANK_LINKING",
+          "FIAT_PAYMENTS",
+          "CRYPTO_VIRTUAL_ACCOUNT_ONRAMP",
+          "CRYPTO_VIRTUAL_ACCOUNT_OFFRAMP",
+          "CUSTOMER_KYC",
+          "CRYPTO_ONRAMP_SWAP",
+          "CRYPTO_OFFRAMP_SWAP"
+        ]
+      },
+      "Country": {
+        "description": "Country representation used in country and supported-country lists",
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "examples": [
+              "US"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Country display name",
+            "examples": [
+              "United States"
+            ]
+          },
+          "flag": {
+            "type": "string",
+            "description": "Country flag URL",
+            "examples": [
+              "https://cdn.meld.io/images-country/US/flag.svg"
+            ]
+          },
+          "subdivisions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ISO 3166-2 subdivision codes supported for this country",
+            "examples": [
+              [
+                "US-CA",
+                "US-NY"
+              ]
+            ]
+          }
+        }
+      },
+      "CountryDefault": {
+        "description": "Default currency and payment methods for a country and category",
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "Country code",
+            "examples": [
+              "US"
+            ]
+          },
+          "category": {
+            "description": "Provider category",
+            "type": "string",
+            "examples": [
+              "CRYPTO_ONRAMP"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
+          },
+          "currencyCode": {
+            "type": "string",
+            "description": "Default currency code",
+            "examples": [
+              "USD"
+            ]
+          },
+          "paymentMethods": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            },
+            "description": "Supported payment method codes"
+          }
+        }
+      },
+      "CountryResponse1": {
+        "description": "Response wrapper for countries",
+        "type": "object",
+        "properties": {
+          "countries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Country"
+            },
+            "description": "List of countries"
+          }
+        }
+      },
+      "Currency": {
+        "description": "Currency representation",
+        "type": "object",
+        "properties": {
+          "currencyCode": {
+            "type": "string",
+            "description": "Currency code",
+            "examples": [
+              "USD"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Currency name",
+            "examples": [
+              "US Dollar"
+            ]
+          },
+          "decimalPlaces": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of decimal places",
+            "examples": [
+              2
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "Currency type",
+            "examples": [
+              "FIAT"
+            ]
+          },
+          "chainCode": {
+            "type": "string",
+            "description": "Chain code for crypto currencies",
+            "examples": [
+              "ETH"
+            ]
+          },
+          "chainId": {
+            "type": "string",
+            "description": "Numeric chain ID for crypto currencies",
+            "examples": [
+              "1"
+            ]
+          },
+          "contract": {
+            "type": "string",
+            "description": "Contract address for token",
+            "examples": [
+              "0x1234..."
+            ]
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Currency symbol image URL generated from currency type and code",
+            "examples": [
+              "https://cdn.meld.io/images-currency/crypto/BTC/symbol.png"
+            ]
+          }
+        }
+      },
+      "CurrencyLimit": {
+        "description": "Default currency limit",
+        "type": "object",
+        "properties": {
+          "currencyCode": {
+            "type": "string",
+            "description": "Currency code",
+            "examples": [
+              "EUR"
+            ]
+          },
+          "defaultValue": {
+            "type": "number",
+            "description": "Default amount",
+            "examples": [
+              100.0
+            ]
+          },
+          "min": {
+            "type": "number",
+            "description": "Minimum amount",
+            "examples": [
+              10.0
+            ]
+          },
+          "max": {
+            "type": "number",
+            "description": "Maximum amount",
+            "examples": [
+              14900.0
+            ]
+          }
+        }
+      },
+      "CurrencyResponse1": {
+        "description": "Response wrapper for currencies",
+        "type": "object",
+        "properties": {
+          "currencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Currency"
+            },
+            "description": "List of currencies"
+          }
+        }
+      },
+      "CurrencyType": {
+        "description": "Identifies whether a currency is fiat or crypto",
+        "type": "string",
+        "enum": [
+          "FIAT",
+          "CRYPTO"
+        ]
+      },
+      "DomainType": {
+        "description": "The domain in which a service provider operates",
+        "type": "string",
+        "enum": [
+          "PAYMENT",
+          "FINANCIAL_ACCOUNT"
+        ]
+      },
+      "FieldRequirement1": {
+        "description": "A single Meld field requirement for a payment method",
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Field key. Public requirements use the leaf JSON property for nested fields (`city`); admin catalog endpoints return the catalog PK (`beneficiaryAddress.city`) so upsert/delete stay copy-pasteable.",
+            "examples": [
+              "bankCode"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label",
+            "examples": [
+              "Bank / institution code"
+            ]
+          },
+          "fieldType": {
+            "description": "Field data type",
+            "type": "string",
+            "examples": [
+              "STRING"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodFieldType"
+              }
+            ]
+          },
+          "parentKey": {
+            "type": "string",
+            "description": "Parent JSON object name. Nested fields sit under `parentKey`, e.g. `{ \"beneficiaryAddress\": { \"city\": \"Santo Domingo\" } }`.",
+            "examples": [
+              "beneficiaryAddress"
+            ]
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether this field is required for the corridor. Offramp: required in payout details unless `derived` is true. Onramp: required on the receiving-bank / deposit-instruction projection.",
+            "examples": [
+              true
+            ]
+          },
+          "providerPath": {
+            "type": "string",
+            "description": "Provider API path for this field",
+            "examples": [
+              "financialInstitutionId"
+            ]
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Display order",
+            "examples": [
+              1
+            ]
+          },
+          "allowedValues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Allowed values for ENUM fields. Provider-scoped reads return that provider's set. Union mode returns options only when every provider contributing this field publishes the same non-empty, case-sensitive set, ignoring order and exact duplicates. Otherwise omitted; omission does not mean unrestricted. Fetch provider-scoped requirements before validating provider-native values."
+          },
+          "derived": {
+            "type": "boolean",
+            "description": "When true, Meld fills this field from the customer (`type`, `name`). Do not send it in payout details. The provider still requires it when `required` is true.",
+            "examples": [
+              false
+            ]
+          }
+        }
+      },
+      "HeadlessPresentation": {
+        "description": "Versioned headless payment presentation; not an eligibility or authorization grant",
+        "type": "object",
+        "properties": {
+          "surface": {
+            "type": "string",
+            "description": "The shape the provider exposes, in the same vocabulary as ApplePayPresentation. Current values: EMBEDDED_WIDGET, NATIVE_TOKEN, PROVIDER_HOSTED, VENDOR_SDK, NATIVE_SDK. Deliberately not an enumeration: consumers must read future values and fail closed on ones they do not support.",
+            "examples": [
+              "NATIVE_TOKEN",
+              "NATIVE_SDK"
+            ]
+          },
+          "protocol": {
+            "type": "string",
+            "description": "Adapter protocol identifier; consumers must recognize it before use"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "description": "Protocol version; consumers must explicitly support it"
+          }
+        }
+      },
+      "HeadlessResponseKind": {
+        "description": "Headless create-response protocol for a payment method",
+        "type": "string",
+        "enum": [
+          "RECEIVING_BANK_DETAILS",
+          "SESSION",
+          "SDK_BOOTSTRAP",
+          "PAYMENT_REFERENCE"
+        ]
+      },
+      "KycMode": {
+        "description": "How a provider expects Meld-supplied KYC to be shared",
+        "type": "string",
+        "enum": [
+          "ASYNC",
+          "SYNC",
+          "NONE",
+          "PROVIDER_MANAGED"
+        ]
+      },
+      "Limit": {
+        "type": "object",
+        "description": "Limits for a supported route",
+        "properties": {
+          "currencyCode": {
+            "type": "string",
+            "description": "Currency code",
+            "examples": [
+              "USD"
+            ]
+          },
+          "min": {
+            "type": "number",
+            "description": "Minimum amount",
+            "examples": [
+              10
+            ]
+          },
+          "max": {
+            "type": "number",
+            "description": "Maximum amount",
+            "examples": [
+              10000
+            ]
+          }
+        }
+      },
+      "LimitType": {
+        "description": "Limit windows applied to transaction limits",
+        "type": "string",
+        "enum": [
+          "TRANSACTION",
+          "DAILY",
+          "WEEKLY",
+          "MONTHLY",
+          "YEARLY"
+        ]
+      },
+      "NetworkPartnerCapability": {
+        "type": "object",
+        "description": "Category-scoped capability metadata for a network partner",
+        "properties": {
+          "category": {
+            "description": "Supported category",
+            "type": "string",
+            "examples": [
+              "CRYPTO_ONRAMP"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
+          },
+          "domains": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DomainType"
+            },
+            "description": "Supported domains for this category"
+          },
+          "status": {
+            "description": "Capability status",
+            "type": "string",
+            "examples": [
+              "LIVE"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderStatus"
+              }
+            ]
+          }
+        }
+      },
+      "NetworkPartnerInfo": {
+        "type": "object",
+        "description": "Network partner detail representation",
+        "properties": {
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service provider identifier",
+            "examples": [
+              "BANXA"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Provider name",
+            "examples": [
+              "Banxa"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Provider status",
+            "examples": [
+              "LIVE"
+            ]
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "description": "Supported categories"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NetworkPartnerCapability"
+            },
+            "description": "Category-scoped capability metadata"
+          },
+          "url": {
+            "type": "string",
+            "description": "Provider website",
+            "examples": [
+              "https://example.com"
+            ]
+          },
+          "lastLoadedAt": {
+            "description": "Last time this provider's API-facing support data was loaded",
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OffsetDateTime"
+              }
+            ]
+          },
+          "logo": {
+            "description": "Provider logo variants",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PartnerLogo"
+              }
+            ]
+          },
+          "headless": {
+            "description": "Provider-level headless integration capability",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderHeadlessSupport"
+              }
+            ]
+          },
+          "kycMode": {
+            "description": "How the provider accepts Meld-supplied KYC; applies to widget and headless flows alike",
+            "type": "string",
+            "examples": [
+              "SYNC"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycMode"
+              }
+            ]
+          },
+          "isExchange": {
+            "type": "boolean",
+            "description": "Whether the provider is a centralized exchange",
+            "examples": [
+              false
+            ]
+          },
+          "tos": {
+            "description": "Provider-level Terms-of-Service requirement; omitted when the provider requires none",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderTosRequirement"
+              }
+            ]
+          }
+        }
+      },
+      "OffsetDateTime": {
+        "type": "string",
+        "format": "date-time",
+        "examples": [
+          "2022-03-10T12:15:50-04:00"
+        ]
+      },
+      "PartnerLogo": {
+        "type": "object",
+        "description": "Provider logo variants",
+        "properties": {
+          "dark": {
+            "type": "string",
+            "description": "Dark full logo URL",
+            "examples": [
+              "https://cdn.meld.io/images-serviceprovider/BANXA/logo_dark.png"
+            ]
+          },
+          "light": {
+            "type": "string",
+            "description": "Light full logo URL",
+            "examples": [
+              "https://cdn.meld.io/images-serviceprovider/BANXA/logo_light.png"
+            ]
+          },
+          "darkShort": {
+            "type": "string",
+            "description": "Dark short logo URL",
+            "examples": [
+              "https://cdn.meld.io/images-serviceprovider/BANXA/short_logo_dark.png"
+            ]
+          },
+          "lightShort": {
+            "type": "string",
+            "description": "Light short logo URL",
+            "examples": [
+              "https://cdn.meld.io/images-serviceprovider/BANXA/short_logo_light.png"
+            ]
+          }
+        }
+      },
+      "PaymentMethod1": {
+        "type": "object",
+        "description": "Payment method details for a supported route",
+        "properties": {
+          "paymentType": {
+            "description": "Payment type",
+            "type": "string",
+            "examples": [
+              "CARD"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentType"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Canonical payment method code",
+            "examples": [
+              "CREDIT_DEBIT_CARD"
+            ]
+          },
+          "partnerMethodName": {
+            "type": "string",
+            "description": "Partner-specific payment method identifier",
+            "examples": [
+              "card"
+            ]
+          },
+          "limits": {
+            "description": "Limits for this payment method. Null when limits are not available.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Limit"
+              }
+            ]
+          },
+          "logo": {
+            "description": "Payment method logo variants",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodLogo"
+              }
+            ]
+          },
+          "headlessSupported": {
+            "type": "boolean",
+            "description": "Whether this provider payment method is enabled for headless flows"
+          },
+          "cardRenderMode": {
+            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported",
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CardRenderMode"
+              }
+            ]
+          },
+          "headlessPresentation": {
+            "description": "Optional presentation protocol for this provider's eligible route method",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HeadlessPresentation"
+              }
+            ]
+          },
+          "headlessProviderMethod": {
+            "type": "string",
+            "description": "Partner-specific payment method identifier the headless flow transacts on; populated exactly when headlessSupported. May differ from partnerMethodName, which identifies the route's widget product.",
+            "examples": [
+              "GUEST_CHECKOUT_APPLE_PAY"
+            ]
+          }
+        }
+      },
+      "PaymentMethodFieldType": {
+        "type": "string",
+        "enum": [
+          "STRING",
+          "OBJECT",
+          "ENUM",
+          "NUMBER"
+        ]
+      },
+      "PaymentMethodLogo": {
+        "type": "object",
+        "description": "Payment method logo variants",
+        "properties": {
+          "dark": {
+            "type": "string",
+            "description": "Dark logo URL",
+            "examples": [
+              "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png"
+            ]
+          },
+          "light": {
+            "type": "string",
+            "description": "Light logo URL",
+            "examples": [
+              "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_light.png"
+            ]
+          }
+        }
+      },
+      "PaymentMethodRequirements1": {
+        "description": "Field requirements for one provider payment method",
+        "type": "object",
+        "properties": {
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service provider identifier",
+            "examples": [
+              "DUENETWORK"
+            ]
+          },
+          "category": {
+            "description": "Provider category",
+            "type": "string",
+            "examples": [
+              "CRYPTO_OFFRAMP"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Canonical payment method code",
+            "examples": [
+              "DO_BANK_TRANSFER"
+            ]
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Country code",
+            "examples": [
+              "DO"
+            ]
+          },
+          "accountHolderType": {
+            "description": "Individual or business slice this block applies to",
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccountHolderType"
+              }
+            ]
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldRequirement1"
+            },
+            "description": "Account-facing fields for this corridor"
+          }
+        }
+      },
+      "PaymentType": {
+        "description": "Enumeration of payment method types supported by the platform",
+        "type": "string",
+        "enum": [
+          "BANK_TRANSFER",
+          "CARD",
+          "CASH",
+          "EXCHANGE",
+          "LOCAL",
+          "MOBILE_WALLET"
+        ]
+      },
+      "ProviderFiatLimit": {
+        "description": "Provider fiat amount limits for a payment method",
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Provider identifier",
+            "examples": [
+              "BANXA"
+            ]
+          },
+          "category": {
+            "description": "Provider category",
+            "type": "string",
+            "examples": [
+              "CRYPTO_ONRAMP"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Country code",
+            "examples": [
+              "US"
+            ]
+          },
+          "currencyCode": {
+            "type": "string",
+            "description": "Fiat currency code",
+            "examples": [
+              "USD"
+            ]
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Canonical payment method code",
+            "examples": [
+              "CREDIT_DEBIT_CARD"
+            ]
+          },
+          "min": {
+            "type": "number",
+            "description": "Minimum amount",
+            "examples": [
+              10.0
+            ]
+          },
+          "max": {
+            "type": "number",
+            "description": "Maximum amount",
+            "examples": [
+              10000.0
+            ]
+          }
+        }
+      },
+      "ProviderHeadlessSupport": {
+        "type": "object",
+        "description": "Provider-level headless integration capability",
+        "properties": {
+          "supported": {
+            "type": "boolean",
+            "description": "Whether the provider supports headless flows"
+          },
+          "uiCustomization": {
+            "type": "boolean",
+            "description": "Whether the provider exposes UI-customisable headless surfaces"
+          }
+        }
+      },
+      "ProviderKycLimit": {
+        "description": "Provider KYC limits for a currency and limit window",
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Provider identifier",
+            "examples": [
+              "BANXA"
+            ]
+          },
+          "category": {
+            "description": "Provider category",
+            "type": "string",
+            "examples": [
+              "CRYPTO_ONRAMP"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Country code",
+            "examples": [
+              "US"
+            ]
+          },
+          "limitType": {
+            "description": "Limit window",
+            "type": "string",
+            "examples": [
+              "DAILY"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LimitType"
+              }
+            ]
+          },
+          "currencyCode": {
+            "type": "string",
+            "description": "Currency code",
+            "examples": [
+              "USD"
+            ]
+          },
+          "level1": {
+            "type": "number",
+            "description": "KYC level 1 amount",
+            "examples": [
+              1000.0
+            ]
+          },
+          "level2": {
+            "type": "number",
+            "description": "KYC level 2 amount",
+            "examples": [
+              10000.0
+            ]
+          },
+          "level3": {
+            "type": "number",
+            "description": "KYC level 3 amount",
+            "examples": [
+              50000.0
+            ]
+          }
+        }
+      },
+      "ProviderStatus": {
+        "description": "Integration status for a service provider",
+        "type": "string",
+        "enum": [
+          "LIVE",
+          "PAUSED",
+          "DEPRECATED"
+        ]
+      },
+      "ProviderTosRequirement": {
+        "type": "object",
+        "description": "Provider-level Terms-of-Service requirement (present only when at least one purpose applies)",
+        "properties": {
+          "purposes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TosPurpose"
+            },
+            "description": "Onboarding purposes for which the provider requires ToS acceptance"
+          }
+        }
+      },
+      "Response1": {
+        "description": "Response wrapper for payment method field requirements",
+        "type": "object",
+        "properties": {
+          "requirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentMethodRequirements1"
+            },
+            "description": "List of payment method field requirements"
+          }
+        }
+      },
+      "Response2": {
+        "description": "Provider fiat limit response",
+        "type": "object",
+        "properties": {
+          "fiatLimits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderFiatLimit"
+            },
+            "description": "List of provider fiat limits"
+          }
+        }
+      },
+      "Response3": {
+        "description": "Provider KYC limit response",
+        "type": "object",
+        "properties": {
+          "kycLimits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderKycLimit"
+            },
+            "description": "List of provider KYC limits"
+          }
+        }
+      },
+      "SupportedPaymentMethod": {
+        "description": "Supported payment method representation",
+        "type": "object",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "Country code",
+            "examples": [
+              "US"
+            ]
+          },
+          "providerMethod": {
+            "type": "string",
+            "description": "Provider payment method code",
+            "examples": [
+              "CARD"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "description": "Payment method code",
+            "examples": [
+              "CREDIT_DEBIT_CARD"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Payment method name",
+            "examples": [
+              "Credit or debit card"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "Payment method type",
+            "examples": [
+              "CARD"
+            ]
+          },
+          "logo": {
+            "description": "Payment method logo variants",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodLogo"
+              }
+            ]
+          },
+          "headlessSupported": {
+            "type": "boolean",
+            "description": "Whether this method is enabled for headless flows in the response context. For multi-provider search, true when any matching provider supports it headlessly."
+          },
+          "cardRenderMode": {
+            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported",
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CardRenderMode"
+              }
+            ]
+          },
+          "responseKind": {
+            "description": "Headless create-response protocol for this method; populated exactly when headlessSupported in a per-provider lookup. Consumers dispatch on this instead of hard-coding per-method behaviour.",
+            "type": "string",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HeadlessResponseKind"
+              }
+            ]
+          },
+          "headlessPresentation": {
+            "description": "Optional presentation protocol for an unambiguous, category-scoped single-provider headless lookup",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HeadlessPresentation"
+              }
+            ]
+          },
+          "headlessProviderMethod": {
+            "type": "string",
+            "description": "Provider payment method code the headless flow transacts on; populated only when headlessSupported in a single-provider lookup whose headless rows agree on it. May differ from providerMethod, which identifies the widget product.",
+            "examples": [
+              "GUEST_CHECKOUT_APPLE_PAY"
+            ]
+          }
+        }
+      },
+      "SupportedRoute": {
+        "description": "Supported route details for a specific source and destination currency pair",
+        "type": "object",
+        "properties": {
+          "partner": {
+            "type": "string",
+            "description": "Partner identifier",
+            "examples": [
+              "BANXA"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "description": "Source currency code",
+            "examples": [
+              "USD"
+            ]
+          },
+          "destination": {
+            "type": "string",
+            "description": "Destination currency code",
+            "examples": [
+              "BTC"
+            ]
+          },
+          "paymentMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentMethod1"
+            },
+            "description": "Payment methods for the route. Empty for swap routes without payment methods."
+          },
+          "kycLimits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderKycLimit"
+            },
+            "description": "Provider KYC limits for this route. Empty when limits are not available."
+          }
+        }
+      },
+      "TosPurpose": {
+        "description": "An onboarding purpose for which a provider requires Terms-of-Service acceptance",
+        "type": "string",
+        "enum": [
+          "ONBOARDING",
+          "BANK_DEPOSIT"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "The error body every failed request on this service returns.",
+        "required": [
+          "code",
+          "message",
+          "timestamp"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "What went wrong, as a stable value to branch on.",
+            "enum": [
+              "BAD_REQUEST",
+              "CONFLICT",
+              "ENCRYPTION_ERROR",
+              "FORBIDDEN",
+              "JSON_PROCESSING_ERROR",
+              "METHOD_NOT_ALLOWED",
+              "UNSUPPORTED_MEDIA_TYPE",
+              "NOT_ACCEPTABLE",
+              "NOT_FOUND",
+              "NOT_SUPPORTED",
+              "SERVICE_PROVIDER_ERROR",
+              "UNAUTHORIZED",
+              "UNEXPECTED_ERROR"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "What happened, in words, naming the value that was rejected or not found."
+          },
+          "requestId": {
+            "type": "string",
+            "description": "The request's id when one reached this service. Quote it in a support request. Absent when nothing upstream set one."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "x-default": "BASIC <Meld API Key>"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
   },
-  "servers": [
+  "tags": [
     {
-      "url": "https://api.meld.io"
+      "name": "Supported",
+      "description": ""
     }
   ],
   "paths": {
     "/network-partner/supported/countries": {
       "get": {
         "summary": "List supported countries",
-        "description": "Returns countries supported across live providers with flag URLs and supported subdivision codes, optionally filtered by category and partners. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Returns countries supported across live providers with flag URLs and supported subdivision codes. All filters are optional and can be combined freely; a request without filters returns every country served by a live provider. Currency and payment-method filters match countries where some live provider supports the value there (independent per-provider checks, not full route existence). When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "operationId": "list-supported-countries",
         "tags": [
           "Supported"
         ],
@@ -38,12 +1204,57 @@
             }
           },
           {
+            "description": "Country code",
+            "example": "US",
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Canonical crypto currency code",
+            "example": "BTC",
+            "name": "cryptoCurrency",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Canonical fiat currency code",
+            "example": "USD",
+            "name": "fiatCurrency",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Comma-separated partner ids",
-            "example": "BANXA,MOONPAY",
+            "example": "BANXA,TRANSAK",
             "name": "partners",
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "Canonical payment method code",
+            "example": "CREDIT_DEBIT_CARD",
+            "name": "paymentMethod",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Payment method type",
+            "example": "CARD",
+            "name": "paymentType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PaymentType"
             }
           },
           {
@@ -92,43 +1303,17 @@
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/CountryResponse"
+                  "$ref": "#/components/schemas/CountryResponse1"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
+            "description": "Request rejected - see the code and message",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`BAD_REQUEST`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Bad request"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "BAD_REQUEST",
-                  "message": "Bad request",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -138,33 +1323,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNAUTHORIZED`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -174,33 +1333,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`FORBIDDEN`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -210,39 +1373,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNEXPECTED_ERROR`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Unexpected error"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNEXPECTED_ERROR",
-                  "message": "Unexpected error",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
-        "operationId": "list-supported-countries",
+        "security": [],
         "x-mint": {
           "href": "/api-reference/network-partners/supported/list-supported-countries"
         }
@@ -252,6 +1389,7 @@
       "get": {
         "summary": "Search supported currencies",
         "description": "Searches currencies supported across providers and returns canonical currency metadata including symbol image URLs. Defaults to `type=CRYPTO`; use `type=FIAT` to search fiat support. `network` is only valid for crypto searches. `providerCurrencyCode` can filter both crypto and fiat provider-specific codes. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partner` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "operationId": "search-supported-currencies",
         "tags": [
           "Supported"
         ],
@@ -370,6 +1508,7 @@
                           "decimalPlaces": 6,
                           "type": "CRYPTO",
                           "chainCode": "ETH",
+                          "chainId": "1",
                           "contract": "0x1234...",
                           "symbol": "https://cdn.meld.io/images-currency/crypto/USDC/symbol.png"
                         }
@@ -384,37 +1523,21 @@
             }
           },
           "400": {
-            "description": "Invalid filter combination\n\nRead message for the value that was rejected, then correct it.",
+            "description": "Invalid filter combination",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`BAD_REQUEST`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "network is only supported for CRYPTO searches"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
+                "examples": {
+                  "invalidFiatFilters": {
+                    "summary": "Crypto-only filters supplied for a fiat search",
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "message": "network is only supported for CRYPTO searches",
+                      "timestamp": "2026-08-21T19:29:43.980+00:00"
                     }
                   }
                 },
-                "example": {
-                  "code": "BAD_REQUEST",
-                  "message": "network is only supported for CRYPTO searches",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -424,33 +1547,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNAUTHORIZED`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -460,33 +1557,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`FORBIDDEN`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -496,39 +1597,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNEXPECTED_ERROR`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Unexpected error"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNEXPECTED_ERROR",
-                  "message": "Unexpected error",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
-        "operationId": "search-supported-currencies",
+        "security": [],
         "x-mint": {
           "href": "/api-reference/network-partners/supported/search-supported-currencies"
         }
@@ -538,6 +1613,7 @@
       "get": {
         "summary": "Search supported provider fiat limits",
         "description": "Searches provider-supplied fiat amount limits across live providers. Returns only loaded provider fiat limit rows; default currency fallback limits are not included. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "operationId": "list-supported-fiat-limits",
         "tags": [
           "Supported"
         ],
@@ -571,7 +1647,7 @@
             }
           },
           {
-            "description": "Fiat currency code",
+            "description": "Canonical fiat currency code",
             "example": "USD",
             "name": "currencyCode",
             "in": "query",
@@ -581,7 +1657,7 @@
           },
           {
             "description": "Comma-separated partner ids",
-            "example": "BANXA,MOONPAY",
+            "example": "BANXA,TRANSAK",
             "name": "partners",
             "in": "query",
             "schema": {
@@ -648,43 +1724,17 @@
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/Response"
+                  "$ref": "#/components/schemas/Response2"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
+            "description": "Request rejected - see the code and message",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`BAD_REQUEST`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Bad request"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "BAD_REQUEST",
-                  "message": "Bad request",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -694,33 +1744,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNAUTHORIZED`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -730,33 +1754,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`FORBIDDEN`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -766,39 +1794,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNEXPECTED_ERROR`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Unexpected error"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNEXPECTED_ERROR",
-                  "message": "Unexpected error",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
-        "operationId": "list-supported-fiat-limits",
+        "security": [],
         "x-mint": {
           "href": "/api-reference/network-partners/supported/list-supported-fiat-limits"
         }
@@ -808,6 +1810,7 @@
       "get": {
         "summary": "Search supported provider KYC limits",
         "description": "Searches admin-curated provider KYC limits across live providers. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "operationId": "list-supported-kyc-limits",
         "tags": [
           "Supported"
         ],
@@ -841,7 +1844,7 @@
             }
           },
           {
-            "description": "Currency code",
+            "description": "Canonical currency code in which the KYC limits are denominated. May be fiat or crypto.",
             "example": "USD",
             "name": "currencyCode",
             "in": "query",
@@ -860,7 +1863,7 @@
           },
           {
             "description": "Comma-separated partner ids",
-            "example": "BANXA,MOONPAY",
+            "example": "BANXA,TRANSAK",
             "name": "partners",
             "in": "query",
             "schema": {
@@ -901,43 +1904,17 @@
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/Response1"
+                  "$ref": "#/components/schemas/Response3"
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
+            "description": "Request rejected - see the code and message",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`BAD_REQUEST`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Bad request"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "BAD_REQUEST",
-                  "message": "Bad request",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -947,33 +1924,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNAUTHORIZED`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -983,33 +1934,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`FORBIDDEN`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1019,39 +1974,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNEXPECTED_ERROR`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Unexpected error"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNEXPECTED_ERROR",
-                  "message": "Unexpected error",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
-        "operationId": "list-supported-kyc-limits",
+        "security": [],
         "x-mint": {
           "href": "/api-reference/network-partners/supported/list-supported-kyc-limits"
         }
@@ -1060,7 +1989,8 @@
     "/network-partner/supported/partners": {
       "get": {
         "summary": "List live partners supporting a route",
-        "description": "Searches live partners that support a route defined by category, country, optional subdivision, fiat currency, crypto currency, and payment method or payment type. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partner` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Searches live partners by category, country, optional subdivision, fiat currency, crypto currency, and payment method or payment type. All filters are optional and can be combined freely; a request without filters returns every live partner. When category, country, fiat currency, and crypto currency are all provided (for swap and CRYPTO_TRANSFER categories: category, country, and crypto currency), partners are matched against actual provider routes; partial filter combinations match partners that support each provided value independently. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partner` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "operationId": "list-supported-partners",
         "tags": [
           "Supported"
         ],
@@ -1094,7 +2024,7 @@
             }
           },
           {
-            "description": "Crypto currency code",
+            "description": "Canonical crypto currency code",
             "example": "BTC",
             "name": "cryptoCurrency",
             "in": "query",
@@ -1103,7 +2033,7 @@
             }
           },
           {
-            "description": "Fiat currency code",
+            "description": "Canonical fiat currency code",
             "example": "USD",
             "name": "fiatCurrency",
             "in": "query",
@@ -1181,7 +2111,7 @@
                             "status": "LIVE"
                           }
                         ],
-                        "url": "https://banxa.com",
+                        "url": "https://www.banxa.com",
                         "logo": {
                           "dark": "https://cdn.meld.io/images-serviceprovider/BANXA/logo_dark.png",
                           "light": "https://cdn.meld.io/images-serviceprovider/BANXA/logo_light.png",
@@ -1189,10 +2119,11 @@
                           "lightShort": "https://cdn.meld.io/images-serviceprovider/BANXA/short_logo_light.png"
                         },
                         "headless": {
-                          "supported": false,
-                          "kycMode": "NONE",
+                          "supported": true,
                           "uiCustomization": false
-                        }
+                        },
+                        "kycMode": "ASYNC",
+                        "isExchange": false
                       }
                     ]
                   },
@@ -1211,37 +2142,11 @@
             }
           },
           "400": {
-            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
+            "description": "Request rejected - see the code and message",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`BAD_REQUEST`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Bad request"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "BAD_REQUEST",
-                  "message": "Bad request",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1251,33 +2156,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNAUTHORIZED`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1287,33 +2166,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`FORBIDDEN`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1323,39 +2206,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNEXPECTED_ERROR`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Unexpected error"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNEXPECTED_ERROR",
-                  "message": "Unexpected error",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
-        "operationId": "list-supported-partners",
+        "security": [],
         "x-mint": {
           "href": "/api-reference/network-partners/supported/list-supported-partners"
         }
@@ -1365,6 +2222,7 @@
       "get": {
         "summary": "Search supported payment methods",
         "description": "Searches payment methods supported across providers. Results are deduplicated across providers and returned as canonical payment-method entries with logo URLs for the requested filters. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "operationId": "list-supported-payment-methods",
         "tags": [
           "Supported"
         ],
@@ -1398,7 +2256,7 @@
             }
           },
           {
-            "description": "Currency code",
+            "description": "Canonical fiat currency code",
             "example": "EUR",
             "name": "currencyCode",
             "in": "query",
@@ -1408,7 +2266,7 @@
           },
           {
             "description": "Comma-separated partner ids",
-            "example": "BANXA,MOONPAY",
+            "example": "BANXA,TRANSAK",
             "name": "partners",
             "in": "query",
             "schema": {
@@ -1475,37 +2333,11 @@
             }
           },
           "400": {
-            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
+            "description": "Request rejected - see the code and message",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`BAD_REQUEST`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Bad request"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "BAD_REQUEST",
-                  "message": "Bad request",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1515,33 +2347,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNAUTHORIZED`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1551,33 +2357,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`FORBIDDEN`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1587,48 +2397,209 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNEXPECTED_ERROR`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Unexpected error"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNEXPECTED_ERROR",
-                  "message": "Unexpected error",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
-        "operationId": "list-supported-payment-methods",
+        "security": [],
         "x-mint": {
           "href": "/api-reference/network-partners/supported/list-supported-payment-methods"
+        }
+      }
+    },
+    "/network-partner/supported/payment-methods/requirements": {
+      "get": {
+        "summary": "Search payment method field requirements",
+        "description": "Returns per-provider field requirements and provider API path mappings for a payment method. Nested field `key` values are the leaf JSON property (`city`), not the catalog PK (`beneficiaryAddress.city`); nest them under `parentKey`. When `serviceProvider` is omitted, returns the union of required fields across providers (one block per category + payment method + country + accountHolderType; `providerPath` is omitted). `allowedValues` is returned only when all providers contributing that field publish the same non-empty, case-sensitive set (order and exact duplicates do not matter). Missing or differing sets omit options; omission does not mean unrestricted. Validate against provider-scoped requirements. A field is `required` if any matching provider requires it. The response is the account-facing contract for the requested category. Offramp keys with `derived=false` are what the account sends in payout details; onramp keys are the receiving-bank fields on the deposit instruction. `derived=true` fields (`accountHolderType`, `firstName`, `lastName`, `fullName`) are still required by the provider; Meld fills them from the customer. Omit `accountHolderType` to return both the INDIVIDUAL and BUSINESS slices. All filters are optional and can be combined; providing no filters returns the union across all stored requirements. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `serviceProvider` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "operationId": "search-payment-method-field-requirements",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
+            "description": "Individual or business slice. Omit to return both.",
+            "name": "accountHolderType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AccountHolderType"
+            }
+          },
+          {
+            "description": "Provider category",
+            "example": "CRYPTO_OFFRAMP",
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          {
+            "description": "Country code",
+            "example": "DO",
+            "name": "countryCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Canonical payment method code",
+            "example": "DO_BANK_TRANSFER",
+            "name": "paymentMethod",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Service provider identifier",
+            "example": "DUENETWORK",
+            "name": "serviceProvider",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment method field requirements",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "paymentMethodRequirements": {
+                    "summary": "Field requirements for a specific payment method",
+                    "value": {
+                      "requirements": [
+                        {
+                          "serviceProvider": "DUENETWORK",
+                          "category": "CRYPTO_OFFRAMP",
+                          "paymentMethod": "DO_BANK_TRANSFER",
+                          "countryCode": "DO",
+                          "accountHolderType": "INDIVIDUAL",
+                          "fields": [
+                            {
+                              "key": "bankCode",
+                              "label": "Bank / institution code",
+                              "fieldType": "STRING",
+                              "required": true,
+                              "providerPath": "financialInstitutionId",
+                              "displayOrder": 1
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Response1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected - see the code and message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/search-payment-method-field-requirements"
         }
       }
     },
     "/network-partner/supported/routes/{category}/{countryCode}/{sourceCurrencyCode}/{destinationCurrencyCode}": {
       "get": {
         "summary": "List supported routes",
-        "description": "Searches supported partner routes by category, country, optional subdivision, source currency, destination currency, and payment method or payment type. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Searches supported partner routes by category, country, optional subdivision, source currency, destination currency, and payment method or payment type. For onramp categories the route is fiat to crypto; for non-swap offramp categories it is crypto to fiat. Swap and CRYPTO_TRANSFER routes are crypto to crypto. Provider matching uses the destination crypto for CRYPTO_ONRAMP_SWAP and CRYPTO_TRANSFER, and the source crypto for CRYPTO_OFFRAMP_SWAP. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "operationId": "find-supported-routes",
         "tags": [
           "Supported"
         ],
@@ -1664,7 +2635,7 @@
             }
           },
           {
-            "description": "Destination currency code",
+            "description": "Canonical destination currency code. Crypto for onramp, swap, and CRYPTO_TRANSFER categories; fiat for non-swap offramp categories.",
             "example": "BTC",
             "name": "destinationCurrencyCode",
             "in": "path",
@@ -1674,7 +2645,7 @@
             }
           },
           {
-            "description": "Source currency code",
+            "description": "Canonical source currency code. Fiat for onramp categories; crypto for offramp, swap, and CRYPTO_TRANSFER categories.",
             "example": "USD",
             "name": "sourceCurrencyCode",
             "in": "path",
@@ -1783,37 +2754,11 @@
             }
           },
           "400": {
-            "description": "Bad request\n\nRead message for the value that was rejected, then correct it.",
+            "description": "Request rejected - see the code and message",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`BAD_REQUEST`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Bad request"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "BAD_REQUEST",
-                  "message": "Bad request",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1823,33 +2768,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNAUTHORIZED`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1859,33 +2778,37 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`FORBIDDEN`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1895,48 +2818,273 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNEXPECTED_ERROR`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Unexpected error"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNEXPECTED_ERROR",
-                  "message": "Unexpected error",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
-        "operationId": "find-supported-routes",
+        "security": [],
         "x-mint": {
           "href": "/api-reference/network-partners/supported/find-supported-routes"
         }
       }
     },
-    "/network-partner/defaults/{countryCode}/{category}": {
+    "/network-partner/defaults": {
       "get": {
-        "summary": "Get country defaults",
-        "description": "Returns the default currency and payment methods for a given country and category, used to preselect sensible values in a white-label flow. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: defaults come from the global dataset.\n- Basic Auth only: defaults are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: defaults are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: defaults are restricted to the intersection of both provider sets.\n\nReturns `null` when no defaults are available for the requested country and category within the resolved provider scope.",
+        "summary": "List country defaults",
+        "description": "Returns default currencies and payment methods for all configured country/category pairs. This endpoint returns the global canonical catalog. Basic Auth and `Meld-Account-Id` do not change the result.",
+        "operationId": "list-country-defaults",
+        "tags": [
+          "Supported"
+        ],
+        "responses": {
+          "200": {
+            "description": "Country defaults",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "countryDefaults": {
+                    "summary": "Country defaults",
+                    "value": [
+                      {
+                        "countryCode": "US",
+                        "category": "CRYPTO_ONRAMP",
+                        "currencyCode": "USD",
+                        "paymentMethods": [
+                          "CREDIT_DEBIT_CARD"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CountryDefault"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected - see the code and message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/list-country-defaults"
+        }
+      }
+    },
+    "/network-partner/defaults/limits": {
+      "get": {
+        "summary": "List default currency limits",
+        "description": "Returns global default limits for canonical fiat and crypto currencies. This endpoint returns the global canonical catalog. Basic Auth and `Meld-Account-Id` do not change the result.",
+        "operationId": "list-default-currency-limits",
+        "tags": [
+          "Supported"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default currency limits",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "defaultCurrencyLimits": {
+                    "summary": "Default currency limits",
+                    "value": [
+                      {
+                        "currencyCode": "USD",
+                        "defaultValue": 100,
+                        "min": 10,
+                        "max": 10000
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurrencyLimit"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected - see the code and message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/list-default-currency-limits"
+        }
+      }
+    },
+    "/network-partner/defaults/limits/{currency}": {
+      "get": {
+        "summary": "Get default currency limits",
+        "description": "Returns global default limits for one canonical fiat or crypto currency. This endpoint returns the global canonical catalog. Basic Auth and `Meld-Account-Id` do not change the result.",
+        "operationId": "get-default-currency-limit",
         "tags": [
           "Supported"
         ],
@@ -1952,13 +3100,142 @@
             }
           },
           {
-            "description": "Country code",
-            "example": "US",
-            "name": "countryCode",
+            "description": "Canonical fiat or crypto currency code",
+            "example": "EUR",
+            "name": "currency",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default currency limit",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "defaultCurrencyLimit": {
+                    "summary": "Default currency limit",
+                    "value": {
+                      "currencyCode": "USD",
+                      "defaultValue": 100,
+                      "min": 10,
+                      "max": 10000
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyLimit"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected - see the code and message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Currency limit not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/get-default-currency-limit"
+        }
+      }
+    },
+    "/network-partner/defaults/{country}/{category}": {
+      "get": {
+        "summary": "Get country defaults",
+        "description": "Returns the default currency and payment methods for a country and category. This endpoint returns the global canonical catalog. Basic Auth and `Meld-Account-Id` do not change the result.",
+        "operationId": "get-country-defaults",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
             }
           },
           {
@@ -1972,9 +3249,11 @@
             }
           },
           {
-            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
-            "name": "Meld-Account-Id",
-            "in": "header",
+            "description": "Country code",
+            "example": "US",
+            "name": "country",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -1982,62 +3261,24 @@
         ],
         "responses": {
           "200": {
-            "description": "Country defaults, or `null` when none are available for the requested country and category",
+            "description": "Country defaults",
             "content": {
               "application/json": {
                 "examples": {
                   "countryDefaults": {
-                    "summary": "Default currency and payment methods",
+                    "summary": "Country defaults",
                     "value": {
                       "countryCode": "US",
                       "category": "CRYPTO_ONRAMP",
                       "currencyCode": "USD",
                       "paymentMethods": [
-                        "CREDIT_DEBIT_CARD",
-                        "APPLE_PAY",
-                        "ROBINHOOD_BUYING_POWER"
+                        "CREDIT_DEBIT_CARD"
                       ]
                     }
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/CountryDefaults"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found\n\nVerify the identifier in the request.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`NOT_FOUND`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Resource not found"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "NOT_FOUND",
-                  "message": "Resource not found",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/CountryDefault"
                 }
               }
             }
@@ -2047,33 +3288,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`BAD_REQUEST`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Bad request"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "BAD_REQUEST",
-                  "message": "Bad request",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2083,33 +3298,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNAUTHORIZED`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2119,33 +3308,47 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`FORBIDDEN`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Access denied"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "message": "Access denied",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Country defaults not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2155,833 +3358,38 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`UNEXPECTED_ERROR`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Unexpected error"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "UNEXPECTED_ERROR",
-                  "message": "Unexpected error",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         },
-        "operationId": "get-country-defaults",
+        "security": [],
         "x-mint": {
           "href": "/api-reference/network-partners/supported/get-country-defaults"
         }
       }
     }
   },
-  "components": {
-    "schemas": {
-      "CardRenderMode": {
-        "type": "string",
-        "enum": [
-          "IFRAME",
-          "REDIRECT"
-        ],
-        "description": "Render mode for CREDIT_DEBIT_CARD payment method in headless flows"
-      },
-      "Category": {
-        "type": "string",
-        "enum": [
-          "CRYPTO_ONRAMP",
-          "CRYPTO_OFFRAMP",
-          "CRYPTO_TRANSFER",
-          "BANK_LINKING",
-          "FIAT_PAYMENTS",
-          "CRYPTO_VIRTUAL_ACCOUNT_ONRAMP",
-          "CRYPTO_VIRTUAL_ACCOUNT_OFFRAMP",
-          "CUSTOMER_KYC",
-          "CRYPTO_ONRAMP_SWAP",
-          "CRYPTO_OFFRAMP_SWAP"
-        ],
-        "description": "Categories of functionality offered by a service provider"
-      },
-      "Country": {
-        "type": "object",
-        "description": "Country representation used in country and supported-country lists",
-        "properties": {
-          "countryCode": {
-            "type": "string",
-            "examples": [
-              "US"
-            ],
-            "description": "ISO 3166-1 alpha-2 country code"
-          },
-          "name": {
-            "type": "string",
-            "examples": [
-              "United States"
-            ],
-            "description": "Country display name"
-          },
-          "flag": {
-            "type": "string",
-            "examples": [
-              "https://cdn.meld.io/images-country/US/flag.svg"
-            ],
-            "description": "Country flag URL"
-          },
-          "subdivisions": {
-            "type": "array",
-            "examples": [
-              [
-                "US-CA",
-                "US-NY"
-              ]
-            ],
-            "items": {
-              "type": "string"
-            },
-            "description": "ISO 3166-2 subdivision codes supported for this country"
-          }
-        }
-      },
-      "CountryResponse": {
-        "type": "object",
-        "description": "Response wrapper for countries",
-        "properties": {
-          "countries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Country"
-            },
-            "description": "List of countries"
-          }
-        }
-      },
-      "Currency": {
-        "type": "object",
-        "description": "Currency representation",
-        "properties": {
-          "currencyCode": {
-            "type": "string",
-            "examples": [
-              "USD"
-            ],
-            "description": "Currency code"
-          },
-          "name": {
-            "type": "string",
-            "examples": [
-              "US Dollar"
-            ],
-            "description": "Currency name"
-          },
-          "decimalPlaces": {
-            "type": "integer",
-            "format": "int32",
-            "examples": [
-              2
-            ],
-            "description": "Number of decimal places"
-          },
-          "type": {
-            "type": "string",
-            "examples": [
-              "FIAT"
-            ],
-            "description": "Currency type"
-          },
-          "chainCode": {
-            "type": "string",
-            "examples": [
-              "ETH"
-            ],
-            "description": "Chain code for crypto currencies"
-          },
-          "contract": {
-            "type": "string",
-            "examples": [
-              "0x1234..."
-            ],
-            "description": "Contract address for token"
-          },
-          "symbol": {
-            "type": "string",
-            "examples": [
-              "https://cdn.meld.io/images-currency/crypto/BTC/symbol.png"
-            ],
-            "description": "Currency symbol image URL generated from currency type and code"
-          }
-        }
-      },
-      "CurrencyResponse1": {
-        "type": "object",
-        "description": "Response wrapper for currencies",
-        "properties": {
-          "currencies": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Currency"
-            },
-            "description": "List of currencies"
-          }
-        }
-      },
-      "CurrencyType": {
-        "type": "string",
-        "enum": [
-          "FIAT",
-          "CRYPTO"
-        ],
-        "description": "Identifies whether a currency is fiat or crypto"
-      },
-      "DomainType": {
-        "type": "string",
-        "enum": [
-          "PAYMENT",
-          "FINANCIAL_ACCOUNT"
-        ],
-        "description": "The domain in which a service provider operates"
-      },
-      "KycMode": {
-        "type": "string",
-        "enum": [
-          "ASYNC",
-          "SYNC",
-          "NONE"
-        ],
-        "description": "How a provider expects KYC to be supplied for headless onramp orders"
-      },
-      "Limit": {
-        "type": "object",
-        "description": "Limits for a supported route",
-        "properties": {
-          "currencyCode": {
-            "type": "string",
-            "examples": [
-              "USD"
-            ],
-            "description": "Currency code"
-          },
-          "min": {
-            "type": "number",
-            "examples": [
-              10
-            ],
-            "description": "Minimum amount"
-          },
-          "max": {
-            "type": "number",
-            "examples": [
-              10000
-            ],
-            "description": "Maximum amount"
-          }
-        }
-      },
-      "LimitType": {
-        "type": "string",
-        "enum": [
-          "TRANSACTION",
-          "DAILY",
-          "WEEKLY",
-          "MONTHLY",
-          "YEARLY"
-        ],
-        "description": "Limit windows applied to transaction limits"
-      },
-      "NetworkPartnerCapability": {
-        "type": "object",
-        "description": "Category-scoped capability metadata for a network partner",
-        "properties": {
-          "category": {
-            "type": "string",
-            "examples": [
-              "CRYPTO_ONRAMP"
-            ],
-            "description": "Supported category",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Category"
-              }
-            ]
-          },
-          "domains": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/DomainType"
-            },
-            "description": "Supported domains for this category"
-          },
-          "status": {
-            "type": "string",
-            "examples": [
-              "LIVE"
-            ],
-            "description": "Capability status",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProviderStatus"
-              }
-            ]
-          }
-        }
-      },
-      "NetworkPartnerInfo": {
-        "type": "object",
-        "description": "Network partner detail representation",
-        "properties": {
-          "serviceProvider": {
-            "type": "string",
-            "examples": [
-              "BANXA"
-            ],
-            "description": "Service provider identifier"
-          },
-          "name": {
-            "type": "string",
-            "examples": [
-              "Banxa"
-            ],
-            "description": "Provider name"
-          },
-          "status": {
-            "type": "string",
-            "examples": [
-              "LIVE"
-            ],
-            "description": "Provider status"
-          },
-          "categories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Category"
-            },
-            "description": "Supported categories"
-          },
-          "capabilities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/NetworkPartnerCapability"
-            },
-            "description": "Category-scoped capability metadata"
-          },
-          "url": {
-            "type": "string",
-            "examples": [
-              "https://example.com"
-            ],
-            "description": "Provider website"
-          },
-          "logo": {
-            "type": "object",
-            "description": "Provider logo variants",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PartnerLogo"
-              }
-            ]
-          },
-          "headless": {
-            "type": "object",
-            "description": "Provider-level headless integration capability",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProviderHeadlessSupport"
-              }
-            ]
-          }
-        }
-      },
-      "PartnerLogo": {
-        "type": "object",
-        "description": "Provider logo variants",
-        "properties": {
-          "dark": {
-            "type": "string",
-            "examples": [
-              "https://cdn.meld.io/images-serviceprovider/BANXA/logo_dark.png"
-            ],
-            "description": "Dark full logo URL"
-          },
-          "light": {
-            "type": "string",
-            "examples": [
-              "https://cdn.meld.io/images-serviceprovider/BANXA/logo_light.png"
-            ],
-            "description": "Light full logo URL"
-          },
-          "darkShort": {
-            "type": "string",
-            "examples": [
-              "https://cdn.meld.io/images-serviceprovider/BANXA/short_logo_dark.png"
-            ],
-            "description": "Dark short logo URL"
-          },
-          "lightShort": {
-            "type": "string",
-            "examples": [
-              "https://cdn.meld.io/images-serviceprovider/BANXA/short_logo_light.png"
-            ],
-            "description": "Light short logo URL"
-          }
-        }
-      },
-      "PaymentMethod2": {
-        "type": "object",
-        "description": "Payment method details for a supported route",
-        "properties": {
-          "paymentType": {
-            "type": "string",
-            "examples": [
-              "CARD"
-            ],
-            "description": "Payment type",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PaymentType"
-              }
-            ]
-          },
-          "name": {
-            "type": "string",
-            "examples": [
-              "CREDIT_DEBIT_CARD"
-            ],
-            "description": "Canonical payment method code"
-          },
-          "partnerMethodName": {
-            "type": "string",
-            "examples": [
-              "card"
-            ],
-            "description": "Partner-specific payment method identifier"
-          },
-          "limits": {
-            "type": "object",
-            "description": "Limits for this payment method. Null when limits are not available.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Limit"
-              }
-            ]
-          },
-          "logo": {
-            "type": "object",
-            "description": "Payment method logo variants",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PaymentMethodLogo"
-              }
-            ]
-          },
-          "headlessSupported": {
-            "type": "boolean",
-            "description": "Whether this provider payment method is enabled for headless flows"
-          },
-          "cardRenderMode": {
-            "type": "string",
-            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CardRenderMode"
-              }
-            ]
-          }
-        }
-      },
-      "PaymentMethodLogo": {
-        "type": "object",
-        "description": "Payment method logo variants",
-        "properties": {
-          "dark": {
-            "type": "string",
-            "examples": [
-              "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png"
-            ],
-            "description": "Dark logo URL"
-          },
-          "light": {
-            "type": "string",
-            "examples": [
-              "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_light.png"
-            ],
-            "description": "Light logo URL"
-          }
-        }
-      },
-      "PaymentType": {
-        "type": "string",
-        "enum": [
-          "BANK_TRANSFER",
-          "CARD",
-          "CASH",
-          "EXCHANGE",
-          "LOCAL",
-          "MOBILE_WALLET"
-        ],
-        "description": "Enumeration of payment method types supported by the platform"
-      },
-      "ProviderFiatLimit": {
-        "type": "object",
-        "description": "Provider fiat amount limits for a payment method",
-        "properties": {
-          "provider": {
-            "type": "string",
-            "examples": [
-              "BANXA"
-            ],
-            "description": "Provider identifier"
-          },
-          "category": {
-            "type": "string",
-            "examples": [
-              "CRYPTO_ONRAMP"
-            ],
-            "description": "Provider category",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Category"
-              }
-            ]
-          },
-          "countryCode": {
-            "type": "string",
-            "examples": [
-              "US"
-            ],
-            "description": "Country code"
-          },
-          "currencyCode": {
-            "type": "string",
-            "examples": [
-              "USD"
-            ],
-            "description": "Fiat currency code"
-          },
-          "paymentMethod": {
-            "type": "string",
-            "examples": [
-              "CREDIT_DEBIT_CARD"
-            ],
-            "description": "Canonical payment method code"
-          },
-          "min": {
-            "type": "number",
-            "examples": [
-              10.0
-            ],
-            "description": "Minimum amount"
-          },
-          "max": {
-            "type": "number",
-            "examples": [
-              10000.0
-            ],
-            "description": "Maximum amount"
-          }
-        }
-      },
-      "ProviderHeadlessSupport": {
-        "type": "object",
-        "description": "Provider-level headless integration capability",
-        "properties": {
-          "supported": {
-            "type": "boolean",
-            "description": "Whether the provider supports headless flows"
-          },
-          "kycMode": {
-            "type": "string",
-            "description": "How the provider expects KYC to be supplied for headless flows",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/KycMode"
-              }
-            ]
-          },
-          "uiCustomization": {
-            "type": "boolean",
-            "description": "Whether the provider exposes UI-customisable headless surfaces"
-          }
-        }
-      },
-      "ProviderKycLimit": {
-        "type": "object",
-        "description": "Provider KYC limits for a currency and limit window",
-        "properties": {
-          "provider": {
-            "type": "string",
-            "examples": [
-              "BANXA"
-            ],
-            "description": "Provider identifier"
-          },
-          "category": {
-            "type": "string",
-            "examples": [
-              "CRYPTO_ONRAMP"
-            ],
-            "description": "Provider category",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Category"
-              }
-            ]
-          },
-          "countryCode": {
-            "type": "string",
-            "examples": [
-              "US"
-            ],
-            "description": "Country code"
-          },
-          "limitType": {
-            "type": "string",
-            "examples": [
-              "DAILY"
-            ],
-            "description": "Limit window",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LimitType"
-              }
-            ]
-          },
-          "currencyCode": {
-            "type": "string",
-            "examples": [
-              "USD"
-            ],
-            "description": "Currency code"
-          },
-          "level1": {
-            "type": "number",
-            "examples": [
-              1000.0
-            ],
-            "description": "KYC level 1 amount"
-          },
-          "level2": {
-            "type": "number",
-            "examples": [
-              10000.0
-            ],
-            "description": "KYC level 2 amount"
-          },
-          "level3": {
-            "type": "number",
-            "examples": [
-              50000.0
-            ],
-            "description": "KYC level 3 amount"
-          }
-        }
-      },
-      "ProviderStatus": {
-        "type": "string",
-        "enum": [
-          "LIVE",
-          "RECENTLY_ADDED",
-          "BUILDING",
-          "DEPRECATED"
-        ],
-        "description": "Integration status for a service provider"
-      },
-      "Response": {
-        "type": "object",
-        "description": "Provider fiat limit response",
-        "properties": {
-          "fiatLimits": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProviderFiatLimit"
-            },
-            "description": "List of provider fiat limits"
-          }
-        }
-      },
-      "Response1": {
-        "type": "object",
-        "description": "Provider KYC limit response",
-        "properties": {
-          "kycLimits": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProviderKycLimit"
-            },
-            "description": "List of provider KYC limits"
-          }
-        }
-      },
-      "SupportedPaymentMethod": {
-        "type": "object",
-        "description": "Supported payment method representation",
-        "properties": {
-          "countryCode": {
-            "type": "string",
-            "examples": [
-              "US"
-            ],
-            "description": "Country code"
-          },
-          "providerMethod": {
-            "type": "string",
-            "examples": [
-              "CARD"
-            ],
-            "description": "Provider payment method code"
-          },
-          "method": {
-            "type": "string",
-            "examples": [
-              "CREDIT_DEBIT_CARD"
-            ],
-            "description": "Payment method code"
-          },
-          "name": {
-            "type": "string",
-            "examples": [
-              "Credit or debit card"
-            ],
-            "description": "Payment method name"
-          },
-          "type": {
-            "type": "string",
-            "examples": [
-              "CARD"
-            ],
-            "description": "Payment method type"
-          },
-          "logo": {
-            "type": "object",
-            "description": "Payment method logo variants",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PaymentMethodLogo"
-              }
-            ]
-          },
-          "headlessSupported": {
-            "type": "boolean",
-            "description": "Whether this method is enabled for headless flows in the response context. For multi-provider search, true when any matching provider supports it headlessly."
-          },
-          "cardRenderMode": {
-            "type": "string",
-            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CardRenderMode"
-              }
-            ]
-          }
-        }
-      },
-      "SupportedRoute": {
-        "type": "object",
-        "description": "Supported route details for a specific source and destination currency pair",
-        "properties": {
-          "partner": {
-            "type": "string",
-            "examples": [
-              "BANXA"
-            ],
-            "description": "Partner identifier"
-          },
-          "source": {
-            "type": "string",
-            "examples": [
-              "USD"
-            ],
-            "description": "Source currency code"
-          },
-          "destination": {
-            "type": "string",
-            "examples": [
-              "BTC"
-            ],
-            "description": "Destination currency code"
-          },
-          "paymentMethods": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PaymentMethod2"
-            },
-            "description": "Payment methods for the route. Empty for swap routes without payment methods."
-          },
-          "kycLimits": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProviderKycLimit"
-            },
-            "description": "Provider KYC limits for this route. Empty when limits are not available."
-          }
-        }
-      },
-      "CountryDefaults": {
-        "type": "object",
-        "description": "Default currency and payment methods for a country and category",
-        "properties": {
-          "countryCode": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code"
-          },
-          "category": {
-            "$ref": "#/components/schemas/Category"
-          },
-          "currencyCode": {
-            "type": "string",
-            "description": "Default currency code for the country and category"
-          },
-          "paymentMethods": {
-            "type": "array",
-            "description": "Default canonical payment method codes, ordered by preference",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "description": "Stable identifier for the failure."
-          },
-          "message": {
-            "type": "string",
-            "description": "A description of what went wrong."
-          },
-          "requestId": {
-            "type": "string",
-            "description": "Quote this when asking Meld about a specific failure."
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-08-14T09:41:22.482+00:00",
-            "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-          }
-        }
-      }
-    }
+  "info": {
+    "title": "NETWORK PARTNER",
+    "version": "2026-02-03",
+    "description": ""
   },
+  "servers": [
+    {
+      "url": "https://api-sb.meld.io",
+      "description": "Meld API sandbox"
+    },
+    {
+      "url": "https://api.meld.io",
+      "description": "Meld API production"
+    }
+  ],
   "x-readme": {
+    "explorer-enabled": true,
+    "proxy-enabled": false,
+    "samples-enabled": true,
     "headers": [
       {
         "key": "Meld-Version",
