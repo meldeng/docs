@@ -1250,6 +1250,33 @@ service-provider-http:
         readme_oas:
           - None
 # ----------------------------------------------------------------------
+# NETWORK PARTNERS
+# ----------------------------------------------------------------------
+network-partner-http:
+  NETWORK PARTNER:
+    tags:
+      - name: Supported
+        description: ""
+    meld_oas: network-partner
+    oas_url: https://api-{env}.meld.io/network-partner/q/openapi?format=json
+    security: []
+    prune_unreferenced_schemas: true
+    versions:
+      "2026-02-03":
+        readme_oas:
+          - None
+        path_prefixes_to_keep:
+          /network-partner/supported:
+            methods:
+              - get
+            tags:
+              - Supported
+          /network-partner/defaults:
+            methods:
+              - get
+            tags:
+              - Supported
+# ----------------------------------------------------------------------
 # WEBHOOKS & NOTIFICATION
 # ----------------------------------------------------------------------
 notification-http:

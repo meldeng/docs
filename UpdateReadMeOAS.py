@@ -101,16 +101,19 @@ def get_configs(service):
         # A service's OAS may generate multiple API sections in ReadMe
         for section in config_content[service]:
             for version in config_content[service][section]['versions']:
-                configs[section][version]['security']        = config_content['security']
+                configs[section][version]['security']        = config_content[service][section].get('security', config_content['security'])
                 configs[section][version]['securitySchemes'] = config_content['securitySchemes']
                 configs[section][version]['servers']         = config_content['servers']
                 configs[section][version]['info_title']      = section
                 configs[section][version]['tags']            = config_content[service][section]['tags']
                 configs[section][version]['meld_oas']        = config_content[service][section]['meld_oas']
+                configs[section][version]['oas_url']         = config_content[service][section].get('oas_url')
+                configs[section][version]['prune_unreferenced_schemas'] = config_content[service][section].get('prune_unreferenced_schemas', False)
                 configs[section][version]['readme_oas']      = config_content[service][section]['versions'][version]['readme_oas']
                 # MUST use get() cuz 'paths_to_keep', 'paths_to_remove' & 'components_to_modify' may not exist in the config file & 
                 # need to return an empty dict so code looping on this will not throw Exception
                 configs[section][version]['paths_to_keep']        = config_content[service][section]['versions'][version].get('paths_to_keep', {})
+                configs[section][version]['path_prefixes_to_keep'] = config_content[service][section]['versions'][version].get('path_prefixes_to_keep', {})
                 configs[section][version]['paths_to_remove']      = config_content[service][section]['versions'][version].get('paths_to_remove', {})
                 configs[section][version]['components_to_modify'] = config_content[service][section]['versions'][version].get('components_to_modify', {})
                 configs[section][version]['components_defaults']  = config_content[service][section]['versions'][version].get('components_defaults', {})
@@ -144,6 +147,9 @@ via <service>-http's API endpoint.
 :return: Return the OAS file as a Python dictionary.
 '''
 def get_meld_oas_file(env, configs, version, service):
+    if configs.get('oas_url'):
+        return get_service_oas_file(env, configs['oas_url'], service)
+
     url = f"https://api-{env}.meld.io/oas-{configs['meld_oas']}/{version}"
     print(f"Requesting OAS from URL: {url}")
 
@@ -162,6 +168,65 @@ def get_meld_oas_file(env, configs, version, service):
         sys.exit()
 
     return response.json()
+
+
+def get_service_oas_file(env, oas_url, service):
+    url = oas_url.format(env=env)
+    print(f"Requesting OAS from URL: {url}")
+
+    response = requests.get( url=url )
+
+    if response.status_code != 200:
+        raise RuntimeError(f"retrieving Meld {service} OAS file| Code: {response.status_code}|{response.text}")
+
+    print(f"SUCCESS: retrieved Meld {service} OAS file from: {url}")
+    return response.json()
+
+
+def expand_path_prefixes_to_keep(meld_oas_file, configs):
+    paths_to_keep = dict(configs['paths_to_keep'])
+
+    for prefix, keep in configs['path_prefixes_to_keep'].items():
+        for path, operations in meld_oas_file.get('paths', {}).items():
+            if path in paths_to_keep or not (path == prefix or path.startswith(prefix + '/')):
+                continue
+
+            methods = [method for method in keep['methods'] if method in operations]
+            missing_ids = [method for method in methods if not operations[method].get('operationId')]
+            if missing_ids:
+                raise RuntimeError(
+                    f"{', '.join(m.upper() for m in missing_ids)} {path} has no operationId, which its API reference URL is built from"
+                )
+
+            if methods:
+                paths_to_keep[path] = {'methods': methods, 'tags': keep['tags']}
+
+    configs['paths_to_keep'] = paths_to_keep
+
+
+SCHEMA_REF_PREFIX = '#/components/schemas/'
+
+
+def prune_unreferenced_schemas(meld_oas_file):
+    schemas = meld_oas_file.get('components', {}).get('schemas', {})
+    referenced = set()
+    pending = [meld_oas_file.get('paths', {})]
+
+    while pending:
+        node = pending.pop()
+        if isinstance(node, dict):
+            pending.extend(node.values())
+        elif isinstance(node, list):
+            pending.extend(node)
+        elif isinstance(node, str) and node.startswith(SCHEMA_REF_PREFIX):
+            name = node.removeprefix(SCHEMA_REF_PREFIX)
+            if name in schemas and name not in referenced:
+                referenced.add(name)
+                pending.append(schemas[name])
+
+    meld_oas_file['components']['schemas'] = {
+        name: schema for name, schema in schemas.items() if name in referenced
+    }
 
 
 '''
@@ -307,6 +372,9 @@ def prep_meld_oas_file(meld_oas_file, configs):
     strip_placeholder_schema_values(
         meld_oas_file.get('components', {}).get('schemas', {})
     )
+
+    if configs['prune_unreferenced_schemas']:
+        prune_unreferenced_schemas(meld_oas_file)
 
     return meld_oas_file
 
@@ -684,6 +752,8 @@ def main():
                     for version in configs[section]:
                         print(f"section: {service}, version: {version}")
                         meld_oas_file = get_meld_oas_file(env, configs[section][version], version, service)
+
+                        expand_path_prefixes_to_keep(meld_oas_file, configs[section][version])
 
                         meld_oas_file = prep_meld_oas_file(meld_oas_file, configs[section][version])
 

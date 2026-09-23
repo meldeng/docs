@@ -21,6 +21,7 @@ on:
           - webhooks
           - customer
           - serviceproviders
+          - networkpartner
           - beta
       version:
         description: "API version to sync (all = every version)"
@@ -76,6 +77,7 @@ jobs:
               banklinking)       backend_service="aggregation"      ;;
               customer)          backend_service="account"          ;;
               serviceproviders)  backend_service="service-provider" ;;
+              networkpartner)    backend_service="network-partner"  ;;
               webhooks)          backend_service="notification"     ;;
               beta)              backend_service="metric"           ;;
               *)  echo "Unknown service: $service"; exit 1 ;;
