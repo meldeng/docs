@@ -59,6 +59,11 @@ This flow is similar to the one above, but leads to a smoother user experience a
 | **Due Network** | Preferred Flow |
 | **Noah** | Preferred Flow |
 | **Uphold** | Preferred Flow |
+| **Revolut** | Preferred Flow |
+
+<Note>
+  Revolut always uses the preferred flow and does not read `"redirectFlow": true`. Instead, pass a `redirectUrl` in `sessionData` (or configure a default return URL on your account). Revolut then redirects the user back to your UI at the "continue to send" step rather than displaying its deposit address, and you fetch that address from `cryptoDetails.destinationWalletAddress` as in Step 3 above. A Revolut sell session with no redirect URL is rejected rather than falling back to the standard flow.
+</Note>
 
 ## How to sell crypto
 
