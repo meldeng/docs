@@ -41,6 +41,10 @@ This flow is similar to the one above, but leads to a smoother user experience a
 4. Once the offramp receives the token, they send fiat to the payment method the user provided (typically bank account or card). You can show the user a transaction status page while they wait for the transaction to complete.
 5. Wait and listen for webhooks, and use them as triggers to fetch transaction data from the [`/transactions` endpoint](/api-reference/crypto/retail-ramp/payments-transactions-get). For more information see [Fetch transaction information](/docs/old-crypto/integration-options-old/crypto-widget/fetch-transaction-information).
 
+<Warning>
+  On a sell, `cryptoDetails.destinationWalletAddress` is the offramp's deposit address. `sourceWalletAddress` and `sessionWalletAddress` are the user's own wallet, so never send crypto to them. On API versions before `2025-03-04`, read the deposit address from `offrampDestinationWalletAddress` instead (`walletAddress` is the user's own wallet).
+</Warning>
+
 <Note>
   In both flows, Step 1 (getting a quote) leads to the best user experience but is not required. You can launch an offramp's widget without asking for a quote beforehand.
 </Note>
@@ -132,7 +136,7 @@ Here is an example call to [`/quotes`](/api-reference/crypto/retail-ramp/crypto-
 
 ### Widget
 
-Here is an example of the corresponding call to [`/widget`](/api-reference/crypto/retail-ramp/crypto-session-widget-create) when selling cryptocurrency. Unlike the Buy call, the wallet address should not be passed here.
+Here is an example of the corresponding call to [`/widget`](/api-reference/crypto/retail-ramp/crypto-session-widget-create) when selling cryptocurrency. `walletAddress` is optional on a sell. If you pass it, use the user's own wallet (the one they send crypto from), never a deposit address.
 
 ```json Request
 {
@@ -184,7 +188,7 @@ Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first w
 
 ## Transaction data
 
-Once you call [`/transactions`](/api-reference/crypto/retail-ramp/payments-transactions-get) with a `transactionId` (the `paymentTransactionId` in the webhook above), this is a sample response:
+Once you call [`/transactions`](/api-reference/crypto/retail-ramp/payments-transactions-get) with a `transactionId` (the `paymentTransactionId` in the webhook above), this is a sample response (API version `2025-03-04` or later):
 
 ```json
 {
@@ -238,8 +242,9 @@ Once you call [`/transactions`](/api-reference/crypto/retail-ramp/payments-trans
   "externalSessionId": null,
   "paymentDetails": null,
   "cryptoDetails": {
-    "destinationWalletAddress": "0x23rewFEWKJNEWN3313EFEFKNKN33qx3f3k3k3f3J2",
-    "walletAddress": "0x23rewFEWKJNEWN3313EFEFKNKN33qx3f3k3k3f3J2",
+    "sourceWalletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
+    "destinationWalletAddress": "0x9c4e1f2a7b3d5e6f8a0b1c2d3e4f5a6b7c8d9e0f",
+    "sessionWalletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
     "networkFee": 0.77,
     "transactionFee": 1.5,
     "partnerFee": 1,
