@@ -683,15 +683,17 @@ curl 'https://api-sb.meld.io/network-partner/supported/routes/CRYPTO_OFFRAMP/US/
 
     Send `sessionData.clientIpAddress` here for the same reason as on-ramp — some providers require the end user's IP for geo and fraud checks (see the on-ramp [note](#on-ramp-flow-buy)).
 
-    Open `serviceProviderWidgetUrl`; the provider collects payout-bank details and runs KYC. After the widget completes, fetch the transaction (or look it up by your `externalSessionId`) and read the **deposit address** from `cryptoDetails.offrampDestinationWalletAddress`:
+    Open `serviceProviderWidgetUrl`; the provider collects payout-bank details and runs KYC. After the widget completes, fetch the transaction (or look it up by your `externalSessionId`) and read the **deposit address** from `cryptoDetails.destinationWalletAddress` (`offrampDestinationWalletAddress` on API versions before `2025-03-04`):
 
     ```js
     // Response is wrapped: { transaction: { cryptoDetails: {...} } }
-    const depositAddress = transaction.cryptoDetails.offrampDestinationWalletAddress;
+    const depositAddress =
+      transaction.cryptoDetails.destinationWalletAddress ??
+      transaction.cryptoDetails.offrampDestinationWalletAddress;
     ```
 
     <Warning>
-      **Never use `cryptoDetails.walletAddress`** — for off-ramp that is the customer's own origin wallet, not the deposit address. Display `offrampDestinationWalletAddress` (as a QR code plus a copyable string) and instruct the user to send **exactly** the quoted crypto amount to it. A wrong address or amount means lost funds — show a hard warning.
+      **Never use `cryptoDetails.sourceWalletAddress` or `sessionWalletAddress`** (`walletAddress` on versions before `2025-03-04`) — for off-ramp those are the customer's own origin wallet, not the deposit address. Display the deposit address (as a QR code plus a copyable string) and instruct the user to send **exactly** the quoted crypto amount to it. A wrong address or amount means lost funds — show a hard warning.
     </Warning>
   </Step>
 </Steps>
@@ -812,7 +814,7 @@ async function fetchTransaction(transactionId) {
 }
 ```
 
-The response is **wrapped** in `{ "transaction": { ... } }`. The inner object carries status, amounts, and a `cryptoDetails` block. **`cryptoDetails.walletAddress` is direction-dependent**: on **on-ramp** it's the user's destination wallet (where the crypto is delivered); on **off-ramp** it's the user's origin wallet (where they send from / receive refunds). For the off-ramp deposit address, read `cryptoDetails.offrampDestinationWalletAddress` — see [Off-ramp flow](#off-ramp-flow-sell) Step 6.
+The response is **wrapped** in `{ "transaction": { ... } }`. The inner object carries status, amounts, and a `cryptoDetails` block. **Wallet fields are direction-dependent**: `destinationWalletAddress` is where the crypto goes (the user's wallet on **on-ramp**, the provider's **deposit address** on **off-ramp**), and `sourceWalletAddress` is where it comes from (the user's wallet on off-ramp). Versions before `2025-03-04` return `walletAddress` and `offrampDestinationWalletAddress` instead — see [Off-ramp flow](#off-ramp-flow-sell) Step 6.
 
 ```json
 {
@@ -828,8 +830,9 @@ The response is **wrapped** in `{ "transaction": { ... } }`. The inner object ca
     "serviceProvider": "TRANSAK",
     "externalSessionId": "session_456",
     "cryptoDetails": {
-      "walletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
-      "offrampDestinationWalletAddress": null,
+      "sourceWalletAddress": null,
+      "destinationWalletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
+      "sessionWalletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
       "blockchainTransactionId": "0xabc...def",
       "chainId": "1",
       "networkFeeInUsd": 0.17,
@@ -854,7 +857,7 @@ function getStatusMessage(status) {
 ```
 
 <Note>
-  For off-ramp, the same endpoint also carries the deposit address (`cryptoDetails.offrampDestinationWalletAddress`) used in the sell flow. See [Off-ramp flow](#off-ramp-flow-sell) Step 6.
+  For off-ramp, the same endpoint also carries the deposit address (`cryptoDetails.destinationWalletAddress`) used in the sell flow. See [Off-ramp flow](#off-ramp-flow-sell) Step 6.
 
   **Status Reference:** See [Transaction Statuses](/docs/stablecoins/for-all-products/transaction-statuses) for complete definitions.
 </Note>

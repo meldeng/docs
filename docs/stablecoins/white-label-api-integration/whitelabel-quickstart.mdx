@@ -418,7 +418,7 @@ const depositAddress =
 ```
 
 <Warning>
-Never use `cryptoDetails.walletAddress` — that is the customer's **own** wallet, not the deposit address. Display `destinationWalletAddress` (falling back to `offrampDestinationWalletAddress`) as a QR code and copyable string, and instruct the user to send **exactly** the quoted crypto amount to it. A wrong address or amount means lost funds.
+Never use `cryptoDetails.sourceWalletAddress` or `sessionWalletAddress` (`walletAddress` on versions before `2025-03-04`) — those are the customer's **own** wallet, not the deposit address. Display `destinationWalletAddress` (falling back to `offrampDestinationWalletAddress`) as a QR code and copyable string, and instruct the user to send **exactly** the quoted crypto amount to it. A wrong address or amount means lost funds.
 </Warning>
 
 Then poll `GET /payments/transactions/{transactionId}` until `status` settles. `destinationAmount` is the fiat paid out and `cryptoDetails.blockchainTransactionId` is the on-chain transfer.
@@ -481,8 +481,9 @@ curl https://api-sb.meld.io/payments/transactions/WePZCYJW7cdXR7SxUMp8mE \
     "externalCustomerId": "testCustomer",
     "fiatAmountInUsd": 100.00,
     "cryptoDetails": {
-      "walletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
+      "sourceWalletAddress": null,
       "destinationWalletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
+      "sessionWalletAddress": "0xd72cc3468979360e31bc83b84f0887deccfd81d5",
       "totalFeeInUsd": 4.18,
       "networkFeeInUsd": 0.28,
       "transactionFeeInUsd": 2.9,

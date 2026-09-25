@@ -121,7 +121,7 @@ Unlike the Buy flow, currently there are no customerScore values returned for th
 
 ## Widget
 
-Here is an example of the corresponding call to [/widget](/api-reference/crypto/retail-ramp/crypto-session-widget-create) when selling cryptocurrency (note that unlike the Buy call, the wallet address shouldn't be passed here):
+Here is an example of the corresponding call to [/widget](/api-reference/crypto/retail-ramp/crypto-session-widget-create) when selling cryptocurrency. `walletAddress` is optional on a sell. If you pass it, use the user's own wallet (the one they send crypto from), never a deposit address.
 
 ```json
 {
@@ -175,7 +175,7 @@ Here is a sample of a `TRANSACTION_CRYPTO_PENDING` webhook, which is the first w
 
 ## Transaction Data
 
-Once you call the [/transactions](/api-reference/crypto/retail-ramp/payments-transactions-get) with a transactionId (the `paymentTransactionId` in the webhook above), this is a sample response:
+Once you call the [/transactions](/api-reference/crypto/retail-ramp/payments-transactions-get) with a transactionId (the `paymentTransactionId` in the webhook above), this is a sample response (API version `2025-03-04` or later):
 
 ```json
 {
@@ -229,8 +229,9 @@ Once you call the [/transactions](/api-reference/crypto/retail-ramp/payments-tra
     "externalSessionId": null,
     "paymentDetails": null,
     "cryptoDetails": {
-        "destinationWalletAddress": "0x23rewFEWKJNEWN3313EFEFKNKN33qx3f3k3k3f3J2",
-        "walletAddress": "0x23rewFEWKJNEWN3313EFEFKNKN33qx3f3k3k3f3J2",
+        "sourceWalletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
+        "destinationWalletAddress": "0x9c4e1f2a7b3d5e6f8a0b1c2d3e4f5a6b7c8d9e0f",
+        "sessionWalletAddress": "0xfCFAa8059080D01b27ccA2B1fA086df0853397E6",
         "networkFee": 0.77,
         "transactionFee": 1.50,
         "partnerFee": 1,
