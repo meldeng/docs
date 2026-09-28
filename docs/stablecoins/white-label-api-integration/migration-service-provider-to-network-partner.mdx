@@ -281,17 +281,15 @@ GET /network-partner/supported/routes/CRYPTO_OFFRAMP/US/USDC/USD
 
 <CodeGroup>
 
-```json Before — response
-{
-  "limits": {
-    "USD": {
-      "minAmount": 20,
-      "maxAmount": 20000,
-      "dailyLimit": 5000,
-      "monthlyLimit": 20000
-    }
+```json Before — response (array)
+[
+  {
+    "currencyCode": "USD",
+    "defaultAmount": 300,
+    "minimumAmount": 20,
+    "maximumAmount": 20000
   }
-}
+]
 ```
 
 ```json After — response
@@ -318,13 +316,13 @@ GET /network-partner/supported/routes/CRYPTO_OFFRAMP/US/USDC/USD
 
 **What changed**
 
-* Limits are read from `route.paymentMethods[].limits` for the chosen partner + method, not from a global map keyed by currency.
-* `minAmount` → `min`, `maxAmount` → `max`; the `limits.currencyCode` tells you which currency the bounds are expressed in (on-ramp: the fiat paid; off-ramp: the fiat received).
+* Limits are read from `route.paymentMethods[].limits` for the chosen partner + method, not from a per-currency list.
+* `minimumAmount` → `min`, `maximumAmount` → `max`; the `limits.currencyCode` tells you which currency the bounds are expressed in (on-ramp: the fiat paid; off-ramp: the fiat received).
 * Limits are now **direction-aware** — a buy route and a sell route for the same pair can have different `min`/`max`.
 * Path order follows direction:
   * **On-ramp:** `.../CRYPTO_ONRAMP/{country}/{fiat}/{crypto}` (source = fiat).
   * **Off-ramp:** `.../CRYPTO_OFFRAMP/{country}/{crypto}/{fiat}` (source = crypto).
-* Optional query params: `partners`, `paymentMethod`, `paymentType`, and `subdivision` (the US state that legacy `countries.states[]` used to carry).
+* Optional query params: `partners`, `paymentMethod`, `paymentType`, and `subdivision` (the US state that legacy `countries.regions[]` used to carry).
 
 <Warning>
 **Empty `200 []` is the new failure mode.** Routes are indexed by `source`/`destination`, so reversing them — e.g. fiat-first on an off-ramp — returns **HTTP 200 with an empty array**, not a 404. It silently starves rail and limit discovery. Assert the array is non-empty before rendering rails or validating an amount.
