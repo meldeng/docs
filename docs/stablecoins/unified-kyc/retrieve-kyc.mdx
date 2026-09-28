@@ -195,7 +195,7 @@ Notes on the raw export response:
 
 ```bash
 curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/export" \
-  -u "{apiKey}:{apiSecret}" \
+  -H "Authorization: BASIC {apiKey}" \
   -H "Content-Type: application/json" \
   -d '{
     "mode": "TOKEN",
@@ -208,7 +208,7 @@ curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/export" \
 
 ```bash
 curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/export" \
-  -u "{apiKey}:{apiSecret}" \
+  -H "Authorization: BASIC {apiKey}" \
   -H "Content-Type: application/json" \
   -H "Accept: multipart/form-data" \
   -d '{
