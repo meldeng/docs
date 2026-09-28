@@ -33,7 +33,7 @@ The typical successful transaction follows this progression:
 
 | Status            | Description                                                      | Type      | User Action                  |
 | ----------------- | ---------------------------------------------------------------- | --------- | ---------------------------- |
-| `PENDING CREATED` | Transaction created in Meld system, awaiting provider processing | TEMPORARY | Wait for processing          |
+| `PENDING_CREATED` | Transaction created in Meld system, awaiting provider processing | TEMPORARY | Wait for processing          |
 | `PENDING`         | Submitted to provider for review and verification                | TEMPORARY | Wait for approval            |
 | `SETTLING`        | Provider approved transaction, crypto transfer in progress       | TEMPORARY | Wait for completion          |
 | `TWO_FA_REQUIRED` | Payment info provided, awaiting 2FA verification                 | TEMPORARY | Complete 2FA verification    |
