@@ -5,7 +5,7 @@ title: "Plaid Investment Holdings Mappings"
 This data comes from Plaid's [/investments/holdings/get](https://plaid.com/docs/api/products/investments/#investmentsholdingsget) endpoint and is returned from Meld's [/bank-linking/investments/holdings](/api-reference/bank-linking/investments/bank-linking-investment-holdings-search) endpoint.
 
 <Note>
-  Example: a Plaid holding with `Securities.ticker_symbol: "AAPL"`, `Holdings.quantity: 10`, `Holdings.institution_value: 1850.50`, `Securities.iso_currency_code: "USD"` maps to Meld `symbol: "AAPL"`, `quantity: 10`, `currentValue: 1850.50`, `currencyCode: "USD"`.
+  Example: a Plaid holding with `Securities.ticker_symbol: "AAPL"`, `Holdings.quantity: 10`, `Holdings.institution_value: 1850.50`, `Holdings.iso_currency_code: "USD"` maps to Meld `symbol: "AAPL"`, `quantity: 10`, `currentValue: 1850.50`, `currency: "USD"`.
 </Note>
 
 | Meld Field   | Description                                                                | Plaid Response Field                |
@@ -14,8 +14,7 @@ This data comes from Plaid's [/investments/holdings/get](https://plaid.com/docs/
 | quantity     | The number of shares of the security                                       | Holdings.quantity                   |
 | currentValue | The total current value of the holding                                     | Holdings.institution\_value         |
 | costBasis    | The purchase price of the holding, per share                               | Holdings.cost\_basis                |
-| currencyCode | The ISO currency code that was used to purchase the holding                | Securities.iso\_currency\_code      |
-| updatedAt    | The last time the details of this holding were updated                     | Holdings.institution\_price\_as\_of |
+| currency     | The ISO currency code that was used to purchase the holding                | Holdings.iso\_currency\_code        |
 | description  | A description of the holding                                               | Securities.name                     |
 | closePrice   | The price of the security at last market close                             | Securities.close\_price             |
 | isin         | The global ISO number for an individual security.                          | Securities.isin                     |
