@@ -314,3 +314,20 @@ Unmount when it fires and move the user to your own processing screen. Credit th
 | `400 INVALID_PAYMENT_METHOD` on order creation | Apple Pay is not available for this country, currency pair or route. Fall back to card |
 | `422` `COINBASE_ORDER_REJECTED` | The provider declined the order on its own limits. No order was created and nothing was charged — offer another provider rather than retrying |
 | Works in a simulator build but not on device | The iOS simulator cannot produce a usable Apple Pay token. Test on hardware with a sandbox tester account |
+
+| Symptom | Cause |
+| :-- | :-- |
+| `403` `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for that provider. See [provider credentials](/docs/stablecoins/headless-integration#you-bring-your-own-provider-credentials) |
+| `403` `KYC_NOT_COMPLETED` | Customer not approved with that provider. Re-check requirements before retrying |
+| `422` `COINBASE_ORDER_REJECTED` | The provider declined the order on its own limits. No order was created and nothing was charged — offer another provider rather than retrying |
+| `404` naming a service-provider customer | Usually a missing `email` on the Meld customer, occasionally missing KYC |
+| `400` / `409` on `externalOrderId` | Reused value. Generate a fresh one per attempt |
+| `INVALID_REDIRECT_URL` | You sent `redirectUrl`. Headless card surfaces render in place, so the field is rejected |
+| Surface never becomes ready | Content Security Policy on web, or a provider host not reachable from the device |
+| User paid, no crypto yet | Normal while settlement runs. Wait for the webhook before showing a failure |
+
+---
+
+## Sandbox Testing Guide
+
+Once you complete the integration, you can test in Meld's sandbox by using this [guide](https://docs.meld.io/docs/stablecoins/sandbox-guide/headless-testing). Note that sandbox will have a limited set of providers and limited coverage, and should only be used for proof of concept testing. For full coverage and end to end testing, please proceed to production.

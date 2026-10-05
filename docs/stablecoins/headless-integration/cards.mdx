@@ -215,3 +215,9 @@ Two things to do when it fires:
 | `INVALID_REDIRECT_URL` | You sent `redirectUrl`. Headless card surfaces render in place, so the field is rejected |
 | Surface never becomes ready | Content Security Policy on web, or a provider host not reachable from the device |
 | User paid, no crypto yet | Normal while settlement runs. Wait for the webhook before showing a failure |
+
+---
+
+## Sandbox Testing Guide
+
+Once you complete the integration, you can test in Meld's sandbox by using this [guide](https://docs.meld.io/docs/stablecoins/sandbox-guide/headless-testing). Note that sandbox will have a limited set of providers and limited coverage, and should only be used for proof of concept testing. For full coverage and end to end testing, please proceed to production.
