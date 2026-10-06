@@ -25,6 +25,8 @@ The order call, the capture surface appearing in your app, the [SDK](/docs/stabl
   Sandbox coverage is narrower than production, and a US test customer is the most common reason an otherwise correct integration returns no quotes. Quote first and use whatever country and currency pair comes back with the provider you intend to test.
 </Warning>
 
+Stripe is tested outside sandbox, with a different setup. See [Test Stripe](#test-stripe).
+
 ---
 
 ## Test the card flow
@@ -82,6 +84,24 @@ What to confirm:
 | Dismissing fires `onCancel` | Your UI returns the customer to the amount screen rather than showing a failure |
 
 The iOS Simulator presents and authorises the sheet but cannot produce a decryptable payment token, so it exercises mounting, events and the cancel path and nothing beyond. A real device with an Apple sandbox tester account gets you a genuine authorisation, and still no settlement.
+
+---
+
+## Test Stripe
+
+**Stripe is not available in sandbox.** Test it in Meld's QA environment, `https://api-qa.meld.io`, against your Stripe sandbox account. Ask your Meld representative for a QA account.
+
+What QA needs:
+
+- Your Stripe sandbox credentials on your QA Meld account. The order hands their `pk_test_` publishable key to the SDK
+- Your Stripe sandbox merchant identifier, configured by Meld — see [Stripe setup](/docs/stablecoins/headless-integration/apple-pay#stripe-setup)
+- Your app registered with Stripe as a trusted application. Stripe refuses every SDK call until it is, on a simulator too
+- The SDK configured for QA: `Meld.configure(environment: .qa)` on iOS, `Meld.configure('qa')` in React Native
+- A US customer with an email. Meld runs no KYC for Stripe
+
+For the steps Stripe's SDK runs, use [Stripe's test values](/docs/stablecoins/sandbox-guide/test#stripe). Its KYC step also takes the name `John Verified` and a two-letter state code: `WA`, not `Washington`.
+
+Keep test orders at 100 USD or less, the cap Stripe's sandbox liquidity partner enforces. Stripe's sandbox executes every trade with a fixed source amount; the crypto amount Stripe reports reflects the original quote, so it can differ from what the sandbox actually executed. For document verification, Stripe's sandbox screen lets you choose the outcome instead of uploading a document.
 
 ---
 

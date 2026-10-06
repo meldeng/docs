@@ -10,6 +10,8 @@ Your backend mints the order, the [Meld SDK](/docs/stablecoins/headless-integrat
 1. [Create a customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and complete [Unified KYC](/docs/stablecoins/unified-kyc). Required — almost every provider refuses an order for a customer Meld has not cleared
 2. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks), before KYC so you receive status changes while it runs
 
+Stripe is the exception to step 1. Meld runs no KYC for it: Stripe verifies the customer inside the flow its SDK presents, and needs only an email on the Meld customer.
+
 ---
 
 ## Apple Developer setup
@@ -19,7 +21,7 @@ Whether you need any depends on how the provider presents the sheet.
 | How the sheet is presented | Providers today | Setup |
 | --- | --- | --- |
 | Natively, by your app | Mercuryo, Banxa | Merchant identifier, payment processing certificate, Apple Pay entitlement |
-| Natively, by the provider's own SDK | Stripe | None of your own — the vendor presents under its merchant identifier |
+| Natively, by the provider's own SDK | Stripe | Your own merchant identifier, a payment processing certificate issued from Stripe's CSR, Apple Pay entitlement. See [Stripe setup](#stripe-setup) |
 | By the provider, as merchant of record on a page it hosts | Coinbase | None |
 
 You never branch on this in code — the SDK presents whichever surface the order carries. It only decides what you register with Apple up front, so do it once, before your first order with the provider concerned.
@@ -27,7 +29,7 @@ You never branch on this in code — the SDK presents whichever surface the orde
 **You will need:**
 
 - An Apple Developer account with admin rights on your team
-- The payment processing CSR, which your Meld representative provides
+- The payment processing CSR, which your Meld representative provides. For Stripe, your own Stripe Dashboard provides it
 - Xcode, to add the capability and regenerate provisioning profiles
 
 <Steps>
@@ -40,10 +42,12 @@ You never branch on this in code — the SDK presents whichever surface the orde
     4. Enter a description and an identifier — it must start with `merchant.` (e.g. `merchant.com.yourcompany.yourapp`)
     5. Click **Continue**, review, then **Register**
 
-    If your app already has a merchant identifier, reuse it. You do not need a new one.
+    If your app already has a merchant identifier, reuse it, unless another processor's certificate is on it. See [Supporting more than one provider](#supporting-more-than-one-provider).
+
+    Give your Meld representative the identifier for each environment you use. Meld configures it on your account, and your orders carry it to the SDK.
   </Step>
   <Step title="Create a payment processing certificate">
-    This certificate is what the Apple Pay token is encrypted to. It must be created from a CSR **Meld provides** — never generate your own for this step, because the processor holds the matching private key.
+    This certificate is what the Apple Pay token is encrypted to. It must be created from a CSR **Meld provides** — never generate your own for this step, because the processor holds the matching private key. For Stripe, the CSR comes from your Stripe account instead — see [Stripe setup](#stripe-setup).
 
     Once you have the `.certSigningRequest` file from your Meld representative:
 
@@ -73,7 +77,18 @@ You never branch on this in code — the SDK presents whichever surface the orde
 
 ### Supporting more than one provider
 
-Each processor issues its own certificate, and Apple caps certificates per merchant ID. If you offer Apple Pay through two providers, expect to run the setup twice and check whether you need a second merchant identifier.
+Use one merchant identifier per processor. Apple encrypts a merchant identifier's tokens to a single payment processing certificate, so two processors cannot share one. If you offer Apple Pay through two providers, run the setup once for each, with its own identifier.
+
+Your app's Apple Pay entitlement must hold every identifier: add each in Step 3, or list each in the Expo plugin's `merchantIds`. The sheet does not open for an identifier the entitlement lacks.
+
+### Stripe setup
+
+Stripe's SDK presents the sheet under **your** merchant identifier, and Stripe decrypts the token, so the CSR comes from Stripe, not Meld:
+
+- In your Stripe Dashboard, open the [iOS certificate settings](https://dashboard.stripe.com/settings/ios_certificates), add an application and download the CSR. Upload it in Step 2.
+- Upload the `.cer` file Apple returns to Stripe, not to Meld. Renew the same way when the certificate nears expiry.
+
+If your Stripe sandbox and live accounts are separate Stripe accounts, each issues its own CSR, so each needs its own identifier.
 
 ### Registering your domain — web only
 
@@ -309,7 +324,7 @@ Unmount when it fires and move the user to your own processing screen. Credit th
 
 | Symptom | Cause |
 | --- | --- |
-| Sheet does not appear | No card in Wallet, or the entitlement is missing from the build |
+| Sheet does not appear | No card in Wallet, or the build's Apple Pay entitlement is missing or lacks the merchant identifier the order carries |
 | Sheet appears, payment always declines | The processing certificate never got back to the processor, or the wrong key was used |
 | `400 INVALID_PAYMENT_METHOD` on order creation | Apple Pay is not available for this country, currency pair or route. Fall back to card |
 | `422` `COINBASE_ORDER_REJECTED` | The provider declined the order on its own limits. No order was created and nothing was charged — offer another provider rather than retrying |
