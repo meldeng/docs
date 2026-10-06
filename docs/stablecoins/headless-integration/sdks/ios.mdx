@@ -15,7 +15,7 @@ Building in React Native? Use the [React Native SDK](/docs/stablecoins/headless-
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/meldeng/meldsdk-ios", from: "0.1.1"),
+    .package(url: "https://github.com/meldeng/meldsdk-ios", from: "0.9.1"),
 ],
 targets: [
     .target(name: "YourApp", dependencies: [
@@ -27,14 +27,16 @@ targets: [
 **CocoaPods.**
 
 ```ruby
-pod 'MeldSDK', '~> 0.1.1'
+pod 'MeldSDK', '~> 0.9.1'
 ```
 
 Then `import MeldSDK`.
 
 ```swift
-Meld.configure(environment: .sandbox) // or .production
+Meld.configure(environment: .sandbox) // or .qa, .production
 ```
+
+Configure the environment your backend created the order in. When the SDK continues an order by calling Meld from the device, as it does for Stripe, it calls the configured environment's host.
 
 ---
 
@@ -76,13 +78,40 @@ Keep the handle until the user finishes paying. Releasing it tears the surface d
 
 [The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
 
+### Error codes
+
+`onError` carries a `code` and a `message`, plus a `detail` with the provider's own event or code when the SDK has one.
+
+| `code` | Meaning |
+| --- | --- |
+| `APPLE_PAY_UNAVAILABLE` | Apple Pay cannot be presented. No attempt exists: offer another method |
+| `PRESENTATION_FAILED` | The flow stopped before any payment. No attempt exists; the next attempt needs a new order |
+| `PAYMENT_REJECTED` | Declined, and nothing will settle. Offer another option |
+| `ORDER_STATE_CHANGED` | The provider no longer accepts this order. No attempt exists |
+| `VERIFICATION_PENDING` | The provider is still reviewing the customer. No attempt exists |
+| `PAYMENT_OUTCOME_UNKNOWN` | A payment may exist. Track the order through your backend and never pay it again |
+
+`error.attemptMayExist` is `false` only for the first five. Treat any other code, including one a later SDK release adds, as a payment that may exist: track the order and never pay it again.
+
 ---
 
 ## Permissions
 
-Providers that run KYC inside their surface need camera access. Declare `NSCameraUsageDescription` in your `Info.plist` with a string that explains the document and selfie capture, or that step fails silently for the user.
+Providers that run KYC inside their surface need camera access, and so does Stripe's identity check. Declare `NSCameraUsageDescription` in your `Info.plist` with a string that explains the document and selfie capture. Without it, that step fails silently for the user, or, on a Stripe order, the SDK refuses it.
 
 Apple Pay needs the Apple Pay capability on your target, with the merchant identifier you registered. See [Apple Pay](/docs/stablecoins/headless-integration/apple-pay).
+
+---
+
+## Stripe orders
+
+A Stripe order runs Stripe's own SDK inside this one: Link sign-in, Stripe's identity checks, then Apple Pay or Stripe's card form. `MeldSDK` brings in Stripe's `StripeCryptoOnramp`, pinned to 26.11.x, so another dependency on a different Stripe iOS release will not resolve alongside it. What the order carries is in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe).
+
+Mount it with the same `Meld.mount` call; `into:` and `applePay:` are optional, and an `applePay:` you pass must match the order's amount, in `USD`.
+
+The SDK shows nothing of its own until it needs the customer, and `onReady` fires before anything is on screen. Keep your own busy state — a spinner on the button that started the purchase — until a terminal callback, and block anything that would unmount the SDK or start another order meanwhile. Unmounting reports no outcome.
+
+Errors use the [codes above](#error-codes). On `PAYMENT_REJECTED`, `detail` says why: `submission:FAILED`, `submission:EXPIRED`, `create:PROVIDER_REJECTED` or `create:START_NEW_ORDER`. When the flow stops on a refused call, `detail` names the refusal, such as `action:AUTHORIZATION_REQUIRED`.
 
 ---
 

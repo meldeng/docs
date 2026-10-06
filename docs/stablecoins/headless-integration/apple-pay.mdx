@@ -10,7 +10,7 @@ Your backend mints the order, the [Meld SDK](/docs/stablecoins/headless-integrat
 1. [Create a customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and complete [Unified KYC](/docs/stablecoins/unified-kyc). Required — almost every provider refuses an order for a customer Meld has not cleared
 2. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks), before KYC so you receive status changes while it runs
 
-Stripe is the exception to step 1. Meld runs no KYC for it: Stripe verifies the customer inside the flow its SDK presents, and needs only an email on the Meld customer.
+Stripe is the exception to step 1. Meld runs no KYC for it: Stripe verifies the customer inside the flow its SDK presents, and needs only an email on the Meld customer. See [Stripe](#stripe).
 
 ---
 
@@ -109,6 +109,8 @@ Native-only integrations skip this entirely.
 </Frame>
 
 The sheet is presented by the device, and the wallet token is encrypted to a certificate only the processor can read. Your servers handle the order; they never see payment credentials.
+
+The diagram shows the common path. Stripe runs a longer flow inside its own SDK — see [Stripe](#stripe).
 
 ```mermaid
 sequenceDiagram
@@ -317,6 +319,106 @@ A native sheet draws nothing into your view, because iOS puts it over your scree
 `onPaymentSubmitted` means the user authorised the sheet. Authorisation is not settlement.
 
 Unmount when it fires and move the user to your own processing screen. Credit them when Meld's [`TRANSACTION_CRYPTO_COMPLETE` webhook](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks) reaches your backend — no SDK event tells you the money moved.
+
+---
+
+## Stripe
+
+Stripe runs the purchase in its own SDK — Link sign-in, identity checks, the Apple Pay sheet and checkout — and the Meld SDK drives it. Your backend's part does not change: quote, create the order, return it verbatim. Stripe card orders run the same flow; [Cards](/docs/stablecoins/headless-integration/cards#stripe) covers the one difference.
+
+### Scope
+
+| | Stripe headless |
+| --- | --- |
+| Customers | US only. Stripe decides which states it serves, and excludes New York. Meld does not check the state up front, so Stripe refuses an unserved customer inside the flow, and the SDK reports `PRESENTATION_FAILED` |
+| Currency | USD in. The headless quote lists the tokens and networks |
+| Payment methods | `APPLE_PAY` and `CREDIT_DEBIT_CARD` |
+| Clients | iOS, directly or through the [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native#stripe-orders). Not the web SDK, not Android |
+| KYC | None by Meld. The headless quote reports `kycMode: PROVIDER_MANAGED`, and Stripe verifies the customer inside the flow |
+| Credentials | Your own Stripe account, onboarded by Stripe for its crypto onramp, with your app registered with Stripe as a trusted application. It must send its webhooks to Meld, which settles Stripe orders only from them. Set them up as in [provider setup](/docs/stablecoins/for-all-products/service-provider-setup#stripe) and [Stripe testing](/docs/stablecoins/sandbox-guide/test#stripe) |
+| Environments | QA and production — see [Test Stripe](/docs/stablecoins/sandbox-guide/headless-testing#test-stripe) |
+
+### Before you begin
+
+- **An email on the customer.** Meld starts Link sign-in with the email on the Meld customer record. Without one, the order is refused with `403 VERIFICATION_REQUIRED`; [eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) reports it before you create the order.
+- **[Stripe setup](#stripe-setup)**, for Apple Pay.
+- Unified KYC is optional. If the customer has passed it, the SDK fills Stripe's KYC from it — see [Prefill](#prefill).
+
+### Create a Stripe order
+
+Send the [step 2](#2-create-the-order) request with `serviceProvider: STRIPE`, `countryCode: US`, `sourceCurrencyCode: USD` and the quote's `destinationNetworkCode`.
+
+Creating the order charges nothing. Meld starts Link sign-in for the customer's email and returns a bootstrap for Stripe's SDK:
+
+```json
+{
+  "id": "WoRdErabcexample0000003",
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "externalOrderId": "order-5c71d2",
+  "paymentMethodType": "APPLE_PAY",
+  "responseKind": "SDK_BOOTSTRAP",
+  "paymentMethodResponseDetails": {
+    "sdkBootstrapType": "STRIPE_CRYPTO_ONRAMP",
+    "continuationToken": "...",
+    "expiresAtEpochSeconds": 1791300000,
+    "clientConfiguration": {
+      "merchantIdentifier": "merchant.com.yourcompany.app.stripe"
+    }
+  },
+  "payload": { "...": "echo of your request" },
+  "paymentActions": { "...": "read by the SDK" },
+  "headlessPresentation": { "...": "read by the SDK" }
+}
+```
+
+| Field | What it is |
+| --- | --- |
+| `continuationToken` | A short-lived credential for this order. Never log it |
+| `expiresAtEpochSeconds` | When the bootstrap stops working. Past it, create a new order |
+| `clientConfiguration.merchantIdentifier` | Apple Pay only. Your Stripe merchant identifier — see [Stripe setup](#stripe-setup) |
+
+Return the response verbatim, as with every order. The SDK refuses a Stripe order without `paymentActions` or `headlessPresentation`, so a backend that forwards selected fields breaks it.
+
+The SDK then continues the order from the device, calling Meld with the `continuationToken`. You never make those calls yourself: their outcomes reach you as [SDK callbacks](/docs/stablecoins/headless-integration/sdks/ios#stripe-orders), and settlement works as in [step 4](#4-settlement).
+
+### The Link email is the customer's email
+
+Meld starts Link sign-in with the email on the Meld customer record, and the SDK [prefills](#prefill) that email, so the customer normally doesn't type one. As a result:
+
+- Link sends its code to the phone on the Link account that email belongs to, not to a number your app collected
+- If the email has no Link account, the SDK registers one with it
+
+### Prefill
+
+The SDK fills Stripe's screens from the Meld customer, so it asks the customer for as little as it can:
+
+| Field | Sent when | The SDK uses it to |
+| --- | --- | --- |
+| `email` | Usually. When it is missing, Stripe's screen asks for the email | Sign in to Link |
+| `phone` | The phone is verified with Meld and in E.164 form | Register a new Link account without a form |
+| `fullName` | The customer has a first and last name | Name that new Link account |
+| `identity` | The customer passed [Unified KYC](/docs/stablecoins/unified-kyc): first and last name, date of birth, US residence address | Fill Stripe's first KYC request, so the customer types only what it lacks |
+
+The SSN is never prefilled. The customer types it into the SDK, which hands it straight to Stripe, so it reaches neither Meld nor your servers. If Stripe rejects a prefilled submission, the SDK shows the full form.
+
+### When Stripe refuses the payment
+
+If Stripe refuses to create the payment session, it created none and nothing was charged. If Stripe fails the session instead — an unsupported card, or a device IP it cannot use — nothing will settle. Either way the SDK reports `onError` `PAYMENT_REJECTED`: offer another payment method or provider, on a new order.
+
+### Errors on order creation
+
+Errors use the [standard envelope](/docs/meld-api/error-responses). On a Stripe order, these codes mean:
+
+| HTTP | `code` | Cause | What to do |
+| --- | --- | --- | --- |
+| `403` | `VERIFICATION_REQUIRED` | The Meld customer has no email; `errors` names `email: MISSING` | Add one with `PATCH /accounts/customers/{customerId}`, then retry |
+| `400` | `INVALID_CRYPTO_CURRENCY` | `destinationNetworkCode` is missing | Send the quote's `destinationNetworkCode` |
+| `400` | `PAYMENT_METHOD_NOT_SUPPORTED` | No Stripe headless route for this country, currency pair, network and method, or your account has no Stripe publishable key or merchant identifier for this environment, or the Stripe credentials it would use are not your account's own | Re-quote with `integrationMode=HEADLESS` and carry its values into the order. For Apple Pay, check that Meld has your Stripe merchant identifier for this environment — see [Apple Developer setup](#apple-developer-setup) |
+| `400` | `HEADLESS_NOT_SUPPORTED` | The order failed Stripe's own checks | Re-quote; if it persists, ask your Meld representative |
+| `400` | `ACCOUNT_BAD_CONFIGURATION` | The Stripe credentials on your account are incomplete | Ask your Meld representative |
+| `422` | `STRIPE_HEADLESS_PROVIDER_REJECTED` | Stripe refused to start sign-in for this customer, or you retried an order whose bootstrap had already failed or expired | Create a new order. Nothing was charged |
+| `409` | `HEADLESS_PAYMENT_OUTCOME_UNKNOWN` | Meld could not confirm with Stripe whether sign-in started | Nothing was charged. Create a new order rather than retrying in a loop |
+| `425` | `HEADLESS_PAYMENT_IN_PROGRESS` | The same request is still being processed | Retry shortly with the same `X-Idempotency-Key` |
 
 ---
 

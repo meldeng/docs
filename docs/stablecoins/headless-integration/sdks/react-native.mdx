@@ -42,7 +42,7 @@ See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/s
 ```tsx
 import { Meld, MeldWidget } from '@meldcrypto/react-native-sdk';
 
-Meld.configure('sandbox'); // or 'production' — call once, before you mount
+Meld.configure('sandbox'); // or 'qa' (iOS only), 'production': the order's environment. Call once, before you mount
 
 <MeldWidget
   order={order}
@@ -102,6 +102,22 @@ Bare React Native projects add the same entitlement in Xcode. A provider that ho
 
 ---
 
+## Stripe orders
+
+Stripe runs on iOS only, through the iOS SDK underneath. It needs `@meldcrypto/react-native-sdk` 0.8.0 or later in a new native build — an over-the-air update cannot add it — with the `MeldSDK` pod at 0.9.1 or later:
+
+```bash
+cd ios && USE_FRAMEWORKS=static pod update MeldSDK
+```
+
+On Android, and on an iOS binary built before that, `Meld.capabilities(order)` reports `unsupported` and the component emits `UNSUPPORTED_NATIVE_PROTOCOL` without mounting.
+
+Mount the order with the same `<MeldWidget>`. `applePay` is optional for a Stripe order; if you pass it, `amount` must match the order and `currencyCode` must be `USD`. List your Stripe merchant identifier in the config plugin's `merchantIds`, next to any other provider's — see [Stripe setup](/docs/stablecoins/headless-integration/apple-pay#stripe-setup).
+
+Stripe's `detail` values are listed under [iOS → Stripe orders](/docs/stablecoins/headless-integration/sdks/ios#stripe-orders).
+
+---
+
 ## Events
 
 | Event | Meaning |
@@ -113,6 +129,8 @@ Bare React Native projects add the same entitlement in Xcode. A provider that ho
 | `onError` | Carries a code and message |
 
 [The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
+
+On iOS, `onError` codes are the [iOS SDK's](/docs/stablecoins/headless-integration/sdks/ios#error-codes). This SDK has no `attemptMayExist`: treat any code other than `APPLE_PAY_UNAVAILABLE`, `PRESENTATION_FAILED`, `PAYMENT_REJECTED`, `ORDER_STATE_CHANGED` and `VERIFICATION_PENDING` as a payment that may exist.
 
 ---
 

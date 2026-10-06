@@ -15,6 +15,8 @@ It is a container and an event relay. It does not render card input, does not re
 
 The API is the same shape on all three: configure the environment once, mount an order, handle five events, tear down. Only the install and the platform setup differ.
 
+Stripe orders are the exception: they run on iOS only, in the iOS SDK and in the React Native SDK on iOS. The web SDK and Android do not present them. See [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe).
+
 ---
 
 ## The five events
