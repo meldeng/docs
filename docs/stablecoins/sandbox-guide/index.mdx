@@ -82,13 +82,13 @@ These providers have sandbox limitations:
 * **Stripe** - Runs on your own Stripe sandbox with Stripe's test values, so nothing is charged. Stripe's sandbox supports fewer currency pairs than production. For headless, see [Test Stripe](/docs/stablecoins/sandbox-guide/headless-testing#test-stripe)
 * **Paybis** - Basic sandbox functionality
 * **BTC Direct** - Limited sandbox features
+* **Coinbase Pay** - The widget flows are production only. Headless Coinbase Apple Pay can be tested in sandbox up to order creation: see [Test Coinbase in sandbox](/docs/stablecoins/headless-integration/apple-pay#test-coinbase-in-sandbox). Headless transfers run simulated in sandbox: see [Test in sandbox](/docs/stablecoins/headless-integration/transfers#test-in-sandbox)
 
 ### ❌ Production Only
 
 These providers do not offer sandbox environments:
 
 * **Robinhood** - Production environment only
-* **Coinbase Pay** - Production environment only
 * **Blockchain.com** - Production environment only
 * **Alchemy Pay** - Production-like sandbox requiring real payments
 
@@ -110,10 +110,10 @@ These providers do not offer sandbox environments:
 
 ### Transfer Flow
 
-* ⚠️ **Limited testing** - configuration and quotes only
-* Cannot execute actual transfers in sandbox
+* ⚠️ **Limited testing** in the White-Label API - configuration and quotes only
+* Cannot execute actual White-Label API transfers in sandbox
 * Real wallet addresses required for testing
-* Currently available in **White-Label API only**
+* **Headless transfers** from Coinbase run end to end in sandbox once Meld enables them on your account. They are simulated, so no Coinbase account or funds are involved. See [Test in sandbox](/docs/stablecoins/headless-integration/transfers#test-in-sandbox)
 
 ## 🚀 Testing Best Practices
 

@@ -181,11 +181,12 @@
                     ]
                   },
                   {
-                    "group": "Product 4: Headless Card and Apple Pay",
+                    "group": "Product 4: Headless Card, Apple Pay and Transfers",
                     "pages": [
                       "docs/stablecoins/headless-integration/index",
                       "docs/stablecoins/headless-integration/cards",
                       "docs/stablecoins/headless-integration/apple-pay",
+                      "docs/stablecoins/headless-integration/transfers",
                       {
                         "group": "Shared flows",
                         "pages": [

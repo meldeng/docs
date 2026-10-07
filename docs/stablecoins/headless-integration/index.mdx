@@ -1,9 +1,11 @@
 ---
-title: "Product 4: Headless Card and Apple Pay"
+title: "Product 4: Headless Card, Apple Pay and Transfers"
 sidebarTitle: "Overview"
 ---
 
-Headless Card and Apple Pay is for teams who want the whole purchase to happen in their own app or site, payment included. White-Label API and Meld Checkout both hand the user to the onramp's UI to pay; headless keeps them in yours. Your backend creates an order, your client mounts the [Meld SDK](/docs/stablecoins/headless-integration/sdks), and the SDK draws the provider's card form or raises the system Apple Pay sheet in place.
+Headless is for teams who want the whole purchase to happen in their own app or site, payment included. White-Label API and Meld Checkout both hand the user to the onramp's UI to pay; headless keeps them in yours. Your backend creates an order, your client mounts the [Meld SDK](/docs/stablecoins/headless-integration/sdks), and the SDK draws the provider's card form or raises the system Apple Pay sheet in place.
+
+Headless also covers [transfers](/docs/stablecoins/headless-integration/transfers): the customer links their Coinbase account, and your backend sends crypto they already hold there to their own wallet.
 
 Meld keeps the parts you would rather not: routing between providers, KYC, compliance, and settlement tracking. Card details go straight to the provider's PCI surface, so they never reach your servers and your compliance scope does not widen.
 
@@ -21,6 +23,8 @@ One endpoint creates both kinds of order:
 | --- | --- | --- |
 | `CREDIT_DEBIT_CARD` | Provider card surface for the SDK to mount | [Cards](/docs/stablecoins/headless-integration/cards) |
 | `APPLE_PAY` | Apple Pay surface for the SDK to present | [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) |
+
+Transfers have their own endpoint, `POST /crypto/order/headless/transfer`, and their own order shape. See [Transfers](/docs/stablecoins/headless-integration/transfers).
 
 ### The order
 
@@ -62,12 +66,12 @@ Send `X-Idempotency-Key: <uuid>` on order creation. A repeated key returns the o
 
 - A Meld API key with payment access (sandbox first, production for go-live)
 - Headless onramps enabled on your account. Contact your Meld representative to enable Headless for your Meld account
-- Your own account and credentials with each provider you want to use
+- Your own account and credentials with each provider you want to use. Coinbase is set up through Meld — see [provider credentials](#you-bring-your-own-provider-credentials)
 - A webhook endpoint configured in **Developer → Webhooks** in the dashboard
 
 Card and Apple Pay are independent — integrate either on its own, or both. They share everything above and differ only in the surface the SDK presents, so adding the second later is a payment method and a capture surface, not a second integration.
 
-Both need the [Meld SDK](/docs/stablecoins/headless-integration/sdks) in your client.
+Both need the [Meld SDK](/docs/stablecoins/headless-integration/sdks) in your client. Transfers need no SDK: your backend drives them. When the customer has not linked their Coinbase account yet, your app opens Coinbase's authorization page in a system browser session.
 
 ### Your customer must be KYC'd first
 
@@ -78,17 +82,21 @@ Two providers differ, and neither is a choice you make:
 | Provider | When identity is verified |
 | --- | --- |
 | Stripe | In Stripe's own screens, inside the flow the SDK presents |
-| Coinbase | Not at first. Required once the customer crosses Coinbase's spend or transaction thresholds |
+| Coinbase | Not at first. Before the first order, the customer verifies their email and phone with Meld's one-time code, sent with `serviceProvider: COINBASEPAY` — see [Verify the email and phone](/docs/stablecoins/headless-integration/apple-pay#verify-the-email-and-phone). Coinbase asks for identity only to raise the customer's limit |
 
 Everywhere else, run Unified KYC up front and treat an approved customer as something you check before offering the flow at all.
 
+Transfers need no Unified KYC: the customer authorizes the send from their own Coinbase account.
+
 <Note>
-  Some providers provision their own customer record at order time and reject the call without an email. If your users can sign up without one, sync it onto the Meld customer with `PATCH /accounts/customers/{customerId}` before the first order — a missing email surfaces later as a `404` naming a service-provider customer, which is harder to read than it sounds.
+  Some providers provision their own customer record at order time and reject the call without an email. If your users can sign up without one, sync it onto the Meld customer with `PATCH /accounts/customers/{customerId}` before the first order — a missing email surfaces later as a `404` naming a service-provider customer, which is harder to read than it sounds. Stripe and Coinbase check for it up front instead, and refuse the order with `403 VERIFICATION_REQUIRED` and `email: MISSING`.
 </Note>
 
 ### You bring your own provider credentials
 
 Headless is not a shared-key product. Every order is placed against your own merchant account at the provider, using credentials registered to your Meld account.
+
+Coinbase is different: it is set up through Meld. Contact your Meld representative to enable it on your account. If Coinbase needs anything from you, your Meld representative tells you.
 
 ---
 
@@ -99,19 +107,22 @@ Headless is not a shared-key product. Every order is placed against your own mer
 | Sandbox | `https://api-sb.meld.io` |
 | Production | `https://api.meld.io` |
 
+Configure the [Meld SDK](/docs/stablecoins/headless-integration/sdks) for the environment your backend created the order in.
+
 ---
 
 ## Next steps
 
-Pick the method you are integrating:
+Pick what you are integrating:
 
 1. [Cards](/docs/stablecoins/headless-integration/cards) — the provider's card form, mounted inside your checkout
 2. [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) — present the system sheet in your app or site
+3. [Transfers](/docs/stablecoins/headless-integration/transfers) — send crypto the customer holds at Coinbase to their own wallet
 
-Each guide opens with the setup you do once — customer, webhooks, KYC, quote and eligibility — then covers the order and the capture surface for that method.
+The Cards and Apple Pay guides open with the setup you do once — customer, webhooks, KYC, quote and eligibility — then cover the order and the capture surface for that method.
 
 ---
 
-## Sandbox Testing Guide
+## Test in sandbox
 
-Once you complete the integration, you can test in Meld's sandbox by using this [guide](https://docs.meld.io/docs/stablecoins/sandbox-guide/headless-testing). Note that sandbox will have a limited set of providers and limited coverage, and should only be used for proof of concept testing. For full coverage and end to end testing, please proceed to production.
+Once you complete the integration, test card and Apple Pay orders in Meld's sandbox with the [headless testing guide](/docs/stablecoins/sandbox-guide/headless-testing). Coinbase is tested from its own guides: see [Test Coinbase in sandbox](/docs/stablecoins/headless-integration/apple-pay#test-coinbase-in-sandbox) for Apple Pay, and [Test in sandbox](/docs/stablecoins/headless-integration/transfers#test-in-sandbox) for transfers. Sandbox has fewer providers and less coverage than production, so use it for proof of concept testing. For full coverage and end to end testing, use production.
