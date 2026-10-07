@@ -10,7 +10,10 @@ Your backend mints the order, the [Meld SDK](/docs/stablecoins/headless-integrat
 1. [Create a customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and complete [Unified KYC](/docs/stablecoins/unified-kyc). Required — almost every provider refuses an order for a customer Meld has not cleared
 2. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks), before KYC so you receive status changes while it runs
 
-Stripe is the exception to step 1. Meld runs no KYC for it: Stripe verifies the customer inside the flow its SDK presents, and needs only an email on the Meld customer. See [Stripe](#stripe).
+Stripe and Coinbase are the exceptions to step 1. Meld runs no KYC for either:
+
+- Stripe verifies the customer inside the flow its SDK presents, and needs only an email on the Meld customer. See [Stripe](#stripe).
+- Coinbase needs a verified email and phone and the customer's acceptance of its agreements. It asks for identity only once the customer reaches its limits. See [Coinbase](#coinbase).
 
 ---
 
@@ -112,7 +115,10 @@ Native-only integrations skip this entirely.
 
 The sheet is presented on the device, and the wallet token goes to the provider's processor, encrypted. Your servers handle the order; they never see payment credentials.
 
-The diagram shows the path for sheets the Meld SDK presents itself, as for Mercuryo and Banxa. Stripe runs a longer flow inside its own SDK. See [Stripe](#stripe).
+The diagram shows the path for sheets the Meld SDK presents itself, as for Mercuryo and Banxa. Two providers differ:
+
+- Stripe runs a longer flow inside its own SDK. See [Stripe](#stripe).
+- Coinbase presents the sheet from its own checkout page, and takes the payment itself. See [Coinbase](#coinbase).
 
 ```mermaid
 sequenceDiagram
@@ -218,7 +224,7 @@ Response, for this Mercuryo order. `...` marks values elided here:
 
 Return it to your client verbatim. `paymentMethodResponseDetails`, `paymentActions` and `headlessPresentation` carry what the SDK needs. Your app does not have to read those fields itself, but it must not drop them.
 
-Its shape depends on the provider. A Stripe order carries a bootstrap for Stripe's SDK. See [Stripe](#create-a-stripe-order).
+Its shape depends on the provider. A Stripe order carries a bootstrap for Stripe's SDK, and a Coinbase order carries a link to Coinbase's checkout instead of a session token. See [Stripe](#create-a-stripe-order) and [Coinbase](#create-a-coinbase-order).
 
 ---
 
@@ -287,14 +293,14 @@ Meld.mount(order, document.getElementById('checkout'), {
 
 </CodeGroup>
 
-On React Native and iOS, pass the Apple Pay inputs for every Apple Pay order, so your app never branches on the provider. They carry what the sheet shows and the order does not. On a Stripe order they must match the order's amount, in USD. On the web there is nothing extra to pass: the order carries it, and the provider's component draws the button.
+On React Native and iOS, pass the Apple Pay inputs for every Apple Pay order, so your app never branches on the provider. They carry what the sheet shows and the order does not. A Coinbase order ignores them, and on a Stripe order they must match the order's amount, in USD. On the web there is nothing extra to pass: the order carries it, and the provider's component draws the button.
 
 A native sheet draws nothing into your view, because iOS puts it over your screen. The React Native component still has to stay mounted for as long as the sheet is up. A zero-size component, mounted from the customer's tap, is enough.
 
 `onCancel` fires when the user dismisses the sheet. Treat it as a change of mind and return them to the amount screen.
 
 <Note>
-  Not every provider's Apple Pay works on every platform. Stripe runs only in an iOS app. Call `Meld.capabilities(order)` (`Meld.capabilities(for: order)` on iOS) before you offer the button, and fall back when its `surface` is `unsupported`. An order the SDK cannot present reports that rather than failing at mount.
+  Not every provider's Apple Pay works on every platform. Stripe and Coinbase run only in an iOS app. Call `Meld.capabilities(order)` (`Meld.capabilities(for: order)` on iOS) before you offer the button, and fall back when its `surface` is `unsupported`. An order the SDK cannot present reports that rather than failing at mount.
 </Note>
 
 ---
@@ -434,6 +440,214 @@ Errors use the [standard envelope](/docs/meld-api/error-responses). On a Stripe 
 
 ---
 
+## Coinbase
+
+Coinbase takes the payment on its own checkout page, as merchant of record, and the Meld SDK opens Coinbase's Apple Pay sheet from it. The customer sees only the sheet. Your backend's part is the same as for any provider — quote, create the order, return it verbatim — plus collecting the verified contacts and agreements Coinbase requires.
+
+### Coinbase scope
+
+| | Coinbase headless |
+| --- | --- |
+| Customers | US only, with a US mobile number |
+| Currency | USD in. The headless quote lists the tokens and networks |
+| Payment methods | `APPLE_PAY` only. Coinbase has no headless card path, and any other method is refused with `400 PAYMENT_METHOD_NOT_SUPPORTED` |
+| Clients | iOS 16 or later, through the [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios#coinbase-orders) or the [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native#coinbase-orders) on iOS. Not the web SDK, not Android |
+| Apple setup | None. No merchant identifier, certificate or domain registration |
+| KYC | None by Meld up front. The headless quote reports `kycMode: PROVIDER_MANAGED`. Coinbase asks for identity only to raise a customer's limit — see [Limits](#coinbase-limits) |
+| Credentials | Coinbase set up on your Meld account. Contact your Meld representative |
+| Environments | Production. In sandbox you can test everything up to presenting the order — see [Test Coinbase in sandbox](#test-coinbase-in-sandbox) |
+
+### Before you begin with Coinbase
+
+Coinbase takes an order only for a customer with a verified email, a verified US mobile number and a recorded acceptance of its agreements. Meld checks all three before it places the order. Collect them first, while the customer is still in your flow.
+
+[Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) reports what is outstanding. Pass the customer and the full order intent, and Meld runs the same checks the order will:
+
+```
+GET /crypto/onramp/COINBASEPAY/requirements
+  ?customerId=WmYYgvN8ukpV62N3m4u3ee
+  &paymentMethodType=APPLE_PAY
+  &sourceCurrencyCode=USD
+  &sourceAmount=50
+  &destinationCurrencyCode=USDC
+  &destinationNetworkCode=ETH
+  &countryCode=US
+```
+
+The email and phone fields read as on [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility#contact-verification). These are the parts specific to Coinbase:
+
+```json
+{
+  "legalAgreements": [
+    { "type": "GUEST_CHECKOUT_TERMS_OF_SERVICE", "url": "https://www.coinbase.com/legal/guest-checkout/us", "region": "US", "code": "GUEST_CHECKOUT_TERMS_OF_SERVICE:US" },
+    { "type": "TERMS_OF_SERVICE", "url": "https://www.coinbase.com/legal/user_agreement", "code": "TERMS_OF_SERVICE" },
+    { "type": "PRIVACY_POLICY", "url": "https://www.coinbase.com/legal/privacy", "code": "PRIVACY_POLICY" }
+  ],
+  "verificationRequirements": {
+    "verifyWith": { "endpoint": "/accounts/customers/{customerId}/verifications", "serviceProvider": "COINBASEPAY" },
+    "agreement": { "required": true, "maxAgeDays": 60, "codes": ["GUEST_CHECKOUT_TERMS_OF_SERVICE:US", "TERMS_OF_SERVICE", "PRIVACY_POLICY"] }
+  },
+  "customerStatus": {
+    "agreement": { "satisfied": false, "reason": "MISSING", "unmetCodes": ["GUEST_CHECKOUT_TERMS_OF_SERVICE:US", "TERMS_OF_SERVICE", "PRIVACY_POLICY"] }
+  }
+}
+```
+
+Read the agreement codes from this response rather than hardcoding them.
+
+#### Verify the email and phone
+
+The customer record needs an email. Verify the email and the phone with [Meld's one-time code](/docs/stablecoins/headless-integration/shared-flows/verification), and send `serviceProvider: "COINBASEPAY"` on each trigger:
+
+```json
+{
+  "channel": "PHONE",
+  "target": "+14155550123",
+  "serviceProvider": "COINBASEPAY"
+}
+```
+
+- Send `serviceProvider` on both triggers. An email code sent without it does not count for Coinbase, and the order is still refused with `email: MISSING`.
+- The phone must be a US mobile number, in international form.
+- Coinbase accepts a verification for 60 days. After that, eligibility reports the channel as unsatisfied, and the customer verifies again.
+- Coinbase receives the email and phone exactly as the customer verified them, not the values on the customer record.
+
+#### Record the agreements
+
+Show each document in `legalAgreements` in your own UI, and gate your flow on the customer accepting. Then record the acceptance in one of two ways:
+
+1. **One receipt per code.** Call `POST /accounts/terms-of-service/acceptances` once for each code in `agreement.codes`:
+
+   ```json
+   {
+     "externalCustomerId": "your-internal-user-id-123",
+     "serviceProvider": "COINBASEPAY",
+     "code": "GUEST_CHECKOUT_TERMS_OF_SERVICE:US",
+     "acceptedAt": "2026-10-07T10:24:11Z",
+     "ipAddress": "203.0.113.24"
+   }
+   ```
+
+   `ipAddress` is the IP the customer accepted from, and it is required. Receipts are keyed by your `externalCustomerId`, so use the one on the Meld customer you order for. A customer without an `externalCustomerId` cannot hold receipts, so use the second way for that customer.
+
+2. **An acceptance time on the order.** Send `verification.agreementAcceptedAt` on the create request: the instant the customer accepted the documents you showed, in ISO-8601. Keep your own record of which customer accepted which document, and when.
+
+Meld reads receipts first, and uses `agreementAcceptedAt` when receipts do not cover every code. An acceptance counts for 60 days. Capture `agreementAcceptedAt` per order: a constant or a cached value stops counting once it is older than that. A value Meld cannot parse, or one in the future, is refused with `400` even when receipts cover the order.
+
+#### Coinbase limits
+
+The per-order minimum and maximum are on the [routes API](/docs/stablecoins/white-label-api-integration/whitelabel-api-guide#supported-routes), in `paymentMethods[].limits`.
+
+Coinbase also limits each customer: a weekly spending cap, and a lifetime cap on the number of transactions. Meld checks the lifetime cap before it places the order. When the customer has reached it, eligibility reports a `PROVIDER_EXTRA_KYC` requirement with the `limitUpgrade` process, and the order is refused with `422 CUSTOMER_NOT_PAYMENT_READY`:
+
+| `errors` | What to do |
+| --- | --- |
+| `limitUpgrade: REQUIRED` | Run the `limitUpgrade` process, then resend the same request |
+| `limitUpgrade: PENDING` | Coinbase is reviewing the customer's upgrade. Wait, then re-check eligibility |
+| `limitUpgrade: BLOCKED` | Coinbase will not raise the limit. Offer another provider |
+
+To run the process, call `POST /crypto/onramp/COINBASEPAY/processes/limitUpgrade` with the customer and the order intent. Call it with `operation: READ` first, for its state and the input sources Coinbase offers. Then call it with `operation: START` and one of those sources. Never retry `START` automatically.
+
+Coinbase applies the weekly cap itself, when it receives the order, and refuses an order over it. Meld cannot check it in advance.
+
+### Create a Coinbase order
+
+Send `walletAddress` on the [headless quote](/docs/stablecoins/headless-integration/shared-flows/quotes), so that Coinbase prices the same checkout the order uses. Then send the [step 2](#2-create-the-order) request with `serviceProvider: COINBASEPAY`, `paymentMethodType: APPLE_PAY`, `countryCode: US` and `sourceCurrencyCode: USD`:
+
+- `clientIpAddress` is the customer's device IP, which Coinbase receives with the order. Without it, Meld uses the IP of the caller, which is your server.
+- `externalOrderId` must be unique per order. Coinbase sees it as your order reference.
+- Add `"verification": { "agreementAcceptedAt": "2026-10-07T10:24:11Z" }` only when you record acceptance that way. Leave it out when receipts cover every code.
+
+Response:
+
+```json
+{
+  "id": "WoRdErabcexample0000004",
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "externalOrderId": "order-7d40e1",
+  "paymentMethodType": "APPLE_PAY",
+  "responseKind": "SESSION",
+  "paymentMethodResponseDetails": {
+    "paymentLinkUrl": "https://pay.coinbase.com/...",
+    "presentation": "PROVIDER_HOSTED"
+  },
+  "payload": { "...": "echo of your request" },
+  "headlessPresentation": {
+    "surface": "PROVIDER_HOSTED",
+    "protocol": "COINBASE_APPLE_PAY",
+    "version": 1
+  }
+}
+```
+
+A Coinbase order carries no `sessionToken` and no `merchantIdentifier`: `paymentLinkUrl` is Coinbase's checkout for this order. Return the response verbatim and let the SDK open it. Do not open, change or reuse the link yourself. It works once, and a used or expired link ends in `ORDER_STATE_CHANGED`.
+
+### Present a Coinbase order
+
+Mount the order like any other Apple Pay order, from the customer's tap on your Apple Pay button. Nothing about the call is specific to Coinbase:
+
+- `into:` is optional, and any `applePay` inputs are ignored.
+- The SDK opens Coinbase's Apple Pay sheet, and the customer sees only the sheet. `onReady` fires as it opens.
+- `onPaymentSubmitted` means Coinbase accepted the payment. You can unmount then: the SDK lets Coinbase finish confirming on its own.
+- `onCancel` means the customer dismissed the sheet before paying.
+
+Errors use the SDK's [normalized codes](/docs/stablecoins/headless-integration/sdks/ios#error-codes). On a Coinbase order:
+
+- `ORDER_STATE_CHANGED` means the link was used or has expired, and `PRESENTATION_FAILED` means the flow stopped before any payment, so no payment exists. Create a new order.
+- `APPLE_PAY_UNAVAILABLE` means the device cannot make Apple Pay payments, and `PAYMENT_REJECTED` means Coinbase declined the payment. Offer another method or provider, on a new order.
+- `PAYMENT_OUTCOME_UNKNOWN` means the outcome is unclear. Track the order through your backend and never pay it again.
+
+`detail` carries Coinbase's own event and code, for your logs. The full callback table is under [iOS → Coinbase orders](/docs/stablecoins/headless-integration/sdks/ios#coinbase-orders).
+
+### Errors on Coinbase order creation
+
+Errors use the [standard envelope](/docs/meld-api/error-responses). Every refusal except the last arrives before Meld places the order with Coinbase, so nothing is spent.
+
+| HTTP | `code` | Cause | What to do |
+| --- | --- | --- | --- |
+| `400` | `PAYMENT_METHOD_NOT_SUPPORTED` | The order is not `APPLE_PAY`, or Coinbase has no headless route for its country, currency pair and network | Coinbase takes Apple Pay only. Offer another provider for cards, or re-quote with `integrationMode=HEADLESS` |
+| `403` | `VERIFICATION_REQUIRED` | `errors` lists each unmet item: `email`, `phone` or `agreement`, each `MISSING` or `STALE` | Verify or record what is listed, then resend |
+| `403` | `LEGAL_ACCEPTANCE_REQUIRED` | Only the agreement is unmet | Record the acceptance, or send a fresh `agreementAcceptedAt`, then resend |
+| `422` | `CUSTOMER_NOT_PAYMENT_READY` | The customer reached Coinbase's lifetime limit; `errors` names `limitUpgrade: REQUIRED`, `PENDING` or `BLOCKED` | See [Coinbase limits](#coinbase-limits) |
+| `400` | `TRANSACTION_REQUEST_VALIDATION_ERROR` | `agreementAcceptedAt` cannot be parsed, or is in the future | Send the instant the customer accepted, in ISO-8601 |
+| `500` | `CUSTOMER_VERIFICATION_UNAVAILABLE` | Meld could not check the customer's verification | Retry the same request later |
+| `422` | `HEADLESS_PROVIDER_REJECTED` | Coinbase refused the order after Meld placed it, so the order is spent. `serviceProviderDetails` carries Coinbase's `errorType` | Create a new order, with a new `X-Idempotency-Key` and a new `externalOrderId`. If `errors` lists `email: REJECTED` or `phone: REJECTED`, verify that channel again first |
+
+### Lifecycle and webhooks
+
+Coinbase reports a payment to Meld only when Meld asks, so Meld checks each order with Coinbase, starting about a minute after you create it. Expect a minute or more between `onPaymentSubmitted` and the first webhook.
+
+Meld creates the transaction only once Coinbase reports the payment taken, or the order failed. Then the webhooks follow:
+
+| Webhook | Meaning |
+| --- | --- |
+| `TRANSACTION_CRYPTO_PENDING` | Coinbase took the payment, and the crypto is on its way |
+| `TRANSACTION_CRYPTO_COMPLETE` | The crypto was delivered. Credit the customer here |
+| `TRANSACTION_CRYPTO_FAILED` | The order failed |
+
+If the customer never pays, there is no transaction and no webhook. Meld stops checking the order after about 24 hours.
+
+### Test Coinbase in sandbox
+
+In sandbox, test your backend's part of a Coinbase order against `https://api-sb.meld.io`: the quote, eligibility, verification, agreements and order creation.
+
+You need:
+
+- Coinbase and headless onramps enabled on your sandbox account. Contact your Meld representative
+- A real US mobile number and an email inbox you can read. Sandbox sends real one-time codes, so test numbers and test addresses do not work
+- A destination wallet address that is valid on the network you quote
+
+Then:
+
+1. Quote US and USD with `integrationMode=HEADLESS` and your `walletAddress`, and pick the Coinbase quote.
+2. Create the order with `paymentMethodType: APPLE_PAY` before the customer has verified anything. Expect `403 VERIFICATION_REQUIRED`, with `errors` listing what is outstanding, and check that your backend handles it.
+3. [Check eligibility](#before-you-begin-with-coinbase). Verify the email and phone with `serviceProvider: "COINBASEPAY"`, and record the three agreements. Check eligibility again: email, phone and agreement are all `satisfied`.
+4. Create the order again. Expect `201` with `responseKind: SESSION` and a `paymentLinkUrl`.
+
+The iOS SDK 0.9.1 and the React Native SDK 0.8.0 cannot present a sandbox Coinbase order: mounting one ends in `onError` `PRESENTATION_FAILED`, and nothing is charged. Test the Apple Pay sheet, settlement and the transaction webhooks in production, with a small order.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause |
@@ -445,18 +659,18 @@ Errors use the [standard envelope](/docs/meld-api/error-responses). On a Stripe 
 | `403` `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for that provider. See [provider credentials](/docs/stablecoins/headless-integration#you-bring-your-own-provider-credentials) |
 | `403` `KYC_NOT_COMPLETED` | Customer not approved with that provider. Re-check requirements before retrying |
 | `400` `PAYMENT_METHOD_NOT_SUPPORTED` | No headless Apple Pay route for this provider, country, currency pair and network. Re-quote with `integrationMode=HEADLESS`, or fall back to card. For Stripe, see [its errors](#errors-on-order-creation) |
-| `404` naming a service-provider customer | Usually a missing `email` on the Meld customer, occasionally missing KYC. Stripe reports a missing email as `403` `VERIFICATION_REQUIRED` instead |
+| `404` naming a service-provider customer | Usually a missing `email` on the Meld customer, occasionally missing KYC. Stripe and Coinbase report a missing email as `403` `VERIFICATION_REQUIRED` instead |
 | `400` / `409` on `externalOrderId` | Reused value. Generate a fresh one per attempt |
 | `INVALID_REDIRECT_URL` | You sent `redirectUrl`. Headless surfaces render in place, so the field is rejected |
 | Surface never becomes ready | Content Security Policy on web, or a provider host not reachable from the device |
 | User paid, no crypto yet | Normal while settlement runs. Wait for the webhook before showing a failure |
 
-Errors specific to Stripe are under [Stripe](#errors-on-order-creation).
+Errors specific to Stripe and Coinbase are under [Stripe](#errors-on-order-creation) and [Coinbase](#errors-on-coinbase-order-creation).
 
 ---
 
 ## Test in sandbox
 
-Once your integration is complete, test it in Meld's sandbox, `https://api-sb.meld.io`, with the SDK configured for `sandbox`. [Headless testing](/docs/stablecoins/sandbox-guide/headless-testing) covers cards, Apple Pay and Stripe.
+Once your integration is complete, test it in Meld's sandbox, `https://api-sb.meld.io`, with the SDK configured for `sandbox`. [Headless testing](/docs/stablecoins/sandbox-guide/headless-testing) covers cards, Apple Pay and Stripe, and [Test Coinbase in sandbox](#test-coinbase-in-sandbox) covers Coinbase.
 
 Sandbox has fewer providers and routes than production. Use it to prove your integration, then run your end-to-end checks in production.
