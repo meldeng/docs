@@ -105,7 +105,7 @@ Call this from your backend. The API key never reaches the device.
 | Field | Required | Description |
 | --- | --- | --- |
 | `customerId` | yes | The Meld customer buying. `externalCustomerId` works instead |
-| `externalOrderId` | yes | Your own reference for this order, unique per account |
+| `externalOrderId` | recommended | Your own reference for this order, unique per account |
 | `serviceProvider` | yes | The provider taking the order, carried through from the quote |
 | `paymentMethodType` | yes | `CREDIT_DEBIT_CARD` |
 | `countryCode` | yes | Where the customer is, ISO 3166-1 alpha-2 |
@@ -113,9 +113,9 @@ Call this from your backend. The API key never reaches the device.
 | `sourceCurrencyCode` | yes | Fiat they pay in, ISO 4217 |
 | `destinationCurrencyCode` | yes | Token they are buying, as Meld names it |
 | `destinationWalletAddress` | yes | Wallet it is sent to |
-| `destinationNetworkCode` | yes | Chain, as Meld names it. Carry it through from the quote |
+| `destinationNetworkCode` | yes for Stripe, recommended otherwise | Chain, as Meld names it. Carry it through from the quote |
 | `subdivision` | some providers | State or province, ISO 3166-2 — `US-CA`. Required where a provider is approved state by state |
-| `clientIpAddress` | yes | The end user's public IP, not your server's |
+| `clientIpAddress` | recommended | The end user's public IP, not your server's |
 | `customerPhoneNumber` | some providers | The customer's phone, where a provider wants it on the order as well as on the customer record |
 | `providerData` | some providers | A provider-specific block, for the few that need something no other provider does |
 
@@ -210,9 +210,9 @@ Two things to do when it fires:
 A Stripe card order does not mount a card form in your view. Stripe's own SDK collects the card over your app, in the same flow as Stripe Apple Pay: Link sign-in, Stripe's identity checks, then payment. The order is the same SDK bootstrap, with two differences:
 
 - Send `paymentMethodType: CREDIT_DEBIT_CARD`
-- `clientConfiguration` carries no `merchantIdentifier`, and there is no Apple setup
+- `clientConfiguration` carries no `merchantIdentifier`, and there is no Apple setup. A card order works before Meld has configured your Stripe merchant identifier
 
-Everything else — scope, the email requirement, the response, refusals and errors — is in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe).
+Everything else — scope, the Stripe setup, the email requirement, the response, refusals and errors — is in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe). To test it in sandbox, see [Test Stripe](/docs/stablecoins/sandbox-guide/headless-testing#test-stripe).
 
 ---
 
@@ -222,8 +222,8 @@ Everything else — scope, the email requirement, the response, refusals and err
 | --- | --- |
 | `403` `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for that provider. See [provider credentials](/docs/stablecoins/headless-integration#you-bring-your-own-provider-credentials) |
 | `403` `KYC_NOT_COMPLETED` | Customer not approved with that provider. Re-check requirements before retrying |
-| `422` `COINBASE_ORDER_REJECTED` | The provider declined the order on its own limits. No order was created and nothing was charged — offer another provider rather than retrying |
-| `404` naming a service-provider customer | Usually a missing `email` on the Meld customer, occasionally missing KYC |
+| `403` `WHITELABEL_NOT_ENABLED` | Headless onramps are not enabled on your account, in this environment. Contact your Meld representative |
+| `404` naming a service-provider customer | Usually a missing `email` on the Meld customer, occasionally missing KYC. Stripe reports a missing email as `403` `VERIFICATION_REQUIRED` instead |
 | `400` / `409` on `externalOrderId` | Reused value. Generate a fresh one per attempt |
 | `INVALID_REDIRECT_URL` | You sent `redirectUrl`. Headless card surfaces render in place, so the field is rejected |
 | Surface never becomes ready | Content Security Policy on web, or a provider host not reachable from the device |
@@ -231,6 +231,8 @@ Everything else — scope, the email requirement, the response, refusals and err
 
 ---
 
-## Sandbox Testing Guide
+## Test in sandbox
 
-Once you complete the integration, you can test in Meld's sandbox by using this [guide](https://docs.meld.io/docs/stablecoins/sandbox-guide/headless-testing). Note that sandbox will have a limited set of providers and limited coverage, and should only be used for proof of concept testing. For full coverage and end to end testing, please proceed to production.
+Once your integration is complete, test it in Meld's sandbox, `https://api-sb.meld.io`, with the SDK configured for `sandbox`. [Headless testing](/docs/stablecoins/sandbox-guide/headless-testing) has the test cards, and covers Stripe card orders.
+
+Sandbox has fewer providers and routes than production. Use it to prove your integration, then run your end-to-end checks in production.
