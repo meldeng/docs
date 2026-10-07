@@ -19,6 +19,8 @@ import Meld from '@meldcrypto/sdk';
 Meld.configure({ environment: 'sandbox' }); // or 'production'
 ```
 
+Configure the environment your backend created the order in: `'sandbox'` for orders created on `https://api-sb.meld.io`, `'production'` for `https://api.meld.io`. The SDK defaults to `'sandbox'`.
+
 Use it with a bundler — the SDK is bundled into your app.
 
 ---
@@ -45,7 +47,9 @@ const handle = Meld.mount(order, document.getElementById('widget-container'), {
 });
 ```
 
-Check `Meld.capabilities(order).embeddable` first if you handle order types this SDK does not embed.
+Check `Meld.capabilities(order)` first if you handle order types this SDK does not embed. An order it cannot present reports `surface: 'unsupported'` and `embeddable: false`, and `mount` throws.
+
+The web SDK does not present Stripe orders or Coinbase Apple Pay. They run only in an iOS app, through the [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios) or the [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native).
 
 ---
 
