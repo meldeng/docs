@@ -258,6 +258,8 @@ You can also react to `CUSTOMER_KYC_STATUS_CHANGE` webhooks and re-fetch the cus
 
 **Header:** `Meld-Version: 2026-05-01`
 
+Note that Brale does not support quotes. All Brale transactions are 1:1 (USD to USD backed stablecoin).
+
 `customerId` is optional. Pass it when available so ramp intelligence / previously-used scoring can use it.
 
 Use quotes to show rates, fees, available providers / methods, and each provider’s `kycMode`.

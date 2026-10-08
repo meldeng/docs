@@ -205,6 +205,8 @@ Direct the user to `url` when present. Listen for `CUSTOMER_KYC_STATUS_CHANGE`. 
 
 **Header:** `Meld-Version: 2026-05-01`
 
+Note that Brale does not support quotes. All Brale transactions are 1:1 (USD to USD backed stablecoin).
+
 `customerId` is optional on quote (same as widget crypto quote). Pass it when available so ramp intelligence / previously-used scoring can use it.
 
 > Sell quotes with `integrationMode=HEADLESS` include `CRYPTO_VIRTUAL_ACCOUNT_OFFRAMP` providers (Noah, Due, and similar) as well as standard crypto offramp providers.
