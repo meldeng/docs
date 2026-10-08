@@ -15,14 +15,7 @@ It is a container and an event relay. It does not render card input, does not re
 
 The API is the same shape on all three: configure the environment once, check that the SDK can present the order, mount it, handle five events, tear down. Only the install and the platform setup differ.
 
-Not every order runs on every platform. Stripe and Coinbase orders run only in an iOS app, through the iOS SDK or the React Native SDK on iOS:
-
-| Order | iOS | Android | Web |
-| --- | --- | --- | --- |
-| Stripe, Apple Pay or card | iOS 15 or later | Not supported | Not supported |
-| Coinbase, Apple Pay | iOS 16 or later | Not supported | Not supported |
-
-See [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe) and [Apple Pay → Coinbase](/docs/stablecoins/headless-integration/apple-pay#coinbase).
+Stripe orders (Apple Pay or card) and Coinbase Apple Pay run only in an iOS app, through the iOS SDK or the React Native SDK, and Coinbase needs iOS 16 or later. See [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe) and [Apple Pay → Coinbase](/docs/stablecoins/headless-integration/apple-pay#coinbase).
 
 ---
 
@@ -33,9 +26,9 @@ See [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stri
 | Sandbox | `https://api-sb.meld.io` | `sandbox` |
 | Production | `https://api.meld.io` | `production` |
 
-Configure the environment your backend created the order in, once, before you mount. The SDK defaults to sandbox, so a production build must configure `production`.
+Configure the environment your backend created the order in, once, before you check or mount an order. The SDK defaults to sandbox, so a production build must configure `production`.
 
-On a Stripe order the SDK calls Meld from the device, on the configured environment's host. It also checks the order's environment against its own. An order from the other environment reports `unsupported`, and mounting it fails.
+A Stripe order created in the other environment reports `unsupported`, and mounting it fails.
 
 ## Check before you mount
 
@@ -49,7 +42,7 @@ Gate on `surface`, not on `embeddable`. On iOS and React Native, Apple Pay and S
 
 | Event | Fires when | Typical action |
 | --- | --- | --- |
-| `onReady` | The surface is ready: a card widget has loaded, or the Apple Pay sheet is opening | Hide your spinner. Not on a Stripe order, see below |
+| `onReady` | The surface is ready: a card widget has loaded, or the Apple Pay sheet is opening | Hide your spinner |
 | `onStatusChange` | The order's status changed | Track it |
 | `onPaymentSubmitted` | The user finished paying | Unmount, show processing |
 | `onCancel` | The user backed out | Return them to your amount screen |
@@ -57,9 +50,7 @@ Gate on `surface`, not on `embeddable`. On iOS and React Native, Apple Pay and S
 
 `onReady` and `onPaymentSubmitted` are lifecycle moments, not statuses. Where a provider never reports readiness, the SDK synthesises `onReady` so your spinner still clears.
 
-**On a Stripe order, `onReady` fires before anything is on screen.** The SDK shows nothing until it needs the customer. Keep your own busy state, such as a spinner on the button that started the purchase, until a terminal callback.
-
-**`onPaymentSubmitted` fires exactly once per order.** Providers disagree on how the end of a payment arrives: some send their own "payment finished" message and never a status, some report a `completed` status and never a finished message, some send both, in an order that is not fixed. The SDK collapses that into a single callback, so you can act on it directly and do not need a guard of your own. A failure or a cancellation closes it, so a failed payment is never followed by a submission.
+**`onPaymentSubmitted` fires exactly once per mount**, however the provider reports the end of the payment, so you need no guard of your own. A failure or a cancellation closes it, so a failed payment is never followed by a submission.
 
 **On iOS, each mount ends with exactly one terminal callback.** That is `onPaymentSubmitted`, `onCancel`, or `onError` with `recoverable: false`, and nothing follows it. This holds in the React Native SDK on iOS too. If you unmount before a terminal callback, you get none, and the order's outcome is whatever your backend reports. Android does not enforce this yet, so ignore anything that arrives after the first terminal callback there.
 
@@ -78,7 +69,7 @@ Providers each have their own vocabulary — `paid`, `order_completed`, `succeed
 
 **`onCancel` and `onError` are derived from the same statuses.** A `failed` status fires `onStatusChange` *and* `onError`; a `cancelled` status fires `onStatusChange` *and* `onCancel`. Handle a terminal state in one place or the other, not both, or you will run it twice.
 
-`onError` also fires for a failure that never reached the provider, such as its surface failing to load. On iOS, an embedded card widget can report that with `recoverable: true` and stay up, so the customer can carry on. An Apple Pay or Stripe order instead ends the mount with a non-recoverable error, such as `PRESENTATION_FAILED` or `APPLE_PAY_UNAVAILABLE`.
+`onError` also fires for a failure that never reached the provider, such as its surface failing to load. An embedded surface can report that with `recoverable: true`, which is not terminal: the customer can carry on with the same order. On iOS, an Apple Pay or Stripe order instead ends the mount with a non-recoverable error, such as `PRESENTATION_FAILED` or `APPLE_PAY_UNAVAILABLE`.
 
 `completed` has no dedicated handler — it arrives through `onStatusChange` only.
 
@@ -92,4 +83,4 @@ It is also not the signal to act on. Drive your flow from `onPaymentSubmitted`, 
 
 Bank transfer and offramp need no SDK. Those flows return details you display, and are server-side only.
 
-[Transfers](/docs/stablecoins/headless-integration/transfers) from a customer's Coinbase account need no SDK either. Your backend drives the order. Your app opens the authorization link Meld returns in a system browser session, then passes the `handle` from the return URL to your backend.
+[Transfers](/docs/stablecoins/headless-integration/transfers) from a customer's Coinbase account need no SDK either.

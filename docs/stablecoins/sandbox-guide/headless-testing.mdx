@@ -3,11 +3,11 @@ title: "Headless Card and Apple Pay Testing"
 description: "Sandbox testing for headless card and Apple Pay, run from your own UI."
 ---
 
-This page is for developers and QA running sandbox orders through headless card and Apple Pay. Separate from the [White-Label API and Meld Checkout testing credentials](/docs/stablecoins/sandbox-guide/test), which cover the widget flows, and from [Virtual Account Flow Testing Credentials](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials).
+This page is for developers and QA running sandbox orders through headless card and Apple Pay. Widget flows are tested with the [White-Label API and Meld Checkout testing credentials](/docs/stablecoins/sandbox-guide/test), and virtual accounts with [Virtual Account Flow Testing Credentials](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials).
 
 ## What you can verify
 
-The order call, the capture surface appearing in your app, the [SDK](/docs/stablecoins/headless-integration/sdks)'s events, and the webhook chain. How far past that you can go depends on the provider's own sandbox, and differs by payment method — see each section below.
+The order call, the capture surface appearing in your app, the [SDK](/docs/stablecoins/headless-integration/sdks)'s events, and the webhook chain. How far past that you can go depends on the provider's sandbox and the payment method.
 
 ---
 
@@ -19,19 +19,17 @@ The order call, the capture surface appearing in your app, the [SDK](/docs/stabl
 - Headless onramps enabled on your sandbox account. Ask your Meld representative. Until they are, orders are refused with `403 WHITELABEL_NOT_ENABLED`
 - Sandbox credentials for the provider you are testing, on your Meld sandbox account
 - A webhook endpoint reachable from the internet, configured in the dashboard
-- A test customer. Most providers need them KYC-approved — see [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing). Stripe needs only an email — see [Test Stripe](#test-stripe)
+- A test customer. Most providers need the customer KYC-approved: see [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing). Stripe needs only an email
 
 <Warning>
-  Sandbox coverage is narrower than production, and a US test customer is the most common reason an otherwise correct integration returns no quotes. Quote first and use whatever country and currency pair comes back with the provider you intend to test. Stripe is the exception: it serves only US customers.
+  Sandbox coverage is narrower than production, and a US test customer is the most common reason an otherwise correct integration returns no quotes. Quote first and use whatever country and currency pair comes back with the provider you intend to test. Stripe serves only US customers.
 </Warning>
-
-Stripe needs more setup than the other providers. See [Test Stripe](#test-stripe).
 
 ---
 
 ## Test the card flow
 
-Test cards against **Banxa**. It is the provider with a published headless card sandbox, and the cards below are its. To test Stripe's card flow, see [Test Stripe](#test-stripe).
+Test cards against **Banxa**. It is the provider with a published headless card sandbox, and the cards below are its.
 
 1. Quote for your country, currency pair and amount, and pick the Banxa quote.
 2. Create the order with `paymentMethodType: CREDIT_DEBIT_CARD`.
@@ -69,9 +67,9 @@ Run at least one decline as well as one success. A decline is the path most inte
 
 ## Test Apple Pay
 
-**You can present the sheet in sandbox. You cannot settle a payment with it.** Presentation is the whole of what sandbox Apple Pay verifies — the order, the sheet, and the events around it. Treat a settled Apple Pay purchase as a production check. Stripe is the exception: with your Stripe test keys, a Stripe Apple Pay order goes through checkout. See [Test Stripe](#test-stripe).
+**You can present the sheet in sandbox. You cannot settle a payment with it.** Treat a settled Apple Pay purchase as a production check. Stripe is the exception: see [Test Stripe](#test-stripe).
 
-1. Quote for a country and currency pair that return an Apple Pay provider.
+1. Quote for a country and currency pair that return a Mercuryo or Banxa Apple Pay quote, and pick it.
 2. Create the order with `paymentMethodType: APPLE_PAY`.
 3. Check `canPresentApplePay()`, then mount.
 
@@ -87,91 +85,6 @@ The iOS Simulator presents and authorises the sheet but cannot produce a decrypt
 
 ---
 
-## Test Stripe
-
-You can run Stripe orders in Meld's sandbox, against your own Stripe sandbox. The SDK drives Stripe's flow — Link sign-in, Stripe's KYC, Apple Pay or card, checkout — with Stripe's test values, and nothing is charged. Meld runs no KYC for Stripe: Stripe verifies the customer inside that flow.
-
-Stripe orders run only in an iOS app. The setup, the order and its errors are in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe).
-
-### Set up Stripe in sandbox
-
-Complete [Before you begin with Stripe](/docs/stablecoins/headless-integration/apple-pay#before-you-begin-with-stripe) with your Stripe sandbox. These are the points that differ in sandbox:
-
-1. **Stripe onboarding covers your sandbox.** No Stripe call succeeds in your Stripe sandbox before onboarding is complete. Your app must also be registered with Stripe as a trusted application, which Stripe requires on a simulator as well. Until then, Stripe is missing from the headless quote, order creation fails with `422 STRIPE_HEADLESS_PROVIDER_REJECTED`, or Stripe's SDK fails on the device. A new order does not help: finish onboarding with Stripe.
-2. **Test keys, sandbox environment.** On your Meld sandbox account, use your Stripe sandbox's keys, a `pk_test_` publishable key and an `sk_test_` secret key, and keep the integration's environment on sandbox. With live keys or the production environment, orders are refused with `400 PAYMENT_METHOD_NOT_SUPPORTED`, or the SDK rejects them.
-3. **Sandbox headless fields.** On your sandbox Stripe integration in the Meld dashboard, enter the Link OAuth client ID and client secret Stripe issued for your sandbox, not the live pair, and the headless API version Stripe gave you. Until they are set, orders fail with `400 ACCOUNT_BAD_CONFIGURATION`.
-4. **A webhook endpoint in your Stripe sandbox.** Point it at the webhook URL of your sandbox Stripe integration, on `api-sb.meld.io`, and subscribe it to `crypto.onramp_session.updated`. The Meld dashboard shows the URL on the integration; while you add the integration, select **View Webhook URL** to see it before you save. Save the endpoint's signing secret as the integration's webhook secret.
-5. **A sandbox merchant identifier, for Apple Pay.** Its certificate must come from your Stripe sandbox's CSR, as in [Stripe setup](/docs/stablecoins/headless-integration/apple-pay#stripe-setup). Give the identifier to your Meld representative for your sandbox account. Until Meld has configured it, Stripe Apple Pay orders fail with `400 PAYMENT_METHOD_NOT_SUPPORTED`. Card orders do not need one.
-6. **An iOS test app on sandbox.** Call `Meld.configure(environment: .sandbox)` on iOS, or `Meld.configure('sandbox')` in React Native. A sandbox Stripe order carries a `pk_test_` key, and an SDK configured for production refuses it. SDK versions and permissions are in the [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios#stripe-orders) and [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native#stripe-orders) guides.
-7. **A test customer with an email.** The customer needs no Unified KYC. Without an email, order creation fails with `403 VERIFICATION_REQUIRED` and `email: MISSING`.
-
-### Stripe sandbox limits
-
-Stripe's sandbox supports three pairs, for US customers only:
-
-| Pair | `destinationCurrencyCode` | `destinationNetworkCode` |
-| --- | --- | --- |
-| USDC on Ethereum | `USDC` | `ETH` |
-| USDC on Base | `USDC_BASE` | `BASE` |
-| USDC on Solana | `USDC_SOLANA` | `SOLANA` |
-
-Quote one of these. A quote may list other Stripe pairs, but Stripe's sandbox supports only these three.
-
-Keep the order's `sourceAmount` at 100 USD or less. `sourceAmount` is the total the customer pays, fees included, and Stripe's sandbox caps purchases at 100 USD.
-
-Stripe's sandbox executes every trade with a fixed source amount. The crypto amount Stripe reports reflects the quote, so it can differ from what the sandbox executed.
-
-### Stripe test values
-
-| Step | Field | Test value |
-| --- | --- | --- |
-| Link sign-in | One-time code | `000000` |
-| KYC | First name, last name | `John`, `Verified` |
-| KYC | SSN | `000000000` |
-| KYC | Address line 1 | `address_full_match` |
-| KYC | State | A two-letter code for a US state other than New York, such as `WA` (not `Washington`) |
-| Card | Card number | `4242 4242 4242 4242`, any future expiry date, any CVC |
-
-For document verification, Stripe's sandbox screen lets you pick the outcome instead of uploading a document.
-
-For Apple Pay, use a physical iPhone with a real card in Apple Wallet. With your Stripe test keys, Stripe returns a test token, so the card is not charged. Stripe's and Apple's test cards cannot be added to Wallet for this.
-
-### Run a Stripe test order
-
-<Steps>
-  <Step title="Quote">
-    Call `POST /payments/crypto/quote?integrationMode=HEADLESS` with `Meld-Version: 2026-05-01`, `countryCode: US`, `sourceCurrencyCode: USD`, and one of the [sandbox pairs](#stripe-sandbox-limits). Send `destinationNetworkCode`: Stripe headless quotes appear only when it is set. Pick the `STRIPE` quote. It reports `kycMode: PROVIDER_MANAGED`.
-  </Step>
-  <Step title="Create the order">
-    Call `POST /crypto/order/headless/onramp` with `serviceProvider: STRIPE`, `paymentMethodType: APPLE_PAY` or `CREDIT_DEBIT_CARD`, the quote's values, a wallet address on that network, and an `X-Idempotency-Key` header. Expect `201` with `responseKind: SDK_BOOTSTRAP`. In `paymentMethodResponseDetails`, `sdkEnvironment` is `SANDBOX` and `clientConfiguration.publicKey` starts with `pk_test_`.
-  </Step>
-  <Step title="Mount it">
-    Return the response to your app unchanged, and mount it from the customer's tap with the SDK configured for sandbox.
-  </Step>
-  <Step title="Run Stripe's flow">
-    Sign in to Link with the code `000000`. If Stripe asks for KYC, use the [test values](#stripe-test-values).
-  </Step>
-  <Step title="Pay">
-    Pay with the test card, or with Apple Pay on a physical iPhone. When Stripe confirms the payment, `onPaymentSubmitted` fires. If the SDK reports `PAYMENT_OUTCOME_UNKNOWN` instead, the outcome was not known yet, and the payment may still go through: don't pay again. Either way, unmount and wait for webhooks.
-  </Step>
-</Steps>
-
-### Verify a Stripe order
-
-| Check | What it proves |
-| --- | --- |
-| The quote lists `STRIPE` | Headless is enabled on your sandbox account, Stripe is set up on it, and Stripe has enabled the onramp on your Stripe sandbox |
-| Create returns `SDK_BOOTSTRAP` with `sdkEnvironment: SANDBOX` and a `pk_test_` key | Your Stripe integration is complete and in Stripe's sandbox |
-| The SDK reaches Link sign-in | Stripe's onboarding is done and your app is a trusted application |
-| Stripe's sandbox event log shows `crypto.onramp_session.updated` delivered to Meld | Your Stripe webhook endpoint and signing secret are right |
-| You receive `TRANSACTION_CRYPTO_PENDING`, then `TRANSACTION_CRYPTO_TRANSFERRING` | Meld received Stripe's webhook and recorded the payment |
-
-Meld creates the transaction only when Stripe reports the payment or rejects the session. Until then, no webhook reaches you. If Stripe rejects the session, you receive `TRANSACTION_CRYPTO_FAILED`.
-
-Treat `TRANSACTION_CRYPTO_TRANSFERRING` as a sandbox pass. `TRANSACTION_CRYPTO_COMPLETE` needs Stripe to report delivery complete, which its sandbox does not do reliably, so it may never arrive. Meld's sandbox settlement simulation does not apply to Stripe orders: only Stripe's webhook settles them.
-
----
-
 ## Verify the result
 
 For card, check all three. Each catches something the others do not.
@@ -182,4 +95,69 @@ For card, check all three. Each catches something the others do not.
 | `GET /payments/transactions/{id}` | The transaction exists with the amounts you expect |
 | Dashboard | The transaction is attributed to the right account and provider |
 
-The transaction is created asynchronously, so it will not exist the instant the order call returns. Wait for `TRANSACTION_CRYPTO_PENDING`. For Stripe, see [Verify a Stripe order](#verify-a-stripe-order).
+The transaction is created asynchronously, so it will not exist the instant the order call returns. Wait for `TRANSACTION_CRYPTO_PENDING`.
+
+---
+
+## Test Stripe
+
+In sandbox, Stripe orders run in an iOS app on Meld's Stripe sandbox, with Stripe's test values, so nothing is charged. You need your own Stripe account only for production: see [Before you begin with Stripe](/docs/stablecoins/headless-integration/apple-pay#before-you-begin-with-stripe).
+
+### Set up Stripe in sandbox
+
+1. **Ask your Meld representative to enable Stripe** on your sandbox account. It appears under **Integrations** as **Shared Meld Integration**. Meld manages its keys and Stripe's webhooks, so you add neither.
+2. **Send your Meld representative your app's bundle ID and Apple Team ID.** Stripe's SDK runs only in an app that Stripe has registered as a trusted application, and Meld has Stripe register yours.
+3. **For Apple Pay, register a sandbox merchant identifier**, as in [Stripe setup](/docs/stablecoins/headless-integration/apple-pay#stripe-setup). Card orders don't need one.
+4. **Build an iOS test app** on the SDK versions in [iOS SDK → Install](/docs/stablecoins/headless-integration/sdks/ios#install) or [React Native SDK → Stripe orders](/docs/stablecoins/headless-integration/sdks/react-native#stripe-orders), with the camera permission ([iOS](/docs/stablecoins/headless-integration/sdks/ios#permissions), [React Native](/docs/stablecoins/headless-integration/sdks/react-native#ios-permissions)). Configure it with `Meld.configure(environment: .sandbox)`, or `Meld.configure('sandbox')` in React Native.
+5. **Create a test customer with an email.**
+
+If order creation is refused, look the code up in [Errors on Stripe order creation](/docs/stablecoins/headless-integration/apple-pay#errors-on-stripe-order-creation). Where it says to change your Stripe integration or check with Stripe, ask your Meld representative instead.
+
+### Stripe sandbox limits
+
+Stripe's sandbox supports only these pairs, even when a quote lists others:
+
+| Pair | `destinationCurrencyCode` | `destinationNetworkCode` |
+| --- | --- | --- |
+| USDC on Ethereum | `USDC` | `ETH` |
+| USDC on Base | `USDC_BASE` | `BASE` |
+| USDC on Solana | `USDC_SOLANA` | `SOLANA` |
+
+Stripe's sandbox caps a purchase at 100 USD, fees included. The quote's `sourceAmount` is the amount you quote for plus Stripe's fees, and the order carries that total, so quote well under 100 USD.
+
+### Stripe test values
+
+| Step | Field | Test value |
+| --- | --- | --- |
+| Link sign-in | One-time code | `000000` |
+| KYC | First name, last name | `John`, `Verified` |
+| KYC | SSN | `000000000` |
+| KYC | Address line 1 | `address_full_match` |
+| KYC | State | A two-letter code for a US state other than New York, such as `WA` (not `Washington`) |
+| Card | Card number | `4242 4242 4242 4242`, any future expiry date, any CVV |
+
+For document verification, Stripe's sandbox screen lets you pick the outcome instead of uploading a document.
+
+For Apple Pay, use a physical iPhone with a real card in Apple Wallet. Stripe's sandbox returns a test token, so the card is not charged. Stripe's and Apple's test cards cannot be added to Wallet for this.
+
+### Run a Stripe test order
+
+<Steps>
+  <Step title="Quote">
+    Call `POST /payments/crypto/quote?integrationMode=HEADLESS` with `Meld-Version: 2026-05-01`, `countryCode: US`, `sourceCurrencyCode: USD` and one of the [sandbox pairs](#stripe-sandbox-limits). Without `destinationNetworkCode`, no Stripe quote comes back. Pick the `STRIPE` quote.
+  </Step>
+  <Step title="Create the order">
+    Call `POST /crypto/order/headless/onramp` with `serviceProvider: STRIPE`, `paymentMethodType: APPLE_PAY` or `CREDIT_DEBIT_CARD`, the quote's values, a wallet address on that network and an `X-Idempotency-Key` header. Expect `201` with `responseKind: SDK_BOOTSTRAP`. In `paymentMethodResponseDetails`, `sdkEnvironment` is `SANDBOX` and `clientConfiguration.publicKey` starts with `pk_test_`.
+  </Step>
+  <Step title="Run Stripe's flow">
+    Mount the order from the customer's tap. Sign in to Link with `000000`, and if Stripe asks for KYC, use the [test values](#stripe-test-values).
+  </Step>
+  <Step title="Pay">
+    Pay with the test card, or with Apple Pay on a physical iPhone. Expect `onPaymentSubmitted`. If Stripe hasn't confirmed the payment yet, the SDK reports `PAYMENT_OUTCOME_UNKNOWN` instead. Either way, unmount and check the webhooks.
+  </Step>
+  <Step title="Check the webhooks">
+    You receive `TRANSACTION_CRYPTO_PENDING`, then `TRANSACTION_CRYPTO_TRANSFERRING`. That is a pass: Stripe's sandbox doesn't reliably report delivery, so `TRANSACTION_CRYPTO_COMPLETE` may never arrive.
+  </Step>
+</Steps>
+
+No webhook reaches you until Stripe reports the payment or rejects the session. A rejected session ends in `TRANSACTION_CRYPTO_FAILED`. `POST /payments/mock/headless/simulate` doesn't work on Stripe orders: only Stripe settles them.

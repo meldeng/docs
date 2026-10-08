@@ -3,30 +3,27 @@ title: "Coinbase transfers"
 description: "Let a customer link their Coinbase account and send crypto they hold there to their own wallet."
 ---
 
-Your customer links their Coinbase account once, picks a Coinbase balance, and sends crypto from it to a wallet they own. Your backend creates the order and drives each step through Meld. Meld makes every call to Coinbase. The only Coinbase screen the customer sees is Coinbase's own sign-in and consent page, which your app opens in the system browser.
-
-A transfer has no quote and no payment method. The customer moves crypto they already hold, so there is nothing to price or charge.
+Your backend creates the order and runs each step through Meld, and settlement arrives by webhook. There is no quote and no payment method. The only Coinbase screen the customer sees is its sign-in and consent page, when they link their account.
 
 ## Scope
 
 | | Coinbase transfers |
 | --- | --- |
-| Provider | Coinbase, sent as `serviceProvider: COINBASEPAY`. It is the only transfer provider today |
+| Provider | Coinbase, sent as `serviceProvider: COINBASEPAY` |
 | Customers | US only. Send `countryCode: US` |
-| What moves | Crypto from the customer's Coinbase account to the customer's own wallet |
 | Assets | The assets Coinbase lists for transfers. See [step 1](#1-find-what-can-be-transferred) |
 | KYC | None by Meld. The customer signs in to their own Coinbase account |
-| Clients | Any app that can open a system browser session. No Meld SDK is involved |
+| Clients | Mobile apps and websites. No Meld SDK is involved |
 | Environments | Sandbox, where transfers are simulated, and production, where they are live. See [Test in sandbox](#test-in-sandbox) |
 
 ---
 
 ## Before you begin
 
-1. Ask your Meld representative to enable Coinbase transfers on your account, in sandbox first. Meld configures the Coinbase connection on your account for each environment. If Coinbase needs anything from you, your Meld representative tells you
-2. [Create the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer). Meld keeps the customer's Coinbase link between orders
+1. Ask your Meld representative to enable headless and Coinbase transfers on your account, in sandbox first. Each environment is enabled separately, and enabling Coinbase Apple Pay does not enable transfers
+2. [Create the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer)
 3. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks). Transfers use the same transaction events as purchases
-4. Choose a `redirectUrl`. Meld sends the customer's browser there after Coinbase's page. See [Redirect URL](#redirect-url)
+4. Choose a `redirectUrl`. See [Redirect URL](#redirect-url)
 
 Run every call on this page from your backend. Your API key and each order's action token are secrets, so the device never calls Meld's API.
 
@@ -44,7 +41,7 @@ sequenceDiagram
 
     App->>Api: customer enters an amount
     Api->>Meld: POST /crypto/order/headless/transfer
-    Meld-->>Api: order, next AUTHORIZE_ACCOUNT
+    Meld-->>Api: order and its next step
 
     Note over App,CB: Only while the customer has no Coinbase link
     Api->>Meld: PREPARE_ACCOUNT_AUTHORIZATION
@@ -104,8 +101,7 @@ Read the list rather than hardcoding it. An order for an asset that is not on it
   "destinationWalletAddress": "0x9C5f1a1b2c3d4e5f60718293a4b5c6d7e8f90a1b",
   "countryCode": "US",
   "subdivision": "US-CA",
-  "redirectUrl": "https://app.example.com/coinbase/return",
-  "clientIpAddress": "203.0.113.24"
+  "redirectUrl": "https://app.example.com/coinbase/return"
 }
 ```
 
@@ -114,29 +110,23 @@ Read the list rather than hardcoding it. An order for an asset that is not on it
 | `customerId` | yes | The Meld customer sending the crypto. `externalCustomerId` works instead |
 | `externalOrderId` | in sandbox | Your own reference for this order, unique per account. Sandbox settlement finds the order by it |
 | `serviceProvider` | yes | `COINBASEPAY` |
-| `transferMethod` | no | `ACCOUNT_LINK`, the only method Coinbase offers. Leave it out |
 | `currencyCode` | yes | The asset, from [step 1](#1-find-what-can-be-transferred) |
 | `networkCode` | yes | The chain, from [step 1](#1-find-what-can-be-transferred) |
-| `amount` | yes | The amount that arrives in the wallet, in the asset. Greater than 0, with at most 12 integer digits and 20 decimal places |
+| `amount` | yes | The amount that arrives in the wallet, in the asset. Greater than 0, with at most 12 integer digits and 20 decimal places. Coinbase debits any network fee from the customer's Coinbase account on top of it |
 | `destinationWalletAddress` | yes | A wallet the customer owns. No spaces, at most 256 characters |
 | `destinationWalletTag` | some networks | The tag or memo, for networks that use one |
 | `countryCode` | yes | `US` |
 | `subdivision` | no | The customer's state, ISO 3166-2, for example `US-CA` |
 | `redirectUrl` | yes | Where Meld sends the customer after Coinbase's page. See [Redirect URL](#redirect-url) |
-| `clientIpAddress` | no | The customer's public IP address |
-
-Coinbase can charge a network fee on top of `amount`, debited from the customer's Coinbase account.
 
 ### Redirect URL
 
-`redirectUrl` must be one of these:
+`redirectUrl` must be at most 2,048 characters, carry no user name or password, and be one of these:
 
-- An absolute `https` URL with a host, such as a universal link on iOS or an App Link on Android
-- A URL on a custom app scheme. Contact Meld to use one
+- An absolute `https` URL, such as a universal link on iOS or an App Link on Android
+- A URL on your app's custom scheme, such as `myapp://coinbase/return`. Contact Meld to use one. You need it to support iOS before 17.4, where `ASWebAuthenticationSession` cannot return to an `https` URL
 
-It must not contain a user name or password, and it can be at most 2,048 characters long. Otherwise the order is refused with `400 INVALID_REDIRECT_URL`.
-
-On iOS, `ASWebAuthenticationSession` can return to an `https` URL only on iOS 17.4 or later. To support earlier versions, ask Meld to allow your app's custom scheme.
+Anything else is refused with `400 INVALID_REDIRECT_URL`.
 
 ### The response
 
@@ -190,19 +180,18 @@ Order creation returns `201`:
 | `status` | Where the order stands. See [Order status](#order-status) |
 | `transactionId` | Meld's transaction id. Present once Coinbase has accepted the send |
 | `providerMode` | `SIMULATED` in sandbox, `LIVE` in production |
-| `headlessPresentation` | Identifies the flow on this page. It is the same for every transfer order |
 | `next` | The step to take now. See [Steps](#steps) |
-| `actionToken` | The bearer token for this order's action endpoint. Treat it as a secret and keep it on your backend |
+| `actionToken` | The bearer token for this order's action endpoint |
 | `actionTokenExpiresAt` | When `actionToken` stops working |
 | `paymentActions` | The action endpoint and the operations it accepts |
 
-The other fields echo your request. Fields with no value are left out. When the customer already has a Coinbase link, `next` is `SELECT_SOURCE_ACCOUNT` and you skip linking.
+Fields with no value are left out.
 
 ### Retries and idempotency
 
 Send a new `X-Idempotency-Key` for each new order.
 
-- A retry with the same key and the same body returns `200` with the original order and a new `actionToken`
+- A retry with the same key and the same body returns `200` with the order as first created and a new `actionToken`. [Read the order](#read-the-order) for its current `next`
 - A retry while the first request is still running returns `425` with `Retry-After: 2` and no body. Retry with the same key
 - The same key with a different body is refused with `409 IDEMPOTENCY_KEY_CONFLICT`
 
@@ -218,24 +207,19 @@ Errors use the [standard envelope](/docs/meld-api/error-responses).
 | `400` | `CUSTOMER_ID_REQUIRED` | Neither `customerId` nor `externalCustomerId` was sent | Send one |
 | `400` | `CUSTOMER_NOT_FOUND` | Your account has no such customer | Create the customer first |
 | `400` | `INVALID_AMOUNT` | `amount` has more than 12 integer digits or more than 20 decimal places | Send an amount within the precision limits |
-| `400` | `CRYPTO_INVALID_DESTINATION_WALLET` | The wallet address or tag contains spaces or control characters, or is longer than 256 characters | Send the customer's wallet address as is |
+| `400` | `CRYPTO_INVALID_DESTINATION_WALLET` | The tag is blank, or the address or tag has spaces or control characters, or is longer than 256 characters | Trim the value. Meld does not check the address against `networkCode`, so validate it before you create the order |
 | `400` | `INVALID_REDIRECT_URL` | `redirectUrl` breaks a [redirect rule](#redirect-url) | Fix the URL |
 | `400` | `EXTERNAL_ORDER_ID_NOT_UNIQUE` | You already used this `externalOrderId` | Generate a new one for each order |
-| `400` | `HEADLESS_NOT_SUPPORTED` | The provider or `transferMethod` does not support transfers | Send `COINBASEPAY` and leave `transferMethod` out |
+| `400` | `HEADLESS_NOT_SUPPORTED` | `serviceProvider` does not support transfers | Send `COINBASEPAY`. If you did, contact Meld |
 | `400` | `TRANSFER_JURISDICTION_UNSUPPORTED` | `countryCode` is not `US` | Offer transfers to US customers only |
 | `400` | `INVALID_CRYPTO_CURRENCY` | `currencyCode` and `networkCode` do not name exactly one transferable asset | Use a row from [step 1](#1-find-what-can-be-transferred) |
-| `403` | `WHITELABEL_NOT_ENABLED` | Headless is not enabled on your account | Contact Meld |
-| `403` | `TRANSFER_NOT_ENABLED` | Coinbase transfers are not enabled on your account in this environment | Contact Meld |
-| `403` | `SERVICE_PROVIDER_NOT_ENABLED` | Your Coinbase integration is incomplete | Contact Meld |
-| `409` | `IDEMPOTENCY_KEY_CONFLICT` | The key was used before with a different body | Use a new key for a new order |
+| `403` | `WHITELABEL_NOT_ENABLED`, `TRANSFER_NOT_ENABLED` or `SERVICE_PROVIDER_NOT_ENABLED` | Headless, Coinbase transfers or the Coinbase connection is not set up on your account in this environment | Contact Meld |
 | `409` | `ROUTING_UNAVAILABLE` | Coinbase has no transfer route for your account, country and asset | Check [step 1](#1-find-what-can-be-transferred). If the asset is listed, contact Meld |
 | `429` | `TRANSFER_RATE_LIMITED` | The customer created too many transfer orders in the last hour | Retry later |
 
 ---
 
 ## 3. Run the order's steps
-
-You move the order forward with actions. Each action answers with the next step, so your backend always knows what to do next.
 
 ### Call the action endpoint
 
@@ -254,28 +238,23 @@ curl -X POST 'https://api-sb.meld.io/crypto/order/headless/transfer/COINBASEPAY/
 - Call `paymentActions.endpoint` on the same base URL as your other calls
 - Authenticate with the action token only. Do not also send your API key: a request with two `Authorization` headers is refused
 - Send `version: 1`, the `operation`, and that operation's field, if it has one. Any other field is refused with `400 INVALID_REQUEST`
-- Keep the body under 64 KB
 
 | `operation` | Field | `X-Idempotency-Key` |
 | --- | --- | --- |
-| `PREPARE_ACCOUNT_AUTHORIZATION` | none | required |
-| `COMPLETE_ACCOUNT_AUTHORIZATION` | `authorizationHandle` | required |
-| `LIST_SOURCE_ACCOUNTS` | none | must not be sent |
-| `SUBMIT_TRANSFER` | `sourceAccountId` | required |
-| `SUBMIT_SECOND_FACTOR` | `secondFactorCode`, 1 to 32 letters and digits | required |
-| `READ_SUBMISSION` | none | must not be sent |
+| `PREPARE_ACCOUNT_AUTHORIZATION` | none | Required. A new key for each linking attempt |
+| `COMPLETE_ACCOUNT_AUTHORIZATION` | `authorizationHandle` | Required |
+| `LIST_SOURCE_ACCOUNTS` | none | Do not send one |
+| `SUBMIT_TRANSFER` | `sourceAccountId` | Required. One key for the order, reused on every retry |
+| `SUBMIT_SECOND_FACTOR` | `secondFactorCode`, 1 to 32 letters and digits | Required. A new key for each code |
+| `READ_SUBMISSION` | none | Do not send one |
 
-The idempotency key is a UUID. A repeated key repeats the same request and never acts twice. The answer shows where that request stands now, so retry with the same key after a timeout. Use a new key for a new attempt. A missing key where one is required, or a key sent where none is allowed, is refused with `400 INVALID_REQUEST`.
+Keys are UUIDs. A repeated key never acts twice, so after a timeout, retry with the same key. A missing key where one is required, or a key where none is allowed, is refused with `400 INVALID_REQUEST`.
 
-### Keep the action token fresh
+### Read the order
 
-The action token lasts 30 minutes. To get a new one, read the order with your API key:
+**Endpoint:** `GET /crypto/order/headless/transfer/{orderId}`, with your API key
 
-**Endpoint:** `GET /crypto/order/headless/transfer/{orderId}`
-
-The response has the same shape as the create response, with the current `next` and a new `actionToken`. The previous token keeps working for 2 minutes, so actions already in flight still succeed. An unknown order returns `404`.
-
-If an action returns `401 AUTHORIZATION_REQUIRED`, read the order and resend the action with the new token and the same idempotency key.
+It returns the order as the create response does, with the current `next` and a new `actionToken`. The action token lasts 30 minutes, and the one it replaces works for 2 more minutes. An unknown order returns `404`.
 
 ### The action response
 
@@ -301,16 +280,14 @@ Every action returns the same envelope. The order's `next` field has the same sh
 | `linkedAccount` | After linking: the `displayName` of the linked Coinbase account |
 | `failureCode` | Why the order went back a step or ended. See [Failure codes](#failure-codes) |
 
-Fields with no value are left out.
-
 ### Steps
 
-Branch on `nextStep`, never on the provider.
+Branch on `nextStep`.
 
 | `nextStep` | `status` | What to do |
 | --- | --- | --- |
 | `AUTHORIZE_ACCOUNT` | `NOT_STARTED` | [Link the Coinbase account](#link-the-coinbase-account) |
-| `AUTHORIZE_ACCOUNT` | `PENDING` | A linking attempt is open. Send `COMPLETE_ACCOUNT_AUTHORIZATION` when your app returns with a handle |
+| `AUTHORIZE_ACCOUNT` | `PENDING` | A linking attempt is open. Send `COMPLETE_ACCOUNT_AUTHORIZATION` when your app returns with a handle. To start over, send `PREPARE_ACCOUNT_AUTHORIZATION` with a new key |
 | `OPEN_HOSTED_VERIFICATION` | `PENDING` | Open `verification.url` in a system browser session |
 | `SELECT_SOURCE_ACCOUNT` | `READY` | [Choose the source account](#choose-the-source-account) and send |
 | `COLLECT_SECOND_FACTOR` | `VERIFICATION_REQUIRED` | [Collect the customer's code](#second-factor) |
@@ -320,7 +297,7 @@ Branch on `nextStep`, never on the provider.
 
 ### Link the Coinbase account
 
-1. Send `PREPARE_ACCOUNT_AUTHORIZATION`. If the customer already has a link, the answer is `SELECT_SOURCE_ACCOUNT`, and you skip to [Choose the source account](#choose-the-source-account). Otherwise the answer carries Coinbase's page:
+1. Send `PREPARE_ACCOUNT_AUTHORIZATION`. The answer carries Coinbase's page:
 
    ```json
    {
@@ -337,7 +314,7 @@ Branch on `nextStep`, never on the provider.
 
    The attempt lasts 15 minutes. A retry with the same key returns the same URL while it is still valid.
 
-2. Open `verification.url` in a system authentication session: `ASWebAuthenticationSession` on iOS, or Custom Tabs on Android. Prefer an ephemeral session. Do not open it in an embedded web view.
+2. Open `verification.url` in a system browser session: `ASWebAuthenticationSession` on iOS, Custom Tabs on Android, or a browser tab on the web. Prefer an ephemeral session. Do not open it in an embedded web view.
 
 3. The customer signs in to Coinbase and approves access. Meld then sends the browser to your `redirectUrl` with three query parameters added:
 
@@ -345,7 +322,7 @@ Branch on `nextStep`, never on the provider.
    https://app.example.com/coinbase/return?transferAuthorization=RETURNED&orderId=WQ7tR2kVx9bNfH4cJmPz3s&handle=Hk3x...
    ```
 
-   If the customer declines, `transferAuthorization` is `DECLINED` and there is no `handle`. If the customer returns after the attempt expired or was already used, Meld shows a "Link expired" page instead of redirecting. Treat a session that ends without a redirect as cancelled, and send `PREPARE_ACCOUNT_AUTHORIZATION` with a new key.
+   If the customer declines, `transferAuthorization` is `DECLINED`, there is no `handle`, and the order's `next` is `AUTHORIZE_ACCOUNT` with `ACCOUNT_AUTHORIZATION_DECLINED`. If the customer comes back after the attempt expired or was already used, Meld shows a "Link expired" page instead of redirecting. After a decline, or a session that ends without a redirect, send `PREPARE_ACCOUNT_AUTHORIZATION` with a new key to try again.
 
 4. Your app passes `handle` to your backend. Your backend sends it as `authorizationHandle`:
 
@@ -354,8 +331,6 @@ Branch on `nextStep`, never on the provider.
    ```
 
    The handle works only with this order's action token. Success returns `SELECT_SOURCE_ACCOUNT` with `linkedAccount.displayName`.
-
-After a decline, `next` is `AUTHORIZE_ACCOUNT` with `failureCode: ACCOUNT_AUTHORIZATION_DECLINED`. To let the customer try again, send `PREPARE_ACCOUNT_AUTHORIZATION` with a new key.
 
 ### Choose the source account
 
@@ -373,7 +348,7 @@ Send `LIST_SOURCE_ACCOUNTS`, without an idempotency key. It returns the customer
 }
 ```
 
-`eligible` is `true` when `availableAmount` covers the order's `amount`. Coinbase can also charge a network fee from the account, so it can still decline an eligible account whose balance does not cover both. An empty list means the customer holds none of this asset in Coinbase.
+`eligible` is `true` when `availableAmount` covers `amount`. Let the customer pick only an eligible account: Meld does not refuse an ineligible one, and Coinbase's decline ends the order. Coinbase can still decline an eligible account whose balance does not also cover the network fee. An empty list means the customer holds none of this asset in Coinbase.
 
 Then send `SUBMIT_TRANSFER` with the chosen account's `id`:
 
@@ -381,7 +356,7 @@ Then send `SUBMIT_TRANSFER` with the chosen account's `id`:
 { "version": 1, "operation": "SUBMIT_TRANSFER", "sourceAccountId": "1b7d..." }
 ```
 
-- An order sends once. Retry only with the same key and the same `sourceAccountId`. Anything else is refused with `409 REQUEST_CONFLICT`
+- An order makes one send. Use one `X-Idempotency-Key` and one `sourceAccountId` for `SUBMIT_TRANSFER` on the order, and resend both on every retry, including after the customer links again. Once the order has a send, a different key or account is refused with `409 REQUEST_CONFLICT`
 - A customer can have one unresolved send at a time. A send on another of their orders meanwhile is refused with `409 CONCURRENT_STATE_CHANGE`
 - An account id that `LIST_SOURCE_ACCOUNTS` did not return is refused with `400 INVALID_REQUEST`
 
@@ -392,12 +367,10 @@ Then send `SUBMIT_TRANSFER` with the chosen account's `id`:
 | `200`, `SUBMITTED`, `WAIT_FOR_PROVIDER`, with `transfer` | Coinbase accepted the send. `transfer.transactionId` is Meld's transaction |
 | `200`, `VERIFICATION_REQUIRED`, `COLLECT_SECOND_FACTOR` | Coinbase wants the customer's two-step verification code. See [Second factor](#second-factor) |
 | `200`, `FAILED`, `START_NEW_ORDER`, with `failureCode` | Coinbase refused the send. Nothing moved |
-| `503`, `UNKNOWN`, `WAIT_FOR_PROVIDER` | Meld could not confirm whether Coinbase took the send. Treat it as pending, not failed |
-| `200`, `AUTHORIZE_ACCOUNT`, often with `failureCode` | The link needs renewing, for example `ACCOUNT_REAUTHORIZATION_REQUIRED`. [Link again](#link-the-coinbase-account), then submit with a new key |
+| `200`, `AUTHORIZE_ACCOUNT`, often with `failureCode` | The link needs renewing, for example `ACCOUNT_REAUTHORIZATION_REQUIRED`. [Link again](#link-the-coinbase-account), then resend `SUBMIT_TRANSFER` with the same key and account |
+| `503`, `UNKNOWN`, `WAIT_FOR_PROVIDER` | Meld could not confirm whether Coinbase took the send. See [Wait for the outcome](#wait-for-the-outcome) |
 
-<Warning>
-After a `503` with `UNKNOWN`, never create a new order for the same transfer. Retry `SUBMIT_TRANSFER` with the same key and account, or read the step with `READ_SUBMISSION`. Meld keeps checking with Coinbase and moves the order on.
-</Warning>
+If `COMPLETE_ACCOUNT_AUTHORIZATION` keeps returning `425` while the customer links again, they still have a send that is not resolved, possibly this order's own. [Read the order](#read-the-order) and follow `next`. A send from this order that never reached Coinbase ends with `TRANSFER_NOT_SENT` within about 15 minutes.
 
 ### Second factor
 
@@ -412,7 +385,7 @@ Coinbase can ask the customer for their two-step verification code before it sen
 }
 ```
 
-Ask the customer for the code, then send it with a new key for each attempt:
+Ask the customer for the code, then send it with a new key for each code:
 
 ```json
 { "version": 1, "operation": "SUBMIT_SECOND_FACTOR", "secondFactorCode": "123456" }
@@ -423,9 +396,11 @@ Ask the customer for the code, then send it with a new key for each attempt:
 
 ### Wait for the outcome
 
-`WAIT_FOR_PROVIDER` means Coinbase is working on the send. Rely on [webhooks](#4-settlement-and-webhooks) for the outcome. To show progress while the customer waits, send `READ_SUBMISSION` every few seconds. It answers from Meld's records, without calling Coinbase and without replacing the action token.
+`WAIT_FOR_PROVIDER` means Coinbase is working on the send. Rely on [webhooks](#4-settlement-and-webhooks) for the outcome. To show progress, poll `READ_SUBMISSION` every few seconds. It does not call Coinbase or replace the action token.
 
-`COMPLETE` appears only once Meld has settled the transfer. `START_NEW_ORDER` appears only once the order has ended.
+<Warning>
+After a `503` with `status: UNKNOWN` from `SUBMIT_TRANSFER` or `SUBMIT_SECOND_FACTOR`, the send may have gone through. Never create a new order for the same transfer. Poll `READ_SUBMISSION` until `next` moves on.
+</Warning>
 
 ### Action errors
 
@@ -438,19 +413,18 @@ Errors from the action endpoint have their own small body, not the standard enve
 | HTTP | `code` | What to do |
 | --- | --- | --- |
 | `400` | `INVALID_REQUEST` | Fix the body, the operation's field or the idempotency key |
-| `401` | `AUTHORIZATION_REQUIRED` | Read the order for a fresh action token, then resend with the same key |
+| `401` | `AUTHORIZATION_REQUIRED` | [Read the order](#read-the-order) for a fresh action token, then resend with the same key |
 | `404` | `STATE_NOT_FOUND` | Meld has nothing for this request, for example a handle that was never issued. Read the order and follow `next` |
-| `409` | `REQUEST_CONFLICT` | You reused a key with a different request. Use the original request, or a new key |
+| `409` | `REQUEST_CONFLICT` | This order already has a send under another key or account. Read the order and follow `next` |
 | `409` | `ORDER_STATE_CHANGED` | The order can no longer take this action. Read the order and follow `next` |
 | `409` | `CONCURRENT_STATE_CHANGE` | Another change for this customer is in progress. Read the order, then retry |
-| `425` | `OPERATION_IN_FLIGHT` | The same action is still running. Retry after `Retry-After` with the same key |
 | `422` | `PROVIDER_REJECTED` | Coinbase refused the call. Read the order and follow `next` |
+| `425` | `OPERATION_IN_FLIGHT` | The same action is still running. Retry after `Retry-After` with the same key |
 | `429` | `PROVIDER_RATE_LIMITED` | Coinbase is rate limiting. Retry after `Retry-After` with the same key |
-| `502` | `PROVIDER_UNAVAILABLE`, `INVALID_PROVIDER_RESPONSE` | Coinbase is unavailable. Retry later with the same key |
+| `502` | `PROVIDER_UNAVAILABLE` | Coinbase is unavailable. Retry later with the same key |
+| `502` | `INVALID_PROVIDER_RESPONSE` | Coinbase's answer could not be read. Read the order and follow `next` |
 
 Treat a code you do not recognise as "read the order and follow `next`".
-
-A `503` from this endpoint is not an error body. It carries the normal action response with `status: UNKNOWN` and `Retry-After: 2`. Treat it as pending, as described in [Choose the source account](#choose-the-source-account).
 
 ---
 
@@ -464,50 +438,49 @@ Meld creates a transaction once Coinbase accepts the send. Its type is `CRYPTO_T
 
 Correlate each event on `paymentTransactionId`. Show the transfer as complete only after `TRANSACTION_CRYPTO_COMPLETE`.
 
-An order that ends before Coinbase accepts a send creates no transaction and sends no webhook. That covers an order that expired, a second factor that failed and a send Coinbase refused. Read the order to learn how it ended.
+An order that ends before Coinbase accepts a send, for example a declined send or an expired code, has no transaction and sends no webhook. Read the order to see how it ended.
 
-`amount` is what reaches the wallet. If Coinbase reports a different delivered amount, the order stays at `WAIT_FOR_PROVIDER` until Meld resolves it.
+If Coinbase reports delivering an amount other than `amount`, the order stays at `WAIT_FOR_PROVIDER` until Meld resolves it.
 
 ### Order status
 
 | `status` | Meaning |
 | --- | --- |
-| `CREATED` | No transaction yet. The customer is linking, choosing an account or confirming |
-| `PENDING` | Coinbase accepted the send, and Meld created the transaction |
-| `SETTLING` | The crypto is on its way |
+| `CREATED` | No transaction yet. The customer is linking, choosing an account or entering a code |
+| `PENDING` or `SETTLING` | Coinbase accepted the send and the crypto is on its way |
 | `SETTLED` | The crypto arrived. `next.nextStep` is `COMPLETE` |
-| `FAILED` | The order ended without delivering |
-| `CANCELLED` | The order ended before anything was sent, for example because a second factor expired |
+| `FAILED` | The order ended without delivering, for example Coinbase declined the send |
+| `CANCELLED` | The order ended at the second factor: the code expired, the attempts ran out or the link was locked |
 
 ---
 
 ## Failure codes
 
-`failureCode` tells you why an order went back a step or ended. The list can grow, so show generic copy for a code you do not know.
+`failureCode` tells you why an order went back a step or ended. With `AUTHORIZE_ACCOUNT`, the customer links again: send `PREPARE_ACCOUNT_AUTHORIZATION` with a new key. With `START_NEW_ORDER`, this order is over; create a new one. The list can grow, so show generic copy for a code you do not know.
 
-| `failureCode` | Comes with | Meaning and what to do |
+| `failureCode` | Comes with | Meaning |
 | --- | --- | --- |
-| `ACCOUNT_AUTHORIZATION_DECLINED` | `AUTHORIZE_ACCOUNT` | The customer declined on Coinbase's page. Offer to link again |
-| `ACCOUNT_AUTHORIZATION_EXPIRED` | `AUTHORIZE_ACCOUNT` | The linking attempt expired or was replaced. Send `PREPARE_ACCOUNT_AUTHORIZATION` with a new key |
-| `ACCOUNT_AUTHORIZATION_REJECTED` | `AUTHORIZE_ACCOUNT` | Coinbase did not accept the returned consent. Link again |
-| `ACCOUNT_AUTHORIZATION_UNUSABLE` | `AUTHORIZE_ACCOUNT` | The consent did not give Meld lasting access. Link again |
-| `ACCOUNT_SCOPE_NOT_GRANTED` | `AUTHORIZE_ACCOUNT` | The customer did not approve every permission a transfer needs. Link again and approve all of them |
-| `ACCOUNT_REAUTHORIZATION_REQUIRED` | `AUTHORIZE_ACCOUNT` or `START_NEW_ORDER` | The link stopped working, for example because the customer removed it in Coinbase. Link again |
+| `ACCOUNT_AUTHORIZATION_DECLINED` | `AUTHORIZE_ACCOUNT` | The customer declined on Coinbase's page |
+| `ACCOUNT_AUTHORIZATION_EXPIRED` | `AUTHORIZE_ACCOUNT` | The linking attempt expired or was replaced |
+| `ACCOUNT_AUTHORIZATION_REJECTED` | `AUTHORIZE_ACCOUNT` | Coinbase did not accept the returned consent |
+| `ACCOUNT_AUTHORIZATION_UNUSABLE` | `AUTHORIZE_ACCOUNT` | The consent did not give Meld lasting access |
+| `ACCOUNT_SCOPE_NOT_GRANTED` | `AUTHORIZE_ACCOUNT` | The customer did not approve every permission a transfer needs. They must approve all of them when they link again |
+| `ACCOUNT_REAUTHORIZATION_REQUIRED` | `AUTHORIZE_ACCOUNT` or `START_NEW_ORDER` | The link stopped working, for example because the customer removed it in Coinbase |
 | `ACCOUNT_ALREADY_LINKED` | `AUTHORIZE_ACCOUNT` | This Coinbase account is linked to another of your customers and cannot move yet. See [Account links](#account-links) |
 | `ACCOUNT_REVOCATION_PENDING` | `AUTHORIZE_ACCOUNT` | Meld is still removing an earlier link at Coinbase. Try again in a few minutes |
-| `PROVIDER_DECLINED` | `START_NEW_ORDER` | Coinbase declined the send, for example because the balance does not cover the amount and the fee. Offer a smaller amount or another account on a new order |
-| `PROVIDER_UNAUTHORIZED` | `START_NEW_ORDER` | Coinbase did not accept the link's access for this send. Create a new order. If it happens again, have the customer link again |
-| `SECOND_FACTOR_EXPIRED` | `START_NEW_ORDER` | The customer did not enter the code in time. Create a new order |
-| `SECOND_FACTOR_EXHAUSTED` | `START_NEW_ORDER` | The customer used every attempt. Create a new order |
-| `SECOND_FACTOR_LOCKED` | `START_NEW_ORDER` | Too many wrong codes on this link. The customer links again on the next order |
-| `TRANSFER_NOT_SENT` | `START_NEW_ORDER` | Meld ended the transfer before Coinbase executed it. Nothing moved. Create a new order |
-| `TRANSFER_CANCELLED` | `START_NEW_ORDER` | The transfer reached Coinbase and ended without moving funds. Create a new order |
+| `PROVIDER_DECLINED` | `START_NEW_ORDER` | Coinbase declined the send, for example because the balance is too low. Offer a smaller amount or another account |
+| `PROVIDER_UNAUTHORIZED` | `START_NEW_ORDER` | Coinbase refused the link's access for this send. The next order asks the customer to link again if needed |
+| `SECOND_FACTOR_EXPIRED` | `START_NEW_ORDER` | The customer did not enter the code in time |
+| `SECOND_FACTOR_EXHAUSTED` | `START_NEW_ORDER` | The customer used every attempt |
+| `SECOND_FACTOR_LOCKED` | `START_NEW_ORDER` | Too many wrong codes on this link, across orders |
+| `TRANSFER_NOT_SENT` | `START_NEW_ORDER` | Meld ended the transfer without sending it to Coinbase. Nothing moved |
+| `TRANSFER_CANCELLED` | `START_NEW_ORDER` | The transfer reached Coinbase and ended without moving funds |
 
 ---
 
 ## Account links
 
-A link belongs to the customer, not to an order. Later orders reuse it, so the create response's `next` is `SELECT_SOURCE_ACCOUNT` and the customer skips Coinbase's page.
+A link belongs to the customer, not to an order. While it works, the customer's later orders start at `SELECT_SOURCE_ACCOUNT` and Coinbase's page does not open again, so to switch the customer to another Coinbase account, [unlink](#unlink) first.
 
 A Coinbase account can be linked to only one of your customers at a time. When a customer links a Coinbase account that another of your customers already linked, the link moves to the customer who just approved access. The other customer links again if they need it.
 
@@ -535,16 +508,12 @@ Call it with your API key and Meld's `customerId`. It does not accept `externalC
 
 ## Limits
 
-- **Coinbase send limit.** When the customer links, Meld asks Coinbase to cap sends on that link at 1,000 USD per day
+- **Coinbase send limit.** Meld asks Coinbase to cap sends on each link at 1,000 USD per day, and Coinbase refuses sends over it
 - **Order creation.** A customer can create up to 10 transfer orders per hour. More return `429 TRANSFER_RATE_LIMITED`
-- **One send at a time.** A customer can have one unresolved send at a time, across all their orders
-- **Network fee.** Coinbase can charge a network fee on top of `amount`
 
 ---
 
 ## Test in sandbox
-
-Transfer testing lives on this page. For card and Apple Pay orders, see [Headless sandbox testing](/docs/stablecoins/sandbox-guide/headless-testing).
 
 In sandbox, Meld simulates Coinbase:
 
@@ -553,15 +522,7 @@ In sandbox, Meld simulates Coinbase:
 - Each customer gets their own simulated Coinbase user, so you cannot test a link moving between customers
 - Sends stay pending until you [settle them](#settle-a-simulated-transfer)
 
-The simulated Coinbase user holds three accounts. `LIST_SOURCE_ACCOUNTS` returns the ones in the order's asset:
-
-| `displayName` | Balance | Note |
-| --- | --- | --- |
-| `USDC Wallet` | 250.00 USDC | Eligible for amounts up to 250 |
-| `USDC Vault` | 0.00 USDC | Never eligible |
-| `ETH Wallet` | 0.5 ETH | For ETH orders |
-
-Before you start, ask Meld to enable transfers on your sandbox account. Set `externalOrderId` on every sandbox order, because the settle call finds the order by it.
+`LIST_SOURCE_ACCOUNTS` returns two simulated USDC accounts: `USDC Wallet` (250.00, eligible for amounts up to 250) and `USDC Vault` (0.00, never eligible). Sandbox does not decline a send from `USDC Vault`. To test a decline, use an amount ending in 4.
 
 ### Pick a scenario with the amount
 
@@ -570,17 +531,16 @@ The last digit of `amount` picks the scenario. Trailing zeros after the decimal 
 | Last digit | Example | Scenario | What you see |
 | --- | --- | --- | --- |
 | 2 | `10.02` | Second factor | `SUBMIT_TRANSFER` returns `COLLECT_SECOND_FACTOR`. The code `000000` passes, and any other code is refused |
-| 3 | `10.03` | Timeout | `SUBMIT_TRANSFER` returns `503` with `UNKNOWN`. Meld later finds the send, and `READ_SUBMISSION` then shows `SUBMITTED`. The settle call returns `409` until then |
+| 3 | `10.03` | Timeout | `SUBMIT_TRANSFER` returns `503` with `UNKNOWN`. Within about a minute Meld finds the send, and `READ_SUBMISSION` shows `SUBMITTED`. Until then the settle call returns `409` |
 | 4 | `10.04` | Coinbase declines | `SUBMIT_TRANSFER` returns `START_NEW_ORDER` with `PROVIDER_DECLINED` |
 | 5 | `10.05` | Consent declined | The redirect carries `transferAuthorization=DECLINED`, and `next` is `AUTHORIZE_ACCOUNT` with `ACCOUNT_AUTHORIZATION_DECLINED` |
 | 6 | `10.06` | Unusable consent | `COMPLETE_ACCOUNT_AUTHORIZATION` returns `AUTHORIZE_ACCOUNT` with `ACCOUNT_AUTHORIZATION_UNUSABLE` |
 | 7 | `10.07` | Every code refused | Every `SUBMIT_SECOND_FACTOR` is refused. After 5 attempts the order ends with `SECOND_FACTOR_EXHAUSTED` |
-| 8 | `10.08` | Network fee | The send succeeds with a 0.01 network fee debited on top, and `transfer.amount` still shows `10.08`. Use it to check that you treat `amount` as the delivered amount |
 | Any other | `10.01` | Success | The send succeeds |
 
 Scenarios 5 and 6 happen while linking, so they need a customer with no link. [Unlink](#unlink) first, or use a new customer. Running scenario 7 on two orders for one customer within 24 hours locks the link with `SECOND_FACTOR_LOCKED`.
 
-A customer can create up to 10 transfer orders per hour, in sandbox too. Spread scenario runs across customers.
+Spread scenario runs across customers: the [order limit](#limits) applies in sandbox too.
 
 ### Settle a simulated transfer
 
@@ -595,23 +555,19 @@ curl -X POST 'https://api-sb.meld.io/payments/mock/headless/simulate' \
 
 | HTTP | Meaning |
 | --- | --- |
-| `200` `{"transactionId": "..."}` | The transfer settled. `TRANSACTION_CRYPTO_COMPLETE` follows, and the order reads `SETTLED` with `COMPLETE` |
-| `409` `TRANSFER_IN_PROGRESS` | Nothing was submitted yet, or the send has not settled yet. Call again shortly |
+| `200` `{"transactionId": "..."}` | The transfer settled. `TRANSACTION_CRYPTO_COMPLETE` follows, and the order reads `SETTLED` with `COMPLETE`. Calling again on a settled order returns the same `transactionId` |
+| `409` `TRANSFER_IN_PROGRESS` | There is no accepted send to settle yet. Call again only while the order's `next.nextStep` is `WAIT_FOR_PROVIDER`. An order that ended, or was never submitted, keeps returning `409` |
 | `404` | Your account has no order with that `externalOrderId` |
 
 This endpoint exists only in sandbox.
 
 ### A full sandbox run
 
-1. Create an order with `amount: 10.01`, `USDC_BASE` on `BASE`, an `externalOrderId` and an `https` `redirectUrl`. Expect `providerMode: SIMULATED` and `next.nextStep: AUTHORIZE_ACCOUNT`
-2. Send `PREPARE_ACCOUNT_AUTHORIZATION` and take `verification.url`
-3. Open the URL. In a backend-only test, request it without following redirects, and read `handle` from the `Location` header
-4. Send `COMPLETE_ACCOUNT_AUTHORIZATION` with the handle. Expect `SELECT_SOURCE_ACCOUNT`
-5. Send `LIST_SOURCE_ACCOUNTS`. Expect `USDC Wallet` with `eligible: true`
-6. Send `SUBMIT_TRANSFER` with its `id`. Expect `SUBMITTED`, then the `TRANSACTION_CRYPTO_PENDING` and `TRANSACTION_CRYPTO_TRANSFERRING` webhooks
-7. Call the settle endpoint until it returns `200`. Expect `TRANSACTION_CRYPTO_COMPLETE`
-8. Read the order. Expect `status: SETTLED` and `next.nextStep: COMPLETE`
-9. Unlink the customer. Expect `204`
+1. Create an order for `10.01` `USDC_BASE` on `BASE`, with an `externalOrderId`. Expect `providerMode: SIMULATED`
+2. Link: send `PREPARE_ACCOUNT_AUTHORIZATION`, request `verification.url` without following redirects, take `handle` from the `Location` header, and send `COMPLETE_ACCOUNT_AUTHORIZATION`
+3. Send `LIST_SOURCE_ACCOUNTS`, then `SUBMIT_TRANSFER` with the `USDC Wallet` id. Expect `SUBMITTED`, `TRANSACTION_CRYPTO_PENDING` and `TRANSACTION_CRYPTO_TRANSFERRING`
+4. Call the settle endpoint until it returns `200`. Expect `TRANSACTION_CRYPTO_COMPLETE`, and the order at `SETTLED` with `next.nextStep: COMPLETE`
+5. Unlink the customer. Expect `204`
 
 Then repeat with `10.02`, `10.04` and, on a new customer, `10.05`.
 
@@ -623,4 +579,4 @@ Then repeat with `10.02`, `10.04` and, on a new customer, `10.05`.
 In production, orders return `providerMode: LIVE`. They act on the customer's real Coinbase account and move real funds.
 </Warning>
 
-Coinbase offers no test environment for account transfers, so test failure paths in sandbox. Ask your Meld representative to enable transfers on your production account.
+Coinbase offers no test environment for account transfers, so test failure paths in sandbox.

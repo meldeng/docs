@@ -79,10 +79,10 @@ These providers offer reliable sandbox environments ideal for testing:
 These providers have sandbox limitations:
 
 * **Banxa** - Sandbox often rejects KYC/transactions; production testing recommended
-* **Stripe** - Runs on your own Stripe sandbox with Stripe's test values, so nothing is charged. Stripe's sandbox supports fewer currency pairs than production. For headless, see [Test Stripe](/docs/stablecoins/sandbox-guide/headless-testing#test-stripe)
+* **Stripe** - Runs on Meld's Stripe sandbox with Stripe's test values, and supports fewer currency pairs than production. For headless, see [Test Stripe](/docs/stablecoins/sandbox-guide/headless-testing#test-stripe)
 * **Paybis** - Basic sandbox functionality
 * **BTC Direct** - Limited sandbox features
-* **Coinbase Pay** - The widget flows are production only. Headless Coinbase Apple Pay can be tested in sandbox up to order creation: see [Test Coinbase in sandbox](/docs/stablecoins/headless-integration/apple-pay#test-coinbase-in-sandbox). Headless transfers run simulated in sandbox: see [Test in sandbox](/docs/stablecoins/headless-integration/transfers#test-in-sandbox)
+* **Coinbase Pay** - Widget flows are production only. Headless Apple Pay can be tested up to order creation: see [Test Coinbase in sandbox](/docs/stablecoins/headless-integration/apple-pay#test-coinbase-in-sandbox). For headless transfers, see [Transfer Flow](#transfer-flow)
 
 ### ❌ Production Only
 
@@ -110,10 +110,8 @@ These providers do not offer sandbox environments:
 
 ### Transfer Flow
 
-* ⚠️ **Limited testing** in the White-Label API - configuration and quotes only
-* Cannot execute actual White-Label API transfers in sandbox
-* Real wallet addresses required for testing
-* **Headless transfers** from Coinbase run end to end in sandbox once Meld enables them on your account. They are simulated, so no Coinbase account or funds are involved. See [Test in sandbox](/docs/stablecoins/headless-integration/transfers#test-in-sandbox)
+* ⚠️ **White-Label API transfers:** configuration and quotes only. Transfers cannot be executed in sandbox, and testing needs real wallet addresses
+* **Headless transfers from Coinbase** are simulated end to end in sandbox. See [Test in sandbox](/docs/stablecoins/headless-integration/transfers#test-in-sandbox)
 
 ## 🚀 Testing Best Practices
 

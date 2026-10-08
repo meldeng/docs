@@ -19,7 +19,7 @@ import Meld from '@meldcrypto/sdk';
 Meld.configure({ environment: 'sandbox' }); // or 'production'
 ```
 
-Configure the environment your backend created the order in: `'sandbox'` for orders created on `https://api-sb.meld.io`, `'production'` for `https://api.meld.io`. The SDK defaults to `'sandbox'`.
+Use the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
 
 Use it with a bundler — the SDK is bundled into your app.
 
@@ -40,7 +40,7 @@ const order = await fetch('/your-backend/order').then(r => r.json());
 
 const handle = Meld.mount(order, document.getElementById('widget-container'), {
   onReady:            ()  => hideSpinner(),
-  onStatusChange:     (s) => { if (s.status === 'completed') showProcessing(); },
+  onStatusChange:     (s) => track(s),
   onPaymentSubmitted: ()  => showProcessing(),
   onCancel:           ()  => showRetryCta(),
   onError:            (e) => showError(e.message),
@@ -49,7 +49,7 @@ const handle = Meld.mount(order, document.getElementById('widget-container'), {
 
 Check `Meld.capabilities(order)` first if you handle order types this SDK does not embed. An order it cannot present reports `surface: 'unsupported'` and `embeddable: false`, and `mount` throws.
 
-The web SDK does not present Stripe orders or Coinbase Apple Pay. They run only in an iOS app, through the [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios) or the [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native).
+Stripe orders and Coinbase Apple Pay report `unsupported` here. They run only in an iOS app; see [Meld SDK](/docs/stablecoins/headless-integration/sdks).
 
 ---
 
@@ -61,7 +61,7 @@ The web SDK does not present Stripe orders or Coinbase Apple Pay. They run only 
 | `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
 | `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
 | `onCancel` | The user backed out |
-| `onError` | Carries `code`, `message` and `recoverable` |
+| `onError` | Carries `code`, `message`, `recoverable` and, on a load failure, `detail` |
 
 [The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
 

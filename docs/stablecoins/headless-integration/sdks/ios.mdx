@@ -34,7 +34,7 @@ pod 'MeldSDK', '~> 0.9.1'
 
 Then `import MeldSDK`.
 
-`MeldSDK` brings in two dependencies of its own, whichever providers you use: Stripe's `StripeCryptoOnramp`, pinned to 26.11.x (patch releases only), and `PrimerSDK` 2.x, from 2.49. If your app already depends on a different minor release of Stripe's iOS SDK, the two will not resolve together.
+`MeldSDK` depends on Stripe's `StripeCryptoOnramp` 26.11.x and on `PrimerSDK` 2.49 or a later 2.x, even if you use neither Stripe nor Banxa. An app that already depends on a different minor version of Stripe's iOS SDK cannot resolve both.
 
 ---
 
@@ -44,9 +44,7 @@ Then `import MeldSDK`.
 Meld.configure(environment: .sandbox) // or .production
 ```
 
-Configure the environment your backend created the order in, once, before you mount: `.sandbox` for orders created on `https://api-sb.meld.io`, `.production` for `https://api.meld.io`. The SDK defaults to `.sandbox`.
-
-When the SDK continues an order by calling Meld from the device, as it does for Stripe, it calls the configured environment's host. It also refuses a Stripe order from the other environment: `Meld.capabilities(for:)` reports `unsupported`, and `Meld.mount` throws.
+Call it once, before you check or mount an order, with the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
 
 ---
 
@@ -69,7 +67,7 @@ guard Meld.capabilities(for: order).surface != "unsupported" else {
 }
 
 let handle = try Meld.mount(order, into: containerView, handlers: MeldEventHandlers(
-    onReady:            { _ in hideSpinner() },  // not on a Stripe order, see Stripe orders
+    onReady:            { _ in hideSpinner() },
     onPaymentSubmitted: { _ in showProcessing() },
     onStatusChange:     { status in track(status) },
     onCancel:           { _ in showRetryCta() },
@@ -77,7 +75,7 @@ let handle = try Meld.mount(order, into: containerView, handlers: MeldEventHandl
 ))
 ```
 
-Call `mount` on the main thread. Pass `into:` a view you own for an embedded card widget. Apple Pay and Stripe orders draw nothing into it, because the SDK presents them itself, so `into:` is optional for them.
+Call `mount` on the main thread. Pass `into:` a view you own for an embedded card widget. Apple Pay and Stripe orders draw nothing into it, so `into:` is optional for them. Without it, a Stripe or Coinbase order presents from your app's single foreground window, and `mount` throws if there is none. In an app with several windows, pass `into:` a view in the window to present from.
 
 Apple Pay uses the same call with an `applePay:` argument — see [Apple Pay](/docs/stablecoins/headless-integration/apple-pay).
 
@@ -91,34 +89,30 @@ To check a quote before you create the order, decode its `headlessPresentation` 
 
 | Event | Meaning |
 | --- | --- |
-| `onReady` | The surface has loaded, or the Apple Pay sheet is opening. On a Stripe order it fires before anything is on screen |
+| `onReady` | The surface has loaded, or the Apple Pay sheet is opening |
 | `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
 | `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
 | `onCancel` | The user backed out, or dismissed the Apple Pay sheet. Nothing will settle |
 | `onError` | Carries a `code`, a `message`, `recoverable` and `detail` |
 
-[The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
-
-Each mount delivers exactly one terminal callback: `onPaymentSubmitted`, `onCancel`, or `onError` with `recoverable: false`. Nothing follows it, and a retry needs a new order. Releasing the handle before one ends the mount with no callback.
+[The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, how `onCancel` and `onError` relate to the status, and the rule that each mount ends with exactly one terminal callback. To retry after a terminal callback, create a new order.
 
 ### Error codes
 
-`onError` carries a `code` and a `message`, plus a `detail` with the provider's own event or code when the SDK has one. Log `detail`; don't branch on it.
-
-`recoverable: true` comes only from an embedded card widget, for example `PROVIDER_LOAD_FAILED`. The widget stays up and the customer can carry on, so it is not terminal. Embedded card widgets keep their own codes.
-
-Apple Pay and Stripe orders report these normalized codes. Mercuryo Apple Pay can also report codes of its own, which the rule below the table covers.
+Apple Pay and Stripe orders report these codes. Embedded card widgets report their own, some with `recoverable: true`.
 
 | `code` | Meaning |
 | --- | --- |
 | `APPLE_PAY_UNAVAILABLE` | Apple Pay cannot be presented. No attempt exists: offer another method |
 | `PRESENTATION_FAILED` | The flow stopped before any payment. No attempt exists; the next attempt needs a new order |
 | `PAYMENT_REJECTED` | Declined, and nothing will settle. Offer another option |
-| `ORDER_STATE_CHANGED` | The provider no longer accepts this order. No attempt exists |
+| `ORDER_STATE_CHANGED` | The provider no longer accepts this order. No attempt exists. Create a new order |
 | `VERIFICATION_PENDING` | The provider is still reviewing the customer. No attempt exists |
 | `PAYMENT_OUTCOME_UNKNOWN` | A payment may exist. Track the order through your backend and never pay it again |
 
-`error.attemptMayExist` is `false` only for the first five. When `recoverable` is `false`, treat any other code as a payment that may exist, including a provider's own code and one a later SDK release adds: track the order and never pay it again.
+`error.attemptMayExist` is `false` for every code above except `PAYMENT_OUTCOME_UNKNOWN`. Treat any other non-recoverable code, including one this table doesn't list, like `PAYMENT_OUTCOME_UNKNOWN`.
+
+`detail` carries the provider's own event or code. Log it; don't branch on it.
 
 ---
 
@@ -126,55 +120,35 @@ Apple Pay and Stripe orders report these normalized codes. Mercuryo Apple Pay ca
 
 Providers that run KYC inside their surface need camera access, and so does Stripe's identity check. Declare `NSCameraUsageDescription` in your `Info.plist` with a string that explains the document and selfie capture. Without it, that step fails silently for the user, or, on a Stripe order, the SDK refuses it and the flow ends in `onError`.
 
-Apple Pay needs the Apple Pay capability on your target, with your merchant identifier, whenever the sheet is presented under your identifier: Mercuryo, Banxa and Stripe today. List every identifier an order can carry. For Stripe, list both your sandbox and your live merchant identifier. Each Stripe environment issues its own CSR, so each needs its own identifier: see [Stripe setup](/docs/stablecoins/headless-integration/apple-pay#stripe-setup). Coinbase needs no identifier and no entitlement, because it presents the sheet as merchant of record. See [Apple Developer setup](/docs/stablecoins/headless-integration/apple-pay#apple-developer-setup).
+Apple Pay needs the Apple Pay capability on your target, listing every merchant identifier an order can carry, including both your Stripe sandbox and live identifiers. [Apple Developer setup](/docs/stablecoins/headless-integration/apple-pay#apple-developer-setup) covers which providers need an identifier and how to register one; Coinbase needs none.
 
 ---
 
 ## Stripe orders
 
-A Stripe order runs Stripe's own SDK inside this one: Link sign-in, Stripe's identity checks, then Apple Pay or Stripe's card form. What the order carries is in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe).
+A Stripe order runs Stripe's own SDK inside this one. What the order carries and how the flow runs are in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe).
 
-Mount it with the same `Meld.mount` call. `into:` and `applePay:` are optional. An `applePay:` you pass must match the order's amount, in `USD`, or `mount` throws. Its `summaryItemLabel` labels the Apple Pay sheet.
+Mount it with the same `Meld.mount` call. On an Apple Pay order, an `applePay:` you pass must match the order's amount, in `USD`, or `mount` throws.
 
-Without `into:`, the SDK presents from your app's only foreground window. In an app with several windows, pass `into:` a view in the window you want it to present from.
+The SDK shows nothing until it needs the customer, so `onReady` fires before anything is on screen. Keep your own busy state, such as a spinner on the button that started the purchase, until a terminal callback, and block anything that would unmount the SDK or start another order meanwhile.
 
-The SDK shows nothing of its own until it needs the customer, and `onReady` fires before anything is on screen. Keep your own busy state — a spinner on the button that started the purchase — until a terminal callback, and block anything that would unmount the SDK or start another order meanwhile. Unmounting reports no outcome.
+One Stripe order runs at a time. If you unmount one before its terminal callback, a new Stripe order can report `PRESENTATION_FAILED` for up to 90 seconds.
 
-One Stripe order runs at a time. After you unmount a Stripe order, the SDK can take up to 90 seconds to release Stripe's SDK. A Stripe order you mount before then reports `PRESENTATION_FAILED`, so an immediate retry on a new order can fail.
+Stripe's SDK runs only in an app that Stripe has registered as a trusted application, on a simulator too: see [Set up Stripe in sandbox](/docs/stablecoins/sandbox-guide/headless-testing#set-up-stripe-in-sandbox) and, for production, [Before you begin with Stripe](/docs/stablecoins/headless-integration/apple-pay#before-you-begin-with-stripe). Production orders need a physical device. When you run one from Xcode, set the `com.apple.developer.devicecheck.appattest-environment` entitlement to `production`.
 
-Stripe's SDK works only in an app that Stripe has registered as a trusted application, on a simulator too. Live orders need a physical device. When you run one from Xcode, set the `com.apple.developer.devicecheck.appattest-environment` entitlement to `production`.
-
-Errors use the [codes above](#error-codes). On `PAYMENT_REJECTED`, `detail` says why: `submission:FAILED`, `submission:EXPIRED`, `create:PROVIDER_REJECTED` or `create:START_NEW_ORDER`. When the flow stops on a refused call, `detail` names the refusal, such as `action:AUTHORIZATION_REQUIRED`.
-
-Not every refusal reports `PAYMENT_REJECTED`. Once the device has started the payment, a refusal the SDK cannot classify reports `PAYMENT_OUTCOME_UNKNOWN`. Track that order through your backend, as the table says.
+Which Stripe refusals report `PAYMENT_REJECTED` and which report `PAYMENT_OUTCOME_UNKNOWN` is in [When Stripe refuses the payment](/docs/stablecoins/headless-integration/apple-pay#when-stripe-refuses-the-payment).
 
 ---
 
 ## Coinbase orders
 
-A Coinbase Apple Pay order presents Coinbase's Apple Pay sheet, with Coinbase as merchant of record. You set up nothing with Apple for it. What the order carries is in [Apple Pay → Coinbase](/docs/stablecoins/headless-integration/apple-pay#coinbase).
+A Coinbase Apple Pay order needs iOS 16 or later. Below that, `Meld.capabilities(for:)` reports `unsupported` and `Meld.mount` throws, so don't offer it.
 
-It needs iOS 16 or later. Below that, `Meld.capabilities(for:)` reports `unsupported` and `Meld.mount` throws, so don't offer it.
+Mount it with the same `Meld.mount` call. `applePay:` is ignored. If you pass `into:`, keep that view in its window until a terminal callback. If it leaves the window first, the SDK ends the mount with no callback, as if you had unmounted it.
 
-Mount it with the same `Meld.mount` call, on the main thread, from the customer's tap on your Apple Pay button. `into:` is optional, and `applePay:` is ignored. If you pass `into:`, keep that view in its window until a terminal callback. If the view leaves its window first, the SDK ends the order with no callback.
+What each callback and error code means for a Coinbase order is in [Apple Pay → Present a Coinbase order](/docs/stablecoins/headless-integration/apple-pay#present-a-coinbase-order).
 
-The customer sees only the Apple Pay sheet, and `onReady` fires as it opens. If no screen is visible to present from, `mount` throws. On a device that cannot make Apple Pay payments, `mount` returns, then `onError` reports `APPLE_PAY_UNAVAILABLE`.
-
-| What happens | Callback |
-| --- | --- |
-| Coinbase accepts the payment | `onStatusChange` with `pending`, then `onPaymentSubmitted` |
-| The customer dismisses the sheet before paying | `onCancel` |
-| Apple Pay is not available or not set up for this customer | `onError` with `APPLE_PAY_UNAVAILABLE` |
-| Coinbase no longer accepts the order, for example because it was already used or has expired | `onError` with `ORDER_STATE_CHANGED`. Create a new order |
-| Coinbase declines the payment | `onError` with `PAYMENT_REJECTED` |
-| Coinbase's page does not load, the sheet does not open, or Coinbase reports any other error | `onError` with `PRESENTATION_FAILED` |
-| Coinbase reports an error while checking the payment, its page fails after the sheet was requested, or no outcome arrives within 180 seconds. Time the sheet is on screen does not count | `onError` with `PAYMENT_OUTCOME_UNKNOWN`. Track the order and never pay it again |
-
-Every error ends the mount. `detail` carries Coinbase's event and code, for example `onramp_api.load_error:ERROR_CODE_GUEST_APPLE_PAY_NOT_SUPPORTED`.
-
-You can release the handle on `onPaymentSubmitted`. The SDK gives Coinbase up to 60 seconds to finish confirming the payment on its own.
-
-This SDK version cannot present a sandbox Coinbase order: mounting one ends in `onError` with `PRESENTATION_FAILED`, and nothing is charged. In sandbox, test up to order creation, as in [Test Coinbase in sandbox](/docs/stablecoins/headless-integration/apple-pay#test-coinbase-in-sandbox). Test the sheet itself in production, on a physical iPhone on iOS 16 or later that can make Apple Pay payments.
+In sandbox, mounting a Coinbase order ends in `onError` with `PRESENTATION_FAILED`: see [Test Coinbase in sandbox](/docs/stablecoins/headless-integration/apple-pay#test-coinbase-in-sandbox).
 
 ---
 

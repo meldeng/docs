@@ -10,7 +10,7 @@ Your backend mints the order, the [Meld SDK](/docs/stablecoins/headless-integrat
 1. [Create a customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and complete [Unified KYC](/docs/stablecoins/unified-kyc). Required — almost every provider refuses an order for a customer Meld has not cleared
 2. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks), before KYC so you receive status changes while it runs
 
-Stripe is the exception to step 1: Meld runs no KYC for it, and it needs only an email on the Meld customer. See [Stripe](#stripe).
+Stripe needs the customer, with an email, but not Unified KYC. See [Before you begin with Stripe](/docs/stablecoins/headless-integration/apple-pay#before-you-begin-with-stripe).
 
 You also need the Meld SDK in your client. Card capture runs on the provider's PCI surface, mounted by the SDK — there is no supported path that renders a card form yourself.
 
@@ -207,14 +207,11 @@ Two things to do when it fires:
 
 ## Stripe
 
-A Stripe card order does not mount a card form in your view. Stripe's own SDK collects the card over your app, in the same flow as Stripe Apple Pay: Link sign-in, Stripe's identity checks, then payment. The order is the same SDK bootstrap, with two differences:
+A Stripe card order runs only in an iOS app, and does not mount a card form in your view: Stripe's own SDK collects the card, in the same flow as Stripe Apple Pay. Create it as a Stripe Apple Pay order with `paymentMethodType: CREDIT_DEBIT_CARD`. Its `clientConfiguration` carries no `merchantIdentifier`, so it needs no Apple setup and works before Meld has configured your Stripe merchant identifier.
 
-- Send `paymentMethodType: CREDIT_DEBIT_CARD`
-- `clientConfiguration` carries no `merchantIdentifier`, and there is no Apple setup. A card order works before Meld has configured your Stripe merchant identifier
+Scope, setup, the response and errors are in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe). To test it in sandbox, see [Test Stripe](/docs/stablecoins/sandbox-guide/headless-testing#test-stripe).
 
-Everything else — scope, the Stripe setup, the email requirement, the response, refusals and errors — is in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe). To test it in sandbox, see [Test Stripe](/docs/stablecoins/sandbox-guide/headless-testing#test-stripe).
-
-Coinbase has no headless card path. Its headless orders are [Apple Pay](/docs/stablecoins/headless-integration/apple-pay#coinbase) only.
+Coinbase has no headless card orders. Use [Coinbase Apple Pay](/docs/stablecoins/headless-integration/apple-pay#coinbase) instead.
 
 ---
 
@@ -222,10 +219,10 @@ Coinbase has no headless card path. Its headless orders are [Apple Pay](/docs/st
 
 | Symptom | Cause |
 | --- | --- |
-| `403` `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for that provider. See [provider credentials](/docs/stablecoins/headless-integration#you-bring-your-own-provider-credentials) |
+| `403` `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for that provider. See [provider credentials](/docs/stablecoins/headless-integration#provider-credentials) |
 | `403` `KYC_NOT_COMPLETED` | Customer not approved with that provider. Re-check requirements before retrying |
 | `403` `WHITELABEL_NOT_ENABLED` | Headless onramps are not enabled on your account, in this environment. Contact your Meld representative |
-| `404` naming a service-provider customer | Usually a missing `email` on the Meld customer, occasionally missing KYC. Stripe reports a missing email as `403` `VERIFICATION_REQUIRED` instead |
+| `404` naming a service-provider customer | Usually a missing `email` on the Meld customer, occasionally missing KYC |
 | `400` / `409` on `externalOrderId` | Reused value. Generate a fresh one per attempt |
 | `INVALID_REDIRECT_URL` | You sent `redirectUrl`. Headless card surfaces render in place, so the field is rejected |
 | Surface never becomes ready | Content Security Policy on web, or a provider host not reachable from the device |
@@ -235,6 +232,4 @@ Coinbase has no headless card path. Its headless orders are [Apple Pay](/docs/st
 
 ## Test in sandbox
 
-Once your integration is complete, test it in Meld's sandbox, `https://api-sb.meld.io`, with the SDK configured for `sandbox`. [Headless testing](/docs/stablecoins/sandbox-guide/headless-testing) has the test cards, and covers Stripe card orders.
-
-Sandbox has fewer providers and routes than production. Use it to prove your integration, then run your end-to-end checks in production.
+[Headless testing](/docs/stablecoins/sandbox-guide/headless-testing) has the sandbox test cards.
