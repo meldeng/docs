@@ -29,5 +29,23 @@
 
 ## Content boundaries
 
-<!-- Define what should and shouldn't be documented -->
-<!-- Example: Don't document internal admin features -->
+These docs are public and written for partners integrating Meld. Document only what a partner sends, receives, configures, or observes.
+
+- For account-level settings that Meld configures, describe the behavior and say "contact Meld support". Don't name the setting.
+- Never include Meld-internal details:
+  - internal account-preference field names or default values
+  - internal or admin endpoints
+  - internal service, repository, class, or file names
+  - infrastructure or deployment details
+  - implementation mechanics
+  - security weaknesses
+  - sandbox account IDs, keys, or customer data
+- Limits: point partners to the routes API (`paymentMethods[].limits`). Don't document `/network-partner/supported/fiat-limits` or `/network-partner/defaults/limits`.
+
+## Pull requests and commits
+
+This repository is public, so PR titles, PR descriptions, and commit messages follow the same content boundaries as the docs.
+
+- Keep one small PR per change.
+- Keep PR descriptions short: what was wrong, what changed, and "Verified against current API behavior." Leave out internal references.
+- Verify every change against current API behavior before opening the PR.
