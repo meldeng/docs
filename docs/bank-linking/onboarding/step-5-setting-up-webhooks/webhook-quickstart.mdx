@@ -122,8 +122,8 @@ curl --location --request POST '{api_base_url}/notifications/webhooks' \
   --data-raw '{
     "name": "sample-webhook-profile-name",
     "url": "https://a875ba2afae4f7792f48c28cd16e72b8.m.pipedream.net",
-    "eventType": ["FINANCIAL_ACCOUNT_ADDED",
-        "FINANCIAL_ACCOUNT_TRANSACTIONS_ADDED"]
+    "eventTypes": ["BANK_LINKING_ACCOUNTS_UPDATED",
+        "BANK_LINKING_TRANSACTIONS_AGGREGATED"]
   }'
 ```
 
