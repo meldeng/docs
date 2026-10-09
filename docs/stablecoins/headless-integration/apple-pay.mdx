@@ -10,7 +10,7 @@ Your backend creates the order, the [Meld SDK](/docs/stablecoins/headless-integr
 | Provider | Customers | Before the order | Apple setup | Clients | The customer sees |
 | --- | --- | --- | --- | --- | --- |
 | Mercuryo, Banxa | Countries in the quote | [Unified KYC](/docs/stablecoins/unified-kyc) | Merchant identifier, certificate from Meld's CSR | iOS, React Native, web | The Apple Pay sheet |
-| Stripe | US except New York, paying USD | An email on the customer | Merchant identifier, certificate from Stripe's CSR | iOS, React Native on iOS | Stripe's Link sign-in and identity checks, then the Apple Pay sheet |
+| Stripe | US except New York, paying USD | [Unified KYC](/docs/stablecoins/unified-kyc), and an email on the customer | Merchant identifier, certificate from Stripe's CSR | iOS, React Native on iOS | Stripe's Link sign-in and identity checks, then the Apple Pay sheet |
 | Coinbase | US, paying USD | A verified email and US mobile number, and Coinbase's agreements | None | iOS 16 or later, React Native on iOS | The Apple Pay sheet |
 
 [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) tells you what a provider still needs for a given customer, so you don't have to hardcode the column above.
@@ -19,7 +19,7 @@ Your backend creates the order, the [Meld SDK](/docs/stablecoins/headless-integr
 
 - **Credentials.** In production, Stripe orders run on your own Stripe account. Stripe onboards it for its embedded crypto onramp and registers your app as a trusted application. Then add your Stripe keys to your Meld account as in [provider setup](/docs/stablecoins/for-all-products/service-provider-setup), together with the Link OAuth client ID, client secret and headless API version Stripe gives you, and point a Stripe webhook for `crypto.onramp_session.updated` at the webhook URL the Meld dashboard shows for the integration. In sandbox, Meld provides the Stripe integration: see [Headless testing](/docs/stablecoins/sandbox-guide/headless-testing#apple-pay-with-stripe).
 - **Link.** Stripe signs the customer in to Link with the email on the Meld customer, and sends the one-time code to the phone on that Link account.
-- **Identity.** Stripe can ask for more details, an ID document or a selfie, depending on the amount and its own risk checks. If the customer passed Unified KYC, the SDK fills what it can; the customer always types their SSN.
+- **Identity.** Stripe runs its own KYC, and the SDK fills it from Unified KYC, so the customer only types their SSN. Meld doesn't refuse a Stripe order without Unified KYC, but the customer then fills in Stripe's forms by hand. Stripe can also ask for an ID document or a selfie, depending on the amount and its own risk checks.
 - **Cards.** `CREDIT_DEBIT_CARD` runs the same flow, with Stripe collecting the card. It needs no Apple setup.
 
 ### Coinbase

@@ -19,7 +19,7 @@ The order call, the capture surface appearing in your app, the [SDK](/docs/stabl
 - Headless onramps enabled on your sandbox account. Ask your Meld representative. Until they are, orders are refused with `403 WHITELABEL_NOT_ENABLED`
 - Sandbox credentials for the provider you are testing, on your Meld sandbox account
 - A webhook endpoint reachable from the internet, configured in the dashboard
-- A test customer. Most providers need the customer KYC-approved: see [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing). Stripe needs only an email
+- A test customer, KYC-approved: see [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing). Stripe also needs an email on the customer
 
 <Warning>
   Sandbox coverage is narrower than production, and a US test customer is the most common reason an otherwise correct integration returns no quotes. Quote first and use whatever country and currency pair comes back with the provider you intend to test. Stripe serves only US customers.
@@ -96,7 +96,7 @@ Stripe orders run in an iOS app on Meld's Stripe sandbox. Card orders run the sa
 2. Send your Meld representative your app's bundle ID and Apple Team ID, so Stripe registers the app as a trusted application. Stripe's SDK runs only in a registered app, on a simulator too.
 3. For Apple Pay, register a sandbox merchant identifier, as in [Stripe's certificate](/docs/stablecoins/headless-integration/apple-pay#stripes-certificate).
 4. Build the test app on the [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios#install) or [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native#ios), with the camera permission, configured for `sandbox`.
-5. Create a test customer with an email.
+5. Create a KYC-approved test customer with an email, so the SDK fills Stripe's KYC.
 
 **Limits.** Stripe's sandbox caps a purchase at 100 USD, fees included, so quote well under it. It supports only USDC on Ethereum (`USDC` / `ETH`), Base (`USDC_BASE` / `BASE`) and Solana (`USDC_SOLANA` / `SOLANA`), even when a quote lists other pairs.
 
