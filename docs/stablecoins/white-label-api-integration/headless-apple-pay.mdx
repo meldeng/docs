@@ -424,7 +424,7 @@ Subscribe to the transaction lifecycle events:
 | `TRANSACTION_CRYPTO_COMPLETE` | `SETTLED`. Crypto delivered. Mark the order paid here. |
 | `TRANSACTION_CRYPTO_FAILED` | Terminal failure (`FAILED`, `DECLINED`, `CANCELLED`, `REFUNDED`, `AUTHORIZATION_EXPIRED`) |
 
-The payload includes `paymentTransactionId`, `paymentTransactionStatus`, `customerId`, `externalCustomerId`, `transactionType`, and `headlessOrderId`. Correlate on `headlessOrderId` (the order `id` from Step 3) or on your `externalOrderId` via the transaction.
+The payload includes `paymentTransactionId`, `paymentTransactionStatus`, `customerId`, `externalCustomerId`, and `transactionType`. It does not include the order id. Correlate as described in [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks#correlating-an-event-to-your-order).
 
 You can also poll (with `Meld-Version: 2026-05-01`):
 
