@@ -79,6 +79,37 @@ Terms this provider wants the customer to see before it will take the order.
 
 Render each `url` in your own UI and gate your own flow on the customer accepting. An empty array means there is nothing to show.
 
+Some providers, Coinbase for one, also need the acceptance on record. Then `verificationRequirements.agreement` lists the codes the customer must accept and how long an acceptance counts, and `customerStatus.agreement` shows what is unmet:
+
+```json
+"verificationRequirements": {
+  "agreement": { "required": true, "maxAgeDays": 60, "codes": ["GUEST_CHECKOUT_TERMS_OF_SERVICE:US", "TERMS_OF_SERVICE", "PRIVACY_POLICY"] }
+},
+"customerStatus": {
+  "agreement": { "satisfied": false, "reason": "MISSING", "unmetCodes": ["GUEST_CHECKOUT_TERMS_OF_SERVICE:US", "TERMS_OF_SERVICE", "PRIVACY_POLICY"] }
+}
+```
+
+Read the codes from the response rather than hardcoding them. Record the acceptance in one of two ways:
+
+1. **One receipt per code.** Call `POST /accounts/terms-of-service/acceptances` for each code:
+
+   ```json
+   {
+     "externalCustomerId": "your-internal-user-id-123",
+     "serviceProvider": "COINBASEPAY",
+     "code": "GUEST_CHECKOUT_TERMS_OF_SERVICE:US",
+     "acceptedAt": "2026-10-07T10:24:11Z",
+     "ipAddress": "203.0.113.24"
+   }
+   ```
+
+   `ipAddress` is the IP the customer accepted from, and it is required. Use the `externalCustomerId` of the customer you will order for: Meld creates a new customer for a value it has not seen. A customer without an `externalCustomerId` can't hold receipts, and its agreement reads `UNRECORDABLE`.
+
+2. **An acceptance time on the order.** Send `verification.agreementAcceptedAt` on the create request: the ISO-8601 instant the customer accepted. Keep your own record of who accepted what, and when.
+
+Meld reads receipts first and falls back to `agreementAcceptedAt`. An acceptance counts for `maxAgeDays`; after that, show the documents again.
+
 ---
 
 ### Contact verification
@@ -111,6 +142,8 @@ Verify only the channels that are `required` and not yet `satisfied`:
 [`POST /accounts/customers/{customerId}/verifications`](/api-reference/customer/customers/accounts-customers-verifications-create), then [`POST /accounts/customers/{customerId}/verifications/{verificationId}/confirm`](/api-reference/customer/customers/accounts-customers-verifications-confirm)
 
 See [Email and phone verification](/docs/stablecoins/headless-integration/shared-flows/verification).
+
+When `verificationRequirements.verifyWith` names a `serviceProvider`, send that `serviceProvider` on the verification request. A code verified without it doesn't count for that provider.
 
 | `reason` | What to do |
 | --- | --- |
@@ -163,6 +196,38 @@ Two of these are easy to get wrong.
 **`PENDING` is not failure.** Treating it as `REQUIRED` sends the customer back through a form they have already filled in, and some providers review asynchronously, so it can last minutes.
 
 **`BLOCKED` is not retryable.** Re-submitting will not clear it. It is provider-specific, so the other providers in the quote are usually still open.
+
+---
+
+### Provider processes
+
+Some requirements are cleared by a process the provider runs, such as Coinbase's `limitUpgrade`, which raises a customer's limit. The requirement names the process, and the order is refused with `422 CUSTOMER_NOT_PAYMENT_READY` until it completes.
+
+Run it from your backend, with the customer and the same order intent you checked:
+
+**Endpoint:** `POST /crypto/onramp/{serviceProvider}/processes/{process}`
+
+```json
+{
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "order": {
+    "paymentMethodType": "APPLE_PAY",
+    "sourceCurrencyCode": "USD",
+    "sourceAmount": 50,
+    "destinationCurrencyCode": "USDC",
+    "destinationNetworkCode": "ETH",
+    "countryCode": "US"
+  },
+  "operation": "READ"
+}
+```
+
+`READ` returns the process `status` and the `inputSources` it accepts. Send `operation: START` with one of them as `inputSource`:
+
+- `HOSTED_FORM` returns `hostedForm.url`, a provider page for the customer to complete before `hostedForm.expiresAt`. Never log or store it.
+- `CUSTOMER_KYC` sends the provider details from the customer's [Unified KYC](/docs/stablecoins/unified-kyc). It is refused with `403 KYC_NOT_COMPLETED` if those details are missing.
+
+Then `READ` every `process.pollIntervalMs` while `pollable` is `true`, and resend the order once `status` is `SATISFIED`. `PENDING` means the provider is still reviewing: stop polling after `process.pollTimeoutMs` and check eligibility later. `BLOCKED` and `UNAVAILABLE` mean the provider won't proceed: offer another provider. Never retry `START` automatically.
 
 ---
 

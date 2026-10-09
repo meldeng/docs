@@ -19,6 +19,8 @@ import Meld from '@meldcrypto/sdk';
 Meld.configure({ environment: 'sandbox' }); // or 'production'
 ```
 
+Use the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
+
 Use it with a bundler — the SDK is bundled into your app.
 
 ---
@@ -38,14 +40,16 @@ const order = await fetch('/your-backend/order').then(r => r.json());
 
 const handle = Meld.mount(order, document.getElementById('widget-container'), {
   onReady:            ()  => hideSpinner(),
-  onStatusChange:     (s) => { if (s.status === 'completed') showProcessing(); },
+  onStatusChange:     (s) => track(s),
   onPaymentSubmitted: ()  => showProcessing(),
   onCancel:           ()  => showRetryCta(),
   onError:            (e) => showError(e.message),
 });
 ```
 
-Check `Meld.capabilities(order).embeddable` first if you handle order types this SDK does not embed.
+Check `Meld.capabilities(order)` first if you handle order types this SDK does not embed. An order it cannot present reports `surface: 'unsupported'` and `embeddable: false`, and `mount` throws.
+
+Stripe orders and Coinbase Apple Pay report `unsupported` here. They run only in an iOS app; see [Meld SDK](/docs/stablecoins/headless-integration/sdks).
 
 ---
 
@@ -57,7 +61,7 @@ Check `Meld.capabilities(order).embeddable` first if you handle order types this
 | `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
 | `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
 | `onCancel` | The user backed out |
-| `onError` | Carries `code`, `message` and `recoverable` |
+| `onError` | Carries `code`, `message`, `recoverable` and, on a load failure, `detail` |
 
 [The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
 

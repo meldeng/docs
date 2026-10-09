@@ -10,6 +10,8 @@ Your backend mints the order, the [Meld SDK](/docs/stablecoins/headless-integrat
 1. [Create a customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and complete [Unified KYC](/docs/stablecoins/unified-kyc). Required — almost every provider refuses an order for a customer Meld has not cleared
 2. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks), before KYC so you receive status changes while it runs
 
+Stripe also needs an email on the customer. See [Providers](/docs/stablecoins/headless-integration/apple-pay#providers).
+
 You also need the Meld SDK in your client. Card capture runs on the provider's PCI surface, mounted by the SDK — there is no supported path that renders a card form yourself.
 
 ---
@@ -103,7 +105,7 @@ Call this from your backend. The API key never reaches the device.
 | Field | Required | Description |
 | --- | --- | --- |
 | `customerId` | yes | The Meld customer buying. `externalCustomerId` works instead |
-| `externalOrderId` | yes | Your own reference for this order, unique per account |
+| `externalOrderId` | recommended | Your own reference for this order, unique per account |
 | `serviceProvider` | yes | The provider taking the order, carried through from the quote |
 | `paymentMethodType` | yes | `CREDIT_DEBIT_CARD` |
 | `countryCode` | yes | Where the customer is, ISO 3166-1 alpha-2 |
@@ -111,9 +113,9 @@ Call this from your backend. The API key never reaches the device.
 | `sourceCurrencyCode` | yes | Fiat they pay in, ISO 4217 |
 | `destinationCurrencyCode` | yes | Token they are buying, as Meld names it |
 | `destinationWalletAddress` | yes | Wallet it is sent to |
-| `destinationNetworkCode` | yes | Chain, as Meld names it. Carry it through from the quote |
+| `destinationNetworkCode` | yes for Stripe, recommended otherwise | Chain, as Meld names it. Carry it through from the quote |
 | `subdivision` | some providers | State or province, ISO 3166-2 — `US-CA`. Required where a provider is approved state by state |
-| `clientIpAddress` | yes | The end user's public IP, not your server's |
+| `clientIpAddress` | recommended | The end user's public IP, not your server's |
 | `customerPhoneNumber` | some providers | The customer's phone, where a provider wants it on the order as well as on the customer record |
 | `providerData` | some providers | A provider-specific block, for the few that need something no other provider does |
 
@@ -203,13 +205,19 @@ Two things to do when it fires:
 
 ---
 
+## Stripe
+
+A Stripe card order is created like any card order, with `serviceProvider: STRIPE`. Stripe's SDK collects the card in its own flow, so it runs only in an iOS app and draws nothing into your view. Setup and credentials are in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe); a card order needs no Apple setup. Coinbase has no headless card orders.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause |
 | --- | --- |
-| `403` `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for that provider. See [provider credentials](/docs/stablecoins/headless-integration#you-bring-your-own-provider-credentials) |
+| `403` `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for that provider. See [provider credentials](/docs/stablecoins/headless-integration#provider-credentials) |
 | `403` `KYC_NOT_COMPLETED` | Customer not approved with that provider. Re-check requirements before retrying |
-| `422` `COINBASE_ORDER_REJECTED` | The provider declined the order on its own limits. No order was created and nothing was charged — offer another provider rather than retrying |
+| `403` `WHITELABEL_NOT_ENABLED` | Headless onramps are not enabled on your account, in this environment. Contact your Meld representative |
 | `404` naming a service-provider customer | Usually a missing `email` on the Meld customer, occasionally missing KYC |
 | `400` / `409` on `externalOrderId` | Reused value. Generate a fresh one per attempt |
 | `INVALID_REDIRECT_URL` | You sent `redirectUrl`. Headless card surfaces render in place, so the field is rejected |
@@ -218,6 +226,6 @@ Two things to do when it fires:
 
 ---
 
-## Sandbox Testing Guide
+## Test in sandbox
 
-Once you complete the integration, you can test in Meld's sandbox by using this [guide](https://docs.meld.io/docs/stablecoins/sandbox-guide/headless-testing). Note that sandbox will have a limited set of providers and limited coverage, and should only be used for proof of concept testing. For full coverage and end to end testing, please proceed to production.
+[Headless testing](/docs/stablecoins/sandbox-guide/headless-testing) has the sandbox test cards.

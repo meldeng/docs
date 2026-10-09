@@ -3,31 +3,52 @@ title: "Apple Pay"
 description: "Present the system Apple Pay sheet inside your own app or site."
 ---
 
-Your backend mints the order, the [Meld SDK](/docs/stablecoins/headless-integration/sdks) presents the sheet, and settlement arrives by webhook.
+Your backend creates the order, the [Meld SDK](/docs/stablecoins/headless-integration/sdks) presents it, and settlement arrives by webhook. The integration is the same for every provider: one create call, one `mount`, the same callbacks and webhooks. The provider only changes what you set up once and what the customer needs before the order.
+
+## Providers
+
+| Provider | Customers | Before the order | Apple setup | Clients | The customer sees |
+| --- | --- | --- | --- | --- | --- |
+| Mercuryo, Banxa | Countries in the quote | [Unified KYC](/docs/stablecoins/unified-kyc) | Merchant identifier, certificate from Meld's CSR | iOS, React Native, web | The Apple Pay sheet |
+| Stripe | US except New York, paying USD | [Unified KYC](/docs/stablecoins/unified-kyc), and an email on the customer | Merchant identifier, certificate from Stripe's CSR | iOS, React Native on iOS | Stripe's Link sign-in and identity checks, then the Apple Pay sheet |
+| Coinbase | US, paying USD | A verified email and US mobile number, and Coinbase's agreements | None | iOS 16 or later, React Native on iOS | The Apple Pay sheet |
+
+[Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) tells you what a provider still needs for a given customer, so you don't have to hardcode the column above.
+
+### Stripe
+
+- **Credentials.** In production, Stripe orders run on your own Stripe account. Stripe onboards it for its embedded crypto onramp and registers your app as a trusted application. Then add your Stripe keys to your Meld account as in [provider setup](/docs/stablecoins/for-all-products/service-provider-setup), together with the Link OAuth client ID, client secret and headless API version Stripe gives you, and point a Stripe webhook for `crypto.onramp_session.updated` at the webhook URL the Meld dashboard shows for the integration. In sandbox, Meld provides the Stripe integration: see [Headless testing](/docs/stablecoins/sandbox-guide/headless-testing#apple-pay-with-stripe).
+- **Link.** Stripe signs the customer in to Link with the email on the Meld customer, and sends the one-time code to the phone on that Link account.
+- **Identity.** Stripe runs its own KYC, and the SDK fills it from Unified KYC, so the customer only types their SSN. Meld doesn't refuse a Stripe order without Unified KYC, but the customer then fills in Stripe's forms by hand. Stripe can also ask for an ID document or a selfie, depending on the amount and its own risk checks.
+- **Cards.** `CREDIT_DEBIT_CARD` runs the same flow, with Stripe collecting the card. It needs no Apple setup.
+
+### Coinbase
+
+- **Merchant of record.** Coinbase takes the payment on its own checkout, and the SDK opens Coinbase's Apple Pay sheet from it. You need no Apple setup.
+- **Before the order.** Verify the email and phone with `serviceProvider: "COINBASEPAY"`, and record the customer's acceptance of Coinbase's agreements. Both are in [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility).
+- **Limits.** Coinbase caps each customer weekly and over their lifetime. Over the lifetime cap, the order is refused with `CUSTOMER_NOT_PAYMENT_READY` until the customer completes the `limitUpgrade` [process](/docs/stablecoins/headless-integration/shared-flows/eligibility#provider-processes).
+- **Quote.** Send `walletAddress` on the [headless quote](/docs/stablecoins/headless-integration/shared-flows/quotes), so Coinbase prices the same checkout the order uses.
+- **Settlement.** Meld creates the transaction once Coinbase reports the payment, usually a minute or more after `onPaymentSubmitted`. An order the customer never pays sends no webhook.
+- **Sandbox.** Sandbox covers everything up to creating the order. The current SDKs can't present a sandbox Coinbase order (it ends in `PRESENTATION_FAILED`), so test the sheet in production with a small order.
+
+---
 
 ## Before you begin
 
-1. [Create a customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and complete [Unified KYC](/docs/stablecoins/unified-kyc). Required — almost every provider refuses an order for a customer Meld has not cleared
-2. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks), before KYC so you receive status changes while it runs
+1. [Create the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer), and give them what the provider needs before the order (see [Providers](#providers))
+2. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks)
+3. Do the Apple setup below, once per provider that needs it
 
 ---
 
 ## Apple Developer setup
 
-Whether you need any depends on how the provider presents the sheet.
-
-| How the sheet is presented | Providers today | Setup |
-| --- | --- | --- |
-| Natively, by your app | Mercuryo, Banxa | Merchant identifier, payment processing certificate, Apple Pay entitlement |
-| Natively, by the provider's own SDK | Stripe | None of your own — the vendor presents under its merchant identifier |
-| By the provider, as merchant of record on a page it hosts | Coinbase | None |
-
-You never branch on this in code — the SDK presents whichever surface the order carries. It only decides what you register with Apple up front, so do it once, before your first order with the provider concerned.
+Mercuryo, Banxa and Stripe need a merchant identifier and a payment processing certificate. Coinbase needs neither.
 
 **You will need:**
 
 - An Apple Developer account with admin rights on your team
-- The payment processing CSR, which your Meld representative provides
+- The payment processing CSR, which your Meld representative provides. For Stripe, see [Stripe's certificate](#stripes-certificate)
 - Xcode, to add the capability and regenerate provisioning profiles
 
 <Steps>
@@ -40,7 +61,9 @@ You never branch on this in code — the SDK presents whichever surface the orde
     4. Enter a description and an identifier — it must start with `merchant.` (e.g. `merchant.com.yourcompany.yourapp`)
     5. Click **Continue**, review, then **Register**
 
-    If your app already has a merchant identifier, reuse it. You do not need a new one.
+    If your app already has a merchant identifier, reuse it, unless another processor's certificate is on it. See [Supporting more than one provider](#supporting-more-than-one-provider).
+
+    Give your Meld representative the identifier for each environment you use. Meld configures it on your account, and your orders carry it to the SDK. Send it well before your first order in that environment.
   </Step>
   <Step title="Create a payment processing certificate">
     This certificate is what the Apple Pay token is encrypted to. It must be created from a CSR **Meld provides** — never generate your own for this step, because the processor holds the matching private key.
@@ -73,7 +96,18 @@ You never branch on this in code — the SDK presents whichever surface the orde
 
 ### Supporting more than one provider
 
-Each processor issues its own certificate, and Apple caps certificates per merchant ID. If you offer Apple Pay through two providers, expect to run the setup twice and check whether you need a second merchant identifier.
+Use one merchant identifier per processor. Apple encrypts a merchant identifier's tokens to a single payment processing certificate, so two processors cannot share one. If you offer Apple Pay through two providers, run the setup once for each, with its own identifier.
+
+Your app's Apple Pay entitlement must hold every identifier: add each in Step 3, or list each in the Expo plugin's `merchantIds`. The sheet does not open for an identifier the entitlement lacks.
+
+### Stripe's certificate
+
+Stripe decrypts the token, so the certificate comes from a CSR issued by the Stripe account the order runs on:
+
+- **Production:** your Stripe account. Download the CSR from the Stripe Dashboard's [iOS certificate settings](https://dashboard.stripe.com/settings/ios_certificates), and upload the `.cer` file Apple returns to Stripe, not to Meld.
+- **Sandbox:** Meld's Stripe sandbox. Your Meld representative gives you the CSR, and you send them the `.cer` file.
+
+Use a separate merchant identifier for each environment. Until Meld has configured it, Stripe Apple Pay orders in that environment fail with `400 PAYMENT_METHOD_NOT_SUPPORTED`.
 
 ### Registering your domain — web only
 
@@ -93,7 +127,7 @@ Native-only integrations skip this entirely.
   </video>
 </Frame>
 
-The sheet is presented by the device, and the wallet token is encrypted to a certificate only the processor can read. Your servers handle the order; they never see payment credentials.
+Your servers handle the order and never see payment credentials. The SDK presents whatever the order carries: the sheet itself, the provider's own SDK, or the provider's checkout.
 
 ```mermaid
 sequenceDiagram
@@ -103,14 +137,6 @@ sequenceDiagram
     participant Meld
     participant P as Provider
 
-    Note over App,P: Once per customer
-    Api->>Meld: POST /accounts/customers
-    Api->>Meld: POST /accounts/customers/{id}/kyc/initiate
-    Meld-->>Api: accepted
-    Meld->>Api: webhook CUSTOMER_KYC_STATUS_CHANGE, approved
-    Note right of Api: asynchronous — minutes, sometimes longer
-
-    Note over App,P: Every order
     App->>Api: user confirms the amount
     Api->>Meld: POST /payments/crypto/quote
     Meld-->>Api: quotes, each naming a provider
@@ -127,12 +153,10 @@ sequenceDiagram
     Api-->>App: order, verbatim
 
     App->>App: check the device can pay
-    App->>Meld: pass the order to the Meld SDK
-    Meld-->>App: SDK presents the system Apple Pay sheet
+    App->>Meld: Meld SDK mounts the order
+    Meld-->>App: Apple Pay sheet
     App->>App: user authorises with Face ID
-    Note over App,Meld: wallet token is encrypted to the processor
-
-    Meld->>P: submit the token
+    Meld->>P: the payment completes with the provider
     Meld-->>App: onPaymentSubmitted
     P->>Meld: charge settles
     Meld->>Api: webhook TRANSACTION_CRYPTO_COMPLETE
@@ -145,7 +169,7 @@ sequenceDiagram
 
 Every order starts here, not just the first one.
 
-[Get a quote](/docs/stablecoins/headless-integration/shared-flows/quotes) — it prices the order, names the providers that can take it, and carries the `destinationNetworkCode` the order needs. Then [check eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) for the provider you picked: agreements to show, a [verified email or phone](/docs/stablecoins/headless-integration/shared-flows/verification) to collect, KYC the provider still wants. Collect whatever is outstanding before you mint the order, or the rejection lands after the customer thinks they are done.
+[Get a quote](/docs/stablecoins/headless-integration/shared-flows/quotes) with `integrationMode=HEADLESS`. It prices the order, names the providers that can take it, and carries the `destinationNetworkCode` the order needs. Then [check eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) for the provider you picked, and collect whatever is outstanding before you create the order.
 
 ---
 
@@ -171,32 +195,9 @@ Every order starts here, not just the first one.
 }
 ```
 
-### Verification attestation
+Carry the quote's values through unchanged, and send the customer's public IP as `clientIpAddress`. Creating the order charges nothing.
 
-[Check eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) for the provider the quote named. Where it reports outstanding contact verification or legal agreements, the order carries a `verification` block:
-
-```json
-{
-  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
-  "serviceProvider": "COINBASEPAY",
-  "paymentMethodType": "APPLE_PAY",
-  "verification": {
-    "agreementAcceptedAt": "2026-09-16T10:24:11Z"
-  }
-}
-```
-
-`agreementAcceptedAt` is your own timestamp — the instant the customer accepted the terms you rendered. Meld holds no receipt for it, so there is nothing to look up, and your attestation is what reaches the provider. Keep your own record of which customer accepted which document, and when.
-
-It is validated before the order is built: unparseable, in the future, or older than 60 days is a `400` naming the reason. Any common ISO-8601 spelling is accepted. Capture it per order — a constant or a cached value starts failing once it ages past the window.
-
-The verification ids in the block are optional when the customer verified through Meld, which is the usual case. Supply them only if you ran verification against the provider's own API. See [Email and phone verification](/docs/stablecoins/headless-integration/shared-flows/verification).
-
-<Note>
-  Keep `clientIpAddress`: the sheet inputs you pass to the SDK must carry the **same** IP the order was created with.
-</Note>
-
-Response:
+Response, for this Mercuryo order. `...` marks values elided here:
 
 ```json
 {
@@ -204,17 +205,24 @@ Response:
   "customerId": "WmYYgvN8ukpV62N3m4u3ee",
   "externalOrderId": "order-3ba9f1",
   "paymentMethodType": "APPLE_PAY",
+  "responseKind": "SESSION",
   "paymentMethodResponseDetails": {
     "presentation": "NATIVE_TOKEN",
     "sessionToken": "...",
     "merchantTransactionId": "...",
     "merchantIdentifier": "merchant.com.yourcompany.app"
   },
-  "payload": { }
+  "payload": { "...": "echo of your request" },
+  "paymentActions": { "...": "read by the SDK" },
+  "headlessPresentation": {
+    "surface": "NATIVE_TOKEN",
+    "protocol": "MELD_WALLET_TOKEN",
+    "version": 1
+  }
 }
 ```
 
-Return it to your client verbatim. `paymentMethodResponseDetails` carries what the sheet needs — your app does not have to read those fields itself, but it must not drop them.
+`paymentMethodResponseDetails` and `headlessPresentation` depend on the provider: a Stripe order carries a bootstrap for Stripe's SDK, and a Coinbase order a link to Coinbase's checkout. You don't read them. Return the whole order to your client verbatim, and don't log it: it carries short-lived credentials for this order.
 
 ---
 
@@ -236,8 +244,7 @@ if (await Meld.canPresentApplePay()) {
   applePay={{
     amount: '100.00',            // must match the order
     currencyCode: 'EUR',
-    walletAddress: '0x51FB…',
-    clientIpAddress: deviceIp,   // the same IP the order was created with
+    email: customerEmail,        // used only when the sheet returns none
     summaryItemLabel: 'Acme — Buy USDC',
   }}
   onPaymentSubmitted={onPaymentSubmitted}
@@ -257,8 +264,7 @@ guard Meld.canPresentApplePay() else {
 let handle = try Meld.mount(order, applePay: MeldApplePayRequest(
     amount: 100.00,
     currencyCode: "EUR",                  // must match the order
-    walletAddress: "0x51FB…",
-    clientIpAddress: deviceIp,            // the same IP the order was created with
+    email: customerEmail,                 // used only when the sheet returns none
     summaryItemLabel: "Acme — Buy USDC"
 ), handlers: MeldEventHandlers(
     onReady:            { _ in },
@@ -285,23 +291,45 @@ Meld.mount(order, document.getElementById('checkout'), {
 
 </CodeGroup>
 
-On React Native and iOS, pass the Apple Pay inputs for **every** Apple Pay order, whichever provider the quote named — they carry what the sheet shows and the order does not. The SDK presents whichever surface the order carries. On the web there is nothing extra to pass: the order carries it, and the provider's component draws the button.
+On React Native and iOS, pass the Apple Pay inputs for every Apple Pay order. They carry what the sheet shows that the order does not, and they must match the order's amount and currency. On the web there is nothing to pass: the provider's component draws the button.
 
-A native sheet draws nothing into your view, because iOS puts it over your screen. The React Native component still has to stay mounted for as long as the sheet is up, so mount it off-screen when a button triggers it rather than a whole page.
+A native sheet draws nothing into your view. On React Native, keep the component mounted anyway: see [Mount the order](/docs/stablecoins/headless-integration/sdks/react-native#mount-the-order).
 
-`onCancel` fires when the user dismisses the sheet. Treat it as a change of mind and return them to the amount screen.
+`onCancel` fires when the user dismisses the sheet. Return them to the amount screen. Every `onError` code, and whether a payment may exist, is in [Error codes](/docs/stablecoins/headless-integration/sdks/ios#error-codes).
 
-<Note>
-  Not every provider's Apple Pay works on every platform. Check `Meld.capabilities(order).embeddable` on the web before you offer the button — an order the SDK cannot present there reports `false` rather than failing at mount.
-</Note>
+Stripe and Coinbase run only in an iOS app. Check [`Meld.capabilities`](/docs/stablecoins/headless-integration/sdks#check-before-you-mount) before you offer the button.
 
 ---
 
 ## 4. Settlement
 
-`onPaymentSubmitted` means the user authorised the sheet. Authorisation is not settlement.
+`onPaymentSubmitted` means the user authorised the payment. Authorisation is not settlement.
 
-Unmount when it fires and move the user to your own processing screen. Credit them when Meld's [`TRANSACTION_CRYPTO_COMPLETE` webhook](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks) reaches your backend — no SDK event tells you the money moved.
+Unmount when it fires and move the user to your own processing screen. Credit them when Meld's [`TRANSACTION_CRYPTO_COMPLETE` webhook](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks) reaches your backend. No SDK event tells you the money moved.
+
+---
+
+## Errors on order creation
+
+Errors use the [standard envelope](/docs/meld-api/error-responses). Unless the table says otherwise, nothing was charged.
+
+| HTTP | `code` | Cause | What to do |
+| --- | --- | --- | --- |
+| `400` | `PAYMENT_METHOD_NOT_SUPPORTED` | No headless Apple Pay route for this provider, country, currency pair and network. For Stripe, also: the integration's keys don't match its environment, or Meld has no Stripe merchant identifier for you in this environment | Re-quote with `integrationMode=HEADLESS` and send its values unchanged, or offer card. For Stripe, see [Stripe's certificate](#stripes-certificate) |
+| `400` | `HEADLESS_NOT_SUPPORTED` | The order doesn't match a headless route for the provider, or headless isn't available for it on your account | Re-quote and send its values unchanged. If it persists, contact your Meld representative |
+| `400` | `INVALID_CRYPTO_CURRENCY` | `destinationNetworkCode` is missing | Send the quote's `destinationNetworkCode`, with a new `X-Idempotency-Key` |
+| `400` | `ACCOUNT_BAD_CONFIGURATION` | The provider's integration on your account is incomplete, for example a Stripe integration without its Link OAuth client or headless API version | Complete it in the Meld dashboard |
+| `400` | `TRANSACTION_REQUEST_VALIDATION_ERROR` | A field is invalid, for example an `agreementAcceptedAt` that can't be parsed or is in the future | Fix the field |
+| `403` | `WHITELABEL_NOT_ENABLED` | Headless onramps aren't enabled on your account in this environment | Contact your Meld representative |
+| `403` | `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for the provider | See [provider credentials](/docs/stablecoins/headless-integration#provider-credentials) |
+| `403` | `VERIFICATION_REQUIRED` | `errors` lists what the customer still needs: `email`, `phone` or `agreement`, each `MISSING` or `STALE` | Complete what is listed, as in [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility), then resend |
+| `403` | `LEGAL_ACCEPTANCE_REQUIRED` | Only the provider's agreements are unmet | [Record the acceptance](/docs/stablecoins/headless-integration/shared-flows/eligibility#legal-agreements), then resend |
+| `403` | `KYC_NOT_COMPLETED` | The provider hasn't approved the customer | Re-check eligibility before retrying |
+| `409` | `HEADLESS_PAYMENT_OUTCOME_UNKNOWN` | Meld couldn't confirm with the provider whether the order started | Create a new order rather than retrying in a loop |
+| `422` | `CUSTOMER_NOT_PAYMENT_READY` | The customer reached a provider limit. `errors` names the [process](/docs/stablecoins/headless-integration/shared-flows/eligibility#provider-processes) that raises it, for example `limitUpgrade: REQUIRED` | Run the process, then resend |
+| `422` | `HEADLESS_PROVIDER_REJECTED` | The provider refused the order, and the order is spent. Stripe reports this as `STRIPE_HEADLESS_PROVIDER_REJECTED` | Create a new order with a new `X-Idempotency-Key` and `externalOrderId`. If `errors` lists `email: REJECTED` or `phone: REJECTED`, verify that channel again first. If every order fails, check the provider account's setup |
+| `425` | `HEADLESS_PAYMENT_IN_PROGRESS` | The same request is still being processed | Retry shortly with the same `X-Idempotency-Key` |
+| `500` | `CUSTOMER_VERIFICATION_UNAVAILABLE` | Meld couldn't check the customer's verification | Retry the same request later |
 
 ---
 
@@ -309,25 +337,17 @@ Unmount when it fires and move the user to your own processing screen. Credit th
 
 | Symptom | Cause |
 | --- | --- |
-| Sheet does not appear | No card in Wallet, or the entitlement is missing from the build |
-| Sheet appears, payment always declines | The processing certificate never got back to the processor, or the wrong key was used |
-| `400 INVALID_PAYMENT_METHOD` on order creation | Apple Pay is not available for this country, currency pair or route. Fall back to card |
-| `422` `COINBASE_ORDER_REJECTED` | The provider declined the order on its own limits. No order was created and nothing was charged — offer another provider rather than retrying |
-| Works in a simulator build but not on device | The iOS simulator cannot produce a usable Apple Pay token. Test on hardware with a sandbox tester account |
-
-| Symptom | Cause |
-| :-- | :-- |
-| `403` `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for that provider. See [provider credentials](/docs/stablecoins/headless-integration#you-bring-your-own-provider-credentials) |
-| `403` `KYC_NOT_COMPLETED` | Customer not approved with that provider. Re-check requirements before retrying |
-| `422` `COINBASE_ORDER_REJECTED` | The provider declined the order on its own limits. No order was created and nothing was charged — offer another provider rather than retrying |
+| Sheet does not appear | No card in Wallet, or the build's Apple Pay entitlement is missing or lacks the merchant identifier the order carries |
+| Sheet appears, payment always declines | The processing certificate never got back to the processor |
+| Payment fails from the iOS Simulator | The Simulator can't produce a usable Apple Pay token. Test on a physical device |
 | `404` naming a service-provider customer | Usually a missing `email` on the Meld customer, occasionally missing KYC |
 | `400` / `409` on `externalOrderId` | Reused value. Generate a fresh one per attempt |
-| `INVALID_REDIRECT_URL` | You sent `redirectUrl`. Headless card surfaces render in place, so the field is rejected |
+| `INVALID_REDIRECT_URL` | You sent `redirectUrl`. Headless surfaces render in place, so the field is rejected |
 | Surface never becomes ready | Content Security Policy on web, or a provider host not reachable from the device |
 | User paid, no crypto yet | Normal while settlement runs. Wait for the webhook before showing a failure |
 
 ---
 
-## Sandbox Testing Guide
+## Test in sandbox
 
-Once you complete the integration, you can test in Meld's sandbox by using this [guide](https://docs.meld.io/docs/stablecoins/sandbox-guide/headless-testing). Note that sandbox will have a limited set of providers and limited coverage, and should only be used for proof of concept testing. For full coverage and end to end testing, please proceed to production.
+See [Headless testing](/docs/stablecoins/sandbox-guide/headless-testing#test-apple-pay).

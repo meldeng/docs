@@ -1,6 +1,6 @@
 ---
 title: "React Native SDK"
-description: "One component for card and Apple Pay, on iOS and Android, with the same API on both."
+description: "One component that mounts card and Apple Pay orders, with the same API on iOS and Android."
 ---
 
 It wraps the native iOS and Android SDKs. The SDK does not render card input or carry card data; capture happens on the provider's own surface.
@@ -17,15 +17,49 @@ The wrapper autolinks. The native SDK it depends on is not an RN module, so wire
 
 ### iOS
 
-The pod resolves by name from CocoaPods trunk, so there is nothing to add to your `Podfile`. Install with static frameworks — the native SDK is a Swift pod:
+The wrapper needs iOS 15 or later, and its pod pulls in `MeldSDK` from CocoaPods trunk. For Stripe orders, pin `MeldSDK` to 0.9.1 or a later 0.9 release. Nothing checks the version at run time: a build that resolved 0.8.x or 0.9.0 still mounts Stripe orders, without the Stripe fixes in 0.9.1.
+
+**Bare React Native.** Add the pin to your app target in `ios/Podfile`:
+
+```ruby
+pod 'MeldSDK', '~> 0.9.1'
+```
+
+Then install with static frameworks, since the native SDK is a Swift pod:
 
 ```bash
 cd ios && USE_FRAMEWORKS=static pod install
 ```
 
+If `Podfile.lock` already holds an older `MeldSDK`, run `pod update MeldSDK` as well.
+
+**Expo.** Install `expo-build-properties` with `npx expo install expo-build-properties`, then pin the pod in your app config. The pin applies from the next native build (EAS Build, or `npx expo prebuild --clean`):
+
+```json
+"plugins": [
+  ["expo-build-properties", { "ios": { "extraPods": [{ "name": "MeldSDK", "version": "~> 0.9.1" }] } }]
+]
+```
+
+After you build, check that `Podfile.lock` lists `MeldSDK (0.9.1)` or later. Native support comes only with a new app build; an over-the-air JavaScript update cannot add it.
+
 ### Android
 
 Nothing beyond autolinking. The wrapper's Gradle module pulls the native Android SDK from Maven Central. Requires `minSdk 24`. The library declares `INTERNET` and `CAMERA`; camera is used for KYC capture inside a provider's surface and merges into your manifest automatically.
+
+### iOS permissions
+
+Declare `NSCameraUsageDescription` in your iOS `Info.plist`, with a string that explains the document and selfie capture. Providers that run KYC inside their surface need it, and so does Stripe's identity check, which the SDK refuses without it.
+
+In Expo, set it under `ios.infoPlist`. The Meld config plugin does not add it.
+
+```json
+"ios": {
+  "infoPlist": {
+    "NSCameraUsageDescription": "Used to capture your ID and a selfie for identity verification."
+  }
+}
+```
 
 ---
 
@@ -33,7 +67,7 @@ Nothing beyond autolinking. The wrapper's Gradle module pulls the native Android
 
 The order comes from your server. Your API key never ships in the app binary.
 
-See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request.
+See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request. Return the response to the app unchanged: the SDK reads what it needs from it.
 
 ---
 
@@ -42,11 +76,14 @@ See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/s
 ```tsx
 import { Meld, MeldWidget } from '@meldcrypto/react-native-sdk';
 
-Meld.configure('sandbox'); // or 'production' — call once, before you mount
+Meld.configure('sandbox'); // or 'production'
+
+const { surface } = await Meld.capabilities(order);
+if (surface === 'unsupported') return offerAnotherMethod();
 
 <MeldWidget
   order={order}
-  onReady={() => setReady(true)}
+  onReady={() => hideSpinner()}
   onStatusChange={(s) => track(s)}
   onPaymentSubmitted={() => showProcessing()}
   onCancel={() => backToCheckout()}
@@ -54,7 +91,11 @@ Meld.configure('sandbox'); // or 'production' — call once, before you mount
 />
 ```
 
-Keep the component mounted until the user finishes paying — unmounting tears the surface down. On `onPaymentSubmitted`, navigating away is how you unmount it.
+Call `Meld.configure` once, before you check or mount an order, with the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
+
+To check a quote before you create the order, pass its `paymentMethodType` and `headlessPresentation` to `Meld.presentationCapabilities`, then check the order itself again before you mount it. This works on iOS only. On Android it reports `unsupported` for every quote, so don't use it to hide methods there.
+
+Keep the component mounted until a terminal callback. Unmounting tears the surface down and delivers no callback. On `onPaymentSubmitted`, navigating away is how you unmount it. Apple Pay and Stripe orders draw nothing in the component, so a zero-size component is enough for them.
 
 ---
 
@@ -68,9 +109,7 @@ if (await Meld.canPresentApplePay()) {
     order={order}
     applePay={{
       amount: '100.00',              // must match the order
-      currencyCode: 'EUR',
-      walletAddress: '0x51FB…',
-      clientIpAddress: deviceIp,     // the SAME IP the order was created with
+      currencyCode: 'USD',           // must match the order
       summaryItemLabel: 'Acme — Buy USDC',
     }}
     onPaymentSubmitted={() => showProcessing()}
@@ -80,25 +119,42 @@ if (await Meld.canPresentApplePay()) {
 }
 ```
 
-Pass `applePay` for any Apple Pay order without checking which provider it routed to. Choosing the surface is the SDK's job.
+Pass `applePay` for any Apple Pay order without checking which provider it routed to: choosing the surface is the SDK's job. A malformed prop reports `INVALID_APPLE_PAY_REQUEST`.
 
-A native sheet is modal, so nothing draws into the view while it is up — mount the component off-screen if you trigger it from a button.
+Add `walletAddress` and `clientIpAddress`, with the values the order was created with, in two cases: the order's response has neither `headlessPresentation` nor `paymentActions`, or an over-the-air update can deliver your JavaScript to a binary built with React Native SDK 0.7 or older.
+
+`canPresentApplePay()` is `true` only when Wallet holds a card. It is always `false` on Android, which does not present Apple Pay.
+
+Mount from the customer's tap on your Apple Pay button.
 
 ### Expo config plugin
 
-A native sheet needs the Apple Pay entitlement in your app. The merchant id is yours, paired with the payment processing certificate issued from the CSR Meld provides.
+Mercuryo, Banxa and Stripe present the sheet under your merchant identifier, so your app needs the Apple Pay entitlement. Register the identifiers and certificates first, as in [Apple Developer setup](/docs/stablecoins/headless-integration/apple-pay#apple-developer-setup).
 
 ```json
 "plugins": [
-  ["@meldcrypto/react-native-sdk/plugin", { "merchantIds": ["merchant.com.yourcompany.app"] }]
+  ["@meldcrypto/react-native-sdk/plugin", { "merchantIds": [
+    "merchant.com.yourcompany.app",
+    "merchant.com.yourcompany.app.stripe",
+    "merchant.com.yourcompany.app.stripe.sandbox"
+  ]}]
 ]
 ```
 
-Bare React Native projects add the same entitlement in Xcode. A provider that hosts the sheet itself needs none of this — it runs under its own merchant id on its own domain.
+List every identifier an order can carry, including both your sandbox and your live Stripe identifier. The plugin writes only the Apple Pay entitlement, and merges these identifiers with any that other plugins add.
 
-<Note>
-  The iOS Simulator presents the sheet and can authorise it, which exercises mounting, events and the cancel path. It cannot produce a decryptable payment token, so completing a real payment needs a device.
-</Note>
+Bare React Native projects add the same entitlement in Xcode. Coinbase needs none of this.
+
+---
+
+## Provider notes
+
+The same `<MeldWidget>` presents every provider's order, with the requirements in [iOS → Provider notes](/docs/stablecoins/headless-integration/sdks/ios#provider-notes). On React Native:
+
+- **Stripe** needs iOS, in a native build with React Native SDK 0.8.0 or later and the `MeldSDK` version in [Install](#ios). On an Apple Pay order, an `applePay` you pass must carry the order's amount and `currencyCode: 'USD'`, or the component reports `MOUNT_FAILED`.
+- **Coinbase** needs iOS 16 or later.
+
+On Android, and in a binary built with React Native SDK 0.7 or older, `Meld.capabilities(order)` reports `unsupported` for both, so leave them out.
 
 ---
 
@@ -106,13 +162,19 @@ Bare React Native projects add the same entitlement in Xcode. A provider that ho
 
 | Event | Meaning |
 | --- | --- |
-| `onReady` | The surface has loaded |
+| `onReady` | The surface has loaded, or the Apple Pay sheet is opening |
 | `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
 | `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
-| `onCancel` | The user backed out, or dismissed the Apple Pay sheet |
-| `onError` | Carries a code and message |
+| `onCancel` | The user backed out, or dismissed the Apple Pay sheet. Nothing will settle |
+| `onError` | Carries a `code`, a `message`, `recoverable` and `detail` |
 
-[The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
+[The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, how `onCancel` and `onError` relate to the status, and the one-terminal-callback rule.
+
+### Error codes
+
+On iOS, `onError` uses the [iOS SDK's codes](/docs/stablecoins/headless-integration/sdks/ios#error-codes). This SDK has no `attemptMayExist`, so decide by code: no payment exists for any code in that table except `PAYMENT_OUTCOME_UNKNOWN`, or for this SDK's own codes below. Treat any other non-recoverable code as a payment that may exist.
+
+This SDK's own codes are raised before anything is mounted: `INVALID_ORDER`, `INVALID_APPLE_PAY_REQUEST`, `MOUNT_FAILED` and `UNSUPPORTED_NATIVE_PROTOCOL`. Fix the input, or offer another method.
 
 ---
 

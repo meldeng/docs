@@ -11,11 +11,13 @@ Building in React Native? Use the [React Native SDK](/docs/stablecoins/headless-
 
 ## Install
 
+The SDK supports iOS 15 and later.
+
 **Swift Package Manager.** In Xcode: **File → Add Package Dependencies…**, paste the repository URL and add the **MeldSDK** library to your app target.
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/meldeng/meldsdk-ios", from: "0.1.1"),
+    .package(url: "https://github.com/meldeng/meldsdk-ios", from: "0.9.1"),
 ],
 targets: [
     .target(name: "YourApp", dependencies: [
@@ -27,14 +29,22 @@ targets: [
 **CocoaPods.**
 
 ```ruby
-pod 'MeldSDK', '~> 0.1.1'
+pod 'MeldSDK', '~> 0.9.1'
 ```
 
 Then `import MeldSDK`.
 
+`MeldSDK` depends on Stripe's `StripeCryptoOnramp` 26.11.x and on `PrimerSDK` 2.49 or a later 2.x, even if you use neither Stripe nor Banxa. An app that already depends on a different minor version of Stripe's iOS SDK cannot resolve both.
+
+---
+
+## Configure the environment
+
 ```swift
 Meld.configure(environment: .sandbox) // or .production
 ```
+
+Call it once, before you check or mount an order, with the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
 
 ---
 
@@ -42,25 +52,36 @@ Meld.configure(environment: .sandbox) // or .production
 
 The order comes from your server. Your API key never ships in the app binary.
 
-See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request.
+See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request. Return the response to the app unchanged: the SDK reads what it needs from it.
 
 ---
 
 ## Mount the order
 
 ```swift
+let order = try MeldOrder.from(jsonData: responseData) // your backend's response, unchanged
+
+guard Meld.capabilities(for: order).surface != "unsupported" else {
+    // This build cannot present the order. Offer another method.
+    return
+}
+
 let handle = try Meld.mount(order, into: containerView, handlers: MeldEventHandlers(
     onReady:            { _ in hideSpinner() },
     onPaymentSubmitted: { _ in showProcessing() },
     onStatusChange:     { status in track(status) },
     onCancel:           { _ in showRetryCta() },
-    onError:            { error in show(error.message) }
+    onError:            { error in if !error.recoverable { endCheckout(error) } }
 ))
 ```
 
+Call `mount` on the main thread. Pass `into:` a view you own for an embedded card widget. Apple Pay and Stripe orders draw nothing into it, so `into:` is optional for them. Without it, a Stripe or Coinbase order presents from your app's single foreground window, and `mount` throws if there is none. In an app with several windows, pass `into:` a view in the window to present from.
+
 Apple Pay uses the same call with an `applePay:` argument — see [Apple Pay](/docs/stablecoins/headless-integration/apple-pay).
 
-Keep the handle until the user finishes paying. Releasing it tears the surface down, and `handle.unmount()` does the same on demand.
+Keep the handle until a terminal callback. Releasing it tears the surface down, and `handle.unmount()` does the same on demand. Neither delivers a callback.
+
+To check a quote before you create the order, decode its `headlessPresentation` with `MeldHeadlessPresentation(json:)` and pass it, with the `paymentMethodType`, to `Meld.capabilities(for:paymentMethodType:)`. That tells you only whether this build can present that kind of order. Check the order itself again before you mount it.
 
 ---
 
@@ -68,21 +89,51 @@ Keep the handle until the user finishes paying. Releasing it tears the surface d
 
 | Event | Meaning |
 | --- | --- |
-| `onReady` | The surface has loaded |
+| `onReady` | The surface has loaded, or the Apple Pay sheet is opening |
 | `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
 | `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
-| `onCancel` | The user backed out, or dismissed the Apple Pay sheet |
-| `onError` | Carries a code and message |
+| `onCancel` | The user backed out, or dismissed the Apple Pay sheet. Nothing will settle |
+| `onError` | Carries a `code`, a `message`, `recoverable` and `detail` |
 
-[The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
+[The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, how `onCancel` and `onError` relate to the status, and the rule that each mount ends with exactly one terminal callback. To retry after a terminal callback, create a new order.
+
+### Error codes
+
+Apple Pay and Stripe orders report these codes. Embedded card widgets report their own, some with `recoverable: true`.
+
+| `code` | Meaning |
+| --- | --- |
+| `APPLE_PAY_UNAVAILABLE` | Apple Pay cannot be presented. No attempt exists: offer another method |
+| `PRESENTATION_FAILED` | The flow stopped before any payment. No attempt exists; the next attempt needs a new order |
+| `PAYMENT_REJECTED` | Declined, and nothing will settle. Offer another option |
+| `ORDER_STATE_CHANGED` | The provider no longer accepts this order. No attempt exists. Create a new order |
+| `VERIFICATION_PENDING` | The provider is still reviewing the customer. No attempt exists |
+| `PAYMENT_OUTCOME_UNKNOWN` | A payment may exist. Track the order through your backend and never pay it again |
+
+`error.attemptMayExist` is `false` for every code above except `PAYMENT_OUTCOME_UNKNOWN`. Treat any other non-recoverable code, including one this table doesn't list, like `PAYMENT_OUTCOME_UNKNOWN`.
+
+`detail` carries the provider's own event or code. Log it; don't branch on it.
 
 ---
 
 ## Permissions
 
-Providers that run KYC inside their surface need camera access. Declare `NSCameraUsageDescription` in your `Info.plist` with a string that explains the document and selfie capture, or that step fails silently for the user.
+Providers that run KYC inside their surface need camera access, and so does Stripe's identity check. Declare `NSCameraUsageDescription` in your `Info.plist` with a string that explains the document and selfie capture. Without it, that step fails silently for the user, or, on a Stripe order, the SDK refuses it and the flow ends in `onError`.
 
-Apple Pay needs the Apple Pay capability on your target, with the merchant identifier you registered. See [Apple Pay](/docs/stablecoins/headless-integration/apple-pay).
+Apple Pay needs the Apple Pay capability on your target, listing every merchant identifier an order can carry, including both your Stripe sandbox and live identifiers. [Apple Developer setup](/docs/stablecoins/headless-integration/apple-pay#apple-developer-setup) covers which providers need one.
+
+---
+
+## Provider notes
+
+The same `Meld.mount` call presents every provider's order. A few providers add requirements of their own:
+
+- **Stripe.**
+  - `onReady` fires before anything is on screen, because the SDK shows nothing until it needs the customer. Keep your own busy state until a terminal callback, and block anything that would unmount the SDK or start another order meanwhile.
+  - One Stripe order runs at a time. After you unmount one before its terminal callback, a new one can report `PRESENTATION_FAILED` for up to 90 seconds.
+  - Stripe's SDK runs only in an app Stripe has registered as a trusted application, and production orders need a physical device. When you run one from Xcode, set the `com.apple.developer.devicecheck.appattest-environment` entitlement to `production`.
+  - On an Apple Pay order, an `applePay:` you pass must match the order's amount, in `USD`, or `mount` throws.
+- **Coinbase.** It needs iOS 16 or later: below that, `Meld.capabilities(for:)` reports `unsupported`. `applePay:` is ignored. If you pass `into:`, keep that view in its window until a terminal callback.
 
 ---
 
