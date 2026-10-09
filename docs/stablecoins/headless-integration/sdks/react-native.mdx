@@ -147,19 +147,14 @@ Bare React Native projects add the same entitlement in Xcode. Coinbase needs non
 
 ---
 
-## Stripe orders
+## Provider notes
 
-Stripe runs on iOS only, in a native build with React Native SDK 0.8.0 or later; use the `MeldSDK` version in [Install](#ios). On Android, and in a binary built with React Native SDK 0.7 or older that receives this SDK's JavaScript over the air, `Meld.capabilities(order)` reports `unsupported` and the component reports `UNSUPPORTED_NATIVE_PROTOCOL` or `MOUNT_FAILED` without mounting anything.
+The same `<MeldWidget>` presents every provider's order, with the requirements in [iOS → Provider notes](/docs/stablecoins/headless-integration/sdks/ios#provider-notes). On React Native:
 
-Mount the order with the same `<MeldWidget>`. On an Apple Pay order, an `applePay` you pass must carry the order's amount and `currencyCode: 'USD'`, or the component reports `MOUNT_FAILED`. The rest, including the busy state to keep after `onReady`, is as in [iOS → Stripe orders](/docs/stablecoins/headless-integration/sdks/ios#stripe-orders).
+- **Stripe** needs iOS, in a native build with React Native SDK 0.8.0 or later and the `MeldSDK` version in [Install](#ios). On an Apple Pay order, an `applePay` you pass must carry the order's amount and `currencyCode: 'USD'`, or the component reports `MOUNT_FAILED`.
+- **Coinbase** needs iOS 16 or later.
 
----
-
-## Coinbase orders
-
-Coinbase Apple Pay mounts with the same `<MeldWidget>`, on iOS 16 or later. On iOS 15 and on Android, `Meld.capabilities(order)` reports `unsupported`, so leave the option out. What each callback means is in [Apple Pay → Present a Coinbase order](/docs/stablecoins/headless-integration/apple-pay#present-a-coinbase-order).
-
-In sandbox, mounting a Coinbase order reports `PRESENTATION_FAILED`: see [Test Coinbase in sandbox](/docs/stablecoins/headless-integration/apple-pay#test-coinbase-in-sandbox).
+On Android, and in a binary built with React Native SDK 0.7 or older, `Meld.capabilities(order)` reports `unsupported` for both, so leave them out.
 
 ---
 

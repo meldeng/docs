@@ -10,7 +10,7 @@ Your backend mints the order, the [Meld SDK](/docs/stablecoins/headless-integrat
 1. [Create a customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and complete [Unified KYC](/docs/stablecoins/unified-kyc). Required — almost every provider refuses an order for a customer Meld has not cleared
 2. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks), before KYC so you receive status changes while it runs
 
-Stripe needs the customer, with an email, but not Unified KYC. See [Before you begin with Stripe](/docs/stablecoins/headless-integration/apple-pay#before-you-begin-with-stripe).
+Stripe needs only an email on the customer, not Unified KYC. See [Providers](/docs/stablecoins/headless-integration/apple-pay#providers).
 
 You also need the Meld SDK in your client. Card capture runs on the provider's PCI surface, mounted by the SDK — there is no supported path that renders a card form yourself.
 
@@ -207,11 +207,7 @@ Two things to do when it fires:
 
 ## Stripe
 
-A Stripe card order runs only in an iOS app, and does not mount a card form in your view: Stripe's own SDK collects the card, in the same flow as Stripe Apple Pay. Create it as a Stripe Apple Pay order with `paymentMethodType: CREDIT_DEBIT_CARD`. Its `clientConfiguration` carries no `merchantIdentifier`, so it needs no Apple setup and works before Meld has configured your Stripe merchant identifier.
-
-Scope, setup, the response and errors are in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe). To test it in sandbox, see [Test Stripe](/docs/stablecoins/sandbox-guide/headless-testing#test-stripe).
-
-Coinbase has no headless card orders. Use [Coinbase Apple Pay](/docs/stablecoins/headless-integration/apple-pay#coinbase) instead.
+A Stripe card order is created like any card order, with `serviceProvider: STRIPE`. Stripe's SDK collects the card in its own flow, so it runs only in an iOS app and draws nothing into your view. Setup and credentials are in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe); a card order needs no Apple setup. Coinbase has no headless card orders.
 
 ---
 

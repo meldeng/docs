@@ -77,14 +77,9 @@ Both need the [Meld SDK](/docs/stablecoins/headless-integration/sdks) in your cl
 
 [Create the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and verify them through [Unified KYC](/docs/stablecoins/unified-kyc) before their first order. Almost every provider refuses an order for a customer Meld has not cleared, and the refusal arrives at order creation — after the customer has entered an amount and expects to pay.
 
-Two providers differ, and neither is a choice you make:
+Stripe and Coinbase don't use Unified KYC: Stripe verifies the customer in its own screens, and Coinbase needs a verified email and phone and accepted agreements. See [Providers](/docs/stablecoins/headless-integration/apple-pay#providers).
 
-| Provider | When identity is verified |
-| --- | --- |
-| Stripe | In Stripe's own screens, inside the flow the SDK presents |
-| Coinbase | Not up front. Before the first order the customer needs a verified email and phone and accepted Coinbase agreements. Coinbase asks for identity only to raise the customer's limit. See [Before you begin with Coinbase](/docs/stablecoins/headless-integration/apple-pay#before-you-begin-with-coinbase) |
-
-Everywhere else, run Unified KYC up front and treat an approved customer as something you check before offering the flow at all. Transfers need no Unified KYC.
+For the other providers, run Unified KYC up front and check the customer is approved before offering the flow. Transfers need no Unified KYC.
 
 <Note>
   Some providers provision their own customer record at order time and reject the call without an email. If your users can sign up without one, sync it onto the Meld customer with `PATCH /accounts/customers/{customerId}` before the first order — a missing email surfaces later as a `404` naming a service-provider customer, which is harder to read than it sounds. Stripe and Coinbase check for it up front instead, and refuse the order with `403 VERIFICATION_REQUIRED` and `email: MISSING`.
@@ -115,10 +110,10 @@ Pick what you are integrating:
 
 1. [Cards](/docs/stablecoins/headless-integration/cards) — the provider's card form, mounted inside your checkout
 2. [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) — present the system sheet in your app or site
-3. [Transfers](/docs/stablecoins/headless-integration/transfers) — send crypto the customer holds at Coinbase to their own wallet
+3. [Transfers](/docs/stablecoins/headless-integration/transfers) — send crypto the customer holds at an exchange, such as Coinbase, to their own wallet
 
 ---
 
 ## Test in sandbox
 
-Test card and Apple Pay orders with the [headless testing guide](/docs/stablecoins/sandbox-guide/headless-testing). Coinbase has its own sandbox sections: [Apple Pay](/docs/stablecoins/headless-integration/apple-pay#test-coinbase-in-sandbox) and [transfers](/docs/stablecoins/headless-integration/transfers#test-in-sandbox). Sandbox has fewer providers and less coverage than production.
+Test card and Apple Pay orders with the [headless testing guide](/docs/stablecoins/sandbox-guide/headless-testing), and transfers with [Transfers → Test in sandbox](/docs/stablecoins/headless-integration/transfers#test-in-sandbox). Sandbox has fewer providers and less coverage than production.

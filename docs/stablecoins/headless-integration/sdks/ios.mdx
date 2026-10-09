@@ -120,35 +120,20 @@ Apple Pay and Stripe orders report these codes. Embedded card widgets report the
 
 Providers that run KYC inside their surface need camera access, and so does Stripe's identity check. Declare `NSCameraUsageDescription` in your `Info.plist` with a string that explains the document and selfie capture. Without it, that step fails silently for the user, or, on a Stripe order, the SDK refuses it and the flow ends in `onError`.
 
-Apple Pay needs the Apple Pay capability on your target, listing every merchant identifier an order can carry, including both your Stripe sandbox and live identifiers. [Apple Developer setup](/docs/stablecoins/headless-integration/apple-pay#apple-developer-setup) covers which providers need an identifier and how to register one; Coinbase needs none.
+Apple Pay needs the Apple Pay capability on your target, listing every merchant identifier an order can carry, including both your Stripe sandbox and live identifiers. [Apple Developer setup](/docs/stablecoins/headless-integration/apple-pay#apple-developer-setup) covers which providers need one.
 
 ---
 
-## Stripe orders
+## Provider notes
 
-A Stripe order runs Stripe's own SDK inside this one. What the order carries and how the flow runs are in [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe).
+The same `Meld.mount` call presents every provider's order. A few providers add requirements of their own:
 
-Mount it with the same `Meld.mount` call. On an Apple Pay order, an `applePay:` you pass must match the order's amount, in `USD`, or `mount` throws.
-
-The SDK shows nothing until it needs the customer, so `onReady` fires before anything is on screen. Keep your own busy state, such as a spinner on the button that started the purchase, until a terminal callback, and block anything that would unmount the SDK or start another order meanwhile.
-
-One Stripe order runs at a time. If you unmount one before its terminal callback, a new Stripe order can report `PRESENTATION_FAILED` for up to 90 seconds.
-
-Stripe's SDK runs only in an app that Stripe has registered as a trusted application, on a simulator too: see [Set up Stripe in sandbox](/docs/stablecoins/sandbox-guide/headless-testing#set-up-stripe-in-sandbox) and, for production, [Before you begin with Stripe](/docs/stablecoins/headless-integration/apple-pay#before-you-begin-with-stripe). Production orders need a physical device. When you run one from Xcode, set the `com.apple.developer.devicecheck.appattest-environment` entitlement to `production`.
-
-Which Stripe refusals report `PAYMENT_REJECTED` and which report `PAYMENT_OUTCOME_UNKNOWN` is in [When Stripe refuses the payment](/docs/stablecoins/headless-integration/apple-pay#when-stripe-refuses-the-payment).
-
----
-
-## Coinbase orders
-
-A Coinbase Apple Pay order needs iOS 16 or later. Below that, `Meld.capabilities(for:)` reports `unsupported` and `Meld.mount` throws, so don't offer it.
-
-Mount it with the same `Meld.mount` call. `applePay:` is ignored. If you pass `into:`, keep that view in its window until a terminal callback. If it leaves the window first, the SDK ends the mount with no callback, as if you had unmounted it.
-
-What each callback and error code means for a Coinbase order is in [Apple Pay → Present a Coinbase order](/docs/stablecoins/headless-integration/apple-pay#present-a-coinbase-order).
-
-In sandbox, mounting a Coinbase order ends in `onError` with `PRESENTATION_FAILED`: see [Test Coinbase in sandbox](/docs/stablecoins/headless-integration/apple-pay#test-coinbase-in-sandbox).
+- **Stripe.**
+  - `onReady` fires before anything is on screen, because the SDK shows nothing until it needs the customer. Keep your own busy state until a terminal callback, and block anything that would unmount the SDK or start another order meanwhile.
+  - One Stripe order runs at a time. After you unmount one before its terminal callback, a new one can report `PRESENTATION_FAILED` for up to 90 seconds.
+  - Stripe's SDK runs only in an app Stripe has registered as a trusted application, and production orders need a physical device. When you run one from Xcode, set the `com.apple.developer.devicecheck.appattest-environment` entitlement to `production`.
+  - On an Apple Pay order, an `applePay:` you pass must match the order's amount, in `USD`, or `mount` throws.
+- **Coinbase.** It needs iOS 16 or later: below that, `Meld.capabilities(for:)` reports `unsupported`. `applePay:` is ignored. If you pass `into:`, keep that view in its window until a terminal callback.
 
 ---
 
