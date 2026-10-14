@@ -77,6 +77,8 @@ Both need the [Meld SDK](/docs/stablecoins/headless-integration/sdks) in your cl
 
 [Create the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and verify them through [Unified KYC](/docs/stablecoins/unified-kyc) before their first order. Almost every provider refuses an order for a customer Meld has not cleared, and the refusal arrives at order creation — after the customer has entered an amount and expects to pay.
 
+Clearing the customer is not enough for providers that take their KYC as a share from Meld, such as Banxa. Name each of them in `kycShareProviders` when you start KYC, or add them later with a `PATCH` — see [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers). A provider you leave out refuses the order with `403 KYC_NOT_COMPLETED`.
+
 Coinbase is the exception: it has a guest checkout, where the customer verifies their email and phone with a one-time code and accepts Coinbase's agreements, with no KYC. Once the customer reaches Coinbase's lifetime transaction limit, they must complete KYC to keep using Coinbase Apple Pay, through the `limitUpgrade` [process](/docs/stablecoins/headless-integration/shared-flows/eligibility#provider-processes). Stripe runs its own KYC, but complete Unified KYC first so the SDK can fill it. Transfers need no Unified KYC. See [Providers](/docs/stablecoins/headless-integration/apple-pay#providers).
 
 <Note>
@@ -87,7 +89,7 @@ Coinbase is the exception: it has a guest checkout, where the customer verifies 
 
 In production, every order runs on your own merchant account at the provider, using credentials registered to your Meld account. Coinbase is the exception: Meld sets it up on your account.
 
-In sandbox, Meld enables Stripe and Coinbase on your sandbox account with its own sandbox credentials. They appear under **Integrations** as **Shared Meld Integration**, and you add no keys or webhooks for them. Ask your Meld representative to enable them.
+In sandbox, Meld enables Stripe, Coinbase and Banxa on your sandbox account with its own sandbox credentials. They appear under **Integrations** as **Shared Meld Integration**, and you add no keys or webhooks for them. Ask your Meld representative to enable them.
 
 ---
 

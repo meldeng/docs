@@ -169,7 +169,7 @@ sequenceDiagram
 
 Every order starts here, not just the first one.
 
-[Get a quote](/docs/stablecoins/headless-integration/shared-flows/quotes) with `integrationMode=HEADLESS`. It prices the order, names the providers that can take it, and carries the `destinationNetworkCode` the order needs. Then [check eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) for the provider you picked, and collect whatever is outstanding before you create the order.
+[Get a quote](/docs/stablecoins/headless-integration/shared-flows/quotes) with `integrationMode=HEADLESS`. It prices the order and names the providers that can take it. Name the chain with `destinationNetworkCode` on the quote request, and send the same value on the order. Then [check eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) for the provider you picked, and collect whatever is outstanding before you create the order.
 
 ---
 
@@ -317,7 +317,7 @@ Errors use the [standard envelope](/docs/meld-api/error-responses). Unless the t
 | --- | --- | --- | --- |
 | `400` | `PAYMENT_METHOD_NOT_SUPPORTED` | No headless Apple Pay route for this provider, country, currency pair and network. For Stripe, also: the integration's keys don't match its environment, or Meld has no Stripe merchant identifier for you in this environment | Re-quote with `integrationMode=HEADLESS` and send its values unchanged, or offer card. For Stripe, see [Stripe's certificate](#stripes-certificate) |
 | `400` | `HEADLESS_NOT_SUPPORTED` | The order doesn't match a headless route for the provider, or headless isn't available for it on your account | Re-quote and send its values unchanged. If it persists, contact your Meld representative |
-| `400` | `INVALID_CRYPTO_CURRENCY` | `destinationNetworkCode` is missing | Send the quote's `destinationNetworkCode`, with a new `X-Idempotency-Key` |
+| `400` | `INVALID_CRYPTO_CURRENCY` | Stripe only: `destinationNetworkCode` is missing. Any provider: `destinationNetworkCode` doesn't match the chain in `destinationCurrencyCode`, for example `USDC_BASE` with `ETH`. The quote returns the same error | Send the `destinationNetworkCode` you quoted with, with a new `X-Idempotency-Key` |
 | `400` | `ACCOUNT_BAD_CONFIGURATION` | The provider's integration on your account is incomplete, for example a Stripe integration without its Link OAuth client or headless API version | Complete it in the Meld dashboard |
 | `400` | `TRANSACTION_REQUEST_VALIDATION_ERROR` | A field is invalid, for example an `agreementAcceptedAt` that can't be parsed or is in the future | Fix the field |
 | `403` | `WHITELABEL_NOT_ENABLED` | Headless onramps aren't enabled on your account in this environment | Contact your Meld representative |

@@ -21,7 +21,7 @@ Returns everything standing between this customer and an accepted order with tha
 | `sourceAmount` | yes | What they pay |
 | `destinationCurrencyCode` | yes | Token they are buying, as Meld names it |
 | `countryCode` | yes | Where the customer is, ISO 3166-1 alpha-2 |
-| `destinationNetworkCode` | optional | Chain, as Meld names it |
+| `destinationNetworkCode` | yes for Stripe, recommended otherwise | Chain, as Meld names it. The same value you quoted with |
 | `subdivision` | optional | State or province, ISO 3166-2 — `US-CA` |
 
 ```
@@ -166,7 +166,7 @@ One entry per KYC step this provider needs, each reported independently.
 | `code` | What it covers |
 | --- | --- |
 | `MELD_KYC_APPROVED` | Meld's own KYC has cleared the customer |
-| `PROVIDER_KYC_SHARE` | That verification has been shared with this provider, and accepted |
+| `PROVIDER_KYC_SHARE` | That verification has been shared with this provider, and accepted. Meld shares only with providers named in `kycShareProviders`, so `REQUIRED` here usually means the provider was never named — add it as in [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers) |
 | `PROVIDER_EXTRA_KYC` | The provider wants details of its own beyond the share |
 
 | Field | Meaning |
