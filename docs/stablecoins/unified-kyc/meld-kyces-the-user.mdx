@@ -43,7 +43,7 @@ This step is required for the user to skip logging into the onramp, and is a one
   },
   "email": "test@user.com",
   "dateOfBirth": "1990-01-30",
-  "phone": "+15551234567",
+  "phone": "+12025550123",
   "externalCustomerId": "testUser1"  // optional, for you to pass in your own reference id for the user
 }
 ```
@@ -64,7 +64,7 @@ This step is required for the user to skip logging into the onramp, and is a one
   },
   "email": "test@user.com",
   "dateOfBirth": "1990-01-30",
-  "phone": "+15551234567",
+  "phone": "+12025550123",
   "externalCustomerId": "testUser1",
   "id": "WmYumpKThCLWdgdK4fu2oh", // customerId to pass into /widget
   "key": "N/A",
@@ -96,7 +96,7 @@ If the user has been KYCed successfully, then you do not have to KYC the user ag
   },
   "dateOfBirth": "1990-01-30",
   "email": "test@user.com",
-  "phone": "+15551234567",
+  "phone": "+12025550123",
   "addresses": [],
   "serviceProviderCustomers": [
   {
@@ -123,7 +123,7 @@ If the user has not been successfully KYCed, then either `serviceProviderCustome
 
 ## Step 3: Have Meld KYC the User
 
-This step is only needed if the user isn't already successfully KYCed. In other words, if the value of `serviceProviderCustomers.kyc.status` in the previous step is `APPROVED` then you can skip this step.
+This step is only needed if the user isn't already successfully KYCed. In other words, if the value of `serviceProviderCustomers.kyc.status` in the previous step is `APPROVED` then you can skip starting a new KYC — but you still need to [share it](/docs/stablecoins/unified-kyc#share-kyc-with-providers) with any provider the customer has not been shared to yet.
 
 To KYC the user, call `POST /accounts/customers/{customerId}/kyc/initiate`. The `customerId` is in the path.
 
@@ -134,11 +134,14 @@ _Note that Sumsub is being used as the sample KYC provider in these requests._
 ```json
 {
   "serviceProvider": "SUMSUB",
-  "mode": "HOSTED_URL"
+  "mode": "HOSTED_URL",
+  "kycShareProviders": ["BANXA"]
 }
 ```
 
 The response will include a `url` that you should then launch from your UI.
+
+`kycShareProviders` names the onramps Meld shares this verification with once it is approved. See [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers).
 
 #### Response
 

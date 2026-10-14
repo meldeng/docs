@@ -95,7 +95,7 @@ This step is required for the user to skip logging into the onramp, and is a one
   },
   "email": "jane.doe@example.com",
   "dateOfBirth": "1990-01-30",
-  "phone": "+15551234567",
+  "phone": "+12025550123",
   "externalCustomerId": "your-internal-user-id"
 }
 ```
@@ -119,7 +119,7 @@ This step is required for the user to skip logging into the onramp, and is a one
   },
   "email": "jane.doe@example.com",
   "dateOfBirth": "1990-01-30",
-  "phone": "+15551234567",
+  "phone": "+12025550123",
   "status": "ACTIVE"
 }
 ```
@@ -165,7 +165,7 @@ Generate the KYC share token for client id `meld.io_75082` (the exact steps depe
 | `mode` | Yes | `TOKEN_IMPORT` |
 | `serviceProviderDetails.kycToken` | Yes | KYC provider share/access token issued for `meld.io_75082` |
 | `serviceProviderDetails.applicantId` | Yes | KYC provider's applicant id for the user |
-| `kycShareProviders` | No | Optional set of additional Meld onramps to share KYC with after approval |
+| `kycShareProviders` | No | Optional set of additional Meld onramps to share KYC with after approval. See [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers) |
 
 #### **Response**
 
@@ -204,7 +204,7 @@ Send **multipart/form-data**. Do **not** send this mode as JSON — `RAW_DATA_IM
     "lastName": "Doe",
     "dob": "1990-01-15",
     "nationality": "USA",
-    "phone": "+15551234567",
+    "phone": "+12025550123",
     "email": "jane.doe@example.com",
     "tin": "123-45-6789",
     "taxResidenceCountry": "USA",
@@ -258,7 +258,7 @@ Send **multipart/form-data**. Do **not** send this mode as JSON — `RAW_DATA_IM
 | `documents[].idDocType` | Yes | `PASSPORT`, `ID_CARD`, `DRIVERS`, `RESIDENCE_PERMIT`, or `SELFIE` |
 | `documents[].idDocSubType` | No | `FRONT_SIDE` / `BACK_SIDE` for double-sided docs; omit for single-sided types like `PASSPORT` and `SELFIE` |
 | `documents[].country` | No | 3-letter issuing country code |
-| `kycShareProviders` | No | Optional set of additional providers to share KYC with after approval |
+| `kycShareProviders` | No | Optional set of additional providers to share KYC with after approval. See [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers) |
 
 #### Example (curl)
 
@@ -273,7 +273,7 @@ curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/initiate" 
       "lastName":"Doe",
       "dob":"1990-01-15",
       "nationality":"USA",
-      "phone":"+15551234567",
+      "phone":"+12025550123",
       "email":"jane.doe@example.com",
       "taxResidenceCountry":"USA",
       "address":{"country":"USA","street":"1 Main St","town":"Springfield","state":"IL","postCode":"62704"},

@@ -39,3 +39,19 @@ flowchart TD
     classDef submit fill:#D1FAE5,stroke:#059669,stroke-width:2px,color:#064E3B
     classDef retrieve fill:#EDE9FE,stroke:#7C3AED,stroke-width:2px,color:#4C1D95
 ```
+
+## Share KYC with providers
+
+Approving a customer does not on its own reach every onramp. Providers that take their KYC as a share from Meld, such as Banxa, receive it only if you name them in `kycShareProviders` on `kyc/initiate`. This works the same whichever flow starts the KYC: `HOSTED_URL`, `TOKEN_IMPORT` or `RAW_DATA_IMPORT`.
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "HOSTED_URL",
+  "kycShareProviders": ["BANXA"]
+}
+```
+
+- **Name every provider you will order with** whose KYC comes from a share. Meld shares with each one once the customer is approved. A provider left out never receives the customer's KYC, and its orders are refused with `403 KYC_NOT_COMPLETED`. [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility#kyc-requirements) reports this as `PROVIDER_KYC_SHARE` for the provider.
+- **To add a provider for a customer who is already approved**, call `PATCH /accounts/customers/{customerId}/kyc/initiate` with the same body, naming the new provider in `kycShareProviders`. `serviceProvider` and `mode` are still required. Meld shares straight away, without sending the customer through KYC again.
+- **A `POST` naming a provider the customer was already shared with** returns `409`. Use the `PATCH` instead.
