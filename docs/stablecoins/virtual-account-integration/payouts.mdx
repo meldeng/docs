@@ -260,6 +260,44 @@ Response:
 
 Capture the selected `serviceProvider` and amounts for order creation. Quote coverage varies by provider and rail. Headless rows include `kycMode` (`ASYNC` or `SYNC`).
 
+### Quote by payout amount, with a quote id (`Meld-Version: 2026-09-01`)
+
+On `Meld-Version: 2026-09-01` the same request takes **exactly one** of `sourceAmount` and `destinationAmount`
+(both, or neither, is a 400). `destinationAmount` asks for the crypto amount to send so the customer receives exactly
+that fiat amount; only providers that can quote by payout amount answer it (today: **DLOCAL**), the others are left
+out. With `integrationMode=HEADLESS` (or `ALL`, over its HEADLESS rows) the response carries a top-level `id`:
+
+```json
+{
+  "countryCode": "CO",
+  "destinationAmount": 400000,
+  "sourceCurrencyCode": "PYUSD_SOLANA",
+  "destinationCurrencyCode": "COP",
+  "paymentMethodType": "CO_BANK_TRANSFER",
+  "serviceProviders": ["DLOCAL"]
+}
+```
+
+```json
+{
+  "id": "WePXaTBtxJ3qkYfPWGhtLD",
+  "quotes": [
+    {
+      "transactionType": "CRYPTO_SELL",
+      "sourceAmount": 134.30,
+      "sourceCurrencyCode": "PYUSD_SOLANA",
+      "destinationAmount": 400000.00,
+      "destinationCurrencyCode": "COP",
+      "serviceProvider": "DLOCAL",
+      "integrationMode": "HEADLESS"
+    }
+  ]
+}
+```
+
+Create the order with that `id` as `quoteId` (section 5) to get exactly these amounts. Older versions are unchanged
+and carry no `id`.
+
 ---
 
 ## 5. Create a headless offramp order
@@ -273,6 +311,45 @@ Capture the selected `serviceProvider` and amounts for order creation. Quote cov
 - Successful create → HTTP **201**
 - Same key after success → cached body, HTTP **200**
 - After a failed attempt that left an empty idempotency row → HTTP **425 TOO\_EARLY** — mint a **new** key
+
+### Creating the order from a quote
+
+Send the 2026-09-01 quote's `id` as `quoteId`, with exactly one of `destinationAmount` and `sourceAmount` as quoted,
+the quote's `serviceProvider`, currencies, `countryCode` and payout method. `sourceAmount` may then be omitted: the response returns it — the
+exact crypto amount to send.
+
+```json
+{
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "quoteId": "WePXaTBtxJ3qkYfPWGhtLD",
+  "destinationAmount": 400000,
+  "sourceCurrencyCode": "PYUSD_SOLANA",
+  "destinationCurrencyCode": "COP",
+  "countryCode": "CO",
+  "serviceProvider": "DLOCAL",
+  "fiatPayoutMethod": { "type": "CO_BANK_TRANSFER", "details": { "...": "..." } }
+}
+```
+
+- The provider is **not** quoted again: the order carries the quote's provider-side reference, so the payout is
+  exactly the quoted `destinationAmount` for the quoted `sourceAmount`.
+- A quote creates **one** order, within **10 minutes** of being issued (and before the provider's own quote expires —
+  dLocal's sandbox quotes last 60 seconds).
+- Checked before any provider call; a rejected order is not created:
+
+| Code | HTTP | When |
+| --- | --- | --- |
+| `QUOTE_EXPIRED` | 400 | The `quoteId` is unknown or another account's, was issued more than 10 minutes ago, or the provider's quote behind it has expired. Request a new quote. |
+| `QUOTE_ORDER_MISMATCH` | 400 | The quote has no quote from `serviceProvider`, or `sourceCurrencyCode`, `destinationCurrencyCode`, `countryCode`, `fiatPayoutMethod.type` (the quote's `paymentMethodType`), `destinationAmount` or `sourceAmount` differs from it — `errors` names the field. Also when the quote was already used (`errors`: `quoteId`). |
+
+- A rejected order does **not** use the quote up — rejected by Meld before reaching the provider (e.g.
+  `SOURCE_WALLET_INVALID`) or refused by the provider (4xx). A corrected order on the same `quoteId` can follow.
+- If the provider call fails (5xx) or times out, Meld asks the provider whether it created the payout. If it did,
+  the order is created as normal (201). If it did not, the order fails and the quote **stays used**, because the
+  provider may still be creating the payout — request a new quote rather than retrying on it.
+- **Retry a timed-out create with the same `X-Idempotency-Key`**: it returns the first order. A new key on a quote
+  whose order was created is `QUOTE_ORDER_MISMATCH`.
+- `quoteId` is optional; an order without one behaves as before (the provider is quoted at order time).
 
 ### ACH / bank payout example
 
@@ -368,6 +445,7 @@ Provider support for each type is account- and rail-specific.
 | `id` | Meld headless order id. Webhooks do not carry it — match them via `paymentTransactionId`, then read `orderId` from `GET /payments/transactions/{paymentTransactionId}` |
 | `paymentMethodType` | Fiat payout rail used |
 | `walletAddress` | Provider-issued address the user must send **crypto** to |
+| `sourceAmount` | Crypto amount to send. On an order created from a `quoteId`, the quote's `sourceAmount` |
 
 <Warning>
 **`SERVICE_PROVIDER_ERROR` on create.** A `500` reading `CryptoAuthorizedAmount <n> exceeds customer deposit <m> — rate may have moved` means the provider re-priced between your quote and the order. Take a fresh quote and submit the order with the amount from that quote rather than a rounded figure, and mint a new `X-Idempotency-Key` for the retry.
