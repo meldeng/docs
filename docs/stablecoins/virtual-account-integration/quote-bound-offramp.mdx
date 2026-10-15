@@ -1,0 +1,145 @@
+---
+title: "Quote-bound offramp orders (internal)"
+noindex: true
+---
+
+<Note>
+**Internal, not linked.** This page is not in the navigation or search. It adds to the
+[Payouts (Offramp) Full Integration Guide](/docs/stablecoins/virtual-account-integration/payouts): quoting by payout
+amount with a quote id, and creating a headless offramp order at exactly the quoted amounts.
+</Note>
+
+## Quote by payout amount, with a quote id (`Meld-Version: 2026-09-01`)
+
+On `Meld-Version: 2026-09-01`, `POST /payments/crypto/quote` takes **exactly one** of `sourceAmount` and
+`destinationAmount` (both, or neither, is a 400). `destinationAmount` asks for the crypto amount to send so the
+customer receives exactly that fiat amount; only providers that can quote by payout amount answer it (today:
+**DLOCAL**), the others are left out. With `integrationMode=HEADLESS` (or `ALL`, over its HEADLESS rows) the response
+carries a top-level `id`:
+
+```json
+{
+  "countryCode": "CO",
+  "destinationAmount": 400000,
+  "sourceCurrencyCode": "PYUSD_SOLANA",
+  "destinationCurrencyCode": "COP",
+  "paymentMethodType": "CO_BANK_TRANSFER",
+  "serviceProviders": ["DLOCAL"]
+}
+```
+
+```json
+{
+  "id": "WePXaTBtxJ3qkYfPWGhtLD",
+  "quotes": [
+    {
+      "transactionType": "CRYPTO_SELL",
+      "sourceAmount": 140.343838,
+      "sourceAmountWithoutFees": 134.30,
+      "sourceCurrencyCode": "PYUSD_SOLANA",
+      "destinationAmount": 400000.00,
+      "destinationCurrencyCode": "COP",
+      "serviceProvider": "DLOCAL",
+      "integrationMode": "HEADLESS"
+    }
+  ]
+}
+```
+
+`sourceAmount` is the whole amount to send: at dLocal it includes dLocal's fee (`sourceAmountWithoutFees` is the
+amount before it). This `id` is a price reference only: an order can't be created from it. To create an order at
+exactly the quoted amounts, use the partner quote, `POST /payments/partner/quote`, which is enabled per account (ask
+your Meld contact), and send its `id` as `quoteId` (below). Older versions are unchanged and carry no `id`.
+
+## Creating the order from a quote
+
+Send the partner quote's `id` (`POST /payments/partner/quote`) as `quoteId` on
+`POST /crypto/order/headless/offramp`, with exactly one of `destinationAmount` and `sourceAmount` as quoted, the
+quote's `serviceProvider`, currencies, `countryCode` and payout method. Request the quote with the payout method the
+order will use: the order's `fiatPayoutMethod.type` must equal the quote's `paymentMethodType`. `sourceAmount` may then
+be omitted: the response returns it — the exact crypto amount to send. The other required fields
+(`sourceWalletAddress`, `fiatPayoutMethod.owner` and `details`) are still sent as on any order.
+
+```json
+{
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "quoteId": "WePXaTBtxJ3qkYfPWGhtLD",
+  "destinationAmount": 400000,
+  "sourceCurrencyCode": "PYUSD_SOLANA",
+  "destinationCurrencyCode": "COP",
+  "countryCode": "CO",
+  "serviceProvider": "DLOCAL",
+  "sourceWalletAddress": "7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV",
+  "fiatPayoutMethod": {
+    "type": "CO_BANK_TRANSFER",
+    "owner": "Juan Pérez",
+    "details": { "...": "..." }
+  }
+}
+```
+
+- At **DLOCAL** and **DUENETWORK** the provider is **not** quoted again: the order carries the quote's provider-side
+  reference, so the payout is exactly the quoted `destinationAmount` for the quoted `sourceAmount`.
+- At **YELLOWCARD** there is no provider-side reference (its quote has no id to send back), so the lock is taken at
+  order time instead: Meld creates the Yellow Card payment unapproved, checks that it pays out the quoted
+  `destinationAmount` for no more than the quoted `sourceAmount`, and only then approves it. Otherwise it is cancelled,
+  nothing is paid out, and the order is `QUOTE_ORDER_MISMATCH` (`errors` names the field). The `sourceAmount` to send
+  can therefore be lower than the quoted one; always send the order response's `sourceAmount`. Yellow Card prices in
+  whole cents, so its quote shows the smallest payout at or above the amount you asked for.
+- Only a partner quote's `id` works. An `id` from `POST /payments/crypto/quote` is `QUOTE_ORDER_MISMATCH`
+  (`errors`: `quoteId`).
+- Only **DLOCAL**, **DUENETWORK** and **YELLOWCARD** orders can be created from a quote. An order with a `quoteId` for
+  another provider is `QUOTE_ORDER_MISMATCH` (`errors`: `serviceProvider`); order those without a `quoteId`.
+- A quote made for a customer (`externalCustomerId` on the partner quote request, the `externalId` you gave the
+  customer) can only be used by an order for that customer; another customer's order is `QUOTE_ORDER_MISMATCH`
+  (`errors`: `customerId`). Due Network quotes need the customer: without `externalCustomerId`, Due Network is left
+  out of the quote. A request for Due Network alone without `externalCustomerId` returns HTTP 422 with no quote.
+- A quote creates **one** order, within **10 minutes** of being issued (and before the provider's own quote expires —
+  dLocal's sandbox quotes last 60 seconds, Due Network's 2 minutes). The expiry is checked again when the order is
+  sent to the provider.
+
+### Errors
+
+These are checked **before any provider call**; nothing is sent to the provider and no order is created:
+
+| Code | HTTP | When |
+| --- | --- | --- |
+| `QUOTE_EXPIRED` | 400 | The `quoteId` is unknown or another account's, was issued more than 10 minutes ago, or the provider's quote behind it has expired. Request a new quote. |
+| `QUOTE_ORDER_MISMATCH` | 400 | The quote isn't a partner quote (`errors`: `quoteId`), `serviceProvider` can't take orders from a quote (only DLOCAL, DUENETWORK and YELLOWCARD can), the quote was made for another customer, the quote has no quote from `serviceProvider`, or `sourceCurrencyCode`, `destinationCurrencyCode`, `countryCode`, `fiatPayoutMethod.type` (the quote's `paymentMethodType`), `destinationAmount` or `sourceAmount` differs from it — `errors` names the field. Also when the quote was already used (`errors`: `quoteId`). |
+
+At **YELLOWCARD** two more failures are found **after** the provider call, once the unapproved Yellow Card payment
+exists. Meld cancels that payment, nothing is paid out, and no order is created:
+
+| Code | HTTP | When |
+| --- | --- | --- |
+| `QUOTE_EXPIRED` | 400 | Yellow Card's payment expired before Meld could approve it. |
+| `QUOTE_ORDER_MISMATCH` | 400 | Yellow Card's payment doesn't pay out the quoted `destinationAmount`, or asks for more than the quoted `sourceAmount` — `errors` names the field. |
+
+### Retries and failures
+
+- A rejected order does **not** use the quote up — rejected by Meld before reaching the provider (e.g.
+  `SOURCE_WALLET_INVALID`) or refused by the provider (4xx). A corrected order on the same `quoteId` can follow.
+- If the provider call fails (5xx) or times out, the quote **stays used** — request a new quote rather than retrying
+  on it with a new key.
+  - At **DLOCAL**, Meld first asks dLocal whether it created the payout; if it did, the order is created as normal
+    (201), and a retry with the same `X-Idempotency-Key` returns it.
+  - At **DUENETWORK** the order fails, no order is created and no `walletAddress` is returned (a Due transfer moves
+    nothing until it is funded, so one Due may have created expires unfunded). Retrying the same key can
+    return HTTP **425 TOO\_EARLY**, as for any failed attempt that left an empty idempotency row (see the payouts
+    guide, section 5): stop retrying it, take a new quote and order with a new key.
+- **Retry a timed-out create with the same `X-Idempotency-Key`**: if the first attempt created the order, it returns
+  that order (HTTP 200); if it created none, there is no order to return (it can answer 425, as above). A new key on a quote whose order was created is
+  `QUOTE_ORDER_MISMATCH`.
+- `quoteId` is optional; an order without one behaves as before (the provider is quoted at order time).
+
+## The order response and funding
+
+The order response carries `sourceAmount`: the crypto amount to send. On an order created from a `quoteId` it is the
+quote's `sourceAmount` (at Yellow Card, possibly lower; see above). Fund the order with exactly the response's
+`sourceAmount` of the request's `sourceCurrencyCode` to the response's `walletAddress` — the request may not carry a
+`sourceAmount` at all.
+
+At Due Network, `walletAddress` is Due's funding address for the order. Send exactly `sourceAmount` to it in one
+transaction, from the registered `sourceWalletAddress`. Nothing pays out until the deposit arrives: an unfunded Due
+transfer expires (after 2 hours in sandbox). A confirmed deposit only funds the transfer: the transaction is `SETTLING`
+while Due pays out, and the payout is final only when it reaches `SETTLED` (webhooks or the Transactions API).
