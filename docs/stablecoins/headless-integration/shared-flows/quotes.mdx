@@ -19,10 +19,14 @@ At `2026-05-01` each quote also carries fields the order needs:
 
 | Field | Use |
 | --- | --- |
-| `destinationNetworkCode` | The chain selected for this quote. Carry it into the order rather than choosing one |
+| `destinationNetworkCode` | The chain you asked for, returned only when the quote request named one |
 | `integrationMode` | Which mode this quote is for, when you asked for `ALL` |
 | `kycMode` | Who runs KYC for this provider |
 | `isNativeAvailable` | Whether this quote can present a native Apple Pay sheet |
+
+`destinationNetworkCode` is optional. If you send it, the quote returns the same value; if you don't, the quote leaves it out. The chain already comes from `destinationCurrencyCode` (for example, `USDC_BASE` is USDC on Base). Stripe is the exception: it returns a headless quote only when you send `destinationNetworkCode`.
+
+A `destinationNetworkCode` that doesn't match the chain in `destinationCurrencyCode`, for example `USDC_BASE` with `ETH`, returns `400 INVALID_CRYPTO_CURRENCY`.
 
 Pass `customerId` whenever you have one, so ramp intelligence and previously-used scoring apply.
 
