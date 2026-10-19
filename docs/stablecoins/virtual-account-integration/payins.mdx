@@ -21,7 +21,7 @@ Fetch deposit instructions **once** per customer \+ provider \+ payment method \
 </Note>
 
 - You have a webhook endpoint configured in **Developer → Webhooks** in the dashboard
-- At least one headless-capable onramp provider is enabled on your account (for example Noah, Due Network, Brale, or Yellowcard)
+- At least one headless-capable onramp provider is enabled on your account (for example Noah, Due Network, Uphold, Brale, or Yellowcard)
 - Your account has headless onramps enabled (`account_preference.crypto.headlessOnrampsEnabled`). Reach out to Meld support to confirm this is enabled.
 - If you are using Meld to KYC, then your Meld account must have Sumsub configured. Reach out to Meld for help enabling this if needed.
 
@@ -45,6 +45,19 @@ Customer → Webhooks → KYC → Fetch VA details (once) → [Quote] → User s
 5. (Optional) Get a quote for the amount the user wants to send.
 6. User sends fiat to the **same** stored VA details.
 7. Track via webhooks / Transactions API.
+
+---
+
+## Provider-specific requirements
+
+The flow below is the same for every provider. A few providers need something extra, listed here. Check the rows for the providers enabled on your account.
+
+| Provider | Code | What is different |
+| --- | --- | --- |
+| Noah | `NOAH` | After Sumsub is approved, Noah may ask for its own KYC step. Send the user to the provider link on the customer record (see step 3c). |
+| Due Network | `DUENETWORK` | Add a residential address before KYC. Due uses the address `country` when it creates the provider customer. Due also has its own terms of service, separate from KYC (see [Virtual Account Flow Testing Credentials](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials)). |
+| Uphold | `UPHOLD` | Add a residential address before KYC, and make sure the customer has an email. The address `country` must match the country of residence on the user's Sumsub profile. Uphold also needs a recorded terms-of-service acceptance; contact Meld to set this up. |
+| Brale | `BRALE` | Business customers only. Brale runs KYB itself, so it does not use the Sumsub share in step 3. |
 
 ---
 
@@ -93,9 +106,9 @@ Response:
 
 Save the returned `id`. You may also use `externalCustomerId` on some endpoints when supported.
 
-### Add a customer address (required for Due Network)
+### Add a customer address (when your provider requires it)
 
-If you plan to use **Due Network**, add a residential address before KYC. Due uses address `country` when creating / sharing the provider customer.
+Some providers need a residential address before KYC (see [Provider-specific requirements](#provider-specific-requirements)). Add it before you start KYC.
 
 **Endpoint:** `POST /accounts/customers/{customerId}/addresses`
 
@@ -170,13 +183,15 @@ Choose one Sumsub initiation mode:
 
 Both modes share KYC to the providers listed in `kycShareProviders` after Sumsub is approved. You still must wait for **each share provider** to reach `APPROVED` before deposit-instructions.
 
+List only the providers you plan to use. For virtual-account onramps, `NOAH`, `DUENETWORK` and `UPHOLD` accept a shared Sumsub KYC.
+
 ### 3a. `HOSTED_URL` — Meld returns a Sumsub link
 
 ```json
 {
   "serviceProvider": "SUMSUB",
   "mode": "HOSTED_URL",
-  "kycShareProviders": ["NOAH", "DUENETWORK"]
+  "kycShareProviders": ["NOAH", "DUENETWORK", "UPHOLD"]
 }
 ```
 
@@ -199,7 +214,7 @@ Direct the user to `url`. Listen for `CUSTOMER_KYC_STATUS_CHANGE`.
 {
   "serviceProvider": "SUMSUB",
   "mode": "TOKEN_IMPORT",
-  "kycShareProviders": ["NOAH", "DUENETWORK"],
+  "kycShareProviders": ["NOAH", "DUENETWORK", "UPHOLD"],
   "serviceProviderDetails": {
     "kycToken": "_act-sbx-jwt-…",
     "applicantId": "sumsub-applicant-id"
