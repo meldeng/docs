@@ -21,7 +21,7 @@ Fetch deposit instructions **once** per customer \+ provider \+ payment method \
 </Note>
 
 - You have a webhook endpoint configured in **Developer → Webhooks** in the dashboard
-- At least one headless-capable onramp provider is enabled on your account (for example Noah, Due Network, Uphold, Brale, or Yellowcard)
+- At least one headless-capable onramp provider is enabled on your account (for example Noah, Due Network, Uphold, or Brale)
 - Your account has headless onramps enabled (`account_preference.crypto.headlessOnrampsEnabled`). Reach out to Meld support to confirm this is enabled.
 - If you are using Meld to KYC, then your Meld account must have Sumsub configured. Reach out to Meld for help enabling this if needed.
 
@@ -50,14 +50,33 @@ Customer → Webhooks → KYC → Fetch VA details (once) → [Quote] → User s
 
 ## Provider-specific requirements
 
-The flow below is the same for every provider. A few providers need something extra, listed here. Check the rows for the providers enabled on your account.
+Most of this guide applies to every provider. Some providers need something extra or work differently. Check the rows for the providers enabled on your account.
 
 | Provider | Code | What is different |
 | --- | --- | --- |
 | Noah | `NOAH` | After Sumsub is approved, Noah may ask for its own KYC step. Send the user to the provider link on the customer record (see step 3c). |
-| Due Network | `DUENETWORK` | Add a residential address before KYC. Due uses the address `country` when it creates the provider customer. Due also has its own terms of service, separate from KYC (see [Virtual Account Flow Testing Credentials](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials)). |
-| Uphold | `UPHOLD` | Add a residential address before KYC, and make sure the customer has an email. The address `country` must match the country of residence on the user's Sumsub profile. Uphold also needs a recorded terms-of-service acceptance; contact Meld to set this up. |
+| Due Network | `DUENETWORK` | Add a residential address before KYC. Due uses the address `country` when it creates the provider customer. Due may also ask for its own KYC step (see step 3c). Due has its own terms of service, separate from KYC: while they are pending, the link is on the customer record at `serviceProviderCustomers[].kyc.additionalInfo.TosURL`. |
+| Uphold | `UPHOLD` | Add a residential address before KYC. Its `country` must match the country of residence on the user's Sumsub profile. Record the user's acceptance of Uphold's terms before KYC (see [Uphold terms of service](#uphold-terms-of-service)). |
 | Brale | `BRALE` | Business customers only. Brale runs KYB itself, so it does not use the Sumsub share in step 3. |
+
+### Uphold terms of service
+
+Meld needs a record of the user accepting Uphold's terms before it can create the user at Uphold. Do this before you start KYC.
+
+1. Get the terms to show the user: `GET /accounts/terms-of-service?serviceProvider=UPHOLD&purpose=ONBOARDING&country=US`. Each entry has a `code` and the content to show (`displayText`, a link or text depending on `displayTextType`). Uphold also has terms for bank deposits (`purpose=BANK_DEPOSIT`). Show and record those the same way.
+2. Record the acceptance: `POST /accounts/terms-of-service/acceptances`
+
+```json
+{
+  "externalCustomerId": "your-internal-user-id-123",
+  "serviceProvider": "UPHOLD",
+  "code": "<code from step 1>",
+  "acceptedAt": "2026-10-19T10:24:11Z",
+  "ipAddress": "203.0.113.24"
+}
+```
+
+Use the same value you sent as `externalId` when you created the customer. `ipAddress` is the IP the user accepted from, and it is required.
 
 ---
 
@@ -167,7 +186,7 @@ Verify signatures per Webhook authentication docs.
 
 ## 3. KYC
 
-Standing virtual-account providers use **ASYNC** KYC: initiate once per (customer, provider) **before** fetching deposit instructions, then wait for provider KYC `APPROVED`.
+Initiate KYC once per (customer, provider) **before** fetching deposit instructions, then wait for provider KYC `APPROVED`.
 
 **Endpoints:**
 
