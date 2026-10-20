@@ -21,7 +21,7 @@ Fetch deposit instructions **once** per customer \+ provider \+ payment method \
 </Note>
 
 - You have a webhook endpoint configured in **Developer → Webhooks** in the dashboard
-- At least one headless-capable onramp provider is enabled on your account (for example Noah, Due Network, Uphold, or Brale)
+- At least one headless-capable onramp provider is enabled on your account (for example Noah, Due Network, or Brale)
 - Your account has headless onramps enabled (`account_preference.crypto.headlessOnrampsEnabled`). Reach out to Meld support to confirm this is enabled.
 - If you are using Meld to KYC, then your Meld account must have Sumsub configured. Reach out to Meld for help enabling this if needed.
 
@@ -56,27 +56,7 @@ Most of this guide applies to every provider. Some providers need something extr
 | --- | --- | --- |
 | Noah | `NOAH` | After Sumsub is approved, Noah may ask for its own KYC step. Send the user to the provider link on the customer record (see step 3c). |
 | Due Network | `DUENETWORK` | Add a residential address before KYC. Due uses the address `country` when it creates the provider customer. Due may also ask for its own KYC step (see step 3c). Due has its own terms of service, separate from KYC: while they are pending, the link is on the customer record at `serviceProviderCustomers[].kyc.additionalInfo.TosURL`. |
-| Uphold | `UPHOLD` | Add a residential address before KYC. Its `country` must match the country of residence on the user's Sumsub profile. Record the user's acceptance of Uphold's terms before KYC (see [Uphold terms of service](#uphold-terms-of-service)). |
 | Brale | `BRALE` | Business customers only. Brale runs KYB itself, so it does not use the Sumsub share in step 3. |
-
-### Uphold terms of service
-
-Meld needs a record of the user accepting Uphold's terms before it can create the user at Uphold. Do this before you start KYC.
-
-1. Get the terms to show the user: `GET /accounts/terms-of-service?serviceProvider=UPHOLD&purpose=ONBOARDING&country=US`. Each entry has a `code` and the content to show (`displayText`, a link or text depending on `displayTextType`). Uphold also has terms for bank deposits (`purpose=BANK_DEPOSIT`). Show and record those the same way.
-2. Record the acceptance: `POST /accounts/terms-of-service/acceptances`
-
-```json
-{
-  "externalCustomerId": "your-internal-user-id-123",
-  "serviceProvider": "UPHOLD",
-  "code": "<code from step 1>",
-  "acceptedAt": "2026-10-19T10:24:11Z",
-  "ipAddress": "203.0.113.24"
-}
-```
-
-Use the same value you sent as `externalId` when you created the customer. `ipAddress` is the IP the user accepted from, and it is required.
 
 ---
 
@@ -202,7 +182,7 @@ Choose one Sumsub initiation mode:
 
 Both modes share KYC to the providers listed in `kycShareProviders` after Sumsub is approved. You still must wait for **each share provider** to reach `APPROVED` before deposit-instructions.
 
-List only the providers you plan to use. For virtual-account onramps, `NOAH`, `DUENETWORK` and `UPHOLD` accept a shared Sumsub KYC.
+List only the providers you plan to use. For virtual-account onramps, `NOAH` and `DUENETWORK` accept a shared Sumsub KYC.
 
 ### 3a. `HOSTED_URL` — Meld returns a Sumsub link
 
@@ -210,7 +190,7 @@ List only the providers you plan to use. For virtual-account onramps, `NOAH`, `D
 {
   "serviceProvider": "SUMSUB",
   "mode": "HOSTED_URL",
-  "kycShareProviders": ["NOAH", "DUENETWORK", "UPHOLD"]
+  "kycShareProviders": ["NOAH", "DUENETWORK"]
 }
 ```
 
@@ -233,7 +213,7 @@ Direct the user to `url`. Listen for `CUSTOMER_KYC_STATUS_CHANGE`.
 {
   "serviceProvider": "SUMSUB",
   "mode": "TOKEN_IMPORT",
-  "kycShareProviders": ["NOAH", "DUENETWORK", "UPHOLD"],
+  "kycShareProviders": ["NOAH", "DUENETWORK"],
   "serviceProviderDetails": {
     "kycToken": "_act-sbx-jwt-…",
     "applicantId": "sumsub-applicant-id"
