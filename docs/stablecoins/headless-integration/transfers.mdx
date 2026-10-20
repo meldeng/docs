@@ -82,13 +82,13 @@ curl 'https://api-sb.meld.io/network-partner/supported/currencies?category=CRYPT
 | --- | --- |
 | `category` | `CRYPTO_TRANSFER` |
 | `country` | `US` |
-| `subdivision` | Optional. The customer's state, as you will send it on the order |
-| `partner` | `COINBASEPAY`. The name is singular on this endpoint. Any other name, such as `partners`, is ignored, and the list then includes assets from other transfer providers, not only Coinbase |
+| `subdivision` | Optional. The customer's state, ISO 3166-2, for example `US-CA` |
+| `partner` | `COINBASEPAY`. Use `partner` (singular). `partners` is ignored and returns every transfer provider's assets |
 | `type` | `CRYPTO` |
 
 Each row is an asset Meld accepts for the provider's transfers. Use the row's `currencyCode` as the order's `currencyCode`, and its `chainCode` as the order's `networkCode`, exactly as returned. For example, USDC on Base is `currencyCode: USDC_BASE` with `networkCode: BASE`. An order for an asset that is not on the list is refused.
 
-For Coinbase, Meld builds this list from the assets and networks Coinbase offers for purchase, so it is long and sorted by `currencyCode`. Meld does not check each row against what Coinbase can send. If Coinbase declines a send, the order ends with `START_NEW_ORDER` and `PROVIDER_DECLINED`.
+For Coinbase, Meld builds this list from the assets and networks Coinbase offers for purchase, so it is long and sorted by `currencyCode`. Some listed assets may not be sendable from the customer's Coinbase account. If Coinbase declines a send, the order ends with `START_NEW_ORDER` and `PROVIDER_DECLINED`.
 
 Read the list rather than hardcoding it. Show the customer only the rows your product supports, or let them search it.
 
@@ -232,7 +232,7 @@ Errors use the [standard envelope](/docs/meld-api/error-responses).
 | `429` | `TRANSFER_RATE_LIMITED` | The customer created too many transfer orders in the last hour | Retry later |
 | `500` | `SERVICE_PROVIDER_PROPERTIES_ERROR` | Meld could not look up transfer routes. The error is temporary | Retry later with the same `X-Idempotency-Key` |
 
-You can retry any `5xx` on order creation later with the same `X-Idempotency-Key` and the same body. For a couple of minutes the retry may return `425`; keep retrying with the same key.
+You can retry any `5xx` on order creation later with the same `X-Idempotency-Key` and the same body. For up to a few minutes, a retry may return `425 Too Early`; keep retrying with the same key.
 
 ---
 
@@ -416,7 +416,7 @@ Ask the customer for the code, then send it with a new key for each code:
 `WAIT_FOR_PROVIDER` means the provider is working on the send. Rely on [webhooks](#4-settlement-and-webhooks) for the outcome. To show progress, poll `READ_SUBMISSION` every few seconds. It does not call the provider or replace the action token.
 
 <Warning>
-After a `503` with `status: UNKNOWN` from `SUBMIT_TRANSFER` or `SUBMIT_SECOND_FACTOR`, the send may have gone through. Never create a new order for the same transfer. Poll `READ_SUBMISSION` until `next` moves on. Meld looks for the send for 30 minutes. If it has not found it by then, the order stays at `WAIT_FOR_PROVIDER` until Meld resolves it by hand. Until then the customer cannot send from another order or [unlink](#unlink), so contact Meld with the order id.
+After a `503` with `status: UNKNOWN` from `SUBMIT_TRANSFER` or `SUBMIT_SECOND_FACTOR`, the send may have gone through. Never create a new order for the same transfer. Poll `READ_SUBMISSION` until `next` moves on. Meld looks for the send for 30 minutes. If it has not found it by then, the order stays at `WAIT_FOR_PROVIDER` until the Meld team resolves it manually. Until then the customer cannot send from another order or [unlink](#unlink), so contact Meld with the order id.
 </Warning>
 
 ### Action errors
