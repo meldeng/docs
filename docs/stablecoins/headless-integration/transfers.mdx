@@ -11,7 +11,7 @@ A customer links an account they hold at an exchange, then sends crypto from it 
 | --- | --- |
 | Provider | Coinbase, as `serviceProvider: COINBASEPAY` |
 | Customers | US only. Send `countryCode: US` |
-| Assets | The assets the provider lists for transfers. See [step 1](#1-find-what-can-be-transferred) |
+| Assets | The assets and networks Meld lists for the provider's transfers. See [step 1](#1-find-what-can-be-transferred) |
 | KYC | None by Meld. The customer signs in to their own account at the provider |
 | Clients | Mobile apps and websites. No Meld SDK is involved |
 | Environments | Sandbox, where transfers are simulated, and production, where they are live. See [Test in sandbox](#test-in-sandbox) |
@@ -20,7 +20,7 @@ A customer links an account they hold at an exchange, then sends crypto from it 
 
 ## Before you begin
 
-1. Ask your Meld representative to enable headless and transfers on your account, in sandbox first. Each environment is enabled separately
+1. Ask your Meld representative to enable headless and transfers on your account, in sandbox first. Each environment is enabled separately. Until headless and the provider are enabled on your account in an environment, creating an order there is refused. See [Errors on order creation](#errors-on-order-creation)
 2. [Create the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer)
 3. [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks). Transfers use the same transaction events as purchases
 4. Choose a `redirectUrl`. See [Redirect URL](#redirect-url)
@@ -73,14 +73,26 @@ sequenceDiagram
 **Endpoint:** `GET /network-partner/supported/currencies`
 
 ```bash
-curl 'https://api-sb.meld.io/network-partner/supported/currencies?category=CRYPTO_TRANSFER&country=US&partner=COINBASEPAY&type=CRYPTO' \
+curl 'https://api-sb.meld.io/network-partner/supported/currencies?category=CRYPTO_TRANSFER&country=US&subdivision=US-CA&partner=COINBASEPAY&type=CRYPTO' \
   -H 'Authorization: BASIC {apiKey}' \
   -H 'Accept: application/json'
 ```
 
-Each row is an asset the provider can send for your account. Use the row's `currencyCode` as the order's `currencyCode`, and its `chainCode` as the order's `networkCode`, exactly as returned. For example, USDC on Base is `currencyCode: USDC_BASE` with `networkCode: BASE`.
+| Parameter | Value |
+| --- | --- |
+| `category` | `CRYPTO_TRANSFER` |
+| `country` | `US` |
+| `subdivision` | Optional. The customer's state, ISO 3166-2, for example `US-CA` |
+| `partner` | `COINBASEPAY`. Use `partner` (singular). `partners` is ignored and returns every transfer provider's assets |
+| `type` | `CRYPTO` |
 
-Read the list rather than hardcoding it. An order for an asset that is not on it is refused.
+Each row is an asset Meld accepts for the provider's transfers. Use the row's `currencyCode` as the order's `currencyCode`, and its `chainCode` as the order's `networkCode`, exactly as returned. For example, USDC on Base is `currencyCode: USDC_BASE` with `networkCode: BASE`. An order for an asset that is not on the list is refused.
+
+For Coinbase, Meld builds this list from the assets and networks Coinbase offers for purchase, so it is long and sorted by `currencyCode`. Some listed assets may not be sendable from the customer's Coinbase account. If Coinbase declines a send, the order ends with `START_NEW_ORDER` and `PROVIDER_DECLINED`.
+
+Read the list rather than hardcoding it. Show the customer only the rows your product supports, or let them search it.
+
+The list does not show what the customer holds. Once they have an order and a link, [`LIST_SOURCE_ACCOUNTS`](#choose-the-source-account) shows their accounts in that order's asset.
 
 ---
 
@@ -95,6 +107,7 @@ Read the list rather than hardcoding it. An order for an asset that is not on it
   "customerId": "WmYYgvN8ukpV62N3m4u3ee",
   "externalOrderId": "transfer-7d41a2",
   "serviceProvider": "COINBASEPAY",
+  "transferMethod": "ACCOUNT_LINK",
   "currencyCode": "USDC_BASE",
   "networkCode": "BASE",
   "amount": 10.01,
@@ -110,6 +123,7 @@ Read the list rather than hardcoding it. An order for an asset that is not on it
 | `customerId` | yes | The Meld customer sending the crypto. `externalCustomerId` works instead |
 | `externalOrderId` | in sandbox | Your own reference for this order, unique per account. Sandbox settlement finds the order by it |
 | `serviceProvider` | yes | `COINBASEPAY` |
+| `transferMethod` | no | `ACCOUNT_LINK`, the only method Coinbase offers. Send it so your call keeps working if the provider adds another method |
 | `currencyCode` | yes | The asset, from [step 1](#1-find-what-can-be-transferred) |
 | `networkCode` | yes | The chain, from [step 1](#1-find-what-can-be-transferred) |
 | `amount` | yes | The amount that arrives in the wallet, in the asset. Greater than 0, with at most 12 integer digits and 20 decimal places. The provider debits any network fee from the customer's account on top of it |
@@ -210,12 +224,15 @@ Errors use the [standard envelope](/docs/meld-api/error-responses).
 | `400` | `CRYPTO_INVALID_DESTINATION_WALLET` | The tag is blank, or the address or tag has spaces or control characters, or is longer than 256 characters | Trim the value. Meld does not check the address against `networkCode`, so validate it before you create the order |
 | `400` | `INVALID_REDIRECT_URL` | `redirectUrl` breaks a [redirect rule](#redirect-url) | Fix the URL |
 | `400` | `EXTERNAL_ORDER_ID_NOT_UNIQUE` | You already used this `externalOrderId` | Generate a new one for each order |
-| `400` | `HEADLESS_NOT_SUPPORTED` | `serviceProvider` does not support transfers | Send a provider from [step 1](#1-find-what-can-be-transferred). If you did, contact Meld |
+| `400` | `HEADLESS_NOT_SUPPORTED` | `serviceProvider` does not support transfers, or does not offer `transferMethod` | Send a provider from [step 1](#1-find-what-can-be-transferred) and a method it offers. If you did, contact Meld |
 | `400` | `TRANSFER_JURISDICTION_UNSUPPORTED` | `countryCode` is not `US` | Offer transfers to US customers only |
 | `400` | `INVALID_CRYPTO_CURRENCY` | `currencyCode` and `networkCode` do not name exactly one transferable asset | Use a row from [step 1](#1-find-what-can-be-transferred) |
 | `403` | `WHITELABEL_NOT_ENABLED`, `TRANSFER_NOT_ENABLED` or `SERVICE_PROVIDER_NOT_ENABLED` | Headless, transfers or the provider is not set up on your account in this environment | Contact Meld |
 | `409` | `ROUTING_UNAVAILABLE` | The provider has no transfer route for your account, country and asset | Check [step 1](#1-find-what-can-be-transferred). If the asset is listed, contact Meld |
 | `429` | `TRANSFER_RATE_LIMITED` | The customer created too many transfer orders in the last hour | Retry later |
+| `500` | `SERVICE_PROVIDER_PROPERTIES_ERROR` | Meld could not look up transfer routes. The error is temporary | Retry later with the same `X-Idempotency-Key` |
+
+You can retry any `5xx` on order creation later with the same `X-Idempotency-Key` and the same body. For up to a few minutes, a retry may return `425 Too Early`; keep retrying with the same key.
 
 ---
 
@@ -399,7 +416,7 @@ Ask the customer for the code, then send it with a new key for each code:
 `WAIT_FOR_PROVIDER` means the provider is working on the send. Rely on [webhooks](#4-settlement-and-webhooks) for the outcome. To show progress, poll `READ_SUBMISSION` every few seconds. It does not call the provider or replace the action token.
 
 <Warning>
-After a `503` with `status: UNKNOWN` from `SUBMIT_TRANSFER` or `SUBMIT_SECOND_FACTOR`, the send may have gone through. Never create a new order for the same transfer. Poll `READ_SUBMISSION` until `next` moves on.
+After a `503` with `status: UNKNOWN` from `SUBMIT_TRANSFER` or `SUBMIT_SECOND_FACTOR`, the send may have gone through. Never create a new order for the same transfer. Poll `READ_SUBMISSION` until `next` moves on. Meld looks for the send for 30 minutes. If it has not found it by then, the order stays at `WAIT_FOR_PROVIDER` until the Meld team resolves it manually. Until then the customer cannot send from another order or [unlink](#unlink), so contact Meld with the order id.
 </Warning>
 
 ### Action errors
@@ -522,11 +539,16 @@ In sandbox, Meld simulates the provider:
 - Each customer gets their own simulated user, so you cannot test a link moving between customers
 - Sends stay pending until you [settle them](#settle-a-simulated-transfer)
 
-`LIST_SOURCE_ACCOUNTS` returns two simulated USDC accounts: `USDC Wallet` (250.00, eligible for amounts up to 250) and `USDC Vault` (0.00, never eligible). Sandbox does not decline a send from `USDC Vault`. To test a decline, use an amount ending in 4.
+`LIST_SOURCE_ACCOUNTS` returns simulated accounts for two assets:
+
+- For a USDC order, on any chain: `USDC Wallet` (250.00, eligible for amounts up to 250) and `USDC Vault` (0.00, never eligible)
+- For an ETH order: `ETH Wallet` (0.5, eligible for amounts up to 0.5)
+
+Any other asset returns no accounts, so test with USDC or ETH. Sandbox does not check or change balances, so it does not decline a send from an ineligible account. To test a decline, use an amount ending in 4.
 
 ### Pick a scenario with the amount
 
-The last digit of `amount` picks the scenario. Trailing zeros after the decimal point are ignored, so `1.50` counts as `1.5` and ends in 5.
+The last digit of `amount` picks the scenario. Trailing zeros after the decimal point are ignored, so `1.50` counts as `1.5` and ends in 5. Zeros before the decimal point count, so `20` ends in 0.
 
 | Last digit | Example | Scenario | What you see |
 | --- | --- | --- | --- |
@@ -536,9 +558,10 @@ The last digit of `amount` picks the scenario. Trailing zeros after the decimal 
 | 5 | `10.05` | Consent declined | The redirect carries `transferAuthorization=DECLINED`, and `next` is `AUTHORIZE_ACCOUNT` with `ACCOUNT_AUTHORIZATION_DECLINED` |
 | 6 | `10.06` | Unusable consent | `COMPLETE_ACCOUNT_AUTHORIZATION` returns `AUTHORIZE_ACCOUNT` with `ACCOUNT_AUTHORIZATION_UNUSABLE` |
 | 7 | `10.07` | Every code refused | Every `SUBMIT_SECOND_FACTOR` is refused. After 5 attempts the order ends with `SECOND_FACTOR_EXHAUSTED` |
-| Any other | `10.01` | Success | The send succeeds |
+| 8 | `10.08` | Network fee | The send succeeds. The simulated provider takes a `0.01` network fee on top of `amount`, and Meld still settles the order at `amount`, so your responses and webhooks match a success |
+| 0, 1 or 9 | `10.01` | Success | The send succeeds |
 
-Scenarios 5 and 6 happen while linking, so they need a customer with no link. [Unlink](#unlink) first, or use a new customer. Running scenario 7 on two orders for one customer within 24 hours locks the link with `SECOND_FACTOR_LOCKED`.
+Scenarios 5 and 6 happen while linking, so they need a customer with no link. [Unlink](#unlink) first, or use a new customer. For a customer who is already linked, amounts ending in 5 or 6 send successfully. Running scenario 7 on two orders for one customer within 24 hours locks the link with `SECOND_FACTOR_LOCKED`.
 
 Spread scenario runs across customers: the [order limit](#limits) applies in sandbox too.
 
@@ -556,8 +579,11 @@ curl -X POST 'https://api-sb.meld.io/payments/mock/headless/simulate' \
 | HTTP | Meaning |
 | --- | --- |
 | `200` `{"transactionId": "..."}` | The transfer settled. `TRANSACTION_CRYPTO_COMPLETE` follows, and the order reads `SETTLED` with `COMPLETE`. Calling again on a settled order returns the same `transactionId` |
-| `409` `TRANSFER_IN_PROGRESS` | There is no accepted send to settle yet. Call again only while the order's `next.nextStep` is `WAIT_FOR_PROVIDER`. An order that ended, or was never submitted, keeps returning `409` |
-| `404` | Your account has no order with that `externalOrderId` |
+| `400` `BAD_REQUEST` | `externalOrderId` is missing or blank. `errors` names the field |
+| `400` `TRANSACTION_INVALID_PARAMETER` | The order is not simulated (`providerMode: LIVE`). Only simulated orders can be settled here |
+| `404` | Your account has no order with that `externalOrderId`. The response has no body |
+| `409` `TRANSFER_IN_PROGRESS` | There is no accepted send to settle yet, or Meld has not finished settling it. Call again only while the order's `next.nextStep` is `WAIT_FOR_PROVIDER`. An order that ended, or was never submitted, keeps returning `409` |
+| `503` `SERVICE_PROVIDER_UNAVAILABLE` | Transfer simulation is switched off in this environment. Contact Meld |
 
 This endpoint exists only in sandbox.
 
