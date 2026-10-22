@@ -1,0 +1,245 @@
+---
+title: "Partner quotes and transaction fees"
+description: "Flat fee fields on the partner quote and transaction endpoints, at Meld-Version 2026-09-01."
+---
+
+Payout partners on the partner contract quote and read transactions through two endpoints that show every fee as a flat field. Fees are in the payout currency, with USD values beside them.
+
+| Endpoint | Use |
+| --- | --- |
+| `POST /payments/partner/quote` | Price a payout by the fiat amount the user receives. Its `id` is the `quoteId` that binds an order to the price. |
+| `GET /payments/partner/transactions?orderIds={orderId}` | Read the transaction of an order, with its amounts and fees. |
+| `GET /payments/partner/transactions/{paymentTransactionId}` | The same record, by transaction id. |
+
+<Note>
+  These endpoints are enabled per account. Ask your Meld contact to turn them on; otherwise they return `403`. Send `Meld-Version: 2026-09-01`.
+</Note>
+
+Every example on this page uses one payout: **400,000 COP funded with 100.00 PYUSD through dLocal**, at 4,040 COP per PYUSD, with a 4,000 COP provider fee and a 404 COP Meld fee.
+
+---
+
+## 1. Create a quote
+
+**Endpoint:** `POST /payments/partner/quote`
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `destinationAmount` | Yes | The fiat amount the user receives. Meld derives the crypto amount to send. |
+| `sourceCurrencyCode` | Yes | The crypto you send, for example `PYUSD_SOLANA`. |
+| `destinationCurrencyCode` | Yes | ISO 4217 payout currency, for example `COP`. |
+| `countryCode` | Yes | ISO 3166-1 alpha-2 payout country. |
+| `paymentMethodType` | Yes | The payout rail, for example `PAYOUT_TO_BANK` (the country's local bank rail). Use the rail the order will use: the order's `fiatPayoutMethod.type` must equal it. |
+| `externalCustomerId` | No | Your identifier for the end user. A quote made for a customer can only be used by an order for that customer. |
+| `serviceProviders` | No | Limits the quote to these providers. Omit it to quote all of yours. |
+
+`sourceAmount` is not accepted: the partner quote prices by payout amount only.
+
+```json
+{
+  "externalCustomerId": "your-user-1",
+  "destinationAmount": 400000,
+  "sourceCurrencyCode": "PYUSD_SOLANA",
+  "destinationCurrencyCode": "COP",
+  "countryCode": "CO",
+  "paymentMethodType": "PAYOUT_TO_BANK",
+  "serviceProviders": ["DLOCAL"]
+}
+```
+
+Response:
+
+```json
+{
+  "id": "WdLKzedwtKNeBj1af9p7D3",
+  "quotes": [
+    {
+      "transactionType": "CRYPTO_SELL",
+      "serviceProvider": "DLOCAL",
+      "sourceAmount": 100.00,
+      "sourceTotalAmount": 100.10,
+      "sourceCurrencyCode": "PYUSD_SOLANA",
+      "destinationAmount": 400000,
+      "destinationCurrencyCode": "COP",
+      "countryCode": "CO",
+      "exchangeRate": 4040,
+      "paymentMethodType": "PAYOUT_TO_BANK",
+      "totalFee": 4000,
+      "transactionFee": 4000,
+      "networkFee": 0,
+      "partnerFee": 0,
+      "customFee": 404,
+      "transactionFeeInUsd": 0.99,
+      "totalFeeInUsd": 0.99,
+      "customFeeInUsd": 0.10,
+      "customTotalFeeInUsd": 1.09,
+      "rampIntelligence": { "rampScore": 80, "previouslyUsed": "2023-11-07T05:31:56Z" }
+    }
+  ],
+  "message": null,
+  "error": null,
+  "timestamp": null
+}
+```
+
+### Quote fields
+
+| Field | Description |
+| --- | --- |
+| `sourceAmount` | The quoted crypto amount for the provider's debit. Does not include `customFee`. Fund the order with the **order response's** `sourceAmount`, which can be lower than this at Yellow Card. |
+| `sourceTotalAmount` | The total crypto to debit your user: `sourceAmount` plus `customFee` in the source currency. |
+| `destinationAmount` | The fiat amount the user receives. Echoes the request. |
+| `exchangeRate` | Units of destination currency per unit of source currency. |
+| `totalFee` | **The fees inside the provider's debit**, in the payout currency: `transactionFee + networkFee + partnerFee`. Never includes `customFee`. |
+| `transactionFee` | The provider's fee, in the payout currency. |
+| `networkFee` | The on-chain network fee, in the payout currency, where there is one. |
+| `partnerFee` | A fee the provider collects on someone else's behalf, in the payout currency. |
+| `customFee` | **Meld's fee**, in the payout currency. Invoiced to you, not taken by the provider, so it is outside `totalFee`. Calculated per provider, so it can differ between quotes. |
+| `transactionFeeInUsd`, `totalFeeInUsd`, `customFeeInUsd` | USD values of those fees. On a PYUSD sell they are also the PYUSD amounts. |
+| `customTotalFeeInUsd` | The provider's processing fee plus Meld's fee, in USD: `transactionFeeInUsd + customFeeInUsd`. **Excludes `networkFee` and `partnerFee`**, so it is not every fee when either is non-zero. |
+| `rampIntelligence.rampScore` | Routing signal from 0 to 100; higher is better. |
+| `rampIntelligence.previouslyUsed` | When this customer last used this provider. |
+
+`sourceAmountWithoutFees`, `destinationAmountWithoutFees` and `fiatAmountWithoutFees` are returned where the provider supplies them.
+
+### How the fees work
+
+- **There are two debits.** `totalFee` and its parts are taken inside the provider's debit, before your user is paid. `customFee` is Meld's fee, invoiced to you monthly and never taken from the transfer.
+- **Worked example:** (400,000 COP + 4,000 COP) ÷ 4,040 = 100.00 PYUSD to send. Meld's 404 COP fee is no part of that transfer.
+- **`customFee` is owed only on transactions that reach `SETTLED`.** On any other final status, including `REFUNDED`, no fee is due.
+- **`customFee` and `partnerFee` are never both charged.** `customFee` is set when Meld invoices its fee; `partnerFee` is set when the provider collects it instead. Where nothing is charged the value is `0`.
+- **`customTotalFeeInUsd` is the provider's fee plus Meld's fee.** `networkFee` and `partnerFee` are not in it.
+- **Crypto amounts have at most 6 decimal places**, which is what PYUSD supports.
+- **Send exactly the order response's `sourceAmount`.** It is the provider's own figure and is never rounded. At Yellow Card it can be lower than the quote's.
+- **`sourceTotalAmount` is rounded up to 6 decimal places.** Meld converts `customFee` at the quote's rate, so it can differ from `sourceAmount + customFeeInUsd` in the last decimals: `customFeeInUsd` is rounded to the cent for display. Rounding up means the total always covers the fee.
+- **A quote creates one order, and expires at the earlier of two deadlines:** 10 minutes after it is issued, or when the provider's own quote behind it expires. Some providers' quotes last only seconds or a couple of minutes, so create the order straight away. An expired quote returns `QUOTE_EXPIRED`; request a new one.
+
+<Warning>
+  **Send exactly the order response's `sourceAmount`** to the order response's `walletAddress`, not the quote's `sourceAmount`: at Yellow Card the order can need less crypto than quoted. Never add Meld's fee or send `sourceTotalAmount`: that is the wrong amount and does not reconcile.
+</Warning>
+
+---
+
+## 2. Create the order from the quote
+
+**Endpoint:** `POST /crypto/order/headless/offramp`
+
+Send the partner quote's `id` as `quoteId`, with the same values the quote was made for:
+
+- exactly one of `destinationAmount` and `sourceAmount`, as quoted (`sourceAmount` can be left out);
+- the quote's `serviceProvider`, `sourceCurrencyCode`, `destinationCurrencyCode` and `countryCode`;
+- `fiatPayoutMethod.type` equal to the quote's `paymentMethodType`;
+- the customer the quote was made for, if the quote request had `externalCustomerId`.
+
+The other required fields (`sourceWalletAddress`, `fiatPayoutMethod.owner` and `details`) are sent as on any order.
+
+```json
+{
+  "customerId": "WmYYgvN8ukpV62N3m4u3ee",
+  "quoteId": "WdLKzedwtKNeBj1af9p7D3",
+  "destinationAmount": 400000,
+  "sourceCurrencyCode": "PYUSD_SOLANA",
+  "destinationCurrencyCode": "COP",
+  "countryCode": "CO",
+  "serviceProvider": "DLOCAL",
+  "sourceWalletAddress": "7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV",
+  "fiatPayoutMethod": {
+    "type": "PAYOUT_TO_BANK",
+    "owner": "Juan Pérez",
+    "details": { "...": "..." }
+  }
+}
+```
+
+- **Only `DLOCAL`, `DUENETWORK` and `YELLOWCARD` orders can be created from a quote.** Order other providers without a `quoteId`.
+- **At dLocal and Due Network** the provider is not quoted again: the payout is exactly the quoted `destinationAmount` for the quoted `sourceAmount`.
+- **At Yellow Card** Meld checks the provider's payment before approving it: it must pay out the quoted `destinationAmount` for no more than the quoted `sourceAmount`. The amount to send can therefore be lower than quoted.
+- **Fund the order from its response:** send exactly the response's `sourceAmount` to the response's `walletAddress`.
+
+| Error | HTTP | Meaning |
+| --- | --- | --- |
+| `QUOTE_EXPIRED` | 400 | The quote is unknown, more than 10 minutes old, or the provider's quote behind it has expired. Request a new quote. |
+| `QUOTE_ORDER_MISMATCH` | 400 | The quote was already used, isn't a partner quote, was made for another customer, has no quote from `serviceProvider`, or a field differs from it. `errors` names the field. |
+
+---
+
+## 3. Read the transaction
+
+**Endpoint:** `GET /payments/partner/transactions?orderIds={orderId}`, or `GET /payments/partner/transactions/{paymentTransactionId}`
+
+A transaction exists once the deposit has reconciled. Read it when a webhook arrives. It carries `sourceTotalAmount` at the top level and the fees in `cryptoDetails`.
+
+```json
+{
+  "transaction": {
+    "id": "WmZjSbupHddtyFmC8ArRzS",
+    "orderId": "WfR7abcDEF12345xyz9876",
+    "externalOrderId": null,
+    "status": "SETTLED",
+    "serviceProvider": "DLOCAL",
+    "serviceProviderDid": null,
+    "serviceTransactionId": "6a164768-9ea5-564b-a314-a6e6128a4ae2",
+    "customer": { "externalId": "your-user-1" },
+    "sourceAmount": 100.00,
+    "sourceTotalAmount": 100.10,
+    "sourceCurrencyCode": "PYUSD_SOLANA",
+    "destinationAmount": 400000,
+    "destinationCurrencyCode": "COP",
+    "cryptoDetails": {
+      "destinationWalletAddress": null,
+      "sessionWalletAddress": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+      "refundWalletAddress": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+      "refundSourceWalletAddress": null,
+      "blockchainTransactionId": "5VERv8NMvzbJMEkV8xnrLkEaWRtSz9CosKDYjCJjBRnbJLgp8uirBgmQpjKhoR4tjF3ZpRzrFmBV6UjKdiSZkQUW",
+      "refundBlockchainTransactionId": null,
+      "refundAmount": null,
+      "totalFee": 4000,
+      "transactionFee": 4000,
+      "networkFee": 0,
+      "partnerFee": 0,
+      "customFee": 404,
+      "totalFeeInUsd": 0.99,
+      "transactionFeeInUsd": 0.99,
+      "networkFeeInUsd": 0,
+      "partnerFeeInUsd": 0,
+      "customFeeInUsd": 0.10,
+      "customTotalFeeInUsd": 1.09
+    },
+    "createdAt": "2026-04-02T23:25:05.216442Z",
+    "updatedAt": "2026-04-03T04:25:32.854288Z",
+    "key": null
+  }
+}
+```
+
+### Fee fields in `cryptoDetails`
+
+| Field | Description |
+| --- | --- |
+| `totalFee`, `transactionFee`, `networkFee`, `partnerFee` | As on the quote, in the payout currency. |
+| `customFee` | Meld's fee, in the payout currency. **Owed only when `status` is `SETTLED`.** On any other final status, including `REFUNDED`, no fee is due. |
+| `totalFeeInUsd`, `transactionFeeInUsd`, `networkFeeInUsd`, `partnerFeeInUsd`, `customFeeInUsd` | USD values of the fee fields. |
+| `customTotalFeeInUsd` | The provider's processing fee plus Meld's fee, in USD: `transactionFeeInUsd + customFeeInUsd`. Excludes `networkFeeInUsd` and `partnerFeeInUsd`. |
+
+- **A transaction starts with its quote's fees.** When the sale finishes, `customFee` is recalculated on the amount actually paid out. With a quote-bound order that is the quoted payout, so the figure matches the quote.
+- **A provider fee changes only when the provider reports a different one.**
+- **On a transaction not created from a quote, Meld charges no fee.** `customFee` and `customFeeInUsd` are `0`, `customTotalFeeInUsd` equals `transactionFeeInUsd`, and `sourceTotalAmount` equals `sourceAmount`.
+- **At dLocal, `cryptoDetails.destinationWalletAddress` is `null` today.** Fund the order from the order response's `walletAddress`.
+- **The refund fields, `externalOrderId` and `serviceProviderDid` are always present and `null` today.** Meld fills them in a later release; rely on the key set, not on a value.
+- Your all-in cost is `sourceTotalAmount`.
+
+### Paging the list
+
+- `limit` sets the page size: 10 by default, or the number of order ids you sent; at most 100.
+- Each transaction carries a `key`. For the next (older) page, send `after` with the last row's `key`. For the page before, send `before` with the first row's `key`. Sending both, or a key the list did not hand out, returns `400`.
+- `count` is the number of rows on the page, and `remaining` the number still to come. Rows are newest first.
+
+<Note>
+  `GET /payments/transactions` does not carry `customFee`, `customFeeInUsd`, `customTotalFeeInUsd` or `sourceTotalAmount`. Read them from the partner endpoints.
+</Note>
+
+---
+
+## Next
+
+Handle the order's status changes with [webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks).
