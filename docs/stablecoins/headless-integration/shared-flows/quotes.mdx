@@ -38,6 +38,61 @@ Pass `customerId` whenever you have one, so ramp intelligence and previously-use
   `integrationMode` arrived in `2026-05-01`. An older version **silently ignores it** — no error, no warning, just widget quotes. You then create a headless order against a provider that never offered one, and the failure surfaces at order creation instead.
 </Warning>
 
+## 3. Read the fees (`2026-09-01`)
+
+**Header:** `Meld-Version: 2026-09-01`, with `integrationMode=HEADLESS` (or `ALL`)
+
+On `2026-09-01` each quote itemises its fees in one `fees` object and adds `sourceTotalAmount`. The four flat fee fields — `totalFee`, `transactionFee`, `networkFee` and `partnerFee` — are not on this version. Without `integrationMode=HEADLESS` or `ALL`, the response is exactly the `2026-05-01` one.
+
+The same version also lets you quote a sell by the fiat amount your customer receives: send exactly one of `sourceAmount` and `destinationAmount` (both, or neither, is a `400`). Only providers that can quote by payout amount answer a `destinationAmount` request. The response carries a top-level `id`, which is a price reference only: an order cannot be created from it. To create an order at exactly the quoted amounts, use the partner quote and send its `id` as `quoteId`; see [Partner quotes and transaction fees](/docs/stablecoins/headless-integration/shared-flows/partner-fees#2-create-the-order-from-the-quote).
+
+A sell quote with a Meld fee on your account:
+
+```json
+{
+  "transactionType": "CRYPTO_SELL",
+  "serviceProvider": "DLOCAL",
+  "sourceAmount": 140.343838,
+  "sourceTotalAmount": 140.4841818370287074,
+  "sourceCurrencyCode": "PYUSD_SOLANA",
+  "destinationAmount": 400000.00,
+  "destinationCurrencyCode": "COP",
+  "exchangeRate": 2978.3994,
+  "fees": {
+    "currencyCode": "COP",
+    "items": [
+      { "type": "PROVIDER", "amount": 18000.00, "amountInUsd": 6.04, "collectedBy": "PROVIDER", "settlement": "DEDUCTED" },
+      { "type": "NETWORK", "amount": 0.00, "amountInUsd": 0.00, "collectedBy": "PROVIDER", "settlement": "DEDUCTED" },
+      { "type": "MELD", "amount": 418.00, "amountInUsd": 0.14, "collectedBy": "MELD", "settlement": "INVOICED" }
+    ],
+    "totalDeducted": 18000.00,
+    "totalDeductedInUsd": 6.04,
+    "totalInvoiced": 418.00,
+    "totalInvoicedInUsd": 0.14,
+    "totalInUsd": 6.18
+  },
+  "integrationMode": "HEADLESS"
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `fees.currencyCode` | Currency of every amount in `fees` except the `*InUsd` ones, which are in USD: the fiat side of the quote (the payout currency on a sell). |
+| `fees.items[].type` | What the fee is for: `PROVIDER` (the provider's processing fee), `NETWORK`, `PARTNER` (a partner fee the provider reports and collects), `MELD` (Meld's fee, from your account's fee schedule), `TAX` or `SWAP`. **An open set:** new values may appear within this version, so treat an unknown type as a label. |
+| `fees.items[].collectedBy` | `PROVIDER` or `MELD`. |
+| `fees.items[].settlement` | `DEDUCTED`: taken inside the provider's debit, covered by `sourceAmount`. `INVOICED`: billed to you by Meld, never part of the transfer. |
+| `fees.totalDeducted`, `fees.totalInvoiced` | The items summed by `settlement`, in `fees.currencyCode`. |
+| `fees.totalDeductedInUsd`, `fees.totalInvoicedInUsd` | The same sums in USD. `null` when a fee in the sum has no USD value. |
+| `fees.totalInUsd` | `totalDeductedInUsd + totalInvoicedInUsd`: every fee on the quote, in USD. |
+| `sourceTotalAmount` | `sourceAmount` plus the `INVOICED` fees, in the source currency (on a sell, converted at the quote's rate and not rounded on this endpoint; the partner quote rounds it up to 6 decimal places). Equal to `sourceAmount` when your account has no Meld fee. |
+
+- **Sum on `settlement`, never on `type`.** `collectedBy` and `settlement` never gain values within a version; `type` can.
+- **Fund the order from the order response, not the quote:** send exactly the response's `sourceAmount`, to its `walletAddress` where it has one (dLocal's is `null`). At Yellow Card it can be lower than the quote's. Never send `sourceTotalAmount` or add Meld's fee: it is invoiced to you separately.
+- **Meld's fee is owed only on settled transactions.** It is a `MELD` item with `settlement: INVOICED`, billed monthly. There is no `MELD` item when your account has no Meld fee.
+- **`PROVIDER` and `NETWORK` are always listed**, at `0` when the provider charges none. `PARTNER` is listed only when the provider reports one.
+- **Transactions keep their shape.** `GET /payments/transactions` has no `2026-09-01` version: it answers with the latest earlier version and does not carry `fees` or `sourceTotalAmount`.
+- **On the partner contract**, quotes and transactions show these fees as flat fields (`totalFee`, `customFee`, `customTotalFeeInUsd`, …). See [Partner quotes and transaction fees](/docs/stablecoins/headless-integration/shared-flows/partner-fees).
+
 ---
 
 ## Next

@@ -193,7 +193,8 @@
                           "docs/stablecoins/headless-integration/shared-flows/eligibility",
                           "docs/stablecoins/headless-integration/shared-flows/configure-webhooks",
                           "docs/stablecoins/headless-integration/shared-flows/verification",
-                          "docs/stablecoins/headless-integration/shared-flows/quotes"
+                          "docs/stablecoins/headless-integration/shared-flows/quotes",
+                          "docs/stablecoins/headless-integration/shared-flows/partner-fees"
                         ]
                       },
                       {
