@@ -8,10 +8,6 @@ This data comes from Finicity's [/investments/transactions/get](https://api-refe
   Example values: `symbol: "AAPL"`, `quantity: 5`, `amount: -912.50`, `currency: "USD"`, `description: "BUY AAPL"`, `status: "POSTED"`, `transactionDate: "2024-08-09"`, `postedDate: "2024-08-10"`, `type: "BUY"`.
 </Note>
 
-<Warning>
-  Finicity does not provide `cashBalance` for investment transactions.
-</Warning>
-
 <Table align={["left","left","left"]}>
   <thead>
     <tr>
@@ -35,7 +31,7 @@ This data comes from Finicity's [/investments/transactions/get](https://api-refe
         The symbol of the security
       </td>
       <td style={{ textAlign: "left" }}>
-        symbol
+        ticker
       </td>
     </tr>
     <tr>
@@ -57,29 +53,7 @@ This data comes from Finicity's [/investments/transactions/get](https://api-refe
         The purchase price of the holding, per share
       </td>
       <td style={{ textAlign: "left" }}>
-        costBasis
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        cashBalance
-      </td>
-      <td style={{ textAlign: "left" }}>
-        The cash balance of the account after the transaction
-      </td>
-      <td style={{ textAlign: "left" }}>
-        **Not Available**
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        accountId
-      </td>
-      <td style={{ textAlign: "left" }}>
-        The Id of the financial account
-      </td>
-      <td style={{ textAlign: "left" }}>
-        accountId
+        unitPrice
       </td>
     </tr>
     <tr>
