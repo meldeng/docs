@@ -264,7 +264,7 @@ Send **multipart/form-data**. Do **not** send this mode as JSON — `RAW_DATA_IM
 
 ```bash
 curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/initiate" \
-  -u "{apiKey}:{apiSecret}" \
+  -H "Authorization: BASIC {apiKey}" \
   -F 'data={
     "serviceProvider":"SUMSUB",
     "mode":"RAW_DATA_IMPORT",
