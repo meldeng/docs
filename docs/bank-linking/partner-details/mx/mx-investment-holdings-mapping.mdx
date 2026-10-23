@@ -5,7 +5,7 @@ title: "MX Investment Holdings Mapping"
 This data comes from MX's [/users/\{user\_guid}/members/\{member\_guid}/holdings](https://docs.mx.com/api-reference/platform-api/reference/list-holdings-by-member) endpoint and is returned from Meld's [/bank-linking/investments/holdings](/api-reference/bank-linking/investments/bank-linking-investment-holdings-search) endpoint.
 
 <Note>
-  Example: an MX holding with `symbol: "AAPL"`, `shares: 10`, `market_value: 1850.50`, `cost_basis: 180.00`, `currency_code: "USD"` maps to Meld `symbol: "AAPL"`, `quantity: 10`, `currentValue: 1850.50`, `costBasis: 180.00`, `currencyCode: "USD"`.
+  Example: an MX holding with `symbol: "AAPL"`, `shares: 10`, `market_value: 1850.50`, `cost_basis: 180.00`, `currency_code: "USD"` maps to Meld `symbol: "AAPL"`, `quantity: 10`, `currentValue: 1850.50`, `costBasis: 180.00`, `currency: "USD"`.
 </Note>
 
 <Warning>
@@ -18,10 +18,9 @@ This data comes from MX's [/users/\{user\_guid}/members/\{member\_guid}/holdings
 | quantity     | The number of shares of the security                                       | shares                 |
 | currentValue | The total current value of the holding                                     | market\_value          |
 | costBasis    | The purchase price of the holding, per share                               | cost\_basis            |
-| currencyCode | The ISO currency code that was used to purchase the holding                | currency\_code         |
-| updatedAt    | The last time the details of this holding were updated                     | updated\_at            |
-| description  | A description of the holding                                               | **Not Available**      |
-| closePrice   | The price of the security at last market close                             | shares / market\_value |
+| currency     | The ISO currency code that was used to purchase the holding                | currency\_code         |
+| description  | A description of the holding                                               | description            |
+| closePrice   | The price of the security at last market close                             | market\_value / shares |
 | isin         | The global ISO number for an individual security.                          | **Not Available**      |
 | cusip        | A shortened version of the isin used for North American securities.        | cusip                  |
 | type         | The type of holding (ex: stock, etf). This is normalized across providers. | holding\_type          |
