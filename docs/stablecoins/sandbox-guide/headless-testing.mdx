@@ -1,9 +1,9 @@
 ---
-title: "Headless Card and Apple Pay Testing"
-description: "Sandbox testing for headless card and Apple Pay, run from your own UI."
+title: "Headless Card and Wallet Testing"
+description: "Sandbox testing for headless card, Apple Pay and Google Pay, run from your own UI."
 ---
 
-This page is for developers and QA running sandbox orders through headless card and Apple Pay. Widget flows are tested with the [White-Label API and Meld Checkout testing credentials](/docs/stablecoins/sandbox-guide/test), and virtual accounts with [Virtual Account Flow Testing Credentials](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials).
+This page is for developers and QA running sandbox orders through headless card, Apple Pay and Google Pay. Widget flows are tested with the [White-Label API and Meld Checkout testing credentials](/docs/stablecoins/sandbox-guide/test), and virtual accounts with [Virtual Account Flow Testing Credentials](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials).
 
 ## What you can verify
 
@@ -76,7 +76,7 @@ Two options in sandbox:
 
 1. Quote for a country and currency pair that return a Mercuryo or Banxa Apple Pay quote, and pick it.
 2. Create the order with `paymentMethodType: APPLE_PAY`.
-3. Check `canPresentApplePay()`, then mount.
+3. Check the quote row's [readiness](/docs/stablecoins/headless-integration/wallets#2-check-each-row-on-the-device) before you show the button, then mount the order from a tap.
 
 | Check | What it proves |
 | --- | --- |
@@ -94,7 +94,7 @@ Stripe orders run in an iOS app on Meld's Stripe sandbox. Card orders run the sa
 
 1. Ask your Meld representative to enable Stripe on your sandbox account. It appears under **Integrations** as **Shared Meld Integration**, and Meld manages its keys and webhooks.
 2. Send your Meld representative your app's bundle ID and Apple Team ID, so Stripe registers the app as a trusted application. Stripe's SDK runs only in a registered app, on a simulator too.
-3. For Apple Pay, register a sandbox merchant identifier, as in [Stripe's certificate](/docs/stablecoins/headless-integration/apple-pay#stripes-certificate).
+3. For Apple Pay, register a sandbox merchant identifier, as in [Stripe's certificate](/docs/stablecoins/headless-integration/wallets#stripes-certificate).
 4. Build the test app on the [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios#install) or [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native#ios), with the camera permission, configured for `sandbox`.
 5. Create a KYC-approved test customer with an email, so the SDK fills Stripe's KYC.
 
@@ -122,6 +122,12 @@ For document verification, Stripe's sandbox lets you pick the outcome instead of
 5. Expect `TRANSACTION_CRYPTO_PENDING`, then `TRANSACTION_CRYPTO_TRANSFERRING`. That's a pass: Stripe's sandbox doesn't reliably report delivery, so `TRANSACTION_CRYPTO_COMPLETE` may not arrive.
 
 A refused session ends in `TRANSACTION_CRYPTO_FAILED`. `POST /payments/mock/headless/simulate` doesn't apply to Stripe orders.
+
+---
+
+## Test Google Pay
+
+Coinbase Google Pay runs in Google's test environment when your sandbox Coinbase integration runs in Coinbase's sandbox. It needs no Google approval, but it does need a physical Android phone. See [Wallets → Google Pay in sandbox](/docs/stablecoins/headless-integration/wallets#google-pay-in-sandbox).
 
 ---
 
