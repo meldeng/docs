@@ -5,7 +5,7 @@ title: "Finicity Investment Holdings Mapping"
 This data comes from Finicity's [/aggregation/v1/customers/\{customerId}/institutionLogins/\{institutionLoginId}/accounts](https://developer.mastercard.com/open-banking-us/documentation/api-reference/?view=api#GetCustomerAccountsByInstitutionLogin) endpoint and is returned from Meld's [/bank-linking/investments/holdings](/api-reference/bank-linking/investments/bank-linking-investment-holdings-search) endpoint.
 
 <Note>
-  Example values: `symbol: "AAPL"`, `quantity: 10`, `currentValue: 1820.50`, `costBasis: 150.25`, `currencyCode: "USD"`, `isin: "US0378331005"`, `cusip: "037833100"`, `type: "STOCK"`.
+  Example values: `symbol: "AAPL"`, `quantity: 10`, `currentValue: 1820.50`, `costBasis: 150.25`, `currency: "USD"`, `isin: "US0378331005"`, `cusip: "037833100"`, `type: "STOCK"`.
 </Note>
 
 <Warning>
@@ -17,11 +17,10 @@ This data comes from Finicity's [/aggregation/v1/customers/\{customerId}/institu
 | symbol       | The symbol of the security                                                 | symbol                  |
 | quantity     | The number of shares of the security                                       | units                   |
 | currentValue | The total current value of the holding                                     | marketValue             |
-| costBasis    | The purchase price of the holding, per share                               | cost\_basis             |
-| currencyCode | The ISO currency code that was used to purchase the holding                | securityCurrency        |
-| updatedAt    | The last time the details of this holding were updated                     | currentPriceDate        |
-| description  | A description of the holding                                               | **Not Available**       |
-| closePrice   | The price of the security at last market close                             | **Not Available**       |
-| isin         | The global ISO number for an individual security.                          | Securities.isin         |
+| costBasis    | The purchase price of the holding, per share                               | costBasis               |
+| currency     | The ISO currency code that was used to purchase the holding                | securityCurrency        |
+| description  | A description of the holding                                               | description             |
+| closePrice   | The price of the security at last market close                             | currentPrice            |
+| isin         | The global ISO number for an individual security.                          | **Not Available**       |
 | cusip        | A shortened version of the isin used for North American securities.        | cusipNo                 |
 | type         | The type of holding (ex: stock, etf). This is normalized across providers. | securityType            |
