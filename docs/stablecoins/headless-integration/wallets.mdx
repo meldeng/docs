@@ -360,7 +360,7 @@ Readiness is advisory and moves no money. If you create the order anyway, the mo
 
 Both checks answer once. On Android the callback runs on the main thread within 5 seconds. On iOS, the `async` form resumes on the caller's executor, so on the main actor when you await it from there, and the completion form runs on the main queue after the call returns. React Native and the web return a Promise.
 
-On older releases, use `Meld.presentationCapabilities` (on iOS, `Meld.capabilities(for:paymentMethodType:)`). It answers only whether this build can present the row: hide the row when its `surface` is `unsupported`. Web SDK releases before 0.7.0 have none of these checks, so check the order with `Meld.capabilities` after you create it.
+On older releases, use `Meld.presentationCapabilities` (on iOS, `Meld.capabilities(for:paymentMethodType:)`) where the release has it: iOS SDK 0.8.0, Android SDK 0.7.0, and React Native SDK 0.8.0 on iOS or 0.9.0 on Android, or later. It answers only whether this build can present the row: hide the row when its `surface` is `unsupported`. A React Native binary built before 0.9.0 on Android, or before 0.8.0 on iOS, reports `unsupported` for every row, including the cards it can mount, so don't filter quote rows there. On those binaries, and on iOS SDK before 0.8.0, Android SDK before 0.7.0 or Web SDK before 0.7.0, which have no row check, offer the rows and check the order with `Meld.capabilities` after you create it.
 
 ### 3. Check eligibility, then create the order
 
@@ -490,7 +490,7 @@ Wallet orders use the same [five events](/docs/stablecoins/headless-integration/
 
 | Event | On a wallet order |
 | --- | --- |
-| `onReady` | The sheet was requested. Some providers report it before anything is on screen, so keep your busy state until a terminal callback |
+| `onReady` | In an app, the sheet was requested. Some providers report it before anything is on screen, so keep your busy state until a terminal callback. On the web, Banxa's component is ready and shows its Apple Pay button, and the sheet opens only when the customer taps it. Hide your spinner, and don't cover the component |
 | `onPaymentSubmitted` | The customer authorised the payment. Unmount and show a processing state |
 | `onCancel` | The customer backed out or dismissed the sheet. Return them to the amount screen |
 | `onError` | Check its `code` against [Error codes](#error-codes) before you offer a retry |
@@ -539,7 +539,7 @@ Every error carries the mounted order's `paymentMethodType`, such as `APPLE_PAY`
 
 `detail` carries the provider's own event or code, such as `onramp_api.load_error:ERROR_CODE_GUEST_GOOGLE_PAY_NOT_SUPPORTED`, or the SDK's reason, such as `EMPTY_APPLE_PAY_TOKEN` on a `PRESENTATION_FAILED`. Log it, and don't branch on it.
 
-In the iOS and Android SDKs, the Banxa and Uphold card forms report a failure before the form shows as these codes, with the form's own code in `detail`: `sdk_unavailable` as `PROVIDER_LOAD_FAILED`, and `mount_failed` or Banxa's `checkout_init_failed` as `PRESENTATION_FAILED`. For example, `detail` is `banxa_card_failed:checkout_init_failed`.
+A card form that fails before it shows reports one of these codes, with the form's own code in `detail`. In the Android SDK, the Banxa and Uphold card forms report `sdk_unavailable` as `PROVIDER_LOAD_FAILED`, and `mount_failed` or Banxa's `checkout_init_failed` as `PRESENTATION_FAILED`. For example, `detail` is `banxa_card_failed:checkout_init_failed`. In the iOS SDK, the Uphold card form reports `sdk_unavailable` and `mount_failed` the same way. Banxa's iOS card form is Primer's native modal instead, and reports `PRESENTATION_FAILED` with `detail` `banxa_card_failed:` and Primer's error id, or `presentation_deadline`: see [iOS → Card forms that fail before they show](/docs/stablecoins/headless-integration/sdks/ios#card-forms-that-fail-before-they-show).
 
 The Android SDK defines `VERIFICATION_PENDING` from 0.8.0 but doesn't report it yet. It is listed so code shared across platforms reads it the same way.
 

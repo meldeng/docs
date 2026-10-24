@@ -40,7 +40,7 @@ Before you quote, ask the SDK about each wallet you offer with `paymentMethodRea
 Call `Meld.capabilities(order)` (`Meld.capabilities(for: order)` on iOS) before you mount the order. Branch on two things only:
 
 - **`surface` is `unsupported`:** this build can't present the order. Offer another method.
-- **`embeddable`:** whether the surface renders into a view you give it. Apple Pay, Google Pay and Stripe orders report `embeddable: false` because the SDK presents them itself, not because they are unsupported. They also report `requiresUserGesture: true`, so mount them from the customer's tap.
+- **`embeddable`:** whether the surface renders into a view you give it. In an app, Apple Pay, Google Pay and Stripe orders report `embeddable: false` because the SDK presents them itself, not because they are unsupported, and so does a Banxa card order on iOS, which opens Primer's own card form. They also report `requiresUserGesture: true`, so mount them from the customer's tap on your button. On the web, a Banxa Apple Pay order reports `embeddable: true` and `requiresUserGesture: true`: Banxa's component draws its own Apple Pay button into the element you pass, and the sheet opens from the customer's tap on that button. Give the element room, and don't draw a button of your own over it.
 
 Every other `surface` value is informational. See [Surface is informational](/docs/stablecoins/headless-integration/wallets#surface-is-informational).
 

@@ -129,7 +129,7 @@ let handle = try Meld.mount(order, into: containerView, handlers: MeldEventHandl
 
 Call `mount` on the main thread. Branch only on `surface == "unsupported"` and on `embeddable`. Every other `surface` value, such as `native-applepay` or `native-sdk`, is informational: see [Surface is informational](/docs/stablecoins/headless-integration/wallets#surface-is-informational).
 
-Pass `into:` a view you own for an embedded card widget, which reports `embeddable: true`. Apple Pay and Stripe orders draw nothing into it, so `into:` is optional for them. Without it, a Stripe or Coinbase order presents from your app's single foreground window, and `mount` throws if there is none. In an app with several windows, pass `into:` a view in the window to present from.
+Pass `into:` a view you own for an embedded card widget, which reports `embeddable: true`. Apple Pay, Stripe and Banxa card orders draw nothing into it, so `into:` is optional for them. Without it, a Stripe or Coinbase order presents from your app's single foreground window, and `mount` throws if there is none. In an app with several windows, pass `into:` a view in the window to present from.
 
 Apple Pay uses the same call with an `applePay:` argument — see [Wallets → Mount from the customer's tap](/docs/stablecoins/headless-integration/wallets#4-mount-from-the-customers-tap).
 
@@ -171,13 +171,14 @@ Every Meld SDK shares these codes, with the same `attemptMayExist` for each: see
 
 #### Card forms that fail before they show
 
-The Banxa and Uphold card forms run a provider SDK, bundled with this one, inside a web view. When that page fails before the form shows, they report a shared code, with the form's own code in `detail`:
+The Uphold card form runs Uphold's SDK, bundled with this one, inside a web view. When that page fails before the form shows, it reports a shared code, with the form's own code in `detail`:
 
 | Failure | `code` | `detail` |
 | --- | --- | --- |
-| The provider SDK didn't load (`sdk_unavailable`) | `PROVIDER_LOAD_FAILED` | `banxa_card_failed:sdk_unavailable` or `uphold_card_failed:sdk_unavailable` |
-| Mounting the form threw (`mount_failed`) | `PRESENTATION_FAILED` | `banxa_card_failed:mount_failed` or `uphold_card_failed:mount_failed` |
-| Banxa's checkout refused the order's client token (`checkout_init_failed`) | `PRESENTATION_FAILED` | `banxa_card_failed:checkout_init_failed` |
+| Uphold's SDK didn't load (`sdk_unavailable`) | `PROVIDER_LOAD_FAILED` | `uphold_card_failed:sdk_unavailable` |
+| Mounting the form threw (`mount_failed`) | `PRESENTATION_FAILED` | `uphold_card_failed:mount_failed` |
+
+The Banxa card form doesn't use a web view on iOS. The SDK presents Primer's native card form in its own modal, from the order's `sdkSessionToken`, so the order reports `embeddable: false` and draws nothing into your view. When the form fails before it shows, the code is `PRESENTATION_FAILED`, and `detail` is either `banxa_card_failed:` followed by Primer's error id, with `primerPaymentId=` and `diagnosticsId=` when Primer gives them, or `presentation_deadline` when the form doesn't appear within 20 seconds. Once the form shows, a declined payment is `PAYMENT_REJECTED` and any other failure `PAYMENT_OUTCOME_UNKNOWN`. An order with no `sdkSessionToken` makes `mount` throw. Banxa's `sdk_unavailable`, `mount_failed` and `checkout_init_failed` come from its web-view form, which only the [Android SDK](/docs/stablecoins/headless-integration/sdks/android#card-forms-that-fail-before-they-show) uses.
 
 #### Codes only the iOS SDK reports
 
