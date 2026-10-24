@@ -22,7 +22,7 @@ At `2026-05-01` each quote also carries fields the order needs:
 | `destinationNetworkCode` | The chain you asked for, returned only when the quote request named one |
 | `integrationMode` | Which mode this quote is for, when you asked for `ALL` |
 | `kycMode` | Who runs KYC for this provider |
-| `isNativeAvailable` | Whether this quote can present a native Apple Pay sheet |
+| `isNativeAvailable` | Whether a native wallet sheet can be presented for this quote |
 
 `destinationNetworkCode` is optional. If you send it, the quote returns the same value; if you don't, the quote leaves it out. The chain already comes from `destinationCurrencyCode` (for example, `USDC_BASE` is USDC on Base). Stripe is the exception: it returns a headless quote only when you send `destinationNetworkCode`.
 

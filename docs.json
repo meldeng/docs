@@ -69,6 +69,16 @@
       "source": "/docs/stablecoins/headless-integration/shared-flows/quotes-and-eligibility",
       "destination": "/docs/stablecoins/headless-integration/shared-flows/quotes",
       "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/headless-integration/apple-pay",
+      "destination": "/docs/stablecoins/headless-integration/wallets",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/white-label-api-integration/headless-apple-pay",
+      "destination": "/docs/stablecoins/headless-integration/wallets",
+      "permanent": true
     }
   ],
   "navbar": {
@@ -181,11 +191,11 @@
                     ]
                   },
                   {
-                    "group": "Product 4: Headless Card, Apple Pay and Transfers",
+                    "group": "Product 4: Headless Card, Wallets and Transfers",
                     "pages": [
                       "docs/stablecoins/headless-integration/index",
                       "docs/stablecoins/headless-integration/cards",
-                      "docs/stablecoins/headless-integration/apple-pay",
+                      "docs/stablecoins/headless-integration/wallets",
                       "docs/stablecoins/headless-integration/transfers",
                       {
                         "group": "Shared flows",
@@ -202,6 +212,7 @@
                           "docs/stablecoins/headless-integration/sdks/index",
                           "docs/stablecoins/headless-integration/sdks/web",
                           "docs/stablecoins/headless-integration/sdks/ios",
+                          "docs/stablecoins/headless-integration/sdks/android",
                           "docs/stablecoins/headless-integration/sdks/react-native"
                         ]
                       }

@@ -17,7 +17,7 @@ The SDK supports iOS 15 and later.
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/meldeng/meldsdk-ios", from: "0.9.1"),
+    .package(url: "https://github.com/meldeng/meldsdk-ios", from: "0.10.0"),
 ],
 targets: [
     .target(name: "YourApp", dependencies: [
@@ -29,10 +29,12 @@ targets: [
 **CocoaPods.**
 
 ```ruby
-pod 'MeldSDK', '~> 0.9.1'
+pod 'MeldSDK', '~> 0.10.0'
 ```
 
 Then `import MeldSDK`.
+
+0.10.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), and the [shared error codes](#error-codes) with the order's `paymentMethodType` on each error. Everything else on this page works from 0.9.1.
 
 `MeldSDK` depends on Stripe's `StripeCryptoOnramp` 26.11.x and on `PrimerSDK` 2.49 or a later 2.x, even if you use neither Stripe nor Banxa. An app that already depends on a different minor version of Stripe's iOS SDK cannot resolve both.
 
@@ -52,7 +54,57 @@ Call it once, before you check or mount an order, with the environment your back
 
 The order comes from your server. Your API key never ships in the app binary.
 
-See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request. Return the response to the app unchanged: the SDK reads what it needs from it.
+See [Cards](/docs/stablecoins/headless-integration/cards) or [Wallets](/docs/stablecoins/headless-integration/wallets) for the request. Return the response to the app unchanged: the SDK reads what it needs from it.
+
+---
+
+## Check readiness before you create the order
+
+Two checks tell you what to offer, and both need 0.10.0 or later. They answer `.ready`, `.unavailable(code:reason:)` or `.unknown(reason:)`, with the same meaning on every Meld SDK. See [Wallets → The integration loop](/docs/stablecoins/headless-integration/wallets#1-check-the-device-then-quote).
+
+Each has an `async` form, which resumes on the caller's executor, so on the main actor when you await it from there. Each also has a completion form, such as `Meld.paymentMethodReadiness("APPLE_PAY") { readiness in … }`, which runs once, on the main queue, after the call returns.
+
+### Before you quote
+
+Ask whether this device can pay with a method at all, for example to decide whether to show an Apple Pay entry point:
+
+```swift
+switch await Meld.paymentMethodReadiness("APPLE_PAY") {
+case .ready, .unknown: showApplePay()
+case .unavailable: hideApplePay() // code is PAYMENT_METHOD_UNAVAILABLE
+}
+```
+
+- **`APPLE_PAY`** asks PassKit once. It answers `.ready` when Apple Pay isn't restricted and Wallet holds a card on a network one of this SDK's Apple Pay providers takes (Visa, Mastercard, American Express, Discover or Maestro, plus any you add to `StripeAPI.additionalEnabledApplePayNetworks`), and `.unavailable` otherwise.
+- **`GOOGLE_PAY`** answers `.unavailable`: there is no Google Pay on iOS.
+- **Any other method**, such as `CREDIT_DEBIT_CARD` or a bank transfer, answers `.unknown`: there is nothing on the device to check for it.
+
+`.ready` doesn't mean every provider takes the customer's card. Mercuryo takes only Visa and Mastercard, for example, so check the quote row too.
+
+### After you quote
+
+Each headless quote row carries `paymentMethodType` and `headlessPresentation`. Ask the SDK whether this device can pay with a row, through its provider, before you offer it:
+
+```swift
+guard let presentation = MeldHeadlessPresentation(json: row.headlessPresentation) else {
+    return hide(row) // a malformed declaration
+}
+
+switch await Meld.presentationReadiness(presentation, paymentMethodType: row.paymentMethodType) {
+case .ready, .unknown: offer(row)
+case .unavailable: hide(row) // code is PAYMENT_METHOD_UNAVAILABLE
+}
+```
+
+- **`.ready`:** offer the method. Mercuryo and Stripe Apple Pay answer `.ready` when payments aren't restricted and Wallet holds a card on a network that provider's sheet asks for.
+- **`.unavailable(code:reason:)`:** hide the method. This SDK doesn't present the row, can't present it on this device (Coinbase Apple Pay below iOS 16), the device can't make Apple Pay payments, or Wallet holds no card on a network the provider takes. No order exists, so there is nothing to track.
+- **`.unknown(reason:)`:** you may offer the method. Card rows answer `.unknown`, because there is nothing on the device to check for them. So do Banxa and Coinbase Apple Pay once Wallet holds a card, because the provider's merchant account decides which cards it takes.
+
+The SDK logs every `.unknown` reason under the `io.meld.sdk` subsystem, category `Readiness`. Readiness is advisory. If you create the order anyway, the mounted order reports `PAYMENT_METHOD_UNAVAILABLE` when the device can't pay, and that is the final word.
+
+Before 0.10.0, `Meld.capabilities(for:paymentMethodType:)` answers only whether this build can present the row: hide the row when its `surface` is `unsupported`.
+
+Check the order itself again with `Meld.capabilities(for: order)` before you mount it.
 
 ---
 
@@ -69,19 +121,19 @@ guard Meld.capabilities(for: order).surface != "unsupported" else {
 let handle = try Meld.mount(order, into: containerView, handlers: MeldEventHandlers(
     onReady:            { _ in hideSpinner() },
     onPaymentSubmitted: { _ in showProcessing() },
-    onStatusChange:     { status in track(status) },
+    onStatusChange:     { change in track(change.status) },
     onCancel:           { _ in showRetryCta() },
     onError:            { error in if !error.recoverable { endCheckout(error) } }
 ))
 ```
 
-Call `mount` on the main thread. Pass `into:` a view you own for an embedded card widget. Apple Pay and Stripe orders draw nothing into it, so `into:` is optional for them. Without it, a Stripe or Coinbase order presents from your app's single foreground window, and `mount` throws if there is none. In an app with several windows, pass `into:` a view in the window to present from.
+Call `mount` on the main thread. Branch only on `surface == "unsupported"` and on `embeddable`. Every other `surface` value, such as `native-applepay` or `native-sdk`, is informational: see [Surface is informational](/docs/stablecoins/headless-integration/wallets#surface-is-informational).
 
-Apple Pay uses the same call with an `applePay:` argument — see [Apple Pay](/docs/stablecoins/headless-integration/apple-pay).
+Pass `into:` a view you own for an embedded card widget, which reports `embeddable: true`. Apple Pay, Stripe and Banxa card orders draw nothing into it, so `into:` is optional for them. Without it, a Stripe or Coinbase order presents from your app's single foreground window, and `mount` throws if there is none. In an app with several windows, pass `into:` a view in the window to present from.
+
+Apple Pay uses the same call with an `applePay:` argument — see [Wallets → Mount from the customer's tap](/docs/stablecoins/headless-integration/wallets#4-mount-from-the-customers-tap).
 
 Keep the handle until a terminal callback. Releasing it tears the surface down, and `handle.unmount()` does the same on demand. Neither delivers a callback.
-
-To check a quote before you create the order, decode its `headlessPresentation` with `MeldHeadlessPresentation(json:)` and pass it, with the `paymentMethodType`, to `Meld.capabilities(for:paymentMethodType:)`. That tells you only whether this build can present that kind of order. Check the order itself again before you mount it.
 
 ---
 
@@ -93,26 +145,56 @@ To check a quote before you create the order, decode its `headlessPresentation` 
 | `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
 | `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
 | `onCancel` | The user backed out, or dismissed the Apple Pay sheet. Nothing will settle |
-| `onError` | Carries a `code`, a `message`, `recoverable` and `detail` |
+| `onError` | Carries a `code`, a `message`, `recoverable`, `attemptMayExist`, `detail` and the order's `paymentMethodType` |
 
 [The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, how `onCancel` and `onError` relate to the status, and the rule that each mount ends with exactly one terminal callback. To retry after a terminal callback, create a new order.
 
 ### Error codes
 
-Apple Pay and Stripe orders report these codes. Embedded card widgets report their own, some with `recoverable: true`.
+Every Meld SDK shares these codes, with the same `attemptMayExist` for each: see [Wallets → Error codes](/docs/stablecoins/headless-integration/wallets#error-codes). They need 0.10.0 or later.
 
-| `code` | Meaning |
+| `code` | `attemptMayExist` | Meaning |
+| --- | --- | --- |
+| `PAYMENT_METHOD_UNAVAILABLE` | `false` | This device or customer can't pay with the order's method, for example Apple Pay is restricted or Wallet holds no card the provider takes. Offer another method |
+| `PRESENTATION_FAILED` | `false` | The flow stopped before any payment. The next attempt needs a new order |
+| `PAYMENT_REJECTED` | `false` | Declined, and nothing will settle. Offer another option |
+| `ORDER_STATE_CHANGED` | `false` | The provider no longer accepts this order. Create a new order |
+| `VERIFICATION_PENDING` | `false` | The provider is still reviewing the customer |
+| `PAYMENT_OUTCOME_UNKNOWN` | `true` | A payment may exist. Track the order through your backend and never pay it again |
+| `PROVIDER_LOAD_FAILED` | `true` | The provider's page or SDK didn't load. With `recoverable: true`, the surface stays up and the customer may carry on. Otherwise track the order before you offer a new one |
+
+`MeldErrorCode` names these codes, for example `MeldErrorCode.paymentOutcomeUnknown`. `error.attemptMayExist`, or `MeldErrorCode.attemptMayExist(code)`, is `false` only for the five codes that say no attempt exists, and `true` for every other code, including one this build doesn't know.
+
+`error.paymentMethodType` is the mounted order's `paymentMethodType`, such as `APPLE_PAY`, or `nil` when the order has none. Word your message from it rather than from the code.
+
+`detail` carries the provider's own event or code. Log it; don't branch on it. A wallet failure before anything was sent arrives as `PRESENTATION_FAILED`, with the reason, such as `EMPTY_APPLE_PAY_TOKEN` or `MISSING_BILLING_NAME`, in `detail`.
+
+#### Card forms that fail before they show
+
+The Uphold card form runs Uphold's SDK, bundled with this one, inside a web view. When that page fails before the form shows, it reports a shared code, with the form's own code in `detail`:
+
+| Failure | `code` | `detail` |
+| --- | --- | --- |
+| Uphold's SDK didn't load (`sdk_unavailable`) | `PROVIDER_LOAD_FAILED` | `uphold_card_failed:sdk_unavailable` |
+| Mounting the form threw (`mount_failed`) | `PRESENTATION_FAILED` | `uphold_card_failed:mount_failed` |
+
+The Banxa card form doesn't use a web view on iOS. The SDK presents Primer's native card form in its own modal, from the order's `sdkSessionToken`, so the order reports `embeddable: false` and draws nothing into your view. When the form fails before it shows, the code is `PRESENTATION_FAILED`, and `detail` is either `banxa_card_failed:` followed by Primer's error id, with `primerPaymentId=` and `diagnosticsId=` when Primer gives them, or `presentation_deadline` when the form doesn't appear within 20 seconds. Once the form shows, a declined payment is `PAYMENT_REJECTED` and any other failure `PAYMENT_OUTCOME_UNKNOWN`. An order with no `sdkSessionToken` makes `mount` throw. Banxa's `sdk_unavailable`, `mount_failed` and `checkout_init_failed` come from its web-view form, which only the [Android SDK](/docs/stablecoins/headless-integration/sdks/android#card-forms-that-fail-before-they-show) uses.
+
+#### Codes only the iOS SDK reports
+
+Each of these can follow a payment, so `attemptMayExist` is `true` for all of them: track the order through your backend and never pay it again.
+
+| `code` | Reported when |
 | --- | --- |
-| `APPLE_PAY_UNAVAILABLE` | Apple Pay cannot be presented. No attempt exists: offer another method |
-| `PRESENTATION_FAILED` | The flow stopped before any payment. No attempt exists; the next attempt needs a new order |
-| `PAYMENT_REJECTED` | Declined, and nothing will settle. Offer another option |
-| `ORDER_STATE_CHANGED` | The provider no longer accepts this order. No attempt exists. Create a new order |
-| `VERIFICATION_PENDING` | The provider is still reviewing the customer. No attempt exists |
-| `PAYMENT_OUTCOME_UNKNOWN` | A payment may exist. Track the order through your backend and never pay it again |
-
-`error.attemptMayExist` is `false` for every code above except `PAYMENT_OUTCOME_UNKNOWN`. Treat any other non-recoverable code, including one this table doesn't list, like `PAYMENT_OUTCOME_UNKNOWN`.
-
-`detail` carries the provider's own event or code. Log it; don't branch on it.
+| `PAYMENT_STATE_UNAVAILABLE` | Mercuryo Apple Pay couldn't read the order's payment state before the sheet |
+| `PAYMENT_CONTINUATION_UNAVAILABLE` | Mercuryo Apple Pay couldn't continue the existing order on this device |
+| `INVALID_VERIFICATION` | The provider's verification response can't be presented |
+| `VERIFICATION_WINDOW_EXPIRED` | The verification window closed |
+| `VERIFICATION_UNAVAILABLE` | The device couldn't record that verification was opened |
+| `WAIT_FOR_PAYMENT` | Verification was already opened for this order |
+| `PAYMENT_NOT_ACCEPTED` | Mercuryo's earlier Apple Pay endpoint didn't accept the payment |
+| `authorize_session_failed`, `authorize_session_invalid` | Uphold's card form couldn't start its authorization step |
+| The provider's own status or code | A Mercuryo or Uphold card form, or Mercuryo's earlier Apple Pay endpoint, reported a failure in its own terms |
 
 ---
 
@@ -120,7 +202,7 @@ Apple Pay and Stripe orders report these codes. Embedded card widgets report the
 
 Providers that run KYC inside their surface need camera access, and so does Stripe's identity check. Declare `NSCameraUsageDescription` in your `Info.plist` with a string that explains the document and selfie capture. Without it, that step fails silently for the user, or, on a Stripe order, the SDK refuses it and the flow ends in `onError`.
 
-Apple Pay needs the Apple Pay capability on your target, listing every merchant identifier an order can carry, including both your Stripe sandbox and live identifiers. [Apple Developer setup](/docs/stablecoins/headless-integration/apple-pay#apple-developer-setup) covers which providers need one.
+Apple Pay needs the Apple Pay capability on your target, listing every merchant identifier an order can carry, including both your Stripe sandbox and live identifiers. [Apple Developer setup](/docs/stablecoins/headless-integration/wallets#apple-developer-setup) covers which providers need one.
 
 ---
 
@@ -133,6 +215,8 @@ The same `Meld.mount` call presents every provider's order. A few providers add 
   - One Stripe order runs at a time. After you unmount one before its terminal callback, a new one can report `PRESENTATION_FAILED` for up to 90 seconds.
   - Stripe's SDK runs only in an app Stripe has registered as a trusted application, and production orders need a physical device. When you run one from Xcode, set the `com.apple.developer.devicecheck.appattest-environment` entitlement to `production`.
   - On an Apple Pay order, an `applePay:` you pass must match the order's amount, in `USD`, or `mount` throws.
+  - On an Apple Pay order, the SDK checks the device before Stripe collects a new payment: once when the flow starts, and again after Link sign-in and Stripe's identity checks. If Apple Pay is restricted, or Wallet holds no card on a network Stripe's sheet asks for, the flow ends in `onError` with `PAYMENT_METHOD_UNAVAILABLE`, and no payment exists. An order that resumes an existing payment isn't checked.
+- **Banxa.** On an Apple Pay order, where the device can't make Apple Pay payments, `mount` returns the handle, presents nothing, and then reports `onError` with `PAYMENT_METHOD_UNAVAILABLE`. When Banxa's checkout reports that the device doesn't support Apple Pay or that Wallet holds no card, the code is also `PAYMENT_METHOD_UNAVAILABLE`.
 - **Coinbase.** It needs iOS 16 or later: below that, `Meld.capabilities(for:)` reports `unsupported`. `applePay:` is ignored. If you pass `into:`, keep that view in its window until a terminal callback.
 
 ---
