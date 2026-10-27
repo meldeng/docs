@@ -74,6 +74,7 @@ deprecated_service_providers: &deprecated_sp
   - MOOV
   - NMI
   - RAMP
+  - ROUTERPROTOCOL
   - SARDINE
   - SHIFT4
   - SHOPIFY
