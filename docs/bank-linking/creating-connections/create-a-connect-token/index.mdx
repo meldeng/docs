@@ -21,7 +21,7 @@ Send a `POST` request to `{api_base_url}/bank-linking/connect/start` using your 
 For the full request and response schema, refer to the [Bank Linking — Create Connect Token API reference](/api-reference/bank-linking).
 </Note>
 
-The connect token is used only while the user is making the connection to their bank and **expires after 3 hours**. You do not have to persist it — once the connection completes it cannot be reused. To track a connection over time, use the `customerId` returned in the response, or the `externalCustomerId` you optionally pass in.
+The connect token is used only while the user is making the connection to their bank and **expires after 4 hours**. You do not have to persist it — once the connection completes it cannot be reused. To track a connection over time, use the `customerId` returned in the response, or the `externalCustomerId` you optionally pass in.
 
 <Warning>
 Be deliberate about the regions and products you request. In Step 3, when the user selects their institution, only institutions that support **all** requested products and are in one of the requested regions appear in the widget. Choosing too many products or too few regions can dramatically shrink the institution list. If you don't know the region in which your customer banks, omit the `regions` parameter entirely.
@@ -85,7 +85,7 @@ curl --location 'https://api-sb.meld.io/bank-linking/connect/start' \
 | Field                | Description                                                                                          |
 | :------------------- | :--------------------------------------------------------------------------------------------------- |
 | `id`                 | The Meld connection id. Use this to look up the connection later.                                    |
-| `connectToken`       | The JWT used to launch the widget. Expires after 3 hours.                                            |
+| `connectToken`       | The JWT used to launch the widget. Expires after 4 hours.                                            |
 | `customerId`         | Meld's id for the customer. Persist this to track the customer across connections.                   |
 | `externalCustomerId` | The id you passed in (if any), echoed back.                                                          |
 | `widgetUrl`          | The full URL with the token attached. You can load this directly in an iframe to launch the widget.  |
