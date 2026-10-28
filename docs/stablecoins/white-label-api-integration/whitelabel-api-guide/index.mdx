@@ -248,7 +248,7 @@ One endpoint serves both fiat and crypto, selected by `type`.
 | `category` | yes | `CRYPTO_ONRAMP` or `CRYPTO_OFFRAMP` |
 | `country` | yes | ISO alpha-2 |
 | `type` | yes | `FIAT` or `CRYPTO` — selects which side of the list you get |
-| `network` | no | chain/network code (e.g. `ETHEREUM`, `SOLANA`) to filter crypto by chain |
+| `network` | no | chain/network code (e.g. `ETH`, `SOLANA`) to filter crypto by chain |
 | `partner` | no | provider id to restrict to one partner's catalog |
 | `paymentType` | no | broad bucket (e.g. `CARD`) |
 | `providerCurrencyCode` | no | provider-specific currency code |
@@ -268,7 +268,7 @@ curl 'https://api-sb.meld.io/network-partner/supported/currencies?category=CRYPT
 ```
 
 ```bash On-ramp crypto
-curl 'https://api-sb.meld.io/network-partner/supported/currencies?category=CRYPTO_ONRAMP&country=US&type=CRYPTO&network=ETHEREUM' \
+curl 'https://api-sb.meld.io/network-partner/supported/currencies?category=CRYPTO_ONRAMP&country=US&type=CRYPTO&network=ETH' \
   -H 'Authorization: BASIC {apiKey}'
 ```
 
