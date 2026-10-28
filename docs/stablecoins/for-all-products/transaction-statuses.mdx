@@ -39,6 +39,9 @@ The typical successful transaction follows this progression:
 | `TWO_FA_REQUIRED` | Payment info provided, awaiting 2FA verification                 | TEMPORARY | Complete 2FA verification    |
 | `TWO_FA_PROVIDED` | 2FA submitted, provider validating with card issuer              | TEMPORARY | Wait for validation          |
 | `ERROR`           | Technical error during processing - transaction may retry        | TEMPORARY | Monitor for retry or failure |
+| `ONRAMP_SETTLED`  | Ramp + swap (buy): on-ramp leg settled, swap pending             | TEMPORARY | Wait for completion          |
+| `SWAPPING`        | Ramp + swap: swap in progress                                    | TEMPORARY | Wait for completion          |
+| `SWAP_SETTLED`    | Ramp + swap (sell): swap leg settled, off-ramp pending           | TEMPORARY | Wait for completion          |
 
 ### Final States
 
