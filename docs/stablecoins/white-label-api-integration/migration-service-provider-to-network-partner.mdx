@@ -62,24 +62,26 @@ GET /network-partner/supported/countries?category=CRYPTO_ONRAMP
 
 <CodeGroup>
 
-```json Before — response
-{
-  "countries": [
-    {
-      "countryCode": "US",
-      "countryName": "United States",
-      "states": ["US-NY", "US-CA", "US-TX"]
-    },
-    { "countryCode": "GB", "countryName": "United Kingdom" }
-  ]
-}
+```json Before — response (array)
+[
+  {
+    "countryCode": "US",
+    "name": "United States",
+    "flagImageUrl": "https://cdn.meld.io/images-country/US/flag.svg",
+    "regions": [
+      { "regionCode": "US-NY", "name": "New York" },
+      { "regionCode": "US-CA", "name": "California" }
+    ]
+  },
+  { "countryCode": "GB", "name": "United Kingdom", "flagImageUrl": "https://cdn.meld.io/images-country/GB/flag.svg", "regions": null }
+]
 ```
 
 ```json After — response
 {
   "countries": [
-    { "countryCode": "US", "name": "United States", "flag": "🇺🇸" },
-    { "countryCode": "DE", "name": "Germany", "flag": "🇩🇪" }
+    { "countryCode": "US", "name": "United States", "flag": "https://cdn.meld.io/images-country/US/flag.svg" },
+    { "countryCode": "DE", "name": "Germany", "flag": "https://cdn.meld.io/images-country/DE/flag.svg" }
   ]
 }
 ```
@@ -89,8 +91,8 @@ GET /network-partner/supported/countries?category=CRYPTO_ONRAMP
 **What changed**
 
 * Now requires `category` (`CRYPTO_ONRAMP` or `CRYPTO_OFFRAMP`). The supported set can differ by direction, so call it once per direction you offer.
-* `countryName` → `name`, and a `flag` emoji is now included.
-* `states[]` is **no longer returned here.** Collect the US state in your own UI and pass it as the `subdivision` query param on [Routes](#5-limits-and-routes).
+* The bare array is now wrapped in `countries`, and `flagImageUrl` → `flag`.
+* The legacy `regions[]` list of US states is **no longer returned here.** Collect the US state in your own UI and pass it as the `subdivision` query param on [Routes](#5-limits-and-routes).
 
 ---
 
