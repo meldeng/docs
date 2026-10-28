@@ -26,9 +26,8 @@ All webhook events share the same base structure:
 | `timestamp`       | OffsetDateTime | When the event was created                             |
 | `accountId`       | String         | Your Meld account identifier                           |
 | `profileId`       | String         | Webhook profile responsible for sending this event     |
-| `version`         | Date           | API version (e.g., `2025-03-01`)                       |
+| `version`         | Date           | Payload version (e.g., `2023-01-30`)                   |
 | `payload`         | Object         | Event-specific data containing transaction details     |
-| `transactionType` | String         | `CRYPTO_PURCHASE`, `CRYPTO_SELL`, or `CRYPTO_TRANSFER` |
 
 ### Payload Fields
 
@@ -42,6 +41,7 @@ The `payload` object contains transaction-specific information:
 | `externalSessionId`        | String | Your session ID (if provided during session creation)  |
 | `paymentTransactionId`     | String | Meld's unique transaction identifier                   |
 | `paymentTransactionStatus` | String | Current transaction status                             |
+| `transactionType`          | String | `CRYPTO_PURCHASE`, `CRYPTO_SELL`, or `CRYPTO_TRANSFER` |
 | `sessionId`                | String | Meld's internal session identifier                     |
 
 
@@ -63,7 +63,7 @@ Triggered when a user starts the payment process (logged in, completed KYC).
   "timestamp": "2022-02-24T16:36:41.717262Z",
   "accountId": "W2aRZnYGPwhBWB94iFsZus",
   "profileId": "W9ka8vLE4ufBkSg3BEciZb",
-  "version": "2025-03-01",
+  "version": "2023-01-30",
   "payload": {
     "requestId": "f07f1accb7404aec9bd9a5d64975eed1",
     "accountId": "W2aRZnYGPwhBWB94iFsZus",
@@ -89,7 +89,7 @@ Triggered when payment is approved and crypto transfer begins.
   "timestamp": "2022-02-15T23:05:43.782919Z",
   "accountId": "W2aRZnYGPwhBWB94iFsZus",
   "profileId": "W9ka8vLE4ufBkSg3BEciZb",
-  "version": "2025-03-01",
+  "version": "2023-01-30",
   "payload": {
     "requestId": "f07f1accb7404aec9bd9a5d64975eed2",
     "accountId": "W2aRZnYGPwhBWB94iFsZus",
@@ -115,7 +115,7 @@ Triggered when transaction completes successfully (crypto delivered).
   "timestamp": "2022-02-24T00:24:53.650382Z",
   "accountId": "W2aRZnYGPwhBWB94iFsZus",
   "profileId": "W9ka8vLE4ufBkSg3BEciZb",
-  "version": "2025-03-01",
+  "version": "2023-01-30",
   "payload": {
     "requestId": "f07f1accb7404aec9bd9a5d64975eed3",
     "accountId": "W2aRZnYGPwhBWB94iFsZus",
@@ -141,7 +141,7 @@ Triggered when transaction fails or encounters an error.
   "timestamp": "2022-02-24T20:05:13.909581Z",
   "accountId": "W2aRZnYGPwhBWB94iFsZus",
   "profileId": "W9ka8vLE4ufBkSg3BEciZb",
-  "version": "2025-03-01",
+  "version": "2023-01-30",
   "payload": {
     "requestId": "f07f1accb7404aec9bd9a5d64975eed4",
     "accountId": "W2aRZnYGPwhBWB94iFsZus",
