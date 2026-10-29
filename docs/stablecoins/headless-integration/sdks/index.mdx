@@ -3,19 +3,22 @@ title: "Meld SDK"
 sidebarTitle: "Overview"
 ---
 
-The Meld SDK puts a provider's payment surface inside your UI. You create the order on your backend, hand the response to the SDK, and it mounts the card form or presents the Apple Pay sheet.
+The Meld SDK puts a provider's payment surface inside your UI. You create the order on your backend, hand the response to the SDK, and it mounts the card form or presents the Apple Pay or Google Pay sheet.
 
 It is a container and an event relay. It does not render card input, does not read or transport card data, and does not reach into the provider's content. Capture happens on the provider's PCI surface.
 
-| Platform | Package | Guide |
-| --- | --- | --- |
-| Web | `@meldcrypto/sdk` | [Web SDK](/docs/stablecoins/headless-integration/sdks/web) |
-| iOS | `MeldSDK` | [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios) |
-| React Native | `@meldcrypto/react-native-sdk` | [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native) |
+| Platform | Package | Wallet contract from | Guide |
+| --- | --- | --- | --- |
+| Web | `@meldcrypto/sdk` | 0.7.0 | [Web SDK](/docs/stablecoins/headless-integration/sdks/web) |
+| iOS | `MeldSDK` | 0.10.0 | [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios) |
+| Android | `io.meld:meldsdk` | 0.8.0 | [Android SDK](/docs/stablecoins/headless-integration/sdks/android) |
+| React Native | `@meldcrypto/react-native-sdk` | 0.10.0 | [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native) |
 
-The API is the same shape on all three: configure the environment once, check that the SDK can present the order, mount it, handle five events, tear down. Only the install and the platform setup differ.
+From those releases, every Meld SDK shares one wallet contract: the [readiness checks](#check-before-you-mount) and the [shared error codes](/docs/stablecoins/headless-integration/wallets#error-codes).
 
-Stripe orders (Apple Pay or card) and Coinbase Apple Pay run only in an iOS app, through the iOS SDK or the React Native SDK, and Coinbase needs iOS 16 or later. See [Apple Pay → Stripe](/docs/stablecoins/headless-integration/apple-pay#stripe) and [Apple Pay → Coinbase](/docs/stablecoins/headless-integration/apple-pay#coinbase).
+The API is the same shape on all four: configure the environment once, check that the SDK can present the order, mount it, handle five events, tear down. Only the install and the platform setup differ.
+
+Stripe orders (Apple Pay or card) and Coinbase Apple Pay run only in an iOS app, through the iOS SDK or the React Native SDK, and Coinbase needs iOS 16 or later. See [Wallets → Stripe](/docs/stablecoins/headless-integration/wallets#stripe) and [Wallets → Coinbase](/docs/stablecoins/headless-integration/wallets#coinbase). Coinbase Google Pay runs only in an Android app, through the Android SDK or the React Native SDK. On the web, the Web SDK presents Banxa's Apple Pay. See [Wallets → What runs where](/docs/stablecoins/headless-integration/wallets#what-runs-where).
 
 ---
 
@@ -32,9 +35,14 @@ A Stripe order created in the other environment reports `unsupported`, and mount
 
 ## Check before you mount
 
-Call `Meld.capabilities(order)` (`Meld.capabilities(for: order)` on iOS) before you mount the order, and offer another method when `surface` is `unsupported`.
+Before you quote, ask the SDK about each wallet you offer with `paymentMethodReadiness`. After you quote, ask about each row with `presentationReadiness`, and offer only the rows that don't answer `unavailable`. Both are part of the wallet contract, so they need the releases in the table above or later. See [Wallets → The integration loop](/docs/stablecoins/headless-integration/wallets#1-check-the-device-then-quote).
 
-Gate on `surface`, not on `embeddable`. On iOS and React Native, Apple Pay and Stripe orders report `embeddable: false` because the SDK presents them itself, not because they are unsupported. They also report `requiresUserGesture: true`, so mount them from the customer's tap.
+Call `Meld.capabilities(order)` (`Meld.capabilities(for: order)` on iOS) before you mount the order. Branch on two things only:
+
+- **`surface` is `unsupported`:** this build can't present the order. Offer another method.
+- **`embeddable`:** whether the surface renders into a view you give it. In an app, Apple Pay, Google Pay and Stripe orders report `embeddable: false` because the SDK presents them itself, not because they are unsupported, and so does a Banxa card order on iOS, which opens Primer's own card form. They also report `requiresUserGesture: true`, so mount them from the customer's tap on your button. On the web, a Banxa Apple Pay order reports `embeddable: true` and `requiresUserGesture: true`: Banxa's component draws its own Apple Pay button into the element you pass, and the sheet opens from the customer's tap on that button. Give the element room, and don't draw a button of your own over it.
+
+Every other `surface` value is informational. See [Surface is informational](/docs/stablecoins/headless-integration/wallets#surface-is-informational).
 
 ---
 
@@ -52,7 +60,7 @@ Gate on `surface`, not on `embeddable`. On iOS and React Native, Apple Pay and S
 
 **`onPaymentSubmitted` fires exactly once per mount**, however the provider reports the end of the payment, so you need no guard of your own. A failure or a cancellation closes it, so a failed payment is never followed by a submission.
 
-**On iOS, each mount ends with exactly one terminal callback.** That is `onPaymentSubmitted`, `onCancel`, or `onError` with `recoverable: false`, and nothing follows it. This holds in the React Native SDK on iOS too. If you unmount before a terminal callback, you get none, and the order's outcome is whatever your backend reports. Android does not enforce this yet, so ignore anything that arrives after the first terminal callback there.
+**Each mount ends with exactly one terminal callback** on iOS, and on Android from Android SDK 0.7.0. That is `onPaymentSubmitted`, `onCancel`, or `onError` with `recoverable: false`, and nothing follows it. The React Native SDK holds to it on iOS, and on Android from React Native SDK 0.9.0, which uses Android SDK 0.7.0. If you unmount before a terminal callback, you get none, and the order's outcome is whatever your backend reports. An older Android build can deliver callbacks after the first terminal one, so ignore them there.
 
 ## Status
 
@@ -69,7 +77,7 @@ Providers each have their own vocabulary — `paid`, `order_completed`, `succeed
 
 **`onCancel` and `onError` are derived from the same statuses.** A `failed` status fires `onStatusChange` *and* `onError`; a `cancelled` status fires `onStatusChange` *and* `onCancel`. Handle a terminal state in one place or the other, not both, or you will run it twice.
 
-`onError` also fires for a failure that never reached the provider, such as its surface failing to load. An embedded surface can report that with `recoverable: true`, which is not terminal: the customer can carry on with the same order. On iOS, an Apple Pay or Stripe order instead ends the mount with a non-recoverable error, such as `PRESENTATION_FAILED` or `APPLE_PAY_UNAVAILABLE`.
+`onError` also fires for a failure that never reached the provider, such as the provider's page failing to load (`PROVIDER_LOAD_FAILED`). An embedded surface, Banxa's Apple Pay on the web included, can report that with `recoverable: true`, which is not terminal: the customer can carry on with the same order. In an app, a wallet or Stripe order instead ends the mount with a non-recoverable error, such as `PRESENTATION_FAILED` or `PAYMENT_METHOD_UNAVAILABLE`. The codes, and whether a payment may exist for each, are in [Wallets → Error codes](/docs/stablecoins/headless-integration/wallets#error-codes).
 
 `completed` has no dedicated handler — it arrives through `onStatusChange` only.
 

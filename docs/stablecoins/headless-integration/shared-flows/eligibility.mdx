@@ -7,6 +7,57 @@ A provider being able to take the order does not mean it will accept this custom
 
 ---
 
+## Create the customer
+
+**Endpoint:** [`POST /accounts/customers`](/api-reference/customer/customers/accounts-customers-create)
+
+Create the customer once, before their first order, with everything you already know about them. Meld fills in Unified KYC and Stripe's KYC from it, as the second table below shows, so the customer doesn't type it again.
+
+| Field | Format | Verified by Meld |
+| --- | --- | --- |
+| `externalId` | Your own id for the customer. A call with an `externalId` Meld has seen returns that customer, and a call without one always creates a new customer | — |
+| `name` | `firstName` and `lastName` | No, stored as you send it |
+| `dateOfBirth` | `yyyy-MM-dd` | No, stored as you send it |
+| `email` | Email address | Only by a one-time code: see [Contact verification](#contact-verification) |
+| `phone` | With the country code, for example `+12025550123` | Only by a one-time code |
+| `type` | `INDIVIDUAL`, the default, or `BUSINESS` | — |
+
+Add the address with a second call, [`POST /accounts/customers/{customerId}/addresses`](/api-reference/customer/customers/accounts-customers-addresses-create): `type: RESIDENCE` for where the customer lives, and an `address` with `lineOne`, `lineTwo`, `city`, `region` (state or province), `countryCode` and `postalCode`.
+
+Calling `POST /accounts/customers` again with the same `externalId` fills only the fields the customer doesn't have yet, and never overwrites one. To change a value, use [`PATCH /accounts/customers/{customerId}`](/api-reference/customer/customers/accounts-customers-update).
+
+The customer has no SSN or tax-id field. An SSN lives only in the customer's [Unified KYC](/docs/stablecoins/unified-kyc), and Meld reads it from there when a provider needs it.
+
+| Meld fills | With | When |
+| --- | --- | --- |
+| Unified KYC | The customer's name, date of birth, email and phone | When you first start Unified KYC for the customer, with `mode: HOSTED_URL`. A name or date of birth you add to the customer later doesn't reach a KYC already started, and the address and SSN are never prefilled |
+| Stripe's KYC, in the SDK | Name, date of birth and US `RESIDENCE` address from the customer, and the SSN from Unified KYC | Only once Unified KYC has approved the customer. Otherwise the customer types what Stripe asks for |
+| The customer | Name, date of birth, email and phone from Unified KYC, each only if the customer's is empty, and the residence address when the customer has none or theirs lacks a country or region | When Unified KYC approves the customer. The SSN is never copied |
+
+Send everything you already know when you create the customer, before you start Unified KYC.
+
+---
+
+## Which providers need Unified KYC
+
+[Unified KYC](/docs/stablecoins/unified-kyc) has one level today, and it includes an ID document and a selfie. Run it only for a customer who orders from a provider that needs it. The quote row's [`kycMode`](/docs/stablecoins/headless-integration/shared-flows/quotes#1-ask-for-headless-quotes) says which kind a provider is: `SYNC` and `ASYNC` need Unified KYC, `PROVIDER_MANAGED` doesn't.
+
+| Provider | Unified KYC | Also needed |
+| --- | --- | --- |
+| Mercuryo | Approved before the order. Meld shares it with Mercuryo when you create the order | Apple Pay in the US, for a customer new to Mercuryo: Mercuryo's own verification. The order is refused with `403 KYC_NOT_COMPLETED`, and `serviceProviderDetails.hostedVerificationUrl` is Mercuryo's page for it. Never log or store that URL |
+| Banxa | Approved, and [shared with Banxa](/docs/stablecoins/unified-kyc#share-kyc-with-providers) | Details Banxa asks for, such as occupation or source of funds, when `PROVIDER_EXTRA_KYC` lists them in `missingFields` |
+| Uphold | Approved, and shared with Uphold | Uphold's due-diligence and tax questions, when `PROVIDER_EXTRA_KYC` lists them |
+| Noah | Approved, and shared with Noah | Noah's own KYC step, when Noah asks for one: see [Provider-specific requirements](/docs/stablecoins/virtual-account-integration/payins#provider-specific-requirements) |
+| Due Network | Approved, and shared with Due Network | Due's own KYC step, when Due asks for one, and Due's terms of service: see [Provider-specific requirements](/docs/stablecoins/virtual-account-integration/payins#provider-specific-requirements) |
+| Coinme | Approved, and shared with Coinme | — |
+| Coinbase | Not for guest orders. At Coinbase's lifetime cap, Meld sends Coinbase the date of birth and the SSN's last four digits from it | An email and a US mobile number, each confirmed with a one-time code, and Coinbase's agreements. See [Coinbase guest checkout and step-up KYC](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc) |
+| Stripe | Not needed. Stripe runs its own KYC in the SDK, and an approved Unified KYC only fills it in | An email on the customer. See [Wallets → Stripe](/docs/stablecoins/headless-integration/wallets#stripe) |
+| Brale | Not needed | Business customers only. Brale verifies them itself |
+| T-0 | Not needed | Travel-rule originator and beneficiary data (IVMS-101) on each order, in `providerData.travelRuleData` |
+| Yellow Card | Not needed | For mobile money, the customer's phone on the order, in `customerPhoneNumber` |
+
+---
+
 ## Check the requirements
 
 **Endpoint:** [`GET /crypto/onramp/{serviceProvider}/requirements`](/api-reference/crypto/headless/crypto-onramp-verification-requirements-get)
@@ -135,7 +186,7 @@ Whether the provider wants the customer's email or phone confirmed by a one-time
 | `phone.requireLineType` | The line type the provider will accept, for example `MOBILE` |
 | `enforced` | Whether the provider rejects orders that fall short, or merely prefers it |
 
-`satisfied` is about verification, not about whether the value is on the customer. `MISSING` means never verified — the customer may well have an email on record. A customer with no value at all has to have one [set on the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) before there is anything to verify.
+`satisfied` is about verification, not about whether the value is on the customer. `MISSING` means never verified — the customer may well have an email on record. A customer with no value at all has to have one [set on the customer](#create-the-customer) before there is anything to verify.
 
 Verify only the channels that are `required` and not yet `satisfied`:
 
@@ -169,11 +220,14 @@ One entry per KYC step this provider needs, each reported independently.
 | `PROVIDER_KYC_SHARE` | That verification has been shared with this provider, and accepted. Meld shares only with providers named in `kycShareProviders`, so `REQUIRED` here usually means the provider was never named — add it as in [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers) |
 | `PROVIDER_EXTRA_KYC` | The provider wants details of its own beyond the share |
 
+Only the steps the provider needs are listed. A `PROVIDER_MANAGED` provider, such as Coinbase or Stripe, lists no `MELD_KYC_APPROVED` or `PROVIDER_KYC_SHARE`. Mercuryo lists no `PROVIDER_KYC_SHARE`, because Meld shares with it when you create the order. See [Which providers need Unified KYC](#which-providers-need-unified-kyc).
+
 | Field | Meaning |
 | --- | --- |
 | `status` | `REQUIRED`, `PENDING`, `SATISFIED` or `BLOCKED` |
 | `missingFields` | The fields to collect |
 | `processes` / `processStates` | Provider-side steps, where the provider exposes them |
+| `processActions` | How to run each of those steps: see [Provider processes](#provider-processes) |
 | `reason` | Why, on a `BLOCKED` requirement |
 
 Collect everything in `missingFields` across all requirements in one pass, then send it as `serviceProviderDetails` on:
@@ -201,7 +255,9 @@ Two of these are easy to get wrong.
 
 ### Provider processes
 
-Some requirements are cleared by a process the provider runs, such as Coinbase's `limitUpgrade`, which raises a customer's limit. The requirement names the process, and the order is refused with `422 CUSTOMER_NOT_PAYMENT_READY` until it completes.
+Some requirements are cleared by a process the provider runs, such as Coinbase's `limitUpgrade`, which raises a customer's limit. The requirement names the process, and the order is refused with `422 CUSTOMER_NOT_PAYMENT_READY` until it completes. For the whole Coinbase flow, from the cap through Unified KYC to the next order, see [Coinbase guest checkout and step-up KYC](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc).
+
+The requirement's `processActions` describes each process: its `endpoint` and `method`, and its `pollIntervalMs` and `pollTimeoutMs`. The top-level `availableProcesses` lists every process the provider offers, whether or not the customer needs one, so act on the requirement, not on that list.
 
 Run it from your backend, with the customer and the same order intent you checked:
 
@@ -224,8 +280,8 @@ Run it from your backend, with the customer and the same order intent you checke
 
 `READ` returns the process `status` and the `inputSources` it accepts. Send `operation: START` with one of them as `inputSource`:
 
+- `CUSTOMER_KYC` sends the provider details from the customer's [Unified KYC](/docs/stablecoins/unified-kyc). It is refused with `403 KYC_NOT_COMPLETED` if those details are missing. Prefer it when it is offered.
 - `HOSTED_FORM` returns `hostedForm.url`, a provider page for the customer to complete before `hostedForm.expiresAt`. Never log or store it.
-- `CUSTOMER_KYC` sends the provider details from the customer's [Unified KYC](/docs/stablecoins/unified-kyc). It is refused with `403 KYC_NOT_COMPLETED` if those details are missing.
 
 Then `READ` every `process.pollIntervalMs` while `pollable` is `true`, and resend the order once `status` is `SATISFIED`. `PENDING` means the provider is still reviewing: stop polling after `process.pollTimeoutMs` and check eligibility later. `BLOCKED` and `UNAVAILABLE` mean the provider won't proceed: offer another provider. Never retry `START` automatically.
 
