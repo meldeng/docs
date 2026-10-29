@@ -1,9 +1,9 @@
 ---
-title: "Product 4: Headless Card, Apple Pay and Transfers"
+title: "Product 4: Headless Card, Wallets and Transfers"
 sidebarTitle: "Overview"
 ---
 
-Headless is for teams who want the whole purchase to happen in their own app or site, payment included. White-Label API and Meld Checkout both hand the user to the onramp's UI to pay; headless keeps them in yours. Your backend creates an order, your client mounts the [Meld SDK](/docs/stablecoins/headless-integration/sdks), and the SDK draws the provider's card form or raises the system Apple Pay sheet in place.
+Headless is for teams who want the whole purchase to happen in their own app or site, payment included. White-Label API and Meld Checkout both hand the user to the onramp's UI to pay; headless keeps them in yours. Your backend creates an order, your client mounts the [Meld SDK](/docs/stablecoins/headless-integration/sdks), and the SDK draws the provider's card form or raises the Apple Pay or Google Pay sheet in place.
 
 Headless also covers [transfers](/docs/stablecoins/headless-integration/transfers) from a customer's Coinbase account to their own wallet.
 
@@ -22,13 +22,14 @@ One endpoint creates both kinds of order:
 | `paymentMethodType` | What comes back | Guide |
 | --- | --- | --- |
 | `CREDIT_DEBIT_CARD` | Provider card surface for the SDK to mount | [Cards](/docs/stablecoins/headless-integration/cards) |
-| `APPLE_PAY` | Apple Pay surface for the SDK to present | [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) |
+| `APPLE_PAY` | Apple Pay surface for the SDK to present | [Wallets](/docs/stablecoins/headless-integration/wallets) |
+| `GOOGLE_PAY` | Google Pay surface for the SDK to present | [Wallets](/docs/stablecoins/headless-integration/wallets#google-pay-with-coinbase) |
 
 Transfers have their own endpoint, `POST /crypto/order/headless/transfer`, and their own order shape.
 
 ### The order
 
-Every card and Apple Pay order comes back in the same envelope. Only `paymentMethodResponseDetails` differs by method, and fields with nothing in them are omitted rather than returned null.
+Every card and wallet order comes back in the same envelope. Only `paymentMethodResponseDetails` differs by method, and fields with nothing in them are omitted rather than returned null.
 
 ```json
 {
@@ -66,20 +67,20 @@ Send `X-Idempotency-Key: <uuid>` on order creation. A repeated key returns the o
 
 - A Meld API key with payment access (sandbox first, production for go-live)
 - Headless onramps enabled on your account. Contact your Meld representative to enable Headless for your Meld account
-- For production, your own account and credentials with each provider you use, except Coinbase. See [provider credentials](#provider-credentials)
+- For production, your own account and credentials with each provider you use. See [provider credentials](#provider-credentials)
 - A webhook endpoint configured in **Developer → Webhooks** in the dashboard
 
-Card and Apple Pay are independent — integrate either on its own, or both. They share everything above and differ only in the surface the SDK presents, so adding the second later is a payment method and a capture surface, not a second integration.
+Cards and wallets are independent — integrate either on its own, or both. They share everything above and differ only in the surface the SDK presents, so adding the second later is a payment method and a capture surface, not a second integration.
 
 Both need the [Meld SDK](/docs/stablecoins/headless-integration/sdks) in your client. Transfers need no SDK.
 
-### Your customer must be KYC'd first
+### Create the customer, and KYC them where a provider needs it
 
-[Create the customer](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-1-create-a-meld-customer) and verify them through [Unified KYC](/docs/stablecoins/unified-kyc) before their first order. Almost every provider refuses an order for a customer Meld has not cleared, and the refusal arrives at order creation — after the customer has entered an amount and expects to pay.
+[Create the customer](/docs/stablecoins/headless-integration/shared-flows/eligibility#create-the-customer) with everything you already know about them. Mercuryo, Banxa and Uphold take the customer's verification from Meld, so verify the customer through [Unified KYC](/docs/stablecoins/unified-kyc) before their first order with one of them. They refuse an order for a customer Meld has not cleared, and the refusal arrives at order creation — after the customer has entered an amount and expects to pay. Every provider is in [Which providers need Unified KYC](/docs/stablecoins/headless-integration/shared-flows/eligibility#which-providers-need-unified-kyc).
 
-Clearing the customer is not enough for providers that take their KYC as a share from Meld, such as Banxa. Name each of them in `kycShareProviders` when you start KYC, or add them later with a `PATCH` — see [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers). A provider you leave out refuses the order with `403 KYC_NOT_COMPLETED`.
+Clearing the customer is not enough for providers that take their KYC as a share from Meld, such as Banxa and Uphold. Name each of them in `kycShareProviders` when you start KYC, or add them later with a `PATCH` — see [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers). A provider you leave out refuses the order: Banxa with `403 KYC_NOT_COMPLETED`, and Uphold with a `404` naming a service-provider customer.
 
-Coinbase is the exception: it has a guest checkout, where the customer verifies their email and phone with a one-time code and accepts Coinbase's agreements, with no KYC. Once the customer reaches Coinbase's lifetime transaction limit, they must complete KYC to keep using Coinbase Apple Pay, through the `limitUpgrade` [process](/docs/stablecoins/headless-integration/shared-flows/eligibility#provider-processes). Stripe runs its own KYC, but complete Unified KYC first so the SDK can fill it. Transfers need no Unified KYC. See [Providers](/docs/stablecoins/headless-integration/apple-pay#providers).
+Coinbase has a guest checkout instead, where the customer verifies their email and phone with a one-time code and accepts Coinbase's agreements, with no KYC. Once the customer reaches Coinbase's lifetime transaction limit, they complete Unified KYC to keep buying through Coinbase, and Meld passes Coinbase their date of birth and the last four digits of their SSN: see [Coinbase guest checkout and step-up KYC](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc). Stripe runs its own KYC in the SDK and needs no Unified KYC: if the customer's Unified KYC is approved, Meld fills Stripe's forms from it, so they type less. Transfers need no Unified KYC. See [Wallets → Providers](/docs/stablecoins/headless-integration/wallets#providers).
 
 <Note>
   Some providers provision their own customer record at order time and reject the call without an email. If your users can sign up without one, sync it onto the Meld customer with `PATCH /accounts/customers/{customerId}` before the first order — a missing email surfaces later as a `404` naming a service-provider customer, which is harder to read than it sounds. Stripe and Coinbase check for it up front instead, and refuse the order with `403 VERIFICATION_REQUIRED` and `email: MISSING`.
@@ -87,7 +88,14 @@ Coinbase is the exception: it has a guest checkout, where the customer verifies 
 
 ### Provider credentials
 
-In production, every order runs on your own merchant account at the provider, using credentials registered to your Meld account. Coinbase is the exception: Meld sets it up on your account.
+In production, every order runs on your own merchant account at the provider, using credentials registered to your Meld account. That includes Coinbase, with one exception today: Meld signs the one-time-code check of a Coinbase customer's email and phone with a Meld key, not yours.
+
+For Coinbase, that is your own [Coinbase Developer Platform](https://portal.cdp.coinbase.com) (CDP) project:
+
+- A Secret API key created with the **ECDSA** signature algorithm. Meld can't sign requests with an Ed25519 key, which is CDP's default for new keys
+- The headless onramp's guest checkout enabled on the project, and Google Pay as well if you offer it. Coinbase turns these on by request: ask Coinbase or your Meld representative
+
+Your Meld representative can register the key on your Meld account for you.
 
 In sandbox, Meld enables Stripe, Coinbase and Banxa on your sandbox account with its own sandbox credentials. They appear under **Integrations** as **Shared Meld Integration**, and you add no keys or webhooks for them. Ask your Meld representative to enable them.
 
@@ -109,11 +117,11 @@ Configure the [Meld SDK](/docs/stablecoins/headless-integration/sdks#environment
 Pick what you are integrating:
 
 1. [Cards](/docs/stablecoins/headless-integration/cards) — the provider's card form, mounted inside your checkout
-2. [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) — present the system sheet in your app or site
+2. [Wallets](/docs/stablecoins/headless-integration/wallets) — present the Apple Pay or Google Pay sheet in your app or site, with one integration for every wallet and provider, including the Apple and Google setup
 3. [Transfers](/docs/stablecoins/headless-integration/transfers) — send crypto the customer holds at an exchange, such as Coinbase, to their own wallet
 
 ---
 
 ## Test in sandbox
 
-Test card and Apple Pay orders with the [headless testing guide](/docs/stablecoins/sandbox-guide/headless-testing), and transfers with [Transfers → Test in sandbox](/docs/stablecoins/headless-integration/transfers#test-in-sandbox). Sandbox has fewer providers and less coverage than production.
+Test card and Apple Pay orders with the [headless testing guide](/docs/stablecoins/sandbox-guide/headless-testing), Google Pay with [Wallets → Testing](/docs/stablecoins/headless-integration/wallets#testing), and transfers with [Transfers → Test in sandbox](/docs/stablecoins/headless-integration/transfers#test-in-sandbox). Sandbox has fewer providers and less coverage than production.
