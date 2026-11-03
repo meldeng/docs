@@ -10,8 +10,10 @@ The SDK is a container and an event relay. It does not render card input, read c
 ## Install
 
 ```bash
-npm install @meldcrypto/sdk
+npm install @meldcrypto/sdk@0.7.0
 ```
+
+0.7.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), and the [shared error codes](#error-codes), named by `Meld.ErrorCode`, with the order's `paymentMethodType` on each error.
 
 ```js
 import Meld from '@meldcrypto/sdk';
@@ -29,7 +31,40 @@ Use it with a bundler — the SDK is bundled into your app.
 
 The order comes from your server, never from the browser. Your API key stays server-side.
 
-See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request.
+See [Cards](/docs/stablecoins/headless-integration/cards) or [Wallets](/docs/stablecoins/headless-integration/wallets) for the request.
+
+---
+
+## Check readiness before you create the order
+
+Two checks tell you what to offer, and both need Web SDK 0.7.0 or later. Each returns a Promise of `{ status, code?, reason? }` that never rejects. `ready` means offer the method, `unknown` that you may offer it because the payment has the final word, and `unavailable`, with `code` `PAYMENT_METHOD_UNAVAILABLE`, that you hide it. `reason` is for your logs. The answers mean the same on every Meld SDK: see [Wallets → The integration loop](/docs/stablecoins/headless-integration/wallets#1-check-the-device-then-quote).
+
+### Before you quote
+
+Ask whether this browser can pay with a method at all:
+
+```js
+const { status } = await Meld.paymentMethodReadiness('APPLE_PAY');
+if (status !== 'unavailable') showApplePay();
+```
+
+- **`APPLE_PAY`** is `ready` when `ApplePaySession.canMakePayments()` is `true`. It is `unavailable` when that is `false`, when the browser has no `ApplePaySession`, or when the call throws, as it does on an insecure page. It can't see the cards in Wallet, so `ready` doesn't promise a card the provider takes.
+- **`GOOGLE_PAY`** is always `unavailable`: Google Pay doesn't run on the web.
+- **Any other method**, such as `CREDIT_DEBIT_CARD`, is `unknown`: nothing in the browser decides it.
+
+### After you quote
+
+Ask about each quote row you might offer, by its `paymentMethodType` and `headlessPresentation`:
+
+```js
+const { status } = await Meld.presentationReadiness(row); // { paymentMethodType, headlessPresentation }
+if (status === 'unavailable') hide(row);
+else offer(row);
+```
+
+A row is `unavailable` when this SDK doesn't present it: the same rows for which `Meld.presentationCapabilities(row.headlessPresentation, row.paymentMethodType)` reports `unsupported`, which in 0.7.0 includes every Stripe and Coinbase row. The Mercuryo, Uphold and Banxa card rows and Banxa Apple Pay are `unknown`: nothing in the browser decides a card, and Banxa's component decides whether it shows Apple Pay.
+
+Readiness is advisory. On the web, the surfaces 0.7.0 presents never report `PAYMENT_METHOD_UNAVAILABLE` once mounted: Banxa's component decides whether it shows Apple Pay. Before 0.7.0 the SDK has neither check, so check the order with `Meld.capabilities(order)` once you have created it.
 
 ---
 
@@ -40,16 +75,20 @@ const order = await fetch('/your-backend/order').then(r => r.json());
 
 const handle = Meld.mount(order, document.getElementById('widget-container'), {
   onReady:            ()  => hideSpinner(),
-  onStatusChange:     (s) => track(s),
+  onStatusChange:     (s) => track(s.status),
   onPaymentSubmitted: ()  => showProcessing(),
   onCancel:           ()  => showRetryCta(),
   onError:            (e) => showError(e.message),
 });
 ```
 
+`handlers` can be a plain object, a frozen one, or a class instance whose callbacks are methods on its prototype. The SDK calls each callback on its own, not as a method of your object, so bind a method that reads `this`.
+
 Check `Meld.capabilities(order)` first if you handle order types this SDK does not embed. An order it cannot present reports `surface: 'unsupported'` and `embeddable: false`, and `mount` throws.
 
-Stripe orders and Coinbase Apple Pay report `unsupported` here. They run only in an iOS app; see [Meld SDK](/docs/stablecoins/headless-integration/sdks).
+On the web, the SDK presents the Mercuryo, Uphold and Banxa card forms, and Banxa's Apple Pay in a browser that has Apple Pay. A wallet row it doesn't present answers `unavailable`, and its order reports `unsupported`, so the readiness checks hide it. [Wallets → What runs where](/docs/stablecoins/headless-integration/wallets#what-runs-where) shows which wallets run on the web.
+
+A Banxa Apple Pay order reports `embeddable: true` and `requiresUserGesture: true`: Banxa's component draws its own Apple Pay button into your element and opens the sheet from the customer's tap on it. Give the element room, and don't draw a button of your own over it.
 
 ---
 
@@ -61,9 +100,35 @@ Stripe orders and Coinbase Apple Pay report `unsupported` here. They run only in
 | `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
 | `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
 | `onCancel` | The user backed out |
-| `onError` | Carries `code`, `message`, `recoverable` and, on a load failure, `detail` |
+| `onError` | Carries `code`, `message`, `recoverable`, `detail` when there is one, and the order's `paymentMethodType` |
 
 [The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, and how `onCancel` and `onError` relate to the status.
+
+### Error codes
+
+From 0.7.0, `Meld.ErrorCode` names the codes every Meld SDK shares, such as `Meld.ErrorCode.PAYMENT_METHOD_UNAVAILABLE`, with the same `attemptMayExist` for each: see [Wallets → Error codes](/docs/stablecoins/headless-integration/wallets#error-codes). `Meld.attemptMayExist(e.code)` is `false` only for the five codes that say no attempt exists.
+
+Of the shared codes, the surfaces 0.7.0 presents report only `PROVIDER_LOAD_FAILED`, with `recoverable: true`, when the provider's script or module doesn't load. Every other error they report carries a code of their own, listed below.
+
+```js
+onError: (e) => {
+  if (e.recoverable) return;
+  Meld.attemptMayExist(e.code) ? trackExistingOrder() : offerAnotherMethod(e.paymentMethodType);
+},
+```
+
+`e.paymentMethodType` is the mounted order's `paymentMethodType`, such as `APPLE_PAY`, so you can word "Apple Pay isn't available" without branching on the code. `mount` refuses an order without one, so every error carries it. `detail`, when there is one, carries the load-failure diagnosis or the provider's own event. Log it; don't branch on it.
+
+The card forms and Banxa report these codes of their own, which only the Web SDK emits. As for any code outside the shared set, `Meld.attemptMayExist` answers `true` for each of them:
+
+| `code` | From | Means |
+| --- | --- | --- |
+| The failed status, such as `order_failed` | Mercuryo | Mercuryo reported the order failed |
+| Uphold's own code, or `uphold_widget_error` | Uphold | Uphold's card form reported an error |
+| `authorize_session_invalid` | Uphold | Card capture finished without a card |
+| `authorize_session_failed` | Uphold | The authorization step couldn't start. Recoverable |
+| Banxa's `errorCode`, or `payment_failure` | Banxa | Banxa's checkout reported a payment failure |
+| `missing_client_token` | Banxa | The order has no `sdkSessionToken` |
 
 ---
 
@@ -89,6 +154,8 @@ const csp = Meld.requiredCsp(['MERCURYO']);
 | --- | --- |
 | `frameSrc` | append to your `frame-src` directive |
 | `scriptSrc` | append to your `script-src` directive |
+| `connectSrc` | append to your `connect-src` directive |
+| `imgSrc` | append to your `img-src` directive |
 | `iframeAllow` | set as the iframe's `allow` attribute |
 
 The result is read from the SDK's provider registry and reflects the environment set in `Meld.configure`, so there is nothing provider-specific for you to maintain. Providers whose KYC runs inside the surface need `camera` in `iframeAllow`.

@@ -1,6 +1,6 @@
 ---
 title: "React Native SDK"
-description: "One component that mounts card and Apple Pay orders, with the same API on iOS and Android."
+description: "One component that mounts card and wallet orders, with the same API on iOS and Android."
 ---
 
 It wraps the native iOS and Android SDKs. The SDK does not render card input or carry card data; capture happens on the provider's own surface.
@@ -10,22 +10,18 @@ It wraps the native iOS and Android SDKs. The SDK does not render card input or 
 ## Install
 
 ```bash
-npm install @meldcrypto/react-native-sdk
+npm install @meldcrypto/react-native-sdk@0.10.0
 ```
+
+0.10.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), the [shared error codes](#error-codes) with `MeldErrorCode` and `attemptMayExist`, the order's `paymentMethodType` on each error, and, on Android, a wallet payment that lives as long as the Activity. It pins `MeldSDK` `~> 0.10.0` on iOS and `io.meld:meldsdk` 0.8.0 on Android, so it needs a new native build.
 
 The wrapper autolinks. The native SDK it depends on is not an RN module, so wire it per platform.
 
 ### iOS
 
-The wrapper needs iOS 15 or later, and its pod pulls in `MeldSDK` from CocoaPods trunk. For Stripe orders, pin `MeldSDK` to 0.9.1 or a later 0.9 release. Nothing checks the version at run time: a build that resolved 0.8.x or 0.9.0 still mounts Stripe orders, without the Stripe fixes in 0.9.1.
+The wrapper needs iOS 15 or later, and its pod pulls in `MeldSDK` from CocoaPods trunk. React Native SDK 0.10.0 pins `MeldSDK` to `~> 0.10.0`, so its pod resolves a 0.10 release for you, 0.10.0 or later. Don't pin `MeldSDK` yourself.
 
-**Bare React Native.** Add the pin to your app target in `ios/Podfile`:
-
-```ruby
-pod 'MeldSDK', '~> 0.9.1'
-```
-
-Then install with static frameworks, since the native SDK is a Swift pod:
+Install with static frameworks, since the native SDK is a Swift pod:
 
 ```bash
 cd ios && USE_FRAMEWORKS=static pod install
@@ -33,19 +29,15 @@ cd ios && USE_FRAMEWORKS=static pod install
 
 If `Podfile.lock` already holds an older `MeldSDK`, run `pod update MeldSDK` as well.
 
-**Expo.** Install `expo-build-properties` with `npx expo install expo-build-properties`, then pin the pod in your app config. The pin applies from the next native build (EAS Build, or `npx expo prebuild --clean`):
+**Upgrading from an earlier React Native release.** If you pinned `MeldSDK` yourself, for example to `~> 0.9.1` for Stripe orders, with `pod 'MeldSDK', '~> 0.9.1'` in `ios/Podfile` or an `extraPods` entry for `expo-build-properties` in your Expo config, remove the pin before you upgrade. CocoaPods can't meet it and React Native SDK 0.10.0's pin at once, so `pod install` fails. In Expo, the change applies from the next native build (EAS Build, or `npx expo prebuild --clean`).
 
-```json
-"plugins": [
-  ["expo-build-properties", { "ios": { "extraPods": [{ "name": "MeldSDK", "version": "~> 0.9.1" }] } }]
-]
-```
-
-After you build, check that `Podfile.lock` lists `MeldSDK (0.9.1)` or later. Native support comes only with a new app build; an over-the-air JavaScript update cannot add it.
+After you build, check that `Podfile.lock` lists the `MeldSDK` version you expect. Native support comes only with a new app build; an over-the-air JavaScript update cannot add it.
 
 ### Android
 
-Nothing beyond autolinking. The wrapper's Gradle module pulls the native Android SDK from Maven Central. Requires `minSdk 24`. The library declares `INTERNET` and `CAMERA`; camera is used for KYC capture inside a provider's surface and merges into your manifest automatically.
+Nothing beyond autolinking. The wrapper's Gradle module pulls the native [Android SDK](/docs/stablecoins/headless-integration/sdks/android) from Maven Central. Requires `minSdk 24`. From React Native SDK 0.9.0 it also requires `compileSdk 34` or later and Android Gradle plugin 8.1.1 or later. The library declares `INTERNET` and `CAMERA`; camera is used for KYC capture inside a provider's surface and merges into your manifest automatically.
+
+React Native SDK 0.10.0 pins Android SDK 0.8.0, which adds Google Play services Wallet to your app for the readiness checks. See [what the SDK adds to your app](/docs/stablecoins/headless-integration/sdks/android#what-the-sdk-adds-to-your-app).
 
 ### iOS permissions
 
@@ -67,7 +59,50 @@ In Expo, set it under `ios.infoPlist`. The Meld config plugin does not add it.
 
 The order comes from your server. Your API key never ships in the app binary.
 
-See [Cards](/docs/stablecoins/headless-integration/cards) or [Apple Pay](/docs/stablecoins/headless-integration/apple-pay) for the request. Return the response to the app unchanged: the SDK reads what it needs from it.
+See [Cards](/docs/stablecoins/headless-integration/cards) or [Wallets](/docs/stablecoins/headless-integration/wallets) for the request. Return the response to the app unchanged: the SDK reads what it needs from it.
+
+---
+
+## Check readiness before you create the order
+
+Two checks tell you what to offer, and both need React Native SDK 0.10.0 or later. Each resolves to `{ status, code?, reason? }`, on iOS and Android alike:
+
+- **`ready`:** offer the method.
+- **`unknown`:** the SDK couldn't tell. You may offer the method: the payment has the final word.
+- **`unavailable`:** hide the method. `code` is `PAYMENT_METHOD_UNAVAILABLE`. No order exists, so there is nothing to track.
+
+`reason` is for your logs. The answers are the native SDK's, and mean what they mean there: see [Wallets → The integration loop](/docs/stablecoins/headless-integration/wallets#1-check-the-device-then-quote).
+
+### Before you quote
+
+Ask whether this device can pay with a method at all, before you request a quote:
+
+```tsx
+for (const method of ['APPLE_PAY', 'GOOGLE_PAY']) {
+  const { status } = await Meld.paymentMethodReadiness(method);
+  if (status !== 'unavailable') showWallet(method);
+}
+```
+
+`GOOGLE_PAY` answers `unavailable` on iOS and `APPLE_PAY` on Android, so the loop needs no platform check. Any method with nothing on the device to check, such as `CREDIT_DEBIT_CARD`, answers `unknown`. `ready` doesn't promise that every provider takes the customer's card, so check each quote row too. JavaScript from 0.10.0 that an over-the-air update delivers to an older binary still answers: `unavailable` for the other platform's wallet, and `unknown` otherwise.
+
+### After you quote
+
+Each headless quote row carries `paymentMethodType` and `headlessPresentation`. Ask the SDK whether this device can pay with a row, through its provider, before you offer it:
+
+```tsx
+const { status } = await Meld.presentationReadiness(row); // { paymentMethodType, headlessPresentation }
+if (status === 'unavailable') hide(row);
+else offer(row);
+```
+
+Card rows answer `unknown` on both platforms.
+
+JavaScript from 0.10.0 that an over-the-air update delivers to an older binary answers from that binary's protocol support. A binary built with React Native SDK 0.8.0 or later on iOS, or 0.9.0 or later on Android, answers `unavailable` where it can't present the row, and `unknown` otherwise. An older binary answers `unavailable` for every row, cards included, although `Meld.capabilities(order)` and `<MeldWidget>` still present the orders its native SDK knows. On such a binary, ship a new native build with 0.10.0, or don't filter quote rows on the device: offer them, and check each order with `Meld.capabilities(order)` once you have created it.
+
+`Meld.presentationCapabilities` answers only whether this build can present the row. From 0.10.0 it also takes the row, and the positional form `(paymentMethodType, headlessPresentation)` still works. It needs a binary built with React Native SDK 0.8.0 or later on iOS, or 0.9.0 or later on Android. An older binary reports `unsupported` for every row, including the cards it can mount, so don't use it to hide methods there.
+
+Check the order itself again with `Meld.capabilities(order)` before you mount it.
 
 ---
 
@@ -84,7 +119,7 @@ if (surface === 'unsupported') return offerAnotherMethod();
 <MeldWidget
   order={order}
   onReady={() => hideSpinner()}
-  onStatusChange={(s) => track(s)}
+  onStatusChange={(e) => track(e.status)}
   onPaymentSubmitted={() => showProcessing()}
   onCancel={() => backToCheckout()}
   onError={(e) => showError(e.message)}
@@ -93,9 +128,11 @@ if (surface === 'unsupported') return offerAnotherMethod();
 
 Call `Meld.configure` once, before you check or mount an order, with the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
 
-To check a quote before you create the order, pass its `paymentMethodType` and `headlessPresentation` to `Meld.presentationCapabilities`, then check the order itself again before you mount it. This works on iOS only. On Android it reports `unsupported` for every quote, so don't use it to hide methods there.
+Branch only on `surface === 'unsupported'` and on `embeddable`. Every other `surface` value is informational: see [Surface is informational](/docs/stablecoins/headless-integration/wallets#surface-is-informational).
 
-Keep the component mounted until a terminal callback. Unmounting tears the surface down and delivers no callback. On `onPaymentSubmitted`, navigating away is how you unmount it. Apple Pay and Stripe orders draw nothing in the component, so a zero-size component is enough for them.
+Keep the component mounted until a terminal callback. Unmounting tears the surface down and delivers no callback. On `onPaymentSubmitted`, navigating away is how you unmount it. Wallet and Stripe orders, and Banxa card orders on iOS, report `embeddable: false` and draw nothing in the component, so a zero-size component is enough for them.
+
+On Android, from React Native SDK 0.10.0, an order with `embeddable: false` mounts on the app's Activity, so the payment survives the component leaving the screen, for example behind a pushed screen. Before 0.10.0, keep the component on screen until a terminal callback: the payment ends when it leaves. Giving the component a different order tears down the old mount, drops its late callbacks and mounts the new one, on iOS and, from 0.10.0, on Android.
 
 ---
 
@@ -104,32 +141,28 @@ Keep the component mounted until a terminal callback. Unmounting tears the surfa
 Same component, plus an `applePay` prop carrying what the order does not:
 
 ```tsx
-if (await Meld.canPresentApplePay()) {
-  <MeldWidget
-    order={order}
-    applePay={{
-      amount: '100.00',              // must match the order
-      currencyCode: 'USD',           // must match the order
-      summaryItemLabel: 'Acme — Buy USDC',
-    }}
-    onPaymentSubmitted={() => showProcessing()}
-    onCancel={() => backToCheckout()}
-    onError={(e) => showError(e.message)}
-  />
-}
+<MeldWidget
+  order={order}
+  applePay={{
+    amount: '100.00',              // must match the order
+    currencyCode: 'USD',           // must match the order
+    summaryItemLabel: 'Acme — Buy USDC',
+  }}
+  onPaymentSubmitted={() => showProcessing()}
+  onCancel={() => backToCheckout()}
+  onError={(e) => showError(e.message)}
+/>
 ```
 
 Pass `applePay` for any Apple Pay order without checking which provider it routed to: choosing the surface is the SDK's job. A malformed prop reports `INVALID_APPLE_PAY_REQUEST`.
 
 Add `walletAddress` and `clientIpAddress`, with the values the order was created with, in two cases: the order's response has neither `headlessPresentation` nor `paymentActions`, or an over-the-air update can deliver your JavaScript to a binary built with React Native SDK 0.7 or older.
 
-`canPresentApplePay()` is `true` only when Wallet holds a card. It is always `false` on Android, which does not present Apple Pay.
-
-Mount from the customer's tap on your Apple Pay button.
+Show your Apple Pay button only for quote rows whose [readiness](#check-readiness-before-you-create-the-order) isn't `unavailable`, and mount from the customer's tap on it. Google Pay uses the same component with no extra prop.
 
 ### Expo config plugin
 
-Mercuryo, Banxa and Stripe present the sheet under your merchant identifier, so your app needs the Apple Pay entitlement. Register the identifiers and certificates first, as in [Apple Developer setup](/docs/stablecoins/headless-integration/apple-pay#apple-developer-setup).
+Mercuryo, Banxa and Stripe present the sheet under your merchant identifier, so your app needs the Apple Pay entitlement. Register the identifiers and certificates first, as in [Apple Developer setup](/docs/stablecoins/headless-integration/wallets#apple-developer-setup).
 
 ```json
 "plugins": [
@@ -152,9 +185,9 @@ Bare React Native projects add the same entitlement in Xcode. Coinbase needs non
 The same `<MeldWidget>` presents every provider's order, with the requirements in [iOS → Provider notes](/docs/stablecoins/headless-integration/sdks/ios#provider-notes). On React Native:
 
 - **Stripe** needs iOS, in a native build with React Native SDK 0.8.0 or later and the `MeldSDK` version in [Install](#ios). On an Apple Pay order, an `applePay` you pass must carry the order's amount and `currencyCode: 'USD'`, or the component reports `MOUNT_FAILED`.
-- **Coinbase** needs iOS 16 or later.
+- **Coinbase** Apple Pay needs iOS 16 or later. Coinbase Google Pay needs Android, with React Native SDK 0.9.0 or later.
 
-On Android, and in a binary built with React Native SDK 0.7 or older, `Meld.capabilities(order)` reports `unsupported` for both, so leave them out.
+`Meld.capabilities(order)` reports `unsupported` for Stripe and Coinbase Apple Pay on Android, for Coinbase Google Pay on iOS, and for all of them in a binary built with React Native SDK 0.7 or older, so leave them out there.
 
 ---
 
@@ -162,19 +195,45 @@ On Android, and in a binary built with React Native SDK 0.7 or older, `Meld.capa
 
 | Event | Meaning |
 | --- | --- |
-| `onReady` | The surface has loaded, or the Apple Pay sheet is opening |
+| `onReady` | The surface has loaded, or the wallet's sheet is opening |
 | `onStatusChange` | Carries a normalized status: `pending`, `completed`, `failed` or `cancelled` |
 | `onPaymentSubmitted` | The user finished paying. Unmount and show processing. **Not settlement** |
-| `onCancel` | The user backed out, or dismissed the Apple Pay sheet. Nothing will settle |
-| `onError` | Carries a `code`, a `message`, `recoverable` and `detail` |
+| `onCancel` | The user backed out, or dismissed the wallet's sheet. Nothing will settle |
+| `onError` | Carries a `code`, a `message`, `recoverable`, `detail` and the order's `paymentMethodType` |
 
 [The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means, how `onCancel` and `onError` relate to the status, and the one-terminal-callback rule.
 
 ### Error codes
 
-On iOS, `onError` uses the [iOS SDK's codes](/docs/stablecoins/headless-integration/sdks/ios#error-codes). This SDK has no `attemptMayExist`, so decide by code: no payment exists for any code in that table except `PAYMENT_OUTCOME_UNKNOWN`, or for this SDK's own codes below. Treat any other non-recoverable code as a payment that may exist.
+`onError` uses the same codes on iOS and Android, listed with whether a payment may exist for each in [Wallets → Error codes](/docs/stablecoins/headless-integration/wallets#error-codes). Codes only one native SDK reports are on the [iOS](/docs/stablecoins/headless-integration/sdks/ios#codes-only-the-ios-sdk-reports) and [Android](/docs/stablecoins/headless-integration/sdks/android#codes-the-card-forms-pass-through) pages.
 
-This SDK's own codes are raised before anything is mounted: `INVALID_ORDER`, `INVALID_APPLE_PAY_REQUEST`, `MOUNT_FAILED` and `UNSUPPORTED_NATIVE_PROTOCOL`. Fix the input, or offer another method.
+From 0.10.0 the SDK exports the codes as `MeldErrorCode`, and `attemptMayExist(code)` tells you whether a payment may exist after a non-recoverable error:
+
+```tsx
+import { attemptMayExist } from '@meldcrypto/react-native-sdk';
+
+onError={(e) => {
+  if (e.recoverable) return;
+  attemptMayExist(e.code) ? trackExistingOrder() : offerAnotherMethod(e.paymentMethodType);
+}}
+```
+
+It is `false` only for the codes that say no payment exists, and `true` for every other code, including one your version doesn't know. On older releases, decide by code with the table.
+
+From 0.10.0, `e.paymentMethodType` is the mounted order's `paymentMethodType`, such as `APPLE_PAY`, so you can word "Apple Pay isn't available" without branching on the code. It is absent when the order has none.
+
+This SDK's own codes are raised before anything is mounted, and `attemptMayExist` is `false` for each:
+
+| `code` | Raised when |
+| --- | --- |
+| `INVALID_ORDER` | The order JSON can't be parsed |
+| `INVALID_APPLE_PAY_REQUEST` | The `applePay` prop is malformed, on iOS |
+| `MOUNT_FAILED` | The native SDK refused the order, or had nowhere to present it |
+| `UNSUPPORTED_NATIVE_PROTOCOL` | This app binary can't present the order's declared protocol |
+
+No payment exists for them. Fix the input, or offer another method.
+
+`MOUNT_FAILED` is never a card form's own `mount_failed`. A card form that fails before it shows reports a shared code, with the form's code in `detail`. On Android, the Banxa and Uphold card forms report `sdk_unavailable` as `PROVIDER_LOAD_FAILED`, and `mount_failed` or Banxa's `checkout_init_failed` as `PRESENTATION_FAILED`. On iOS, only the Uphold card form reports those, `sdk_unavailable` and `mount_failed`. Banxa's iOS card form is Primer's native modal, and reports `PRESENTATION_FAILED` with `detail` `banxa_card_failed:` and Primer's error id, or `presentation_deadline`: see [iOS → Card forms that fail before they show](/docs/stablecoins/headless-integration/sdks/ios#card-forms-that-fail-before-they-show).
 
 ---
 

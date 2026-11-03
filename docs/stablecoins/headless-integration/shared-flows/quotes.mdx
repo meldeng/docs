@@ -21,8 +21,8 @@ At `2026-05-01` each quote also carries fields the order needs:
 | --- | --- |
 | `destinationNetworkCode` | The chain you asked for, returned only when the quote request named one |
 | `integrationMode` | Which mode this quote is for, when you asked for `ALL` |
-| `kycMode` | Who runs KYC for this provider |
-| `isNativeAvailable` | Whether this quote can present a native Apple Pay sheet |
+| `kycMode` | Who runs KYC for this provider. `ASYNC` and `SYNC` take a share of the customer's Unified KYC, ahead of the order or with it. `PROVIDER_MANAGED` verifies the customer itself, as Coinbase's [guest checkout](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc) does. `NONE` takes no share |
+| `isNativeAvailable` | Not a wallet-support flag, and only Apple Pay orders read it. Mercuryo's rows carry Mercuryo's own value. Meld asks Mercuryo again when you create a Mercuryo Apple Pay order, and refuses it with [`400 INVALID_PAYMENT_METHOD`](/docs/stablecoins/headless-integration/wallets#errors-on-order-creation) unless Mercuryo then reports that the native sheet can open for the customer's IP and corridor, so even a `true` row can be refused. Stripe's headless Apple Pay rows carry `true`. Other providers' rows, Coinbase and Banxa included, leave it `false` or out. Don't hide a row because it is `false` or absent: to decide which rows to offer, ask the SDK's [`presentationReadiness`](/docs/stablecoins/headless-integration/wallets#2-check-each-row-on-the-device) |
 
 `destinationNetworkCode` is optional. If you send it, the quote returns the same value; if you don't, the quote leaves it out. The chain already comes from `destinationCurrencyCode` (for example, `USDC_BASE` is USDC on Base). Stripe is the exception: it returns a headless quote only when you send `destinationNetworkCode`.
 

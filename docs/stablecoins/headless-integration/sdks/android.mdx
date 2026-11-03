@@ -1,0 +1,243 @@
+---
+title: "Android SDK"
+description: "Mount a provider's card form into a view you own, or present Google Pay's sheet, in an Android app."
+---
+
+The SDK is a container and an event relay. It does not render card input or carry card data; capture happens on the provider's own page, loaded over HTTPS in a `WebView`.
+
+Building in React Native? Use the [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native) instead; it wraps this one.
+
+---
+
+## Install
+
+The SDK is on Maven Central as `io.meld:meldsdk`. New Android projects already list `mavenCentral()` in their repositories.
+
+```kotlin
+// app/build.gradle.kts
+dependencies {
+    implementation("io.meld:meldsdk:0.8.0")
+}
+```
+
+| Requirement | Version |
+| --- | --- |
+| `minSdk` | 24 |
+| `compileSdk` | 34 or later |
+| Android Gradle plugin | 8.1.1 or later |
+
+The library declares the `INTERNET` and `CAMERA` permissions, which merge into your manifest. Camera is for KYC capture inside a provider's surface.
+
+A minified build needs no keep rules of your own. The SDK ships its R8 rules, and they cover an app that [leaves out Google Play services Wallet](#leaving-out-google-play-services-wallet) too.
+
+<Note>
+  0.8.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), the [shared error codes](#error-codes) with the order's `paymentMethodType` on each error, and the [Activity mount](#mount-the-order). Everything else on this page works from 0.7.0, the first release with Google Pay.
+</Note>
+
+---
+
+## Configure the environment
+
+```kotlin
+Meld.configure(MeldEnvironment.SANDBOX) // or MeldEnvironment.PRODUCTION
+```
+
+Call it once, before you check or mount an order, with the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
+
+---
+
+## Create the order on your backend
+
+The order comes from your server. Your API key never ships in the app.
+
+See [Cards](/docs/stablecoins/headless-integration/cards) or [Wallets](/docs/stablecoins/headless-integration/wallets) for the request. Return the response to the app unchanged: the SDK reads what it needs from it.
+
+---
+
+## Check readiness before you create the order
+
+Two checks tell you what to offer, and both need 0.8.0 or later. They answer `Ready`, `Unavailable` or `Unknown`, with the same meaning on every Meld SDK. See [Wallets → The integration loop](/docs/stablecoins/headless-integration/wallets#1-check-the-device-then-quote). Each answers once, on the main thread, within 5 seconds.
+
+### Before you quote
+
+Ask whether this device can pay with a method at all, for example to decide whether to show a Google Pay entry point:
+
+```kotlin
+Meld.paymentMethodReadiness(context, "GOOGLE_PAY") { readiness ->
+    when (readiness) {
+        MeldReadiness.Ready, is MeldReadiness.Unknown -> showGooglePay()
+        is MeldReadiness.Unavailable -> hideGooglePay() // readiness.code is PAYMENT_METHOD_UNAVAILABLE
+    }
+}
+```
+
+- **`GOOGLE_PAY`** asks Google Pay's `isReadyToPay` for any Visa, Mastercard, American Express or Discover card the customer has added. It answers `Ready` when there is one and `Unavailable` when there is none. It answers `Unknown` when Google Play services is missing, out of date or slow, and, with the SDK configured for `SANDBOX`, when there is no card (see [Google Pay in sandbox](/docs/stablecoins/headless-integration/wallets#google-pay-in-sandbox)).
+- **`APPLE_PAY`** answers `Unavailable`: Apple Pay never runs on Android.
+- **Any other method**, such as `CREDIT_DEBIT_CARD` or a bank transfer, answers `Unknown`: nothing on the device decides it.
+
+A provider can take fewer cards than this check counts. Coinbase takes only cards tokenized on the device, for example, so check the quote row too.
+
+### After you quote
+
+Each headless quote row carries `paymentMethodType` and `headlessPresentation`. Ask the SDK whether this device can pay with a row, through its provider, before you offer it:
+
+```kotlin
+val p = row.headlessPresentation
+val presentation = MeldHeadlessPresentation(p.surface, p.protocol, p.version)
+
+Meld.presentationReadiness(context, presentation, row.paymentMethodType) { readiness ->
+    when (readiness) {
+        MeldReadiness.Ready -> offer(row)
+        is MeldReadiness.Unknown -> offer(row)    // the SDK couldn't tell; the payment has the final word
+        is MeldReadiness.Unavailable -> hide(row) // readiness.code is PAYMENT_METHOD_UNAVAILABLE
+    }
+}
+```
+
+- **`Ready`:** offer the method.
+- **`Unavailable`:** hide the method. This SDK doesn't present the row on this device, or Google Pay reports no card on this phone that the provider's request accepts. No order exists, so there is nothing to track.
+- **`Unknown`:** you may offer the method. Card rows answer `Unknown`, because nothing on the device decides whether a card pays. A Google Pay row answers `Unknown` when Google Play services is missing, out of date or slow, and, with the SDK configured for `SANDBOX`, when Google Pay finds no card.
+
+`Unavailable` and `Unknown` carry a `reason` for your logs, and the SDK logs every `Unknown` reason under the `MeldSDK` tag. Readiness is advisory and moves no money. If you create the order anyway, the mounted order reports `PAYMENT_METHOD_UNAVAILABLE` when the device can't pay, and that is the final word.
+
+On 0.7.0, `Meld.presentationCapabilities(presentation, paymentMethodType)` answers only whether this build can present the row. Hide the row when its `surface` is `unsupported`.
+
+---
+
+## Mount the order
+
+```kotlin
+val order = MeldOrder.fromJson(responseJson) // your backend's response, unchanged
+
+val capabilities = Meld.capabilities(order)
+if (capabilities.surface == "unsupported") {
+    return offerAnotherMethod() // this build can't present the order here
+}
+
+val handlers = MeldEventHandlers(
+    onReady = { hideSpinner() },
+    onPaymentSubmitted = { showProcessing() },
+    onStatusChange = { change -> track(change.status) },
+    onCancel = { backToCheckout() },
+    onError = { error -> if (!error.recoverable) endCheckout(error) },
+)
+
+val handle = if (capabilities.embeddable) {
+    Meld.mount(order, containerView, handlers) // a ViewGroup you own, sized for the card form
+} else {
+    Meld.mount(order, activity, handlers)      // nothing is drawn into your views
+}
+```
+
+Call `mount` on the main thread. Branch only on `surface == "unsupported"` and on `embeddable`. Every other `surface` value, such as `embedded` or `native-wallet`, is informational and can change between releases: see [Surface is informational](/docs/stablecoins/headless-integration/wallets#surface-is-informational).
+
+- **Embeddable orders**, the card forms, render into the `ViewGroup` you pass. Give it room.
+- **Other orders**, such as Google Pay, draw into none of your views and report `requiresUserGesture = true`. Mount them from the customer's tap with `Meld.mount(order, activity, handlers)`. The payment then lives as long as that Activity: it ends only when the Activity is destroyed or you unmount, not when one of your views leaves its window. A configuration change the Activity doesn't handle itself destroys it, and so ends the payment.
+
+The Activity mount needs 0.8.0 or later. It throws `MeldMountException.MissingHost` for an embeddable order, and `MeldMountException.PresentationUnavailable` when the Activity is not on screen. On 0.7.0, mount every order with a view. For a Google Pay order, the view only locates the Activity, and the payment ends when the view leaves its window, so keep it attached until a terminal callback.
+
+Keep the handle until a terminal callback. `handle.unmount()` tears the surface down and delivers no callback. After `onPaymentSubmitted` you can unmount straight away: the SDK keeps a provider-hosted page alive for up to 60 seconds, so the provider can finish confirming the payment.
+
+---
+
+## Events
+
+| Event | Meaning |
+| --- | --- |
+| `onReady` | The card form has loaded, or the wallet's sheet was requested |
+| `onStatusChange` | Carries a normalized `status`: `PENDING`, `COMPLETED`, `FAILED` or `CANCELLED`, with the provider's own value in `providerStatus` |
+| `onPaymentSubmitted` | The customer finished paying. Unmount and show processing. **Not settlement** |
+| `onCancel` | The customer backed out. Nothing will settle |
+| `onError` | Carries a `code`, a `message`, `recoverable`, `attemptMayExist`, `detail` and the order's `paymentMethodType` |
+
+Every callback runs on the main thread and receives the order's id. [The five events](/docs/stablecoins/headless-integration/sdks#the-five-events) covers what each one means and how `onCancel` and `onError` relate to the status.
+
+Each mount delivers exactly one terminal callback, `onPaymentSubmitted`, `onCancel` or `onError` with `recoverable: false`, and drops every callback after it. If the session ends without one while you still hold the handle, you get `onError` with `PAYMENT_OUTCOME_UNKNOWN`, or with `PAYMENT_REJECTED` after a `FAILED` status. To retry after a terminal callback, create a new order.
+
+### Error codes
+
+Every Meld SDK shares these codes, with the same `attemptMayExist` for each: see [Wallets → Error codes](/docs/stablecoins/headless-integration/wallets#error-codes). They need 0.8.0 or later.
+
+| `code` | `attemptMayExist` | Meaning |
+| --- | --- | --- |
+| `PAYMENT_METHOD_UNAVAILABLE` | `false` | This device or customer can't pay with the order's method. Offer another method |
+| `PRESENTATION_FAILED` | `false` | The payment UI never came up. The next attempt needs a new order |
+| `PAYMENT_REJECTED` | `false` | Declined, and nothing will settle. Offer another option |
+| `ORDER_STATE_CHANGED` | `false` | The provider no longer accepts this order. Create a new order |
+| `VERIFICATION_PENDING` | `false` | The provider is still reviewing the customer. Defined from 0.8.0, and not reported yet |
+| `PAYMENT_OUTCOME_UNKNOWN` | `true` | A payment may exist. Track the order through your backend and never pay it again |
+| `PROVIDER_LOAD_FAILED` | `true` | The provider's page or SDK didn't load. With `recoverable: true`, mounting again may work. Otherwise track the order before you offer a new one |
+
+`MeldErrorCode` names these codes. `error.attemptMayExist`, or `MeldErrorCode.attemptMayExist(code)`, is `false` only for the five codes that say no attempt exists, and `true` for every other code, including one this build doesn't know.
+
+`error.paymentMethodType` is the mounted order's `paymentMethodType`, such as `GOOGLE_PAY`, or `null` when the order has none. Word your message from it rather than from the code.
+
+`detail` carries the provider's own event or code. Log it; don't branch on it.
+
+#### Card forms that fail before they show
+
+The Banxa and Uphold card forms run a provider SDK, bundled with this one, inside the `WebView`. When that page fails before the form shows, they report a shared code, with the form's own code in `detail`:
+
+| Failure | `code` | `detail` |
+| --- | --- | --- |
+| The provider SDK didn't load (`sdk_unavailable`) | `PROVIDER_LOAD_FAILED` | `banxa_card_failed:sdk_unavailable` or `uphold_card_failed:sdk_unavailable` |
+| Mounting the form threw (`mount_failed`) | `PRESENTATION_FAILED` | `banxa_card_failed:mount_failed` or `uphold_card_failed:mount_failed` |
+| Banxa's checkout refused the order's client token (`checkout_init_failed`) | `PRESENTATION_FAILED` | `banxa_card_failed:checkout_init_failed` |
+
+#### Codes the card forms pass through
+
+The Android SDK adds no code of its own. Its card forms pass the provider's other codes through, and each can follow a payment, so `attemptMayExist` is `true` for all of them:
+
+| `code` | From |
+| --- | --- |
+| `authorize_session_invalid`, `authorize_session_failed` | Uphold, moving from card capture to authorization |
+| The form's own error code, or `error` | Uphold and Banxa |
+| Mercuryo's terminal status, such as `failed` or `rejected` | Mercuryo |
+
+---
+
+## Google Pay
+
+Coinbase presents Google Pay through its own payment page. The SDK loads that page out of sight and presses its Google Pay button once, so the customer sees only Google Pay's sheet. Such an order reports `embeddable = false`, `surface = "native-wallet"` and `requiresUserGesture = true`.
+
+Before you offer it, meet [Before you go live](/docs/stablecoins/headless-integration/wallets#before-you-go-live): your own Coinbase project with Google Pay enabled, your app's own approval in the Google Pay & Wallet Console, and a physical phone with Android System WebView 137 or later and Google Play services 25.18.30 or later. On a WebView without Payment Request support, `Meld.capabilities` reports `unsupported`.
+
+How to test it, and what `OR_BIBED_11` and the other failures mean, are in [Wallets → Testing](/docs/stablecoins/headless-integration/wallets#testing) and [Wallets → Troubleshooting](/docs/stablecoins/headless-integration/wallets#troubleshooting).
+
+### What the SDK adds to your app
+
+- From 0.7.0, the package queries for `org.chromium.intent.action.PAY`, `IS_READY_TO_PAY` and `UPDATE_PAYMENT_DETAILS`, through which the provider page's Payment Request reaches Google Pay.
+- From 0.8.0, Google Play services Wallet (`com.google.android.gms:play-services-wallet` 20.0.0), for the readiness checks only. Your merged manifest gains the `com.google.android.gms.wallet.api.enabled` and `com.google.android.gms.version` meta-data and the non-exported `com.google.android.gms.common.api.GoogleApiActivity`.
+- Nothing from Google Maps. Wallet uses `play-services-maps` only for the `LatLng` of its loyalty, offer and gift card objects, which the SDK never builds, so the SDK excludes it. Your merged manifest gains none of Maps' entries, such as the OpenGL ES 2 `uses-feature` with `required="true"`. An app that uses Maps keeps its own dependency on it.
+
+### Leaving out Google Play services Wallet
+
+Wallet is there for the readiness checks only, so you can exclude it:
+
+```kotlin
+// app/build.gradle.kts
+dependencies {
+    implementation("io.meld:meldsdk:0.8.0") {
+        exclude(group = "com.google.android.gms", module = "play-services-wallet")
+    }
+}
+```
+
+Google Pay orders still mount, and every Google Pay readiness check then answers `Unknown`. A minified build still needs no rules of your own: the SDK's R8 rules let Wallet be missing.
+
+---
+
+## Provider notes
+
+- **Mercuryo.** Create the order with the customer's public IP as `clientIpAddress`: Mercuryo binds its widget to it. Its KYC liveness check needs the camera, so request the `CAMERA` permission at run time before you mount.
+- **Coinbase.** Google Pay only, for US customers paying USD. See [Google Pay with Coinbase](/docs/stablecoins/headless-integration/wallets#google-pay-with-coinbase).
+
+Apple Pay never runs on Android: every Apple Pay order reports `unsupported`.
+
+---
+
+## Settlement
+
+Settlement is your webhook. `onPaymentSubmitted` fires when the customer finishes paying, which is earlier: unmount and show a pending state until the webhook arrives.
+
+See [Configure webhooks](/docs/stablecoins/headless-integration/shared-flows/configure-webhooks).

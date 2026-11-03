@@ -19,10 +19,74 @@
     {
       "source": "/",
       "destination": "/docs/welcome/overview"
+    },
+    {
+      "source": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/full-integration-guide",
+      "destination": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/meld-checkout-integration/meld-checkout-guide/server-minted-url/quickstart",
+      "destination": "/docs/stablecoins/meld-checkout-integration/meld-checkout-quickstart",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/index",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-crypto-currencies",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-countries",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-payment-methods",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/digital-asset-coverage/supported-network-partners",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/coverage-nav",
+      "destination": "/docs/stablecoins/coverage",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/headless-integration/shared-flows/quotes-and-eligibility",
+      "destination": "/docs/stablecoins/headless-integration/shared-flows/quotes",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/headless-integration/apple-pay",
+      "destination": "/docs/stablecoins/headless-integration/wallets",
+      "permanent": true
+    },
+    {
+      "source": "/docs/stablecoins/white-label-api-integration/headless-apple-pay",
+      "destination": "/docs/stablecoins/headless-integration/wallets",
+      "permanent": true
     }
   ],
   "navbar": {
     "links": [
+      {
+        "label": "Coverage",
+        "href": "https://www.meld.io/coverage"
+      },
       {
         "label": "Support",
         "href": "mailto:support@meld.io"
@@ -64,7 +128,8 @@
           {
             "group": "Meld API",
             "pages": [
-              "docs/meld-api/getting-started"
+              "docs/meld-api/getting-started",
+              "docs/meld-api/error-responses"
             ]
           },
           {
@@ -90,9 +155,11 @@
                       "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/index",
                       "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/ramp-intelligence",
                       "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/white-label-customization",
-                      "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/supporting-multiple-downstream-applications"
+                      "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/supporting-multiple-downstream-applications",
+                      "docs/stablecoins/white-label-api-integration/whitelabel-api-guide/best-practices"
                     ]
-                  }
+                  },
+                  "docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner"
                 ]
               },
               {
@@ -105,7 +172,9 @@
                     "pages": [
                       "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/index",
                       "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/url-parameters",
-                      "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/meld-checkout-customization"
+                      "docs/stablecoins/meld-checkout-integration/meld-checkout-guide/meld-checkout-customization",
+                      "docs/stablecoins/meld-checkout-integration/legacy/meld-checkout-quickstart",
+                      "docs/stablecoins/meld-checkout-integration/legacy/meld-checkout-guide/index"
                     ]
                   }
                 ]
@@ -114,9 +183,36 @@
                 "group": "Product 3: Virtual Account and Payouts",
                 "pages": [
                   "docs/stablecoins/virtual-account-integration/index",
-                  "docs/stablecoins/virtual-account-integration/virtual-account-guide",
-                  "docs/stablecoins/virtual-account-integration/virtual-account-quickstart",
-                  "docs/stablecoins/virtual-account-integration/virtual-account-guide-copy"
+                  "docs/stablecoins/virtual-account-integration/payins",
+                  "docs/stablecoins/virtual-account-integration/payouts"
+                ]
+              },
+              {
+                "group": "Product 4: Headless Card, Wallets and Transfers",
+                "pages": [
+                  "docs/stablecoins/headless-integration/index",
+                  "docs/stablecoins/headless-integration/cards",
+                  "docs/stablecoins/headless-integration/wallets",
+                  "docs/stablecoins/headless-integration/transfers",
+                  {
+                    "group": "Shared flows",
+                    "pages": [
+                      "docs/stablecoins/headless-integration/shared-flows/eligibility",
+                      "docs/stablecoins/headless-integration/shared-flows/configure-webhooks",
+                      "docs/stablecoins/headless-integration/shared-flows/verification",
+                      "docs/stablecoins/headless-integration/shared-flows/quotes"
+                    ]
+                  },
+                  {
+                    "group": "SDKs",
+                    "pages": [
+                      "docs/stablecoins/headless-integration/sdks/index",
+                      "docs/stablecoins/headless-integration/sdks/web",
+                      "docs/stablecoins/headless-integration/sdks/ios",
+                      "docs/stablecoins/headless-integration/sdks/android",
+                      "docs/stablecoins/headless-integration/sdks/react-native"
+                    ]
+                  }
                 ]
               },
               {
@@ -126,7 +222,8 @@
                   "docs/stablecoins/for-all-products/webhook-events",
                   "docs/stablecoins/for-all-products/webhooks-authentication",
                   "docs/stablecoins/for-all-products/transaction-statuses",
-                  "docs/stablecoins/for-all-products/service-provider-setup"
+                  "docs/stablecoins/for-all-products/service-provider-setup",
+                  "docs/stablecoins/for-all-products/provider-specific-behavior"
                 ]
               },
               "docs/stablecoins/ramp-swap-flow",
@@ -134,8 +231,9 @@
                 "group": "Unified KYC",
                 "pages": [
                   "docs/stablecoins/unified-kyc/index",
+                  "docs/stablecoins/unified-kyc/meld-kyces-the-user",
                   "docs/stablecoins/unified-kyc/you-kyc-the-user",
-                  "docs/stablecoins/unified-kyc/meld-kyces-the-user"
+                  "docs/stablecoins/unified-kyc/retrieve-kyc"
                 ]
               },
               {
@@ -144,20 +242,11 @@
                   "docs/stablecoins/sandbox-guide/index",
                   "docs/stablecoins/sandbox-guide/test",
                   "docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials",
-                  "docs/stablecoins/sandbox-guide/kyc-testing"
+                  "docs/stablecoins/sandbox-guide/kyc-testing",
+                  "docs/stablecoins/sandbox-guide/headless-testing"
                 ]
               },
-              {
-                "group": "Coverage",
-                "pages": [
-                  "docs/stablecoins/digital-asset-coverage/index",
-                  "docs/stablecoins/digital-asset-coverage/supported-crypto-currencies",
-                  "docs/stablecoins/digital-asset-coverage/supported-countries",
-                  "docs/stablecoins/digital-asset-coverage/supported-fiat-currencies",
-                  "docs/stablecoins/digital-asset-coverage/supported-payment-methods",
-                  "docs/stablecoins/digital-asset-coverage/supported-network-partners"
-                ]
-              },
+              "docs/stablecoins/coverage",
               {
                 "group": "Additional Information",
                 "pages": [
