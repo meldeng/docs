@@ -5,7 +5,7 @@ title: "MX Investment Transactions Mapping"
 This data comes from MX's [/users/\{user\_guid} /accounts/\{account\_guid}/transactions](https://docs.mx.com/api-reference/platform-api/reference/list-transactions-by-account) endpoint and is returned from Meld's [/bank-linking/investments/transactions](/api-reference/bank-linking/investments/bank-linking-investment-transactions-search) endpoint.
 
 <Note>
-  Example: an MX investment transaction with `account.balance: 5200.10`, `account.guid: "ACT-123"`, `amount: 925.25`, `currency_code: "USD"`, `description: "BUY AAPL"`, `transacted_at: "2024-01-15"`, `posted_at: "2024-01-15"`, `category: "buy"` maps to Meld `cashBalance: 5200.10`, `accountId: "ACT-123"`, `amount: 925.25`, `currency: "USD"`, `description: "BUY AAPL"`, `transactionDate: "2024-01-15"`, `postedDate: "2024-01-15"`, `type: "buy"`.
+  Example: an MX investment transaction with `amount: 925.25`, `currency_code: "USD"`, `description: "BUY AAPL"`, `transacted_at: "2024-01-15"`, `posted_at: "2024-01-15"`, `category: "buy"` maps to Meld `amount: 925.25`, `currency: "USD"`, `description: "BUY AAPL"`, `transactionDate: "2024-01-15"`, `postedDate: "2024-01-15"`, `type: "buy"`.
 </Note>
 
 <Warning>
@@ -17,8 +17,6 @@ This data comes from MX's [/users/\{user\_guid} /accounts/\{account\_guid}/trans
 | symbol          | The symbol of the security                                  | **Not available** |
 | quantity        | The number of shares of the security                        | **Not available** |
 | costBasis       | The purchase price of the holding, per share                | **Not available** |
-| cashBalance     | The cash balance of the account after the transaction       | account.balance   |
-| accountId       | The Id of the financial account                             | account.guid      |
 | amount          | The total currency involved in the transaction              | amount            |
 | currency        | The ISO currency code that was used to purchase the holding | currency\_code    |
 | description     | A description of the transaction                            | description       |
