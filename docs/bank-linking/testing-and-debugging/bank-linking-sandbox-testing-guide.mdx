@@ -12,26 +12,6 @@ Service providers have sandboxes that you can use to make test connections and f
 
 <Tip>You can also find current test credentials in your Meld dashboard sandbox if a provider updates them.</Tip>
 
-## Plaid
-
-Plaid has a very comprehensive sandbox environment that can be used to test a lot of features. You can check out their [testing guide](https://plaid.com/docs/sandbox/test-credentials/), or see the test credentials below.
-
-| Service Provider | Test Institutions | OAuth?           | Username    | Password    | Pin               |
-| :--------------- | :---------------- | :--------------- | ----------- | :---------- | :---------------- |
-| Plaid            | Any               | some (ex. Chase) | `user_good` | `pass_good` | `credential_good` |
-
-You can select any institution in Plaid's sandbox and use those credentials to complete a connection. Most institutions will connect using OAuth with Plaid's fake bank behind the scenes, called Platypus Bank.
-
-Additionally, Plaid makes it very clear when you are in their sandbox by displaying "You are currently in Sandbox mode." at the bottom of their widget, which is not seen in their Production environment.
-
-![](https://files.readme.io/dbf66c9-image.png)
-
-In addition to Sandbox and Production, Plaid also has a third environment, Development. Plaid's development environment has several restrictions, such as not supporting the `OWNERS` product (which Plaid calls Identities), and needing to connect with real bank credentials. As such, Meld recommends using Plaid's sandbox for testing, and Plaid's production when going live.
-
-### Plaid Investments Testing
-
-Plaid's sandbox supports creating [custom users](https://plaid.com/docs/sandbox/user-custom/) with custom data that Plaid will return when you successfully connect. This can be useful when wanting to test a specific feature with fake data, such as Investments from Plaid. Simply create a user with a custom username and pass that username instead of `user_good` when creating a connection.
-
 ## Finicity
 
 Finicity does not support using the same customer ID for connecting to a test account and to a real bank account, so if you see the error "Existing Finicity customer is not a test customer so cannot connect with test institutions" while trying to make a connection, use a different customer ID. Only Finicity's production environment supports connecting to real bank accounts.
@@ -89,6 +69,28 @@ MX does finish their aggregation within their widget, so if you are connecting a
 ### MX Investments Testing
 
 MX does have some investment data that can be accessed with the above test credentials, but it's pretty spotty. Meld recommends testing MX Investments with real investment accounts.
+
+## Plaid
+
+<Note>Meld can set up Finicity and MX for you. Plaid is supported only with your own Plaid keys (bring your own keys): add your Plaid Client ID and Client Secret on the **Integrations** tab of the Meld dashboard before you test. See [Plaid Partner Details](/docs/bank-linking/partner-details/plaid#configuration-settings).</Note>
+
+Plaid has a very comprehensive sandbox environment that can be used to test a lot of features. You can check out their [testing guide](https://plaid.com/docs/sandbox/test-credentials/), or see the test credentials below.
+
+| Service Provider | Test Institutions | OAuth?           | Username    | Password    | Pin               |
+| :--------------- | :---------------- | :--------------- | ----------- | :---------- | :---------------- |
+| Plaid            | Any               | some (ex. Chase) | `user_good` | `pass_good` | `credential_good` |
+
+You can select any institution in Plaid's sandbox and use those credentials to complete a connection. Most institutions will connect using OAuth with Plaid's fake bank behind the scenes, called Platypus Bank.
+
+Additionally, Plaid makes it very clear when you are in their sandbox by displaying "You are currently in Sandbox mode." at the bottom of their widget, which is not seen in their Production environment.
+
+![](https://files.readme.io/dbf66c9-image.png)
+
+In addition to Sandbox and Production, Plaid also has a third environment, Development. Plaid's development environment has several restrictions, such as not supporting the `OWNERS` product (which Plaid calls Identities), and needing to connect with real bank credentials. As such, Meld recommends using Plaid's sandbox for testing, and Plaid's production when going live.
+
+### Plaid Investments Testing
+
+Plaid's sandbox supports creating [custom users](https://plaid.com/docs/sandbox/user-custom/) with custom data that Plaid will return when you successfully connect. This can be useful when wanting to test a specific feature with fake data, such as Investments from Plaid. Simply create a user with a custom username and pass that username instead of `user_good` when creating a connection.
 
 ## Salt Edge
 
