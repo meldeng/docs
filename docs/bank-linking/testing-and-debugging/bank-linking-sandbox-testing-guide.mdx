@@ -70,6 +70,22 @@ MX does finish their aggregation within their widget, so if you are connecting a
 
 MX does have some investment data that can be accessed with the above test credentials, but it's pretty spotty. Meld recommends testing MX Investments with real investment accounts.
 
+## Salt Edge
+
+Salt Edge does not have a testing guide, but does have a [guide](https://docs.saltedge.com/account_information/v5/#dynamic_registration) to follow before going live. Besides that, their test credentials can be found below:
+
+| Service Provider | Test Institutions                                                          | Username   | Password | Pin     |
+| :--------------- | :------------------------------------------------------------------------- | ---------- | :------- | :------ |
+| Salt Edge        | Anything starting with `Fake Bank` except for `Fake Bank with Client Keys` | `username` | `secret` | `12345` |
+
+## Salt Edge Partners
+
+Salt Edge Partners does not have a testing guide, but does have a [guide](https://docs.saltedge.com/partners/v1/#before_going_live) to follow before going live. Besides that, their test credentials can be found below:
+
+| Service Provider   | Test Institutions            | Username   | Password | Pin     |
+| :----------------- | :--------------------------- | ---------- | :------- | :------ |
+| Salt Edge Partners | `Fake Bank with Client Keys` | `username` | `secret` | `12345` |
+
 ## Plaid
 
 <Note>Meld can set up Finicity and MX for you. Plaid is supported only with your own Plaid keys (bring your own keys): add your Plaid Client ID and Client Secret on the **Integrations** tab of the Meld dashboard before you test. See [Plaid Partner Details](/docs/bank-linking/partner-details/plaid#configuration-settings).</Note>
@@ -91,19 +107,3 @@ In addition to Sandbox and Production, Plaid also has a third environment, Devel
 ### Plaid Investments Testing
 
 Plaid's sandbox supports creating [custom users](https://plaid.com/docs/sandbox/user-custom/) with custom data that Plaid will return when you successfully connect. This can be useful when wanting to test a specific feature with fake data, such as Investments from Plaid. Simply create a user with a custom username and pass that username instead of `user_good` when creating a connection.
-
-## Salt Edge
-
-Salt Edge does not have a testing guide, but does have a [guide](https://docs.saltedge.com/account_information/v5/#dynamic_registration) to follow before going live. Besides that, their test credentials can be found below:
-
-| Service Provider | Test Institutions                                                          | Username   | Password | Pin     |
-| :--------------- | :------------------------------------------------------------------------- | ---------- | :------- | :------ |
-| Salt Edge        | Anything starting with `Fake Bank` except for `Fake Bank with Client Keys` | `username` | `secret` | `12345` |
-
-## Salt Edge Partners
-
-Salt Edge Partners does not have a testing guide, but does have a [guide](https://docs.saltedge.com/partners/v1/#before_going_live) to follow before going live. Besides that, their test credentials can be found below:
-
-| Service Provider   | Test Institutions            | Username   | Password | Pin     |
-| :----------------- | :--------------------------- | ---------- | :------- | :------ |
-| Salt Edge Partners | `Fake Bank with Client Keys` | `username` | `secret` | `12345` |
