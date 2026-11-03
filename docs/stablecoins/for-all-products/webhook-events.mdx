@@ -132,7 +132,7 @@ Triggered when transaction completes successfully (crypto delivered).
 
 ### `TRANSACTION_CRYPTO_FAILED`
 
-Triggered when transaction fails or encounters an error.
+Triggered when the transaction ends unsuccessfully (`FAILED`, `DECLINED`, `CANCELLED`, `REFUNDED`, or `AUTHORIZATION_EXPIRED`).
 
 ```json
 {
@@ -149,7 +149,7 @@ Triggered when transaction fails or encounters an error.
     "customerId": "W9kL817BBS7bNEwxAZaX4z",
     "externalCustomerId": "customer_9888888",
     "externalSessionId": "test_session1",
-    "paymentTransactionStatus": "ERROR",
+    "paymentTransactionStatus": "FAILED",
     "transactionType": "CRYPTO_PURCHASE",
     "sessionId": "WeQBQxGxq3AyHdcaoUDoAJ"
    }
