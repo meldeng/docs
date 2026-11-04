@@ -210,6 +210,7 @@
                         "group": "SDKs",
                         "pages": [
                           "docs/stablecoins/headless-integration/sdks/index",
+                          "docs/stablecoins/headless-integration/sdks/customer-requirements",
                           "docs/stablecoins/headless-integration/sdks/web",
                           "docs/stablecoins/headless-integration/sdks/ios",
                           "docs/stablecoins/headless-integration/sdks/android",
