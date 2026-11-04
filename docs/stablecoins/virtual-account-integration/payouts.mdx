@@ -157,6 +157,10 @@ Offramp providers that take a Sumsub share (Noah, Due Network, and similar) foll
 
 Brale and Yellow Card verify the customer themselves, so their requirements list no KYC steps.
 
+<Tip>
+  In an app or a web page, [`Meld.ensureReady`](/docs/stablecoins/headless-integration/sdks/customer-requirements#virtual-accounts-and-offramps) can run these steps for you: create a requirements session for the customer and the offramp provider, without an order, and create the sell order once it ends `READY`.
+</Tip>
+
 ### Initiate KYC
 
 **Endpoint:** `POST /accounts/customers/{customerId}/kyc/initiate`

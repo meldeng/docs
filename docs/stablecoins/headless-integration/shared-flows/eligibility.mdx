@@ -5,7 +5,11 @@ description: "What the customer still has to do before a provider will accept th
 
 A provider being able to take the order does not mean it will accept this customer. Check what is still outstanding before you create the order, so you collect it while the customer is still in the flow rather than surfacing a rejection once they think they are done.
 
-Choose the provider from the [quote](/docs/stablecoins/headless-integration/shared-flows/quotes#customer-readiness-on-each-row) first: each headless purchase row's `customerKyc` says whether the customer's Unified KYC already reaches that provider's level. Then read the [requirements](#check-the-requirements) for the provider you chose.
+Choose the provider from the [quote](/docs/stablecoins/headless-integration/shared-flows/quotes#customer-readiness-on-each-row) first: each headless purchase row's `customerKyc` says whether the customer's Unified KYC already reaches that provider's level. Then read the [requirements](#check-the-requirements) for the provider you chose, or start one [requirements session](/docs/stablecoins/headless-integration/sdks/customer-requirements) for several.
+
+<Tip>
+  **In an app or a web page, use [`Meld.ensureReady`](/docs/stablecoins/headless-integration/sdks/customer-requirements).** Your backend creates one requirements session for the customer and the providers you offer, and the SDK works through this checklist for all of them: it runs the steps, shows the hosted pages, and asks your UI only for what the customer types or agrees to. The rest of this page is the checklist itself, for when you run it from your backend.
+</Tip>
 
 ---
 
@@ -276,7 +280,7 @@ A `customerId` your account doesn't hold is answered as a customer Meld has no r
 
 ### When order creation refuses
 
-The checklist and order creation agree, so a refusal means something changed, or the order hit one of the exclusions above. Read the requirements again for the same customer and order, and clear what they list:
+The checklist and order creation agree, so a refusal means something changed, or the order hit one of the exclusions above. Read the requirements again for the same customer and order, and clear what they list. With the SDK, create a new session and run [`ensureReady`](/docs/stablecoins/headless-integration/sdks/customer-requirements) again instead:
 
 | Order creation answers | What to do |
 | --- | --- |
@@ -284,7 +288,7 @@ The checklist and order creation agree, so a refusal means something changed, or
 | `403 VERIFICATION_REQUIRED` | Read the requirements again, and verify the contact or record the agreement it lists |
 | `403 PROVIDER_TERMS_NOT_ACCEPTED` | From virtual-account deposit instructions or an offramp order. Read the requirements again, and have the customer complete the `<PROVIDER>_HOSTED_TERMS` step |
 | `500 CUSTOMER_VERIFICATION_UNAVAILABLE` | Meld couldn't read the customer's verification. Read the requirements again later |
-| `403 KYC_NOT_COMPLETED` from Mercuryo, with `serviceProviderDetails.hostedVerificationUrl` | Mercuryo's own verification, for a customer new to Mercuryo. Open that page for the customer, then create the order again with a new `externalOrderId`. Never log or store the URL |
+| `403 KYC_NOT_COMPLETED` from Mercuryo, with `serviceProviderDetails.hostedVerificationUrl` | Mercuryo's own verification, for a customer new to Mercuryo. Open that page for the customer, with [`Meld.openHostedVerification`](/docs/stablecoins/headless-integration/sdks/customer-requirements#a-hosted-verification-on-a-refused-order) in an app or a web page, then create the order again with a new `externalOrderId`. Never log or store the URL |
 
 ---
 

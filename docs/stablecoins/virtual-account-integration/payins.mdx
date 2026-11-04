@@ -173,6 +173,10 @@ Verify signatures per Webhook authentication docs.
 
 Read each provider's requirements before you start KYC, one call per provider. This is the [eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility#check-the-requirements) endpoint headless orders use. Send `customerId` only: deposit instructions have no amount, so there is no order to check. The response lists every step between this customer and the provider, with the call that clears each one.
 
+<Tip>
+  In an app or a web page, [`Meld.ensureReady`](/docs/stablecoins/headless-integration/sdks/customer-requirements#virtual-accounts-and-offramps) can run these steps for you: create a requirements session for the customer and your providers, without an order, and fetch the deposit instructions once it ends `READY`.
+</Tip>
+
 A new customer heading to Noah:
 
 ```json

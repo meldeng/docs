@@ -16,7 +16,7 @@ The SDK is on Maven Central as `io.meld:meldsdk`. New Android projects already l
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.meld:meldsdk:0.8.0")
+    implementation("io.meld:meldsdk:0.10.0")
 }
 ```
 
@@ -31,7 +31,7 @@ The library declares the `INTERNET` and `CAMERA` permissions, which merge into y
 A minified build needs no keep rules of your own. The SDK ships its R8 rules, and they cover an app that [leaves out Google Play services Wallet](#leaving-out-google-play-services-wallet) too.
 
 <Note>
-  0.8.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), the [shared error codes](#error-codes) with the order's `paymentMethodType` on each error, and the [Activity mount](#mount-the-order). Everything else on this page works from 0.7.0, the first release with Google Pay.
+  0.8.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), the [shared error codes](#error-codes) with the order's `paymentMethodType` on each error, and the [Activity mount](#mount-the-order). Everything else on this page works from 0.7.0, the first release with Google Pay. 0.10.0 adds [customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements): `Meld.ensureReady` and `Meld.openHostedVerification`.
 </Note>
 
 ---
@@ -43,6 +43,12 @@ Meld.configure(MeldEnvironment.SANDBOX) // or MeldEnvironment.PRODUCTION
 ```
 
 Call it once, before you check or mount an order, with the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
+
+---
+
+## Get the customer ready
+
+Before you create the order, `Meld.ensureReady` takes the customer through what each provider still needs: a verified contact, accepted terms, their details, Unified KYC and the provider's hosted onboarding. Your backend creates a requirements session, and the app passes it to the SDK with a `ComponentActivity`. The SDK opens hosted pages in a Custom Tab. It needs 0.10.0 or later, which adds the [dependencies below](#what-the-sdk-adds-to-your-app). See [Customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements).
 
 ---
 
@@ -207,6 +213,7 @@ How to test it, and what `OR_BIBED_11` and the other failures mean, are in [Wall
 ### What the SDK adds to your app
 
 - From 0.7.0, the package queries for `org.chromium.intent.action.PAY`, `IS_READY_TO_PAY` and `UPDATE_PAYMENT_DETAILS`, through which the provider page's Payment Request reaches Google Pay.
+- From 0.10.0, `androidx.activity` 1.9.3 as an API dependency and `androidx.browser` 1.8.0, with package queries for the Custom Tabs service and for `https` browsers, through which [customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements#hosted-pages) open hosted pages.
 - From 0.8.0, Google Play services Wallet (`com.google.android.gms:play-services-wallet` 20.0.0), for the readiness checks only. Your merged manifest gains the `com.google.android.gms.wallet.api.enabled` and `com.google.android.gms.version` meta-data and the non-exported `com.google.android.gms.common.api.GoogleApiActivity`.
 - Nothing from Google Maps. Wallet uses `play-services-maps` only for the `LatLng` of its loyalty, offer and gift card objects, which the SDK never builds, so the SDK excludes it. Your merged manifest gains none of Maps' entries, such as the OpenGL ES 2 `uses-feature` with `required="true"`. An app that uses Maps keeps its own dependency on it.
 
@@ -217,7 +224,7 @@ Wallet is there for the readiness checks only, so you can exclude it:
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("io.meld:meldsdk:0.8.0") {
+    implementation("io.meld:meldsdk:0.10.0") {
         exclude(group = "com.google.android.gms", module = "play-services-wallet")
     }
 }
