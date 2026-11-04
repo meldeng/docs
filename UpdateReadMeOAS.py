@@ -292,7 +292,7 @@ def prep_meld_oas_file(meld_oas_file, configs):
                         responses['500'] = responses.pop('5xx')
                     
                     meld_oas_file['paths'][path][method]['responses'] = responses
-                    meld_oas_file['paths'][path][method]['security'] = configs['security']
+                    meld_oas_file['paths'][path][method]['security'] = configs['paths_to_keep'][path].get('security', configs['security'])
                     meld_oas_file['paths'][path][method]['tags'] = configs['paths_to_keep'][path]['tags']
                     
                     # Add explicit example for widget endpoint to exclude authenticationBypassDetails
