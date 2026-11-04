@@ -69,13 +69,15 @@ Returns everything standing between this customer and an accepted order with tha
 | Query parameter | Required | Description |
 | --- | --- | --- |
 | `customerId` | yes | The Meld customer you are checking |
-| `paymentMethodType` | yes | How the customer will pay, e.g. `CREDIT_DEBIT_CARD` |
-| `sourceCurrencyCode` | yes | Fiat they pay in, ISO 4217 |
-| `sourceAmount` | yes | What they pay |
-| `destinationCurrencyCode` | yes | Token they are buying, as Meld names it |
-| `countryCode` | yes | Where the customer is, ISO 3166-1 alpha-2 |
+| `paymentMethodType` | yes for an order | How the customer will pay, e.g. `CREDIT_DEBIT_CARD` |
+| `sourceCurrencyCode` | yes for an order | Fiat they pay in, ISO 4217 |
+| `sourceAmount` | yes for an order | What they pay |
+| `destinationCurrencyCode` | yes for an order | Token they are buying, as Meld names it |
+| `countryCode` | yes for an order | Where the customer is, ISO 3166-1 alpha-2 |
 | `destinationNetworkCode` | yes for Stripe, recommended otherwise | Chain, as Meld names it. The same value you quoted with |
 | `subdivision` | optional | State or province, ISO 3166-2 — `US-CA` |
+
+Send the whole order whenever you are about to create one. For a [virtual account](/docs/stablecoins/virtual-account-integration/payins) or an [offramp](/docs/stablecoins/virtual-account-integration/payouts), which have no order to check yet, send `customerId` only: the same endpoint answers the provider's KYC for every direction.
 
 ```
 GET /crypto/onramp/BANXA/requirements
@@ -127,6 +129,7 @@ A customer approved at Level 1, heading to Banxa, which needs Level 2 and a shar
   "serviceProvider": "BANXA",
   "eligible": false,
   "requirements": [
+    { "type": "ORDER_ROUTE", "code": "ORDER_ROUTE", "status": "SATISFIED", "timing": "PRE_ORDER" },
     { "type": "VERIFICATION", "code": "EMAIL", "status": "SATISFIED", "timing": "PRE_ORDER" },
     {
       "type": "MELD_KYC", "code": "MELD_KYC_APPROVED", "status": "REQUIRED", "timing": "PRE_ORDER",
@@ -156,19 +159,21 @@ The share and the provider's verdict are two steps. `PROVIDER_KYC_SHARE` is Meld
 Work through it like this:
 
 1. Do every step that isn't `SATISFIED`, whose `dependsOn` steps are all `SATISFIED`, and whose `action` is `CALL`, `OPEN_URL` or `SDK_STEP`. You can do them in any order. Steps that need the customer, such as accepting an agreement or starting a process, run only from the customer's tap. An `SDK_STEP` runs inside the order, so it needs nothing from you before you create it.
-2. Wait on the rest: a `WAIT` step, a step whose `dependsOn` steps are still open, and an `UNKNOWN` step with no `action`. Meld or the provider runs a `WAIT` step once what it waits on is done, and the webhook it names tells you when. The others become yours to do once their `dependsOn` steps are `SATISFIED`, or once a later read gives them an `action`.
+2. Wait on the rest: a `WAIT` step, a step whose `dependsOn` steps are still open, and an `UNKNOWN` step with no `action`. Meld or the provider runs a `WAIT` step once what it waits on is done, and the webhook it names tells you when. The others become yours to do once their `dependsOn` steps are `SATISFIED`, or once a later read gives them an `action`. An `UNKNOWN` step means Meld couldn't read something: read again later.
 3. Call the endpoint again, with the same order, after each step you do and each webhook. Repeat until `eligible` is `true`. Then create the order.
 
-A customer heading to Uphold, with no Unified KYC and Uphold's terms not accepted yet:
+A customer heading to Uphold, with no Unified KYC, no email on the customer, and Uphold's terms not accepted yet:
 
 | `type` | `code` | `status` | `dependsOn` | `action` |
 | --- | --- | --- | --- | --- |
+| `ORDER_ROUTE` | `ORDER_ROUTE` | `SATISFIED` | — | — |
 | `AGREEMENT` | `general-us` | `REQUIRED` | — | `CALL POST /accounts/terms-of-service/acceptances`, `serviceProvider: UPHOLD`, `code: general-us` |
+| `CUSTOMER_DETAILS` | `CUSTOMER_EMAIL` | `REQUIRED` | — | `CALL PATCH /accounts/customers/{customerId}`, with the `email` |
 | `MELD_KYC` | `MELD_KYC_APPROVED` | `REQUIRED` | — | `CALL POST /accounts/customers/{customerId}/kyc/initiate`, `targetServiceProvider: UPHOLD` |
-| `PROVIDER_KYC_SHARE` | `PROVIDER_KYC_SHARE` | `REQUIRED` | `MELD_KYC_APPROVED`, `general-us` | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` |
+| `PROVIDER_KYC_SHARE` | `PROVIDER_KYC_SHARE` | `REQUIRED` | `MELD_KYC_APPROVED`, `general-us`, `CUSTOMER_EMAIL` | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` |
 | `PROVIDER_REVIEW` | `PROVIDER_KYC_APPROVED` | `REQUIRED` | `PROVIDER_KYC_SHARE` | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` |
 
-The terms and Unified KYC don't depend on each other, so the customer can do both at once. Meld shares with Uphold once both are done. With the order, the share and the steps after it then read:
+The terms, the email and Unified KYC don't depend on each other, so the customer can do all three at once. Meld shares with Uphold once all are done. With the order, the share and the steps after it then read:
 
 | `type` | `code` | `status` | `dependsOn` | `action` |
 | --- | --- | --- | --- | --- |
@@ -182,20 +187,22 @@ Uphold's due-diligence and tax questions open as soon as Uphold has the customer
 
 | `type` | `code` | `action` |
 | --- | --- | --- |
+| `ORDER_ROUTE` | `ORDER_ROUTE`, first, and only with the whole order: whether order creation takes this route before it looks at the customer. That covers the payment method and corridor, the provider's headless support, the provider being enabled on your account, its credentials, and for a route paid by bank transfer, the receiving bank details Meld's catalog publishes for it. `BLOCKED` with `reason` set to the code order creation would return: `PAYMENT_METHOD_NOT_SUPPORTED`, `INVALID_PAYMENT_METHOD`, `INVALID_CRYPTO_CURRENCY`, `HEADLESS_NOT_SUPPORTED`, `WHITELABEL_NOT_ENABLED`, `SERVICE_PROVIDER_NOT_ENABLED` or `TRANSACTION_INVALID_PROVIDER`. `UNKNOWN` with `ROUTE_UNAVAILABLE` when Meld couldn't read the route, or the catalog publishes no receiving bank details for a bank-transfer route. While it isn't `SATISFIED`, the provider's own checks don't run, so `PROVIDER_EXTRA_KYC` isn't listed | None. On `BLOCKED`, offer another provider or payment method from the quote |
 | `VERIFICATION` | `EMAIL` or `PHONE`, for a contact the provider refuses orders without | `CALL POST /accounts/customers/{customerId}/verifications` with `channel`, and `serviceProvider` when the provider needs its own code. Add `target`, then confirm the code: see [Contact verification](#contact-verification) |
 | `AGREEMENT` | The agreement's code, for example `GUEST_CHECKOUT_TERMS_OF_SERVICE:US`, or for terms the provider needs before the share, the document's code, for example `general-us`. `url` is the document to show | `CALL POST /accounts/terms-of-service/acceptances` with `serviceProvider` and `code`, once the customer accepts. Add `externalCustomerId`, `acceptedAt` and `ipAddress`: see [Legal agreements](#legal-agreements) |
 | `AGREEMENT` | `<PROVIDER>_TERMS`, for example `UPHOLD_TERMS`: terms the provider needs before the share that Meld couldn't list yet, because the customer has no address or the provider didn't answer. `status: UNKNOWN` and `reason: TERMS_UNRESOLVED`. `dependsOn` lists `CUSTOMER_ADDRESS` while the address is missing | None. A later read lists the documents in its place |
-| `CUSTOMER_DETAILS` | A detail the provider needs on the Meld customer before the share. `CUSTOMER_EMAIL` with `missingFields` key `email`, `CUSTOMER_NAME` with `name.firstName` and `name.lastName`, `CUSTOMER_ADDRESS` with `address.countryCode` | `CALL PATCH /accounts/customers/{customerId}` with the email or name. `CALL POST /accounts/customers/{customerId}/addresses` with the address |
-| `MELD_KYC` | `MELD_KYC_APPROVED`. `level` is the [level](/docs/stablecoins/unified-kyc/kyc-levels) the provider needs, and `currentLevel` the one the customer is approved at, absent without an approval. It never depends on what a provider needs before the share | `CALL POST /accounts/customers/{customerId}/kyc/initiate` with `targetServiceProvider` while `REQUIRED`. `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` while `PENDING` |
-| `PROVIDER_KYC_SHARE` | `PROVIDER_KYC_SHARE`: Meld delivering the customer's KYC to the provider. `SATISFIED` once the provider has the customer, whatever it decides. Until then, `dependsOn` lists `MELD_KYC_APPROVED` while it isn't approved, and each step the provider still needs before the share, such as `general-us` or `CUSTOMER_EMAIL` | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` while it waits on anything. Meld shares by itself once they clear. With nothing left to wait on, `CALL POST /accounts/customers/{customerId}/kyc/initiate` with `targetServiceProvider`, which runs a share that never happened. `BLOCKED`, with the provider's `reason`, when the provider refused the share and nothing is missing |
-| `PROVIDER_EXTRA_FIELDS` | `PROVIDER_EXTRA_KYC`. `missingFields` describes each field to collect, and `satisfiedFields` names those Meld already holds | `CALL PATCH /accounts/customers/{customerId}/kyc/initiate`, adding the fields as `serviceProviderDetails`, as in [KYC requirements](#kyc-requirements). For a provider whose questions come as a form, such as Uphold's, the action names that form's endpoint |
-| `PROVIDER_PROCESS` | The process code, for example `limitUpgrade`. `process` describes it | `CALL` the process with `operation: START`, adding `customerId` and the `order`, while `REQUIRED`. `READ` while `PENDING`. See [Provider processes](#provider-processes) |
-| `EXTERNAL_KYC` | A step only the provider can run: `NOAH_HOSTED_ONBOARDING` or `DUENETWORK_HOSTED_ONBOARDING` before the order, `STRIPE_IDENTITY` inside it | `OPEN_URL` for the provider's hosted page, with `refresh` to get a new URL. `SDK_STEP` for a step the SDK runs inside the order |
+| `AGREEMENT` | `<PROVIDER>_HOSTED_TERMS`, today `DUENETWORK_HOSTED_TERMS`: terms the customer accepts on the provider's own page, after the share. Listed once the provider has the customer, unless its verdict is `BLOCKED`, and kept after the verdict. `SATISFIED` once the provider reports the terms accepted. `UNKNOWN` with `TERMS_UNREAD` while Meld hasn't read the provider's terms state yet. The provider's verdict never waits on it, but the provider refuses deposits and payouts until it is `SATISFIED` | `OPEN_URL` for the terms page while `REQUIRED`, with `refresh`. After the customer closes the page, call `refresh`, then read the checklist again: the provider sends no event when the terms are accepted. While `UNKNOWN`, `CALL POST /accounts/customers/{customerId}/kyc/initiate` naming the provider, which reads the terms state |
+| `CUSTOMER_DETAILS` | A detail the provider needs on the Meld customer before the share. `CUSTOMER_EMAIL` with `missingFields` key `email`, `CUSTOMER_NAME` with `name.firstName` and `name.lastName`, `CUSTOMER_ADDRESS` with `address.lineOne`, `address.city`, `address.postalCode` and `address.countryCode`. `<PROVIDER>_SHARE_PREREQUISITES`, `UNKNOWN` with `RECORDS_UNAVAILABLE`, when Meld couldn't read what the provider still needs | `CALL PATCH /accounts/customers/{customerId}` with the email or name. `CALL POST /accounts/customers/{customerId}/addresses` with `type: RESIDENCE` and an `address` holding those four fields. None on the `UNKNOWN` step |
+| `MELD_KYC` | `MELD_KYC_APPROVED`. `level` is the [level](/docs/stablecoins/unified-kyc/kyc-levels) the provider needs, and `currentLevel` the one the customer is approved at, absent without an approval. `SATISFIED` once the customer is approved at `level`, or once the provider has the customer through the share and has approved them. `REQUIRED` also when the customer opened the Sumsub page and never submitted it. It never depends on what a provider needs before the share | `CALL POST /accounts/customers/{customerId}/kyc/initiate` naming the provider while `REQUIRED`: it answers with a fresh `url`. `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` while `PENDING` |
+| `PROVIDER_KYC_SHARE` | `PROVIDER_KYC_SHARE`: Meld delivering the customer's KYC to the provider. `SATISFIED` once the provider has the customer, whatever it decides. Until then, `dependsOn` lists `MELD_KYC_APPROVED` while it isn't approved, and each step the provider still needs before the share, such as `general-us` or `CUSTOMER_EMAIL` | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` while it waits on anything. Meld shares by itself once they clear. With nothing left to wait on, `CALL POST /accounts/customers/{customerId}/kyc/initiate` naming the provider, which runs a share that never happened. `BLOCKED`, with the provider's `reason` and any `errorCodes`, when the provider refused the share and nothing is missing |
+| `PROVIDER_EXTRA_FIELDS` | `PROVIDER_EXTRA_KYC`. `missingFields` describes each field to collect, including the fields the provider always asks for once it reports one you can answer, and `satisfiedFields` names those Meld already holds. `processes` names the provider's questionnaires that come as a form, such as Uphold's due-diligence and tax questions, and `processStates` the provider's state of each step it reported | `CALL PATCH /accounts/customers/{customerId}/kyc/initiate`, adding the fields as `serviceProviderDetails`, as in [KYC requirements](#kyc-requirements). For a provider whose questions come as a form, such as Uphold's, the action names that form's endpoint |
+| `PROVIDER_PROCESS` | The process code, for example `limitUpgrade`. `process` describes it, and `processStates` holds the provider's state of it, when the provider reported one | `CALL` the process with `operation: START`, adding `customerId` and the `order`, while `REQUIRED`. `READ` while `PENDING`. See [Provider processes](#provider-processes) |
+| `EXTERNAL_KYC` | A step only the provider can run: `NOAH_HOSTED_ONBOARDING` or `DUENETWORK_HOSTED_ONBOARDING` before the order, `STRIPE_IDENTITY` inside it. When the provider won't open its page again, for example while it reviews the customer, the step leaves the list and `PROVIDER_REVIEW` waits | `OPEN_URL` for the provider's hosted page, with `expiresAt` and `refresh`: see [Fields on each step](#fields-on-each-step). `SDK_STEP` for a step the SDK runs inside the order |
 | `PROVIDER_REVIEW` | `PROVIDER_KYC_APPROVED`: the provider's verdict on the customer. `dependsOn` lists `PROVIDER_KYC_SHARE` until the share, and every `PROVIDER_EXTRA_FIELDS`, `PROVIDER_PROCESS` and hosted onboarding step still open | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` while `REQUIRED` or `PENDING`. After the share, `REQUIRED` means a rejection the customer can retry, or an expiry. `BLOCKED`, with `reason`, when the provider rejected the customer |
 
-The steps a provider needs before the share come right after the catalog's agreements and before `MELD_KYC`. They are listed only until the share. `PROVIDER_EXTRA_FIELDS` and `PROVIDER_PROCESS` steps depend on `PROVIDER_KYC_SHARE` only until the share, so you can submit them as soon as the provider has the customer, before its verdict. A step that takes its input from Unified KYC, such as Coinbase's `limitUpgrade`, depends on `MELD_KYC_APPROVED` instead.
+The steps a provider needs before the share come right after the catalog's agreements and before `MELD_KYC`. They are listed only until the share. `PROVIDER_EXTRA_FIELDS` and `PROVIDER_PROCESS` steps depend on `PROVIDER_KYC_SHARE` only until the share, so you can submit them as soon as the provider has the customer, before its verdict. A step that takes its input from Unified KYC, such as Coinbase's `limitUpgrade`, depends on `MELD_KYC_APPROVED` instead. A hosted terms step comes after the hosted onboarding step and before `PROVIDER_REVIEW`.
 
-`type`, `status` and `action.type` can gain values. Treat one you don't recognise as not satisfied.
+`type`, `status`, `reason`, `errorCodes` and `action.type` can gain values. Treat one you don't recognise as not satisfied.
 
 ### Fields on each step
 
@@ -204,12 +211,16 @@ The steps a provider needs before the share come right after the catalog's agree
 | `status` | `REQUIRED`, `PENDING`, `SATISFIED`, `BLOCKED` or `UNKNOWN`, as in the table below |
 | `timing` | `PRE_ORDER`, or `ORDER_CONTINUATION` for a step that runs inside the order, after you create it. `ORDER_CONTINUATION` steps never hold up `eligible` |
 | `level`, `currentLevel` | `MELD_KYC` only: `LEVEL_1`, `LEVEL_2` or `LEVEL_3` |
-| `reason` | Why, on a `BLOCKED` step. `UNRECORDABLE` on an agreement the customer can't hold a receipt for, because the customer has no `externalCustomerId`. `TERMS_UNRESOLVED` on a `<PROVIDER>_TERMS` agreement Meld couldn't list yet |
+| `reason` | On a `BLOCKED` step, the refusal: the provider's words, or the code order creation would return. On an `UNKNOWN` step, why Meld can't tell: `STATE_UNAVAILABLE`, the provider's own state is unreadable; `RECORDS_UNAVAILABLE`, Meld's records of the customer, their KYC, verification or share are unreadable; `ROUTE_UNAVAILABLE`, the order's route, its catalog entry or your account's preference is unreadable, or the catalog lacks a bank-transfer route's receiving bank details; `TERMS_UNRESOLVED`, Meld couldn't list the provider's terms yet; `TERMS_UNREAD`, Meld hasn't read the provider's hosted terms yet; `UNRECORDABLE`, the customer can't hold an agreement receipt, because it has no `externalCustomerId` |
+| `errorCodes` | `PROVIDER_KYC_SHARE` only, when `BLOCKED`: the provider's codes for the refusal, such as Coinme's `PHONE_VERIFICATION_REQUIRED` when it needs the customer's phone verified first. Absent when the provider gave none |
 | `missingFields` | `PROVIDER_EXTRA_FIELDS` and `CUSTOMER_DETAILS`. Each field has `key`, `label`, `fieldType`, `allowedValues` or `jsonSchema` where the provider sets them, and `source`: `INTEGRATOR` for you to collect, `SUMSUB` for one the customer gives on the Sumsub page, `PROVIDER` for one only the provider's own page can collect. A field Meld has no key for carries the provider's own name in `providerCode` instead of `key` |
+| `satisfiedFields` | `PROVIDER_EXTRA_FIELDS` only: the keys Meld already holds |
+| `processes` | `PROVIDER_EXTRA_FIELDS` only: the codes of the provider's questionnaires that come as a form |
+| `processStates` | The provider's own state of a step: `code`, `status` in the provider's words, and `submittable`, `reason` and `model` where it sets them. On `PROVIDER_PROCESS`, the state of that process. On `PROVIDER_EXTRA_FIELDS`, the states of the provider's other steps |
 | `dependsOn` | Codes of steps that must be `SATISFIED` first. A step Meld or the provider runs, such as the share or the review, starts by itself once they are |
-| `url` | `AGREEMENT` only: the document to show |
+| `url` | `AGREEMENT` from the catalog only: the document to show |
 | `process` | `PROVIDER_PROCESS` only: the process's `endpoint`, `method`, `pollIntervalMs` and `pollTimeoutMs` |
-| `action` | What clears the step, below. Absent on a `SATISFIED` or `BLOCKED` step, and on an `UNKNOWN` one you can't act on yet |
+| `action` | What clears the step, below. Absent on a `SATISFIED` or `BLOCKED` step, and on every `UNKNOWN` step except `<PROVIDER>_HOSTED_TERMS` with `TERMS_UNREAD`, which carries the call that reads the terms |
 
 | `status` | What to do |
 | --- | --- |
@@ -217,26 +228,54 @@ The steps a provider needs before the share come right after the catalog's agree
 | `PENDING` | Wait. The `action` says for what |
 | `SATISFIED` | Nothing |
 | `BLOCKED` | This provider won't proceed for this customer. Read `reason`, and offer another provider from the quote |
-| `UNKNOWN` | Meld couldn't read the state, couldn't list the provider's terms yet, or the step runs inside the order. Never counts as satisfied |
+| `UNKNOWN` | Meld couldn't read what decides this step, and `reason` says what. Never counts as satisfied. Read again later. Meanwhile `eligible` is absent, so you may create the order, and order creation decides |
 
 | `action.type` | Fields | What to do |
 | --- | --- | --- |
 | `CALL` | `method`, `path`, `body` | Call Meld from your backend. `body` holds only the fields that select the step. Add what the endpoint needs from you, such as the order, the contact to verify or the acceptance evidence |
-| `OPEN_URL` | `url`, `refresh` | Open `url` for the customer. Call `refresh` for a new one. Never log or store the URL. Meld includes it only for an API key that can create orders |
+| `OPEN_URL` | `url`, `expiresAt`, `refresh` | Open `url` for the customer, as below. Never log or store the URL. Meld includes it only for an API key that can create orders, and the step is `REQUIRED` with no `action` for any other key |
 | `SDK_STEP` | `nextStep` | Nothing before the order. The SDK runs the step, for example `SDK_VERIFY_IDENTITY`, after you create it |
 | `WAIT` | `event` | Wait for that webhook, then check eligibility again |
+
+An `OPEN_URL` page is short-lived. `expiresAt` is when `url` stops opening, and is absent when the provider states no lifetime. Noah documents an hour for its hosted onboarding session, and Meld sets `expiresAt` from that. Due Network states none. Once `expiresAt` has passed, `url` is absent and the step stays `REQUIRED`. `refresh` is the call that mints a new page: `POST /accounts/customers/{customerId}/kyc/initiate` naming the provider. It answers `200` once the page is ready, and you read the checklist again for the new `url` and `expiresAt`.
+
+- **Refresh** when `url` is absent, when `expiresAt` is less than 60 seconds away, or when the page fails to load.
+- **Refresh at most once** before you show a page, and once after the customer closes it, then read the checklist again.
+- When the provider won't open its page again, for example while it reviews the customer, the step leaves the list and `PROVIDER_REVIEW` waits, so the refreshes end.
 
 ### `eligible`
 
 | `eligible` | When |
 | --- | --- |
-| `true` | You sent `customerId` and the whole order, and every `PRE_ORDER` step is `SATISFIED`. Create the order |
-| `false` | A `PRE_ORDER` step is `REQUIRED`, `PENDING` or `BLOCKED` |
-| Absent | No `PRE_ORDER` step is `REQUIRED`, `PENDING` or `BLOCKED`, and Meld can't tell: no `customerId`, part of the order missing, the provider's policy unavailable, a `PRE_ORDER` step `UNKNOWN`, or the customer's records unreadable. You can still create the order |
+| `true` | You sent `customerId` for a customer your account holds, and the whole order for a provider that needs one, and every `PRE_ORDER` step is `SATISFIED`. Create the order |
+| `false` | A `PRE_ORDER` step is `REQUIRED`, `PENDING` or `BLOCKED`. This wins over everything else |
+| Absent | No `PRE_ORDER` step is `REQUIRED`, `PENDING` or `BLOCKED`, and Meld can't tell: no `customerId`, or one your account doesn't hold, no whole order for a provider that needs one, the provider's policy unavailable, or a `PRE_ORDER` step `UNKNOWN`. You can still create the order |
 
-Order creation stays the final check. If Meld can't read a provider's own state, it leaves that provider's steps out rather than holding the customer back, so an order can still be refused after `eligible: true`. Handle the [order errors](/docs/stablecoins/headless-integration/wallets#errors-on-order-creation) either way.
+**`eligible: true` agrees with order creation.** For the same customer and order, it means the checks order creation runs before it reserves anything will pass, unless something changes in between. It doesn't cover:
 
-Without the order, the checklist has no provider-specific steps, such as Coinbase's `limitUpgrade` or Stripe's Level 1, so `eligible` is never `true`: it is `false` when a `PRE_ORDER` step it lists is `REQUIRED`, `PENDING` or `BLOCKED`, and absent otherwise. `requirements` itself is absent without a `customerId`.
+- values only the create request carries, such as `externalOrderId`, `redirectUrl`, the wallet address, or the phone for mobile money;
+- your account's setup with the provider, such as Banxa's Apple Pay merchant identifier and redirect URL;
+- a refusal after Meld reserves the order: Uphold's own refusal, or Mercuryo's verification for a customer new to Mercuryo in the US;
+- a Coinbase customer who stays at Coinbase's cap after Coinbase asks them to submit their details again;
+- Yellow Card's country for the order's currency, which order creation looks up in Meld's catalog.
+
+Handle the [order errors](/docs/stablecoins/headless-integration/wallets#errors-on-order-creation) either way.
+
+Some providers check the order themselves, such as Banxa, Uphold, Coinbase and Stripe. Without the whole order, their checklist has no `ORDER_ROUTE` and none of their own steps, such as Coinbase's `limitUpgrade` or Stripe's Level 1, so `eligible` is never `true`: it is `false` when a `PRE_ORDER` step it lists is `REQUIRED`, `PENDING` or `BLOCKED`, and absent otherwise. For a provider without such a check, such as Noah, Due Network, Brale or Yellow Card, `eligible` is answered from `customerId` alone. It then covers the customer's KYC, not whether the provider offers the product: a Yellow Card deposit, for example, can still be refused as not supported. `requirements` itself is absent only without a `customerId`.
+
+A `customerId` your account doesn't hold is answered as a customer Meld has no records for: Meld reads none of that customer's KYC, lists the KYC steps as `REQUIRED`, and never answers `eligible: true`.
+
+### When order creation refuses
+
+The checklist and order creation agree, so a refusal means something changed, or the order hit one of the exclusions above. Read the requirements again for the same customer and order, and clear what they list:
+
+| Order creation answers | What to do |
+| --- | --- |
+| `403 KYC_NOT_COMPLETED` | Read the requirements again, and clear the KYC step it lists |
+| `403 VERIFICATION_REQUIRED` | Read the requirements again, and verify the contact or record the agreement it lists |
+| `403 PROVIDER_TERMS_NOT_ACCEPTED` | From virtual-account deposit instructions or an offramp order. Read the requirements again, and have the customer complete the `<PROVIDER>_HOSTED_TERMS` step |
+| `500 CUSTOMER_VERIFICATION_UNAVAILABLE` | Meld couldn't read the customer's verification. Read the requirements again later |
+| `403 KYC_NOT_COMPLETED` from Mercuryo, with `serviceProviderDetails.hostedVerificationUrl` | Mercuryo's own verification, for a customer new to Mercuryo. Open that page for the customer, then create the order again with a new `externalOrderId`. Never log or store the URL |
 
 ---
 
