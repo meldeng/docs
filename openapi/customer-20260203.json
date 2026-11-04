@@ -2108,7 +2108,7 @@
           "Customers"
         ],
         "summary": "Initiate customer KYC",
-        "description": "Retrieve a url that when launched displays a UI that commences KYC for your user. With a targetServiceProvider or order, Meld picks the KYC level: an applicant approved at that level gets APPROVED with no url, and a lower one is moved up and gets a url at the new level.",
+        "description": "Retrieve a url that when launched displays a UI that commences KYC for your user. With a targetServiceProvider or order, Meld picks the KYC level: an applicant approved at that level gets APPROVED with no url, and a lower one is moved up and gets a url at the new level. With Meld-Version 2026-11-01 or later, name every provider the customer may use in targetServiceProviders: Meld verifies at the highest level any of them needs, shares with each once its prerequisites are in and never fails on them, answers a repeat POST with the customer's current state instead of 409, and lists what each waiting provider still needs in sharePrerequisites. targetServiceProvider and kycShareProviders are aliases there. Older versions answer targetServiceProviders with 400 KYC_TARGETS_NEED_MELD_VERSION.",
         "operationId": "accounts-customers-kyc-initiate",
         "parameters": [
           {
@@ -2577,7 +2577,7 @@
           "Customers"
         ],
         "summary": "Update customer KYC",
-        "description": "Retrieve a fresh url for an existing KYC session",
+        "description": "Retrieve a fresh url for an existing KYC session. With Meld-Version 2026-11-01 or later, targetServiceProviders adds share providers that wait for their prerequisites; a PATCH never changes the level.",
         "operationId": "accounts-customers-kyc-update",
         "parameters": [
           {
@@ -8870,6 +8870,11 @@
           "customerId": {
             "type": "string",
             "description": "Customer id (Meld)"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "When url stops opening (ISO-8601 UTC); present only with url",
+            "example": "2026-11-04T15:30:00Z"
           },
           "level": {
             "type": "string",

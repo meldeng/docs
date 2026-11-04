@@ -8450,6 +8450,11 @@
             "type": "string",
             "description": "Customer id (Meld)"
           },
+          "expiresAt": {
+            "type": "string",
+            "description": "When url stops opening (ISO-8601 UTC); present only with url",
+            "example": "2026-11-04T15:30:00Z"
+          },
           "level": {
             "type": "string",
             "description": "Meld KYC level the url verifies; absent when unknown",

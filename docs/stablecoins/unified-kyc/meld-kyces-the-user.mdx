@@ -127,9 +127,9 @@ If the user has not been successfully KYCed, then either `serviceProviderCustome
 
 ## Step 3: Have Meld KYC the User
 
-This step is only needed if the user isn't already successfully KYCed. In other words, if the value of `serviceProviderCustomers.kyc.status` in the previous step is `APPROVED` then you can skip starting a new KYC — but you still need to [share it](/docs/stablecoins/unified-kyc#share-kyc-with-providers) with any provider the customer has not been shared to yet.
+This step is only needed if the user isn't already successfully KYCed at the level their onramps need. Calling it for a user already approved at that level is safe: they get `status: APPROVED` and nothing to open, and Meld [shares](/docs/stablecoins/unified-kyc#share-kyc-with-providers) the verification with any named onramp the customer has not been shared to yet.
 
-To KYC the user, call `POST /accounts/customers/{customerId}/kyc/initiate`. The `customerId` is in the path.
+To KYC the user, call `POST /accounts/customers/{customerId}/kyc/initiate` with the header `Meld-Version: 2026-11-01`. The `customerId` is in the path.
 
 _Note that Sumsub is being used as the sample KYC provider in these requests._
 
@@ -139,13 +139,13 @@ _Note that Sumsub is being used as the sample KYC provider in these requests._
 {
   "serviceProvider": "SUMSUB",
   "mode": "HOSTED_URL",
-  "targetServiceProvider": "BANXA"
+  "targetServiceProviders": ["BANXA"]
 }
 ```
 
 The response will include a `url` that you should then launch from your UI.
 
-`targetServiceProvider` names the onramp the user is heading to. Meld verifies the user at the level that onramp needs and, for an onramp that takes a KYC share, shares this verification with it once it is approved. To share with more onramps, name them in `kycShareProviders`. See [KYC levels](/docs/stablecoins/unified-kyc/kyc-levels) and [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers).
+`targetServiceProviders` names the onramps the user may use. Meld verifies the user at the highest level they need and, for each onramp that takes a KYC share, shares this verification with it once it is approved and the onramp has what it needs before the share. See [KYC levels](/docs/stablecoins/unified-kyc/kyc-levels) and [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers).
 
 #### Response
 
@@ -155,11 +155,16 @@ The response will include a `url` that you should then launch from your UI.
   "serviceProvider": "SUMSUB",
   "status": "PENDING",
   "url": "https://kyclink.com",
-  "level": "LEVEL_2"
+  "level": "LEVEL_2",
+  "expiresAt": "2026-11-04T15:30:00Z"
 }
 ```
 
-`level` is the level the `url` verifies. A user already approved at that level gets `status: APPROVED` and no `url`, and there is nothing to launch.
+| Field | Notes |
+| :-- | :-- |
+| `level` | The level the `url` verifies. A user already approved at that level gets `status: APPROVED`, `url` `null`, and there is nothing to launch |
+| `expiresAt` | When the `url` stops opening. Present only with a `url`. Call the same `POST` again for a fresh one |
+| `sharePrerequisites` | Present when a named onramp still needs something before Meld can share with it, such as Uphold's terms or the user's email. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share) |
 
 As the user goes through the KYC flow, you will receive webhooks informing you that the KYC status of the user has changed. The body of the webhook will look like this:
 
