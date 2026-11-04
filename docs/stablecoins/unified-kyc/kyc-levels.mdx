@@ -34,6 +34,8 @@ Unified KYC verifies a customer at a level. Each provider has a minimum level, a
 
 Read a provider's minimum from `kycLevel` on [`GET /network-partner/supported/partners`](/api-reference/network-partners/supported/list-supported-partners) rather than hardcoding this table: `NONE`, `LEVEL_1`, `LEVEL_2` or `LEVEL_3`. A provider can move to a lower level without a change on your side.
 
+For a given customer, the [quote](/docs/stablecoins/headless-integration/shared-flows/quotes#customer-readiness-on-each-row) answers it per row: each headless purchase row's `customerKyc` carries the provider's `requiredLevel`, the customer's `approvedLevel`, and whether the customer reaches it.
+
 Meld shares a customer's KYC with a provider only once their approval reaches that provider's level. A Level 1 approval isn't shared with Banxa, Noah or Due Network, and doesn't count for Mercuryo, until the customer steps up to Level 2. Some providers also need details or terms before the share: see [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share).
 
 ---

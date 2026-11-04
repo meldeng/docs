@@ -5,6 +5,8 @@ description: "What the customer still has to do before a provider will accept th
 
 A provider being able to take the order does not mean it will accept this customer. Check what is still outstanding before you create the order, so you collect it while the customer is still in the flow rather than surfacing a rejection once they think they are done.
 
+Choose the provider from the [quote](/docs/stablecoins/headless-integration/shared-flows/quotes#customer-readiness-on-each-row) first: each headless purchase row's `customerKyc` says whether the customer's Unified KYC already reaches that provider's level. Then read the [requirements](#check-the-requirements) for the provider you chose.
+
 ---
 
 ## Create the customer
@@ -40,7 +42,7 @@ Send everything you already know when you create the customer, before you start 
 
 ## Which providers need Unified KYC
 
-[Unified KYC](/docs/stablecoins/unified-kyc) verifies a customer at a [level](/docs/stablecoins/unified-kyc/kyc-levels). Level 2 includes an ID document and a selfie. Level 1, which Meld turns on per account, takes the customer's details and SSN only, for US residents. Run Unified KYC only for a customer who orders from a provider that needs it. The quote row's [`kycMode`](/docs/stablecoins/headless-integration/shared-flows/quotes#1-ask-for-headless-quotes) says which kind a provider is: `SYNC` and `ASYNC` need Unified KYC, at Level 2 for every such provider today. `PROVIDER_MANAGED` doesn't, except at Level 1 on an account with Level 1 on: Stripe before an order Stripe hasn't verified the customer for, and Coinbase at its lifetime cap.
+[Unified KYC](/docs/stablecoins/unified-kyc) verifies a customer at a [level](/docs/stablecoins/unified-kyc/kyc-levels). Level 2 includes an ID document and a selfie. Level 1, which Meld turns on per account, takes the customer's details and SSN only, for US residents. Run Unified KYC only for a customer who orders from a provider that needs it. The quote row's [`kycMode`](/docs/stablecoins/headless-integration/shared-flows/quotes#1-ask-for-headless-quotes) says which kind a provider is, and its [`customerKyc.requiredLevel`](/docs/stablecoins/headless-integration/shared-flows/quotes#customer-readiness-on-each-row) the level it needs: `SYNC` and `ASYNC` need Unified KYC, at Level 2 for every such provider today. `PROVIDER_MANAGED` doesn't, except at Level 1 on an account with Level 1 on: Stripe before an order Stripe hasn't verified the customer for, and Coinbase at its lifetime cap.
 
 | Provider | Unified KYC | Also needed |
 | --- | --- | --- |
