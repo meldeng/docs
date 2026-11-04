@@ -234,6 +234,7 @@
                     "group": "Unified KYC",
                     "pages": [
                       "docs/stablecoins/unified-kyc/index",
+                      "docs/stablecoins/unified-kyc/kyc-levels",
                       "docs/stablecoins/unified-kyc/meld-kyces-the-user",
                       "docs/stablecoins/unified-kyc/you-kyc-the-user",
                       "docs/stablecoins/unified-kyc/retrieve-kyc"
@@ -633,6 +634,7 @@
                     "group": "Unified KYC",
                     "pages": [
                       "docs/stablecoins/unified-kyc/index",
+                      "docs/stablecoins/unified-kyc/kyc-levels",
                       "docs/stablecoins/unified-kyc/you-kyc-the-user",
                       "docs/stablecoins/unified-kyc/meld-kyces-the-user"
                     ]
@@ -1021,6 +1023,7 @@
                     "group": "Unified KYC",
                     "pages": [
                       "docs/stablecoins/unified-kyc/index",
+                      "docs/stablecoins/unified-kyc/kyc-levels",
                       "docs/stablecoins/unified-kyc/you-kyc-the-user",
                       "docs/stablecoins/unified-kyc/meld-kyces-the-user"
                     ]

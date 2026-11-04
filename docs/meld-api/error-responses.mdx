@@ -84,6 +84,9 @@ as a failure of its HTTP status class rather than an error in itself.
 | :--- | :--- | :--- | :--- |
 | `BAD_REQUEST` | 400 | Bad request | A search parameter is not accepted. Check the query values against the documented parameters for this version. |
 | `CONFLICT` | 409 | Conflict |  |
+| `KYC_BLOCKED` | 422 | The customer's KYC was rejected as final | `kyc/initiate` can't approve this customer at any level. Don't retry; providers that need Unified KYC won't take them. |
+| `KYC_REVIEW_IN_PROGRESS` | 409 | The customer's KYC is in review; retry once the review ends | `kyc/initiate` needs a higher KYC level while the current one is in review. Wait for the `CUSTOMER_KYC_STATUS_CHANGE` webhook, then call again. |
+| `KYC_SHARE_PREREQUISITES_MISSING` | 422 | A provider in `kycShareProviders` lacks what it needs before the share | `errors` lists each one as `PROVIDER:TYPE`, for example `UPHOLD:TERMS`. Supply them and call again, or name the provider as `targetServiceProvider`, which never fails on them. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share). |
 
 
 ## Webhooks

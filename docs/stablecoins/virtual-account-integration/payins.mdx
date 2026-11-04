@@ -55,7 +55,7 @@ Most of this guide applies to every provider. Some providers need something extr
 | Provider | Code | What is different |
 | --- | --- | --- |
 | Noah | `NOAH` | After Sumsub is approved, Noah may ask for its own KYC step. Send the user to the provider link on the customer record (see step 3c). |
-| Due Network | `DUENETWORK` | Add a residential address before KYC. Due uses the address `country` when it creates the provider customer. Due may also ask for its own KYC step (see step 3c). Due has its own terms of service, separate from KYC: while they are pending, the link is on the customer record at `serviceProviderCustomers[].kyc.additionalInfo.TosURL`. |
+| Due Network | `DUENETWORK` | Before the KYC share, the customer needs a first and last name, an email and a residential address with a country. Name Due as `targetServiceProvider` in step 3. Due uses the address `country` when it creates the provider customer. Due may also ask for its own KYC step (see step 3c). Due has its own terms of service, separate from KYC: while they are pending, the link is on the customer record at `serviceProviderCustomers[].kyc.additionalInfo.TosURL`. |
 | Brale | `BRALE` | Business customers only. Brale runs KYB itself, so it does not use the Sumsub share in step 3. |
 
 ---
@@ -177,12 +177,14 @@ Choose one Sumsub initiation mode:
 
 | Mode | When to use | What you send | What the user does |
 | --- | --- | --- | --- |
-| `HOSTED_URL` | User has **not** completed Sumsub yet | `serviceProvider: SUMSUB`, `mode: HOSTED_URL`, `kycShareProviders` | Open the returned `url` and complete Sumsub |
+| `HOSTED_URL` | User has **not** completed Sumsub yet | `serviceProvider: SUMSUB`, `mode: HOSTED_URL`, `targetServiceProvider`, `kycShareProviders` | Open the returned `url` and complete Sumsub |
 | `TOKEN_IMPORT` | User already has a Sumsub applicant in your Sumsub account | Same \+ `serviceProviderDetails.kycToken` / `applicantId` | Usually nothing for Sumsub — Meld imports the existing applicant |
 
-Both modes share KYC to the providers listed in `kycShareProviders` after Sumsub is approved. You still must wait for **each share provider** to reach `APPROVED` before deposit-instructions.
+Both modes share KYC with `targetServiceProvider` and the providers in `kycShareProviders` after Sumsub is approved. You still must wait for **each share provider** to reach `APPROVED` before deposit-instructions.
 
 List only the providers you plan to use. For virtual-account onramps, `NOAH` and `DUENETWORK` accept a shared Sumsub KYC.
+
+Name Due Network as `targetServiceProvider`, not in `kycShareProviders`. Before the share, Due needs a first and last name, an email and an address with a country. A provider in `kycShareProviders` is checked when you call, so a customer missing any of these gets `422 KYC_SHARE_PREREQUISITES_MISSING` and KYC doesn't start. As `targetServiceProvider`, Due never fails the call: Meld shares with it once the details are in. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share).
 
 ### 3a. `HOSTED_URL` — Meld returns a Sumsub link
 
@@ -190,7 +192,8 @@ List only the providers you plan to use. For virtual-account onramps, `NOAH` and
 {
   "serviceProvider": "SUMSUB",
   "mode": "HOSTED_URL",
-  "kycShareProviders": ["NOAH", "DUENETWORK"]
+  "targetServiceProvider": "DUENETWORK",
+  "kycShareProviders": ["NOAH"]
 }
 ```
 
@@ -213,7 +216,8 @@ Direct the user to `url`. Listen for `CUSTOMER_KYC_STATUS_CHANGE`.
 {
   "serviceProvider": "SUMSUB",
   "mode": "TOKEN_IMPORT",
-  "kycShareProviders": ["NOAH", "DUENETWORK"],
+  "targetServiceProvider": "DUENETWORK",
+  "kycShareProviders": ["NOAH"],
   "serviceProviderDetails": {
     "kycToken": "_act-sbx-jwt-…",
     "applicantId": "sumsub-applicant-id"
@@ -221,11 +225,11 @@ Direct the user to `url`. Listen for `CUSTOMER_KYC_STATUS_CHANGE`.
 }
 ```
 
-There is typically no Sumsub `url` to open — Meld attaches the existing applicant and shares to `kycShareProviders`. Listen for `CUSTOMER_KYC_STATUS_CHANGE` the same way.
+There is typically no Sumsub `url` to open — Meld attaches the existing applicant and shares with `targetServiceProvider` and `kycShareProviders`. Listen for `CUSTOMER_KYC_STATUS_CHANGE` the same way.
 
 ### 3c. After Sumsub — provider-specific KYC link
 
-After Sumsub approval, KYC is shared to `kycShareProviders`. A provider may still require its own step (status `PENDING`). The link lives on the customer record:
+After Sumsub approval, KYC is shared with `targetServiceProvider` and `kycShareProviders`. A provider may still require its own step (status `PENDING`). The link lives on the customer record:
 
 **Endpoint:** `GET /accounts/customers/{customerId}`
 

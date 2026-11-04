@@ -152,7 +152,7 @@ Verify signatures per Webhook authentication docs.
 Offramp providers that use Sumsub sharing (Noah, Due Network, and similar) follow the same **ASYNC** KYC pattern as virtual account onramp:
 
 1. Initiate Sumsub via `POST /accounts/customers/{customerId}/kyc/initiate` (**once per customer**)
-2. Set `kycShareProviders` so approval is shared to the offramp provider
+2. Name the offramp provider as `targetServiceProvider`, or in `kycShareProviders`, so approval is shared with it
 3. Wait for provider KYC `APPROVED` (webhook or `GET /accounts/customers/{customerId}`) before the first sell order for that provider
 
 ### Initiate KYC
@@ -166,9 +166,12 @@ Offramp providers that use Sumsub sharing (Noah, Due Network, and similar) follo
 {
   "serviceProvider": "SUMSUB",
   "mode": "HOSTED_URL",
-  "kycShareProviders": ["NOAH", "DUENETWORK"]
+  "targetServiceProvider": "DUENETWORK",
+  "kycShareProviders": ["NOAH"]
 }
 ```
+
+Name Due Network as `targetServiceProvider`, not in `kycShareProviders`. Before the share, Due needs a first and last name, an email and an address with a country. A provider in `kycShareProviders` is checked when you call, so a customer missing any of these gets `422 KYC_SHARE_PREREQUISITES_MISSING` and KYC doesn't start. As `targetServiceProvider`, Due never fails the call: Meld shares with it once the details are in. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share).
 
 Or import an existing Sumsub applicant:
 
@@ -176,7 +179,8 @@ Or import an existing Sumsub applicant:
 {
   "serviceProvider": "SUMSUB",
   "mode": "TOKEN_IMPORT",
-  "kycShareProviders": ["NOAH", "DUENETWORK"],
+  "targetServiceProvider": "DUENETWORK",
+  "kycShareProviders": ["NOAH"],
   "serviceProviderDetails": {
     "kycToken": "_act-sbx-jwt-…",
     "applicantId": "sumsub-applicant-id"

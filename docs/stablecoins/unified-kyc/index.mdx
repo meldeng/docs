@@ -12,6 +12,8 @@ There are 3 flows within Unified KYC:
 2. [**You KYC the user:**](/docs/stablecoins/unified-kyc/you-kyc-the-user) You integrate a KYC provider yourself, run the user through their KYC process, track status, then pass the KYC token or the raw KYC data to Meld. Since this flow is more work for you, and you would need to ensure that you collect all of the KYC data that the onramps require, this flow is only recommended if you're already KYCing users with a KYC provider.
 3. [**Retrieve KYC Data:**](/docs/stablecoins/unified-kyc/retrieve-kyc) If you have a use case where you need the KYC data of your existing users, such as to KYC them for a separate product you are offering, you can fetch a KYC token or the raw KYC data of the user from Meld.
 
+Unified KYC verifies a user at a level, and each onramp has a minimum level. Name the onramp the user is heading to, and Meld picks the level and steps the user up when an order needs more. See [KYC levels](/docs/stablecoins/unified-kyc/kyc-levels).
+
 ## Which flow should I use?
 
 ```mermaid placement="top-right"
@@ -52,6 +54,21 @@ Approving a customer does not on its own reach every onramp. Providers that take
 }
 ```
 
-- **Name every provider you will order with** whose KYC comes from a share. Meld shares with each one once the customer is approved. A provider left out never receives the customer's KYC, and its orders are refused with `403 KYC_NOT_COMPLETED`. [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility#kyc-requirements) reports this as `PROVIDER_KYC_SHARE` for the provider.
+- **Name every provider you will order with** whose KYC comes from a share. Meld shares with each one once the customer is approved at that provider's [level](/docs/stablecoins/unified-kyc/kyc-levels): a Level 1 approval waits until the customer steps up to Level 2. A provider left out never receives the customer's KYC, and its orders are refused with `403 KYC_NOT_COMPLETED`. In the [checklist](/docs/stablecoins/headless-integration/shared-flows/eligibility#the-checklist), `PROVIDER_KYC_SHARE` is the share and `PROVIDER_REVIEW` is the provider's verdict on it.
 - **To add a provider for a customer who is already approved**, call `PATCH /accounts/customers/{customerId}/kyc/initiate` with the same body, naming the new provider in `kycShareProviders`. `serviceProvider` and `mode` are still required. Meld shares straight away, without sending the customer through KYC again.
 - **A `POST` naming a provider the customer was already shared with** returns `409`. Use the `PATCH` instead.
+- **Or name the provider as `targetServiceProvider` on the `POST`.** Meld adds it to `kycShareProviders` for you. For a customer already approved at the provider's level, Meld shares straight away and answers `200` with `status: APPROVED` and no `url`, instead of `409`. See [KYC levels](/docs/stablecoins/unified-kyc/kyc-levels#step-up).
+
+### What a provider needs before the share
+
+Some providers need more than an approval before Meld can share with them:
+
+| Provider | Before the share |
+| --- | --- |
+| Uphold | An email, an address with a country, and Uphold's onboarding terms, accepted by the customer from their IP address |
+| Due Network | A first and last name, an email, and an address with a country |
+| Banxa, Noah, Coinme, Onmeta | Nothing more |
+
+- **A provider you name as `targetServiceProvider` never makes the call fail on these.** Meld adds it to the share providers and waits. It shares once the last one is in: when Unified KYC approves the customer, when the customer accepts the terms, when you `PATCH` the customer's email or name, or when you add or update their address.
+- **A provider you name in `kycShareProviders` is checked up front.** If it lacks any of these, the call fails with `422` and `code: KYC_SHARE_PREREQUISITES_MISSING`. `errors` lists each one as `PROVIDER:TYPE`, for example `["UPHOLD:TERMS", "UPHOLD:EMAIL"]`. `TYPE` is `TERMS`, `EMAIL`, `NAME` or `ADDRESS`, and can gain values. Supply what is listed and call again, or name the provider as `targetServiceProvider` instead.
+- **Eligibility lists them** as steps in the [checklist](/docs/stablecoins/headless-integration/shared-flows/eligibility#the-checklist), before `MELD_KYC`: an `AGREEMENT` for each terms document and a `CUSTOMER_DETAILS` step for each missing detail. `PROVIDER_KYC_SHARE` depends on them, and `MELD_KYC` never does, so the customer can start Unified KYC while you collect them.

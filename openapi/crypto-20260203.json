@@ -4098,7 +4098,7 @@
           "Headless"
         ],
         "summary": "Get a provider's verification requirements",
-        "description": "Returns the provider's customer-verification requirements and legal agreements. Pass customerId to additionally get the customer's current (advisory) per-field verification status. Pass the order you intend to create \u2014 payment method, amount and corridor \u2014 to additionally get the provider's own outstanding KYC details: those are jurisdiction-, amount- and method-dependent, so they can only be reported against a concrete intent.",
+        "description": "Returns the provider's customer-verification requirements and legal agreements. Pass customerId to additionally get the customer's current (advisory) per-field verification status. Pass the order you intend to create \u2014 payment method, amount and corridor \u2014 to additionally get the provider's own outstanding KYC details: those are jurisdiction-, amount- and method-dependent, so they can only be reported against a concrete intent. With customerId, requirements lists the same steps as one ordered checklist, each with its type, status and the call that clears it; eligible is true when every PRE_ORDER step is SATISFIED, false when one is not, and absent when Meld cannot tell (no whole order intent, an unread state). Create stays the authoritative gate. A client does every step whose dependsOn is clear and whose action is a CALL, OPEN_URL or SDK_STEP, and waits on the rest.",
         "operationId": "/crypto-onramp-verification-requirements-get",
         "parameters": [
           {
@@ -10110,6 +10110,10 @@
           "customerStatus": {
             "$ref": "#/components/schemas/CustomerStatus"
           },
+          "eligible": {
+            "type": "boolean",
+            "description": "true when every PRE_ORDER step is SATISFIED, false when one is REQUIRED, PENDING or BLOCKED, with or without an order intent; otherwise absent when Meld cannot tell: no customerId, no whole order intent, an unavailable policy, an unreadable customer, or a PRE_ORDER step that is UNKNOWN. Create stays the authoritative gate"
+          },
           "kycRequirements": {
             "type": "array",
             "items": {
@@ -10120,6 +10124,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LegalAgreement"
+            }
+          },
+          "requirements": {
+            "type": "array",
+            "description": "The same steps as one ordered checklist, each with its type, status and the call that clears it; absent when no customerId was supplied or the customer's KYC records could not be read",
+            "items": {
+              "$ref": "#/components/schemas/Requirement"
             }
           },
           "serviceProvider": {
@@ -10258,6 +10269,271 @@
           },
           "submittable": {
             "type": "boolean"
+          }
+        }
+      },
+      "Requirement": {
+        "type": "object",
+        "description": "One step of the checklist. type, status and action.type are open sets: treat a value you do not know as not satisfied",
+        "properties": {
+          "action": {
+            "description": "What clears the step; absent when SATISFIED or BLOCKED. Its body holds only the selecting fields: add the order, contact target and acceptance evidence the endpoint needs",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Action"
+              }
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable identifier of the step, e.g. MELD_KYC_APPROVED, PROVIDER_KYC_SHARE, PROVIDER_KYC_APPROVED, CUSTOMER_EMAIL, an agreement's document code, or <PROVIDER>_TERMS for terms Meld could not list yet"
+          },
+          "currentLevel": {
+            "type": "string",
+            "description": "For MELD_KYC, the level the customer is approved at; absent without an approval",
+            "enum": [
+              "NONE",
+              "LEVEL_1",
+              "LEVEL_2",
+              "LEVEL_3"
+            ]
+          },
+          "dependsOn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Codes of the steps that must be SATISFIED before this one. A step Meld or the provider runs, such as PROVIDER_KYC_SHARE or PROVIDER_REVIEW, starts by itself once they clear. MELD_KYC never depends on a provider's share prerequisites, and PROVIDER_EXTRA_FIELDS and PROVIDER_PROCESS depend on PROVIDER_KYC_SHARE only until the share is delivered"
+          },
+          "level": {
+            "type": "string",
+            "description": "For MELD_KYC, the level the provider needs",
+            "enum": [
+              "NONE",
+              "LEVEL_1",
+              "LEVEL_2",
+              "LEVEL_3"
+            ]
+          },
+          "missingFields": {
+            "type": "array",
+            "description": "For PROVIDER_EXTRA_FIELDS and CUSTOMER_DETAILS, the details the step still needs",
+            "items": {
+              "$ref": "#/components/schemas/RequirementField"
+            }
+          },
+          "process": {
+            "description": "For PROVIDER_PROCESS, the process protocol to run",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnrampProcessDescriptor"
+              }
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "description": "The refusal on a BLOCKED step. On an UNKNOWN AGREEMENT, UNRECORDABLE when the customer cannot hold a receipt, or TERMS_UNRESOLVED when Meld could not list the provider's terms yet"
+          },
+          "satisfiedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Meld keys of the details already held"
+          },
+          "status": {
+            "type": "string",
+            "description": "UNKNOWN: Meld could not read the state, or could not list the provider's terms yet; never counts as satisfied",
+            "enum": [
+              "REQUIRED",
+              "PENDING",
+              "SATISFIED",
+              "BLOCKED",
+              "UNKNOWN"
+            ]
+          },
+          "timing": {
+            "type": "string",
+            "description": "ORDER_CONTINUATION steps run inside the order and never count against eligible",
+            "enum": [
+              "PRE_ORDER",
+              "PRE_ORDER_AND_ORDER_CONTINUATION",
+              "ORDER_CONTINUATION"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "AGREEMENT: a catalog agreement, or a Terms-of-Service document the provider needs before the share. CUSTOMER_DETAILS: an email, name or address the provider needs on the customer before the share. PROVIDER_KYC_SHARE: Meld delivering the customer's KYC, SATISFIED once the provider has the customer, whatever it decides. PROVIDER_REVIEW: the provider's verdict, after its own steps. An open set: treat a value you do not know as not satisfied",
+            "enum": [
+              "VERIFICATION",
+              "AGREEMENT",
+              "CUSTOMER_DETAILS",
+              "MELD_KYC",
+              "PROVIDER_KYC_SHARE",
+              "PROVIDER_EXTRA_FIELDS",
+              "EXTERNAL_KYC",
+              "PROVIDER_PROCESS",
+              "PROVIDER_REVIEW"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "For AGREEMENT, the document to show"
+          }
+        }
+      },
+      "RequirementField": {
+        "type": "object",
+        "description": "A detail a step still needs",
+        "properties": {
+          "allowedValues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fieldType": {
+            "type": "string"
+          },
+          "jsonSchema": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "The Meld field key; absent when the provider named a field Meld has no key for"
+          },
+          "label": {
+            "type": "string"
+          },
+          "providerCode": {
+            "type": "string",
+            "description": "The provider's own name for the field"
+          },
+          "source": {
+            "type": "string",
+            "description": "SUMSUB: captured on the KYC page. INTEGRATOR: only the integrator can supply it. PROVIDER: only the provider's own UI can collect it",
+            "enum": [
+              "SUMSUB",
+              "INTEGRATOR",
+              "PROVIDER"
+            ]
+          }
+        }
+      },
+      "Action": {
+        "type": "object",
+        "description": "What clears a step: CALL a Meld endpoint, OPEN_URL a hosted page, run an SDK_STEP on the order, or WAIT for a webhook",
+        "properties": {
+          "body": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "event": {
+            "type": "string",
+            "description": "For WAIT, the webhook that reports the outcome"
+          },
+          "method": {
+            "type": "string"
+          },
+          "nextStep": {
+            "type": "string",
+            "description": "For SDK_STEP, the step the order's actions name",
+            "enum": [
+              "NONE",
+              "SDK_REGISTER_CUSTOMER",
+              "SDK_AUTHORIZE",
+              "SDK_REAUTHORIZE",
+              "SDK_COLLECT_KYC",
+              "SDK_VERIFY_IDENTITY",
+              "SDK_REGISTER_WALLET",
+              "SDK_COLLECT_PAYMENT_METHOD",
+              "CREATE_PAYMENT_SESSION",
+              "REFRESH_QUOTE",
+              "CONFIRM_PAYMENT",
+              "RETRY",
+              "COMPLETE",
+              "REGION_NOT_SUPPORTED",
+              "START_NEW_ORDER",
+              "WAIT_FOR_PAYMENT",
+              "WAIT_FOR_PROVIDER",
+              "OPEN_HOSTED_VERIFICATION",
+              "UNKNOWN",
+              "AUTHORIZE_ACCOUNT",
+              "SELECT_SOURCE_ACCOUNT",
+              "COLLECT_SECOND_FACTOR",
+              "SELECT_CASH_LOCATION"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "refresh": {
+            "description": "For OPEN_URL, the call that mints a fresh URL",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Call"
+              }
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CALL",
+              "OPEN_URL",
+              "SDK_STEP",
+              "WAIT"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "For OPEN_URL, the page to open. Never log or store it"
+          }
+        }
+      },
+      "Call": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "OnrampProcessDescriptor": {
+        "type": "object",
+        "description": "Executable process discovery. Call READ with customerId/order before choosing an input source.",
+        "properties": {
+          "automaticSubmissionRetryAllowed": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "pollIntervalMs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pollTimeoutMs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
           }
         }
       }

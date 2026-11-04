@@ -1,0 +1,176 @@
+---
+title: "KYC levels"
+description: "How much Unified KYC each provider needs, and how Meld steps a customer up when an order needs more."
+hidden: true
+---
+
+Unified KYC verifies a customer at a level. Each provider has a minimum level, and a customer reaches a provider once their Unified KYC is approved at that level or higher. You never choose the level: name the provider the customer is heading to, and Meld picks it.
+
+<Note>
+  Level 1 is off until Meld turns it on for your account. Until then, every customer is verified at Level 2, as before levels existed, and Stripe and Coinbase work as [Wallets](/docs/stablecoins/headless-integration/wallets#providers) describes for accounts without Level 1. Ask your Meld account manager to turn it on once your integration reads the level fields on this page. A client that ignores them would take a Level 1 approval for a Level 2 one.
+</Note>
+
+## The levels
+
+| Level | What the customer does on the Sumsub page | Available to |
+| --- | --- | --- |
+| `LEVEL_1` | Confirms their name, date of birth, US residence address and other personal details, and types their SSN. Meld fills in what the Meld customer already holds, so the SSN is often all they type. No ID document and no selfie | Customers with a US `RESIDENCE` address, on an account with Level 1 on |
+| `LEVEL_2` | The same personal details, with their SSN or other tax ID, plus an ID document and a selfie | Every customer. Every approval made before levels counts as Level 2 |
+| `LEVEL_3` | Reserved for a later level that adds proof of funds or address | No provider needs it yet |
+
+- A customer approved at a level also meets every lower one.
+- Levels can be added. Treat a level you don't recognise as not approved.
+
+---
+
+## Each provider's minimum level
+
+| Provider | Minimum level | When the customer needs it |
+| --- | --- | --- |
+| Coinbase | `LEVEL_1` | Only at Coinbase's lifetime cap, to raise it. Guest orders need no Unified KYC. See [Coinbase guest checkout and step-up KYC](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc) |
+| Stripe | `LEVEL_1` | With Level 1 on: before an order Stripe hasn't already verified the customer for. Without it, Stripe needs no Unified KYC. See [Wallets → Stripe](/docs/stablecoins/headless-integration/wallets#stripe) |
+| Brale, T-0, Yellow Card | None | Never. They verify the business or institution themselves |
+| Every other provider | `LEVEL_2` | Before the share or the order, as [Which providers need Unified KYC](/docs/stablecoins/headless-integration/shared-flows/eligibility#which-providers-need-unified-kyc) lists |
+
+Read a provider's minimum from `kycLevel` on [`GET /network-partner/supported/partners`](/api-reference/network-partners/supported/list-supported-partners) rather than hardcoding this table: `NONE`, `LEVEL_1`, `LEVEL_2` or `LEVEL_3`. A provider can move to a lower level without a change on your side.
+
+Meld shares a customer's KYC with a provider only once their approval reaches that provider's level. A Level 1 approval isn't shared with Banxa, Noah or Due Network, and doesn't count for Mercuryo, until the customer steps up to Level 2. Some providers also need details or terms before the share: see [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share).
+
+---
+
+## How Meld picks the level
+
+Start Unified KYC with [`POST /accounts/customers/{customerId}/kyc/initiate`](/api-reference/customer/customers/accounts-customers-kyc-initiate), naming the provider the customer is heading to:
+
+```json
+{
+  "targetServiceProvider": "STRIPE"
+}
+```
+
+`serviceProvider` and `mode` default to `SUMSUB` and `HOSTED_URL` on a `POST`, so you can leave them out.
+
+| Your request names | Meld verifies at |
+| --- | --- |
+| `targetServiceProvider` | That provider's minimum level |
+| No target, or one with no minimum, and `kycShareProviders` | The highest minimum among them |
+| Neither | Your account's entry level: the lowest minimum among the providers enabled on your account, or Level 2 if none of them uses Level 1 |
+
+Two rules apply on top:
+
+- **Level 1 is US-only.** A customer without a `RESIDENCE` address in the US is verified at Level 2. Add the address with [`POST /accounts/customers/{customerId}/addresses`](/api-reference/customer/customers/accounts-customers-addresses-create) before you start KYC.
+- **Without Level 1 on your account,** the level is always Level 2.
+
+So a customer who onboards before choosing a provider starts at the lowest level your providers use, and steps up only if they later order from a provider that needs more.
+
+| Request field | Required | Description |
+| --- | --- | --- |
+| `targetServiceProvider` | no | The provider the customer is heading to, for example `BANXA` or `COINBASEPAY`. If it takes a KYC share, Meld adds it to `kycShareProviders` and shares once the approval reaches its level and the provider has what it needs before the share. What it needs never makes the call fail |
+| `order` | no | The order the customer is about to place: `paymentMethodType`, `sourceCurrencyCode`, `sourceAmount`, `destinationCurrencyCode` and `countryCode`, and optionally `destinationNetworkCode` and `subdivision`. Meld picks the level from the provider today, so `order` doesn't change it |
+| `serviceProvider` | no on `POST` | The KYC provider, `SUMSUB`. Still required on `PATCH` |
+| `mode` | no on `POST` | `HOSTED_URL` by default. Still required on `PATCH` |
+| `kycShareProviders` | no | As in [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers). A provider named here that lacks what it needs before the share fails the call with `422 KYC_SHARE_PREREQUISITES_MISSING`. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share) |
+
+The response adds two fields:
+
+```json
+{
+  "customerId": "W9kL817BBS7bNEwxAZaX4z",
+  "serviceProvider": "SUMSUB",
+  "status": "PENDING",
+  "url": "https://...",
+  "level": "LEVEL_2",
+  "approvedLevel": "LEVEL_1"
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `level` | The level the `url` verifies, or the level the customer is approved at when there's no `url` |
+| `approvedLevel` | The highest level the customer is approved at. Absent when nothing is approved |
+
+Open the `url` in your app, as in [Meld KYCes the user](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-3-have-meld-kyc-the-user).
+
+---
+
+## Step up
+
+When an order needs a higher level than the customer's approval, call the same `POST` with that provider as `targetServiceProvider`. Meld moves the customer's existing verification up to the new level. It never starts a second one, and the customer adds only what the new level asks for: from Level 1 to Level 2, an ID document and a selfie.
+
+A request with `targetServiceProvider` or `order` answers by the state of the customer's Unified KYC:
+
+| The customer's Unified KYC | Response |
+| --- | --- |
+| None yet | `200`, `PENDING`, with a `url` at the picked level |
+| Approved at the picked level or higher | `200`, `APPROVED`, with no `url`. Nothing to open. If the target takes a share, Meld shares with it now, or once it has what it needs before the share |
+| Started at the picked level or higher, not approved | `200`, with a fresh `url` and the current `status` |
+| Below the picked level, not in review | `200`, `PENDING`, with a `url` that asks only for what the new level adds |
+| Below the picked level, in review | `409`, `code: KYC_REVIEW_IN_PROGRESS`. Wait for the `CUSTOMER_KYC_STATUS_CHANGE` webhook, then call again |
+| Rejected as final | `422`, `code: KYC_BLOCKED`. Don't retry. No provider that needs Unified KYC will take this customer |
+
+A request with neither `targetServiceProvider` nor `order` behaves as before: a second `POST` for the same customer returns `409`, and `PATCH` returns a fresh `url`.
+
+While the higher level is in review, `approvedLevel` stays at the lower level, so providers that need only that level keep working. If the higher level is rejected and the customer can retry, `approvedLevel` still stays. A final rejection clears it.
+
+---
+
+## Where you read the level
+
+| Where | Fields |
+| --- | --- |
+| [`GET /crypto/onramp/{serviceProvider}/requirements`](/docs/stablecoins/headless-integration/shared-flows/eligibility#the-checklist) | The `MELD_KYC` item in `requirements` carries `level`, the level that provider needs, and `currentLevel`, the level the customer is approved at |
+| [`POST /accounts/customers/{customerId}/kyc/initiate`](/api-reference/customer/customers/accounts-customers-kyc-initiate) | `level` and `approvedLevel`, as above |
+| [`GET /accounts/customers`](/api-reference/customer/customers/accounts-customers-search) | `level` and `approvedLevel` in `serviceProviderCustomers[].kyc`, on the `SUMSUB` entry only |
+| The [`CUSTOMER_KYC_STATUS_CHANGE`](/docs/stablecoins/for-all-products/webhook-events#customer_kyc_status_change) webhook | `level`, `approvedLevel` and, for a provider's verdict on a share, `kycRecipient` |
+
+`status: APPROVED` on its own no longer means a customer can order from every provider. Compare `approvedLevel` with the provider's level, or let eligibility do it for you.
+
+---
+
+## The journey
+
+The loop is the same for every provider. Eligibility tells you what's outstanding, `kyc/initiate` starts or steps up Unified KYC, and the webhook tells you when to check again. This customer is approved at Level 1 and now orders from Banxa, which needs Level 2 and a share:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Customer
+    participant A as Your app
+    participant B as Your backend
+    participant M as Meld
+
+    C->>A: Picks Banxa and an amount
+    A->>B: Start checkout
+    B->>M: GET /crypto/onramp/BANXA/requirements, customerId and the order
+    M-->>B: MELD_KYC REQUIRED (level LEVEL_2, currentLevel LEVEL_1), PROVIDER_KYC_SHARE waiting on it, PROVIDER_REVIEW waiting on the share, eligible false
+    B->>M: POST /accounts/customers/{customerId}/kyc/initiate, targetServiceProvider BANXA
+    M-->>B: 200, level LEVEL_2, approvedLevel LEVEL_1, PENDING, url
+    B-->>A: url
+    C->>A: ID document and selfie only
+    M-->>B: Webhook CUSTOMER_KYC_STATUS_CHANGE, APPROVED, level LEVEL_2
+    Note over M: Meld shares the KYC with Banxa, and Banxa reviews it
+    M-->>B: Webhook CUSTOMER_KYC_STATUS_CHANGE, kycRecipient BANXA APPROVED
+    B->>M: GET /crypto/onramp/BANXA/requirements
+    M-->>B: PROVIDER_KYC_SHARE and PROVIDER_REVIEW SATISFIED, eligible true
+    B->>M: POST /crypto/order/headless/onramp
+```
+
+1. **Check eligibility** with the customer and the whole order: [Check the requirements](/docs/stablecoins/headless-integration/shared-flows/eligibility#check-the-requirements).
+2. **Work through `requirements`**, as [The checklist](/docs/stablecoins/headless-integration/shared-flows/eligibility#the-checklist) describes: do every step whose `dependsOn` is clear and whose `action` is a `CALL`, `OPEN_URL` or `SDK_STEP`, and wait on the rest. A `MELD_KYC` item that is `REQUIRED` carries the `kyc/initiate` call, with `targetServiceProvider` already set. It never waits on what a provider needs before the share.
+3. **Wait for the webhooks**: one when the customer's Unified KYC is approved, and, for a provider that takes a share, one with `kycRecipient` when the provider gives its verdict. Check eligibility again after each.
+4. **Create the order** once `eligible` is `true`.
+
+For the provider-specific steps on top, see [Coinbase guest checkout and step-up KYC](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc) and [Wallets → Stripe](/docs/stablecoins/headless-integration/wallets#stripe).
+
+---
+
+## Importing KYC you ran yourself
+
+A `RAW_DATA_IMPORT`, as in [You KYC the user](/docs/stablecoins/unified-kyc/you-kyc-the-user), also takes `targetServiceProvider` and `order` in its `data` part, and Meld picks the level the same way:
+
+- At Level 1, `documents` is optional, and the applicant's address must be in the US.
+- Documents, or an address outside the US, make it Level 2.
+- A Level 2 import without documents is refused with `400`, before anything reaches Sumsub.
+- An import onto a customer verified at a lower level moves that verification up.
+
+Without `targetServiceProvider` or `order`, an import works as before and needs documents.

@@ -167,7 +167,7 @@ After Sumsub verifies the user's submission, the KYC token will be automatically
 }
 ```
 
-After receiving a webhook event, call `GET /accounts/customers` for more details. For example, when the Virtual Account provider requires additional KYC on their platform, you'll receive a webhook event with `kycRecepient.status=PENDING`. Then, when calling `GET /accounts/customers`, you'll receive the following response:
+After receiving a webhook event, call `GET /accounts/customers` for more details. For example, when the Virtual Account provider requires additional KYC on their platform, you'll receive a webhook event with `kycRecipient.status=PENDING`. Then, when calling `GET /accounts/customers`, you'll receive the following response:
 
 ```json
 {
@@ -196,4 +196,4 @@ After receiving a webhook event, call `GET /accounts/customers` for more details
 }
 ```
 
-You will need to direct your user to `HostedURL` so they can pass additional KYC on the Virtual Account provider's platform. After users complete additional KYC and the Virtual Account provider verifies it, you will receive another `CUSTOMER_KYC_STATUS_CHANGE` event with `kycRecepient.status=APPROVED`. The new status will also be reflected in `GET /accounts/customers` responses.
+You will need to direct your user to `HostedURL` so they can pass additional KYC on the Virtual Account provider's platform. After users complete additional KYC and the Virtual Account provider verifies it, you will receive another `CUSTOMER_KYC_STATUS_CHANGE` event with `kycRecipient.status=APPROVED`. The new status will also be reflected in `GET /accounts/customers` responses.

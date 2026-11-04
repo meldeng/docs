@@ -158,7 +158,7 @@ Triggered when transaction fails or encounters an error.
 
 ### `CUSTOMER_KYC_STATUS_CHANGE`
 
-This is sent when you have Meld KYC a user and the user's KYC status is updated. Read more in [Meld KYCes the user](/docs/stablecoins/unified-kyc/meld-kyces-the-user).
+This is sent when you have Meld KYC a user and the user's KYC status is updated, and when a provider Meld shared the user's KYC with reports its verdict. Read more in [Meld KYCes the user](/docs/stablecoins/unified-kyc/meld-kyces-the-user) and [KYC levels](/docs/stablecoins/unified-kyc/kyc-levels).
 
 ```json
 {
@@ -173,10 +173,51 @@ This is sent when you have Meld KYC a user and the user's KYC status is updated.
       "customerId": "W9kL817BBS7bNEwxAZaX4z",
       "serviceProvider": "SUMSUB",
       "status": "APPROVED",
-      "statusUpdatedAt": "2026-02-25T18:55:08.960052Z"
+      "statusUpdatedAt": "2026-02-25T18:55:08.960052Z",
+      "level": "LEVEL_2",
+      "approvedLevel": "LEVEL_2"
     }
 }
 ```
+
+| Field | Description |
+| --- | --- |
+| `customerId` | The Meld customer |
+| `serviceProvider` | The KYC provider, `SUMSUB` |
+| `status` | The customer's Unified KYC status: `PENDING`, `APPROVED`, `REJECTED`, `EXPIRED` or `UNKNOWN` |
+| `statusUpdatedAt` | When the status changed |
+| `level` | The [KYC level](/docs/stablecoins/unified-kyc/kyc-levels) `status` is for: `LEVEL_1`, `LEVEL_2` or `LEVEL_3`. Absent when Meld doesn't know it |
+| `approvedLevel` | The highest level the customer is approved at. It stays while a higher level is in review, and is absent when nothing is approved |
+| `kycRecipient` | Present only when a provider Meld shared the customer's KYC with reports its verdict: `serviceProvider` is that provider, and `status` its verdict, such as `PENDING`, `APPROVED` or `REJECTED`. `status`, `level` and `approvedLevel` around it still describe the customer's Unified KYC |
+
+When a customer steps up, you receive `status: PENDING` with the new `level`, while `approvedLevel` keeps the level they're already approved at:
+
+```json
+"payload": {
+  "customerId": "W9kL817BBS7bNEwxAZaX4z",
+  "serviceProvider": "SUMSUB",
+  "status": "PENDING",
+  "statusUpdatedAt": "2026-10-29T18:55:08.960Z",
+  "level": "LEVEL_2",
+  "approvedLevel": "LEVEL_1"
+}
+```
+
+A provider's verdict on a share arrives as its own event:
+
+```json
+"payload": {
+  "customerId": "W9kL817BBS7bNEwxAZaX4z",
+  "serviceProvider": "SUMSUB",
+  "status": "APPROVED",
+  "statusUpdatedAt": "2026-10-29T19:02:41.117Z",
+  "level": "LEVEL_2",
+  "approvedLevel": "LEVEL_2",
+  "kycRecipient": { "serviceProvider": "BANXA", "status": "APPROVED" }
+}
+```
+
+Read `kycRecipient` before `status`: an event that carries it is about that provider, not a second Unified KYC approval.
 
 <br />
 
