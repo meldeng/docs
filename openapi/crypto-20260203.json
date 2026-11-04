@@ -4098,7 +4098,7 @@
           "Headless"
         ],
         "summary": "Get a provider's verification requirements",
-        "description": "Returns the provider's customer-verification requirements and legal agreements. Pass customerId to additionally get the customer's current (advisory) per-field verification status. Pass the order you intend to create \u2014 payment method, amount and corridor \u2014 to additionally get the provider's own outstanding KYC details: those are jurisdiction-, amount- and method-dependent, so they can only be reported against a concrete intent. With customerId, requirements lists the same steps as one ordered checklist, each with its type, status and the call that clears it; eligible is true when every PRE_ORDER step is SATISFIED, false when one is not, and absent when Meld cannot tell (no whole order intent, an unread state). Create stays the authoritative gate. A client does every step whose dependsOn is clear and whose action is a CALL, OPEN_URL or SDK_STEP, and waits on the rest.",
+        "description": "Returns the provider's customer-verification requirements and legal agreements. Pass customerId to additionally get the customer's current (advisory) per-field verification status. Pass the order you intend to create \u2014 payment method, amount and corridor \u2014 to additionally get the provider's own outstanding KYC details: those are jurisdiction-, amount- and method-dependent, so they can only be reported against a concrete intent. With customerId, requirements lists the same steps as one ordered checklist, each with its type, status and the call that clears it; eligible is false when a PRE_ORDER step is REQUIRED, PENDING or BLOCKED, true when every PRE_ORDER step is SATISFIED and Meld could check them all (for a provider that checks the order itself, that needs the whole order intent), and absent when Meld cannot tell, for example because a step is UNKNOWN. For the same customer and intent, true means order creation's checks before reservation pass; create stays the final check. A client does every step whose dependsOn is clear and whose action is a CALL, OPEN_URL or SDK_STEP, and waits on the rest. With Meld-Version 2026-11-01 or later, the response has no kycRequirements, and every action that names providers names them in targetServiceProviders, as kyc/initiate takes them on that version; older versions still return the deprecated kycRequirements, with the older provider fields in those actions. For a virtual-account onramp or an offramp, send customerId only: the same endpoint answers the provider's KYC for every direction.",
         "operationId": "/crypto-onramp-verification-requirements-get",
         "parameters": [
           {
@@ -10112,13 +10112,15 @@
           },
           "eligible": {
             "type": "boolean",
-            "description": "true when every PRE_ORDER step is SATISFIED, false when one is REQUIRED, PENDING or BLOCKED, with or without an order intent; otherwise absent when Meld cannot tell: no customerId, no whole order intent, an unavailable policy, an unreadable customer, or a PRE_ORDER step that is UNKNOWN. Create stays the authoritative gate"
+            "description": "false when any PRE_ORDER step is REQUIRED, PENDING or BLOCKED, which wins over everything; true only with a customerId the account holds, every PRE_ORDER step SATISFIED, and the whole order intent for a provider that checks the order itself (Banxa, Uphold, Coinbase, Stripe); absent otherwise: no customerId or one the account does not hold, no whole intent for such a provider, an unavailable policy, or a PRE_ORDER step that is UNKNOWN. For the same customer and intent, true means the checks order creation runs before reserving the order pass, unless state changes in between. Treat absent as create allowed"
           },
           "kycRequirements": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/KycRequirement"
-            }
+            },
+            "deprecated": true,
+            "description": "Deprecated. Use requirements. Not returned on Meld-Version 2026-11-01 and later"
           },
           "legalAgreements": {
             "type": "array",
@@ -10128,7 +10130,7 @@
           },
           "requirements": {
             "type": "array",
-            "description": "The same steps as one ordered checklist, each with its type, status and the call that clears it; absent when no customerId was supplied or the customer's KYC records could not be read",
+            "description": "The whole answer as one ordered checklist, each step with its type, status and the call that clears it; absent only when no customerId was supplied",
             "items": {
               "$ref": "#/components/schemas/Requirement"
             }
@@ -10191,7 +10193,9 @@
               "BLOCKED"
             ]
           }
-        }
+        },
+        "deprecated": true,
+        "description": "Deprecated: an entry of kycRequirements, returned below Meld-Version 2026-11-01 only. Use Requirement"
       },
       "CustomerStatus": {
         "type": "object",
@@ -10277,7 +10281,7 @@
         "description": "One step of the checklist. type, status and action.type are open sets: treat a value you do not know as not satisfied",
         "properties": {
           "action": {
-            "description": "What clears the step; absent when SATISFIED or BLOCKED. Its body holds only the selecting fields: add the order, contact target and acceptance evidence the endpoint needs",
+            "description": "What clears the step; absent when SATISFIED or BLOCKED, and on an UNKNOWN step except <PROVIDER>_HOSTED_TERMS with TERMS_UNREAD. Its body holds only the selecting fields: add the order, contact target and acceptance evidence the endpoint needs. Send it with the Meld-Version you read the checklist with",
             "allOf": [
               {
                 "$ref": "#/components/schemas/Action"
@@ -10286,7 +10290,7 @@
           },
           "code": {
             "type": "string",
-            "description": "Stable identifier of the step, e.g. MELD_KYC_APPROVED, PROVIDER_KYC_SHARE, PROVIDER_KYC_APPROVED, CUSTOMER_EMAIL, an agreement's document code, or <PROVIDER>_TERMS for terms Meld could not list yet"
+            "description": "Stable identifier of the step, e.g. ORDER_ROUTE, MELD_KYC_APPROVED, PROVIDER_KYC_SHARE, PROVIDER_KYC_APPROVED, CUSTOMER_EMAIL, an agreement's document code, <PROVIDER>_TERMS for terms Meld could not list yet, or <PROVIDER>_HOSTED_TERMS for terms accepted on the provider's own page"
           },
           "currentLevel": {
             "type": "string",
@@ -10304,6 +10308,13 @@
               "type": "string"
             },
             "description": "Codes of the steps that must be SATISFIED before this one. A step Meld or the provider runs, such as PROVIDER_KYC_SHARE or PROVIDER_REVIEW, starts by itself once they clear. MELD_KYC never depends on a provider's share prerequisites, and PROVIDER_EXTRA_FIELDS and PROVIDER_PROCESS depend on PROVIDER_KYC_SHARE only until the share is delivered"
+          },
+          "errorCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "On a BLOCKED PROVIDER_KYC_SHARE, the provider's codes for the refusal, e.g. PHONE_VERIFICATION_REQUIRED when Coinme needs the customer's phone verified first; absent when it gave none. An open set"
           },
           "level": {
             "type": "string",
@@ -10330,9 +10341,23 @@
               }
             ]
           },
+          "processStates": {
+            "type": "array",
+            "description": "The provider's own state of the step, in its own vocabulary: for PROVIDER_PROCESS, that process; for PROVIDER_EXTRA_FIELDS, the provider's other steps",
+            "items": {
+              "$ref": "#/components/schemas/ProcessState"
+            }
+          },
+          "processes": {
+            "type": "array",
+            "description": "For PROVIDER_EXTRA_FIELDS, the codes of the provider's questionnaires that come as a form",
+            "items": {
+              "type": "string"
+            }
+          },
           "reason": {
             "type": "string",
-            "description": "The refusal on a BLOCKED step. On an UNKNOWN AGREEMENT, UNRECORDABLE when the customer cannot hold a receipt, or TERMS_UNRESOLVED when Meld could not list the provider's terms yet"
+            "description": "On BLOCKED, the refusal: the provider's words or the code order creation would return. On UNKNOWN, why Meld cannot tell: STATE_UNAVAILABLE (the provider's own state is unreadable), RECORDS_UNAVAILABLE (Meld's customer, KYC, verification or share records are unreadable), ROUTE_UNAVAILABLE (the order's route, its catalog entry or the account's preference is unreadable, or the catalog lacks a bank-transfer route's receiving bank details), TERMS_UNRESOLVED (Meld could not list the provider's terms yet), TERMS_UNREAD (Meld has not read the provider's hosted terms yet) or UNRECORDABLE (the customer cannot hold an agreement receipt). An open set"
           },
           "satisfiedFields": {
             "type": "array",
@@ -10343,7 +10368,7 @@
           },
           "status": {
             "type": "string",
-            "description": "UNKNOWN: Meld could not read the state, or could not list the provider's terms yet; never counts as satisfied",
+            "description": "UNKNOWN: Meld could not read what decides the step, and reason says what; never counts as satisfied. Read again later",
             "enum": [
               "REQUIRED",
               "PENDING",
@@ -10363,7 +10388,7 @@
           },
           "type": {
             "type": "string",
-            "description": "AGREEMENT: a catalog agreement, or a Terms-of-Service document the provider needs before the share. CUSTOMER_DETAILS: an email, name or address the provider needs on the customer before the share. PROVIDER_KYC_SHARE: Meld delivering the customer's KYC, SATISFIED once the provider has the customer, whatever it decides. PROVIDER_REVIEW: the provider's verdict, after its own steps. An open set: treat a value you do not know as not satisfied",
+            "description": "ORDER_ROUTE: first, with a whole order intent only; whether order creation takes the route before it looks at the customer, BLOCKED with the code create would return. AGREEMENT: a catalog agreement, or a Terms-of-Service document the provider needs before the share. CUSTOMER_DETAILS: an email, name or address the provider needs on the customer before the share. PROVIDER_KYC_SHARE: Meld delivering the customer's KYC, SATISFIED once the provider has the customer, whatever it decides. PROVIDER_REVIEW: the provider's verdict, after its own steps. An open set: treat a value you do not know as not satisfied",
             "enum": [
               "VERIFICATION",
               "AGREEMENT",
@@ -10373,7 +10398,8 @@
               "PROVIDER_EXTRA_FIELDS",
               "EXTERNAL_KYC",
               "PROVIDER_PROCESS",
-              "PROVIDER_REVIEW"
+              "PROVIDER_REVIEW",
+              "ORDER_ROUTE"
             ]
           },
           "url": {
@@ -10432,6 +10458,12 @@
             "type": "string",
             "description": "For WAIT, the webhook that reports the outcome"
           },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "For OPEN_URL, when url stops opening (ISO-8601 UTC); absent when the provider states no lifetime",
+            "example": "2026-11-04T15:45:00Z"
+          },
           "method": {
             "type": "string"
           },
@@ -10468,7 +10500,7 @@
             "type": "string"
           },
           "refresh": {
-            "description": "For OPEN_URL, the call that mints a fresh URL",
+            "description": "For OPEN_URL, the call that mints a fresh page. Call it when url is absent, when expiresAt is less than 60 seconds away, or when the page fails to load, at most once before showing the page and once after it closes, then read the checklist again",
             "allOf": [
               {
                 "$ref": "#/components/schemas/Call"
@@ -10486,7 +10518,7 @@
           },
           "url": {
             "type": "string",
-            "description": "For OPEN_URL, the page to open. Never log or store it"
+            "description": "For OPEN_URL, the page to open; absent once expiresAt has passed. Never log or store it"
           }
         }
       },

@@ -19,7 +19,7 @@ The order call, the capture surface appearing in your app, the [SDK](/docs/stabl
 - Headless onramps enabled on your sandbox account. Ask your Meld representative. Until they are, orders are refused with `403 WHITELABEL_NOT_ENABLED`
 - Sandbox credentials for the provider you are testing, on your Meld sandbox account
 - A webhook endpoint reachable from the internet, configured in the dashboard
-- A test customer with an email. For Banxa and Mercuryo, also KYC-approved: see [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing). For Banxa, also name `BANXA` in `kycShareProviders`. Stripe and Coinbase need no Unified KYC. With [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on for your account, Stripe needs it at Level 1
+- A test customer with an email. For Banxa and Mercuryo, also KYC-approved: see [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing). For Banxa, also name `BANXA` in `targetServiceProviders`, with `Meld-Version: 2026-11-01`. Stripe and Coinbase need no Unified KYC. With [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on for your account, Stripe needs it at Level 1
 
 <Warning>
   Sandbox coverage is narrower than production, and a US test customer is the most common reason an otherwise correct integration returns no quotes. Quote first and use whatever country and currency pair comes back with the provider you intend to test. Stripe serves only US customers.
