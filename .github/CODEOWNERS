@@ -1,0 +1,23 @@
+# Code owners for meldeng/docs
+#
+# Owners are teams, never individuals: GitHub never counts a PR author's own
+# review, so a single-person owner deadlocks that person's PRs. Each owning
+# team needs write access or higher on this repo.
+#
+# Reviewer assignment comes from the team's GitHub auto-assignment settings
+# (two reviewers, load balance), so a PR has named reviewers the moment it
+# opens and shows up in the #code-review scheduled reminder.
+#
+# The last matching rule wins. Verify after merging with:
+#     gh api repos/meldeng/docs/codeowners/errors
+
+# Default owner for everything not matched below.
+*                       @meldeng/backend-engr
+
+# CI/CD, deploy, release and promotion workflows (assume AWS roles, publish
+# packages, push images, promote to production).
+/.github/               @meldeng/admin
+
+# Ownership itself, kept explicit so narrowing /.github/ later does not
+# silently make this file editable under the default rule.
+/.github/CODEOWNERS     @meldeng/admin
