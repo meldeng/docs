@@ -8705,7 +8705,6 @@
               "UPHOLD",
               "WYRE",
               "XANPOOL",
-              "YELLOWCARD",
               "YODLEE"
             ],
             "default": "TRANSAK"
@@ -8871,7 +8870,6 @@
               "UPHOLD",
               "WYRE",
               "XANPOOL",
-              "YELLOWCARD",
               "YODLEE"
             ]
           },
@@ -9016,7 +9014,6 @@
               "UPHOLD",
               "WYRE",
               "XANPOOL",
-              "YELLOWCARD",
               "YODLEE"
             ]
           },
@@ -9146,8 +9143,7 @@
               "TOPPER",
               "TRANSAK",
               "TRANSFI",
-              "UNLIMIT",
-              "YELLOWCARD"
+              "UNLIMIT"
             ]
           },
           "walletTag": {
