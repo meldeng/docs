@@ -27,6 +27,30 @@ sp_crypto: &supported_crypto_sp
   - TRANSAK
   - UNLIMIT
   - YELLOWCARD
+sp_crypto_widget: &supported_crypto_widget_sp
+  - ALCHEMYPAY
+  - BANXA
+  - BINANCECONNECT
+  - BINANCEPAY
+  - BLOCKCHAINDOTCOM
+  - BTCDIRECT
+  - COINBASEPAY
+  - FONBNK
+  - GUARDARIAN
+  - KRYPTONIM
+  - KOYWE
+  - MERCURYO
+  - ONMETA
+  - ONRAMPMONEY
+  - PAYBIS
+  - PAYPAL
+  - REVOLUT
+  - ROBINHOOD
+  - STRIPE
+  - SWAPPED
+  - TOPPER
+  - TRANSAK
+  - UNLIMIT
 sp_fiat: &supported_fiat_sp
   - STRIPE
 sp_banklinking: &supported_banklinking_sp
@@ -610,7 +634,16 @@ payment-http:
         components_to_modify:
           SessionDataInputV20231219:
             - path: properties.serviceProvider.enum
-              replace_with: *supported_crypto_sp
+              replace_with: *supported_crypto_widget_sp
+          CryptoBuySessionData:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_widget_sp
+          CryptoSellSessionData:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_widget_sp
+          CryptoTransferSessionData:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_widget_sp
       "2024-04-27":
         readme_oas:
           - 660f3d23f3a6d2002532dccc
@@ -656,7 +689,16 @@ payment-http:
         components_to_modify:
           SessionDataInputV20231219:
             - path: properties.serviceProvider.enum
-              replace_with: *supported_crypto_sp
+              replace_with: *supported_crypto_widget_sp
+          CryptoBuySessionData:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_widget_sp
+          CryptoSellSessionData:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_widget_sp
+          CryptoTransferSessionData:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_widget_sp
       "2026-02-03":
         readme_oas:
           - None # Create in ReadMe and set ID; quote response uses rampScore, institutionName removed
@@ -709,7 +751,16 @@ payment-http:
         components_to_modify:
           SessionDataInputV20231219:
             - path: properties.serviceProvider.enum
-              replace_with: *supported_crypto_sp
+              replace_with: *supported_crypto_widget_sp
+          CryptoBuySessionData:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_widget_sp
+          CryptoSellSessionData:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_widget_sp
+          CryptoTransferSessionData:
+            - path: properties.serviceProvider.enum
+              replace_with: *supported_crypto_widget_sp
           CryptoQuote20260203:
             - path: properties.paymentMethodType.enum
               replace_with: *supported_payment_method_types_crypto
