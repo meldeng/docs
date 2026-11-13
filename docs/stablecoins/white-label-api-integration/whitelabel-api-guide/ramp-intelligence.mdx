@@ -95,9 +95,12 @@ Meld's algorithm processes multiple data points, updated several times daily:
 
 ```typescript
 interface Quote {
-  rampScore: number;
+  rampIntelligence: {
+    rampScore: number;
+    lowKyc: boolean | null;
+    previouslyUsed: string | null;
+  };
   serviceProvider: string;
-  lowKyc: boolean | null;
   partnerFee: number | null;
   sourceAmount: number;
   destinationAmount: number;
@@ -106,7 +109,7 @@ interface Quote {
 }
 
 function sortQuotesByRecommendation(quotes: Quote[]): Quote[] {
-  return quotes.sort((a, b) => b.rampScore - a.rampScore);
+  return quotes.sort((a, b) => b.rampIntelligence.rampScore - a.rampIntelligence.rampScore);
 }
 
 function getRecommendationBadge(score: number): string {
@@ -164,7 +167,7 @@ function getLowKycBadge(lowKyc: boolean | null): string {
 }
 
 function shouldHighlightForSpeed(quote: Quote): boolean {
-  return quote.lowKyc === true;
+  return quote.rampIntelligence.lowKyc === true;
 }
 ```
 
@@ -254,13 +257,13 @@ Here's a realistic quote response showing how optimization parameters work toget
 // Sort quotes optimally
 function optimizeQuoteDisplay(quotes: Quote[]): Quote[] {
   return quotes
-    .sort((a, b) => b.rampScore - a.rampScore)
+    .sort((a, b) => b.rampIntelligence.rampScore - a.rampIntelligence.rampScore)
     .map(quote => ({
       ...quote,
-      recommendationBadge: getRecommendationBadge(quote.rampScore),
-      speedBadge: getLowKycBadge(quote.lowKyc),
-      isPrimary: quote.rampScore >= 70,
-      isRecommended: quote.rampScore >= 30
+      recommendationBadge: getRecommendationBadge(quote.rampIntelligence.rampScore),
+      speedBadge: getLowKycBadge(quote.rampIntelligence.lowKyc),
+      isPrimary: quote.rampIntelligence.rampScore >= 70,
+      isRecommended: quote.rampIntelligence.rampScore >= 30
     }));
 }
 ```
