@@ -30,10 +30,10 @@ This guide walks through customer creation, KYC, quoting, order creation, and we
 4. Get a sell quote from the Payment API. (**every transaction**)
 5. Create a headless offramp order with fiat payout details. (**every transaction**)
 6. The end user sends crypto to the returned `walletAddress`. (**every transaction**)
-7. Track progress via webhooks and the Transactions API. (**every transaction**)
+7. Track the order by its status, and read it again on every webhook. (**every transaction**)
 
 ```text
-Customer → Webhooks → Requirements → KYC → Quote → POST /crypto/order/headless/offramp → User sends crypto → Webhooks / GET transaction
+Customer → Webhooks → Requirements → KYC → Quote → POST /crypto/order/headless/offramp → User sends crypto → Webhooks → GET /crypto/order/{orderId}/status
 ```
 
 Step 6 stays its own step: the user (or your treasury) must send the correct crypto amount to the provider-issued address before the fiat payout can complete.
@@ -142,6 +142,9 @@ In the Meld dashboard (**Developer → Webhooks**), subscribe at minimum to:
 - `TRANSACTION_CRYPTO_TRANSFERRING`
 - `TRANSACTION_CRYPTO_COMPLETE`
 - `TRANSACTION_CRYPTO_FAILED`
+- `ORDER_CRYPTO_FAILED`
+
+Put the endpoint on webhook version `2026-09-01` or later, so that events carry the order's id and status. See [Webhook version](#webhook-version).
 
 Verify signatures per Webhook authentication docs.
 
@@ -281,6 +284,11 @@ Capture the selected `serviceProvider` and amounts for order creation. Quote cov
 - Same key after success → cached body, HTTP **200**
 - After a failed attempt that left an empty idempotency row → HTTP **425 TOO\_EARLY** — mint a **new** key
 
+**Optional fields:**
+
+- `externalOrderId`: your reference for the order, unique per account. A reused one returns `400 EXTERNAL_ORDER_ID_NOT_UNIQUE`. The order status and the webhooks echo it.
+- `refundWalletAddress`: where the crypto goes back if the order is refunded. It must be an address on the source currency's chain, and you can't change it after the order is created.
+
 ### ACH / bank payout example
 
 ```json
@@ -366,13 +374,15 @@ Provider support for each type is account- and rail-specific.
 {
   "id": "WfR7abcDEF12345xyz9876",
   "paymentMethodType": "ACH",
-  "walletAddress": "0xABCDEF1234567890ABCDEF1234567890ABCDEF12"
+  "walletAddress": "0xABCDEF1234567890ABCDEF1234567890ABCDEF12",
+  "status": "AWAITING_DEPOSIT"
 }
 ```
 
 | Field | Meaning |
 | --- | --- |
-| `id` | Meld headless order id. Webhooks do not carry it — match them via `paymentTransactionId`, then read `orderId` from `GET /payments/transactions/{paymentTransactionId}` |
+| `id` | The order id. Track the order with it: `GET /crypto/order/{orderId}/status`. Webhooks on version `2026-09-01` or later carry it as `orderId` |
+| `status` | The order status: `AWAITING_DEPOSIT`, or `FAILED` when the provider closed the order before it could pay out. A `FAILED` order has no `walletAddress`, so nothing is to be sent, and `errorCode` and `errorText` say why |
 | `paymentMethodType` | Fiat payout rail used |
 | `walletAddress` | Provider-issued address the user must send **crypto** to |
 
@@ -398,56 +408,168 @@ This is a required human (or treasury) action after order create — the order a
 
 ---
 
-## 7. Track the transaction
+## 7. Track the order
 
-### Webhooks
+Track a sell by its order status. The transaction status can't tell an expired order from a cancelled one, or a provider's review from a pending payout, and an order that ends before any deposit may have no transaction at all. Use the transaction for amounts, fees and the blockchain hash.
 
-An offramp produces this sequence. Correlate every one of them with `paymentTransactionId`. For sell flows, `transactionType` is `CRYPTO_SELL`.
+### Read the order status
 
-| Event | `paymentTransactionStatus` | Meaning |
-| --- | --- | --- |
-| `TRANSACTION_CRYPTO_PENDING` | `PENDING` | Meld has seen the customer's crypto and created the transaction |
-| `TRANSACTION_CRYPTO_TRANSFERRING` | `SETTLING` | The provider is paying fiat out to the details on the order |
-| `TRANSACTION_CRYPTO_COMPLETE` | `SETTLED` | Fiat paid out. This is the terminal success event |
-| `TRANSACTION_CRYPTO_FAILED` | `FAILED` | The payout could not be completed |
+**Endpoint:** `GET /crypto/order/{orderId}/status`
 
-Every event uses the same envelope and payload shape, with `eventType` and `payload.paymentTransactionStatus` moving together:
+`orderId` is the `id` returned in Step 5. The call needs an API key that can read transactions. It returns the same shape on every `Meld-Version`, with `Cache-Control: no-store`.
 
 ```json
 {
-  "eventType": "TRANSACTION_CRYPTO_PENDING",
+  "orderId": "WfR7abcDEF12345xyz9876",
+  "externalOrderId": "your-order-ref-123",
+  "orderType": "CRYPTO_SELL",
+  "serviceProvider": "NOAH",
+  "status": "REFUNDED",
+  "paymentTransactionId": "WePZCYJW7cdXR7SxUMp8mE",
+  "errorCode": "FIAT_PAYOUT_FAILED",
+  "errorText": "The fiat payout did not complete",
+  "serviceProviderDetails": null,
+  "refundWalletAddress": "0xe51f36521fF5D857824e615a64D34808534a55e6",
+  "refundBlockchainTransactionId": null,
+  "refundAmount": null,
+  "refundSourceWalletAddress": null,
+  "refundedAt": null
+}
+```
+
+Every field is always present. `null` means not set yet.
+
+| Field | Meaning |
+| --- | --- |
+| `orderId` | The order id, as returned when you created the order |
+| `externalOrderId` | Your `externalOrderId`, or `null` |
+| `orderType` | `CRYPTO_SELL` |
+| `serviceProvider` | The provider the order was placed with |
+| `status` | The order status. See [Order statuses](#order-statuses) |
+| `paymentTransactionId` | The Meld transaction linked to the order, for matching transaction webhooks. `null` until the provider reports one. It doesn't mean the order was funded: an order the provider rejects before any deposit can carry a `FAILED` transaction |
+| `errorCode` | Why the order is `FAILED`, `CANCELLED`, `EXPIRED` or `REFUNDED`, or why it is `UNDER_REVIEW` (`COMPLIANCE_HOLD`), when Meld knows. `null` in any other status |
+| `errorText` | `errorCode` in words, with the provider's reason when there is one |
+| `serviceProviderDetails` | The provider's own status that `errorCode` was mapped from, when there is one. Its shape depends on the provider: log it, but don't build logic on it |
+| `refundWalletAddress` | The `refundWalletAddress` you sent when you created the order, or `null` |
+| `refundAmount`, `refundBlockchainTransactionId`, `refundSourceWalletAddress`, `refundedAt` | The returned crypto: how much, its on-chain hash, the wallet it was sent from, and when. `null` until the refund has been sent |
+
+A `404` (`NOT_FOUND`) means your account has no sell order with that id: the id is unknown, belongs to another account, or is an onramp, transfer or other order. Only sell orders have an order status.
+
+### Order statuses
+
+```text
+AWAITING_DEPOSIT → DEPOSIT_RECEIVED → SETTLING → SETTLED
+```
+
+| Status | Meaning | Final | What to show your user |
+| --- | --- | --- | --- |
+| `AWAITING_DEPOSIT` | The order is waiting for the crypto at `walletAddress` | No | Send exactly `sourceAmount` to `walletAddress` |
+| `DEPOSIT_RECEIVED` | The deposit arrived | No | Crypto received |
+| `SETTLING` | The provider is paying the fiat out | No | Payout on its way |
+| `UNDER_REVIEW` | The provider is holding the order for review. The order moves on when the review ends | No | Under review |
+| `SETTLED` | The fiat is paid out | Yes | Paid out |
+| `REFUNDED` | The deposit arrived, but the payout did not complete. The crypto is owed back | Yes | Payout failed, crypto being returned. Once `refundBlockchainTransactionId` is set: crypto returned |
+| `EXPIRED` | No deposit arrived in time | Yes, but can become `REFUNDED` | Order expired. Don't send crypto to it |
+| `FAILED` | The order ended before any deposit. `errorCode` says why | Yes, but can become `REFUNDED` | Order failed |
+| `CANCELLED` | The order was cancelled before any deposit | Yes, but can become `REFUNDED` | Order cancelled |
+
+An order moves only along these paths:
+
+| From | Can move to |
+| --- | --- |
+| `AWAITING_DEPOSIT` | `DEPOSIT_RECEIVED`, `SETTLING`, `SETTLED`, `UNDER_REVIEW`, `EXPIRED`, `FAILED`, `CANCELLED` |
+| `DEPOSIT_RECEIVED` | `SETTLING`, `SETTLED`, `UNDER_REVIEW`, `REFUNDED` |
+| `SETTLING` | `SETTLED`, `UNDER_REVIEW`, `REFUNDED` |
+| `UNDER_REVIEW` | `DEPOSIT_RECEIVED`, `SETTLING`, `SETTLED`, `REFUNDED` |
+| `EXPIRED`, `FAILED`, `CANCELLED` | `REFUNDED`, when a deposit arrives after the order ended or the provider reports later that it had arrived |
+| `SETTLED`, `REFUNDED` | Nothing. A `REFUNDED` order's refund fields still fill in once the crypto is sent back |
+
+- An order can pass through several statuses between two reads, so don't wait for each status in turn.
+- Treat a status you don't recognise as still in progress, and read the order again later. New statuses may be added.
+
+`errorCode` values you can see:
+
+| `errorCode` | Meaning |
+| --- | --- |
+| `CRYPTO_DEPOSIT_MISSING` | No deposit reached the order before it expired |
+| `CRYPTO_DEPOSIT_INVALID` | The deposit was late, the wrong amount or network, from the wrong sender, or split, and is returned |
+| `COMPLIANCE_HOLD` | The provider is reviewing the order |
+| `COMPLIANCE_REJECTED` | The provider's compliance or AML policy blocked the order |
+| `FIAT_PAYOUT_FAILED` | The fiat payout did not complete. `errorText` says why when the provider gave a reason |
+| `BENEFICIARY_DETAILS_INVALID` | The payout details are incomplete or invalid |
+| `PROVIDER_ERROR` | The provider returned an error |
+
+Other codes can appear. Show `errorText` for a code you don't recognise.
+
+### Webhooks
+
+Webhooks tell you when to read the order again. When one arrives for a sell, call `GET /crypto/order/{orderId}/status` and act on the `status` it returns:
+
+- Webhooks can arrive out of order. `orderStatus` on an event is the status when Meld created the event, and the status endpoint returns the order as it is now.
+- Not every status change sends a webhook. Read orders that aren't final on a schedule as well.
+
+| Event | `paymentTransactionStatus` | Sent when |
+| --- | --- | --- |
+| `TRANSACTION_CRYPTO_PENDING` | `PENDING` | The provider reported the transaction. Some providers report it before the deposit, so it doesn't mean the crypto arrived |
+| `TRANSACTION_CRYPTO_TRANSFERRING` | `SETTLING` | The provider is paying the fiat out |
+| `TRANSACTION_CRYPTO_COMPLETE` | `SETTLED` | The fiat is paid out |
+| `TRANSACTION_CRYPTO_FAILED` | `FAILED` or `REFUNDED` | The payout did not complete, or the provider rejected the order before any deposit. If the payout fails after the deposit and you gave a `refundWalletAddress`, this event waits until the refund is resolved, and the transaction reads `REFUNDED` if the crypto was returned. Without a `refundWalletAddress`, it can arrive twice: `FAILED` at once, then `REFUNDED` once the crypto is sent back. The order reads `REFUNDED` as soon as the payout fails |
+| `ORDER_CRYPTO_FAILED` | `null` when the order has no transaction | The order ended without a payout: before any deposit (`EXPIRED`, `FAILED` or `CANCELLED`), whether or not it has a transaction, or with the deposit owed back on an order that has no transaction (`REFUNDED`). For a returned deposit, it's sent once the refund is resolved. If you gave no `refundWalletAddress`, it's sent at once, and again once the crypto is sent back |
+
+An endpoint that subscribes to `ORDER_CRYPTO_FAILED` by name doesn't also get `TRANSACTION_CRYPTO_FAILED` for an order that ended before any deposit. An endpoint that subscribes to every event gets both.
+
+### Webhook version
+
+On webhook version `2026-09-01` or later, every event of a sell's transaction carries the order:
+
+| Field | Meaning |
+| --- | --- |
+| `orderId` | The order the transaction belongs to: the `id` from Step 5 |
+| `externalOrderId` | Your `externalOrderId`, or `null` |
+| `orderStatus` | The order status when the event was created |
+| `errorCode`, `errorText` | As on the order status, or `null` |
+
+```json
+{
+  "eventType": "TRANSACTION_CRYPTO_TRANSFERRING",
   "eventId": "AAsuLXHXD3mS1cjNBuHHzv",
-  "timestamp": "2025-02-24T16:36:41.717262Z",
+  "timestamp": "2026-11-10T18:05:00.717262Z",
   "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
   "profileId": "W9ka8vLE4ufBkSg3BEciZb",
-  "version": "2023-01-30",
+  "version": "2026-09-01",
   "payload": {
     "requestId": "f07f1accb7404aec9bd9a5d64975eed1",
     "accountId": "WQ5RyhdFzE45qjsomdzQ1u",
     "paymentTransactionId": "WePZCYJW7cdXR7SxUMp8mE",
     "customerId": "WmYYgvN8ukpV62N3m4u3ee",
     "externalCustomerId": "your-internal-user-id-123",
-    "paymentTransactionStatus": "PENDING",
-    "transactionType": "CRYPTO_SELL"
+    "paymentTransactionStatus": "SETTLING",
+    "transactionType": "CRYPTO_SELL",
+    "orderId": "WfR7abcDEF12345xyz9876",
+    "externalOrderId": "your-order-ref-123",
+    "orderStatus": "SETTLING",
+    "errorCode": null,
+    "errorText": null
   }
 }
 ```
 
-<Warning>
-  **The webhook payload does not carry the order id.** To match an event back to the order you created in Step 5, take `paymentTransactionId` from the payload, call `GET /payments/transactions/{paymentTransactionId}`, and read `orderId` from the transaction — that value is the `id` the order returned.
+`paymentTransactionId`, `paymentTransactionStatus`, `externalOrderId`, `errorCode` and `errorText` are always sent, as `null` when empty. Other empty fields are left out. A headless order has no `sessionId` or `externalSessionId`, so don't key your handler on them.
 
-  Store the order id against `paymentTransactionId` on the first event you receive, and you only pay for that lookup once per transaction.
-</Warning>
+To get this shape:
 
-<Note>
-  **Headless payloads carry no session fields.** `sessionId` and `externalSessionId` only exist for widget transactions, which are created from a session. A headless order has none, and the payload omits empty fields entirely rather than sending them as `null` — so do not key your handler on their presence.
-</Note>
+- An endpoint you created on or after 2026-09-01 without naming a version is on it already.
+- To move another endpoint, open **Developer → Webhooks** in the dashboard, choose **API Version** from the endpoint's menu, and enter `2026-09-01`. Or send `PATCH /notifications/webhooks/{webhookProfileId}` with `"eventVersion": "2026-09-01"`. The version applies to every event the endpoint receives.
+
+Events in this shape carry `"version": "2026-09-01"` in the envelope. `ORDER_CRYPTO_FAILED` always does, whatever the endpoint's version.
+
+On an earlier version, events don't carry the order. Match each one through its transaction: take `paymentTransactionId`, call `GET /payments/transactions/{paymentTransactionId}`, and read `orderId`. Store the order id against `paymentTransactionId` on the first event, so you look it up once per transaction.
 
 ### Fetch the full transaction
 
 **Endpoint:** `GET /payments/transactions/{paymentTransactionId}`
 
-Use `paymentTransactionId` from the webhook.
+Use `paymentTransactionId` from the order status or the webhook. Read amounts, fees, the provider's reference and the blockchain hash here. Its `status` is the transaction's: show your user the order status.
 
 Example response:
 

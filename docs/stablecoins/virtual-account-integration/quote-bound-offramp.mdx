@@ -141,5 +141,7 @@ quote's `sourceAmount` (at Yellow Card, possibly lower; see above). Fund the ord
 
 At Due Network, `walletAddress` is Due's funding address for the order. Send exactly `sourceAmount` to it in one
 transaction, from the registered `sourceWalletAddress`. Nothing pays out until the deposit arrives: an unfunded Due
-transfer expires (after 2 hours in sandbox). A confirmed deposit only funds the transfer: the transaction is `SETTLING`
-while Due pays out, and the payout is final only when it reaches `SETTLED` (webhooks or the Transactions API).
+transfer expires (after 2 hours in sandbox). A confirmed deposit only funds the transfer: the order is `SETTLING`
+while Due pays out, and the payout is final only when the order reaches `SETTLED`. Read it with
+`GET /crypto/order/{orderId}/status`, as [Track the order](/docs/stablecoins/virtual-account-integration/payouts#7-track-the-order)
+describes.

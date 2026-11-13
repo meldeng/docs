@@ -4,7 +4,7 @@ title: "Webhook Events"
 
 # Webhook Events
 
-This page is for developers building webhook handlers for Meld crypto transactions. It documents every event type, the payload schema, and how to map events back to your transaction in your system. Webhooks provide real-time notifications when transaction statuses change. Instead of polling for updates, Meld sends HTTP POST requests to your configured endpoint whenever events occur. Use webhooks as triggers to call `GET /payments/transactions/{transactionId}` to fetch the latest details on the transaction.
+This page is for developers building webhook handlers for Meld crypto transactions. It documents every event type, the payload schema, and how to map events back to your transaction in your system. Webhooks provide real-time notifications when transaction statuses change. Instead of polling for updates, Meld sends HTTP POST requests to your configured endpoint whenever events occur. Use webhooks as triggers to call `GET /payments/transactions/{transactionId}` to fetch the latest details on the transaction. For a headless sell (offramp) order, also read the order's status, as [Track the order](/docs/stablecoins/virtual-account-integration/payouts#7-track-the-order) describes.
 
 ## Benefits
 
@@ -43,6 +43,13 @@ The `payload` object contains transaction-specific information:
 | `paymentTransactionStatus` | String | Current transaction status                             |
 | `transactionType`          | String | `CRYPTO_PURCHASE`, `CRYPTO_SELL`, or `CRYPTO_TRANSFER` |
 | `sessionId`                | String | Meld's internal session identifier                     |
+| `orderId`                  | String | The headless order the transaction belongs to. Absent when there is none |
+| `externalOrderId`          | String | Your reference for that order, or `null` |
+| `orderStatus`              | String | The sell order's status when the event was created. Sell (`CRYPTO_SELL`) orders only |
+| `errorCode`                | String | Why the sell order is `FAILED`, `CANCELLED`, `EXPIRED`, `REFUNDED` or `UNDER_REVIEW`, or `null`. Sell orders only |
+| `errorText`                | String | `errorCode` in words, or `null`. Sell orders only |
+
+The order fields need webhook version `2026-09-01` or later: see [Webhook version](/docs/stablecoins/virtual-account-integration/payouts#webhook-version). On that version, `paymentTransactionId`, `paymentTransactionStatus`, `externalOrderId`, `errorCode` and `errorText` are always sent, as `null` when empty.
 
 
 <Warning>
@@ -155,6 +162,37 @@ Triggered when the transaction ends unsuccessfully (`FAILED`, `DECLINED`, `CANCE
    }
 }
 ```
+
+### `ORDER_CRYPTO_FAILED`
+
+Triggered when a headless sell (offramp) order ends without a payout: before any deposit (`EXPIRED`, `FAILED` or `CANCELLED`), whether or not the order has a transaction, or with its deposit owed back on an order that has no transaction (`REFUNDED`). The payload always has the `2026-09-01` shape, whatever your endpoint's version. The transaction fields are `null` when the order has no transaction. Read the order with `GET /crypto/order/{orderId}/status` when it arrives.
+
+```json
+{
+  "eventType": "ORDER_CRYPTO_FAILED",
+  "eventId": "Wg3nH8sQe2PvLk7cRt5YbA",
+  "timestamp": "2026-11-10T14:02:11.204518Z",
+  "accountId": "W2aRZnYGPwhBWB94iFsZus",
+  "profileId": "W9ka8vLE4ufBkSg3BEciZb",
+  "version": "2026-09-01",
+  "payload": {
+    "requestId": "a1c94e0f5b2d4f7e8c3b6a9d0e1f2a3b",
+    "accountId": "W2aRZnYGPwhBWB94iFsZus",
+    "paymentTransactionId": null,
+    "customerId": "W9kL817BBS7bNEwxAZaX4z",
+    "externalCustomerId": "customer_9888888",
+    "paymentTransactionStatus": null,
+    "transactionType": "CRYPTO_SELL",
+    "orderId": "WfR7abcDEF12345xyz9876",
+    "externalOrderId": "sell-order-123",
+    "orderStatus": "EXPIRED",
+    "errorCode": "CRYPTO_DEPOSIT_MISSING",
+    "errorText": "No deposit reached the order before it expired"
+  }
+}
+```
+
+An endpoint that subscribes to `ORDER_CRYPTO_FAILED` by name doesn't also get `TRANSACTION_CRYPTO_FAILED` for an order that ended before any deposit. An endpoint that subscribes to every event gets both.
 
 ### `CUSTOMER_KYC_STATUS_CHANGE`
 
