@@ -30,21 +30,22 @@ Fetch deposit instructions **once** per customer \+ provider \+ payment method \
 ## Flow overview
 
 ```text
-Customer → Webhooks → KYC → Fetch VA details (once) → [Quote] → User sends fiat → Webhooks / GET transaction
+Customer → Webhooks → Requirements → KYC → Requirements until eligible → Fetch VA details (once) → [Quote] → User sends fiat → Webhooks / GET transaction
 ```
 
 ### One time per user
 
 1. Create a customer (and address when required).
 2. Configure webhooks.
-3. Complete KYC for the provider(s) you will use.
-4. **Fetch virtual account details** for customer \+ provider \+ payment method \+ currency pair \+ destination wallet.
+3. Read the requirements of each provider you will use.
+4. Complete what they list, KYC included, until `eligible` is `true`.
+5. **Fetch virtual account details** for customer \+ provider \+ payment method \+ currency pair \+ destination wallet.
 
 ### Every deposit
 
-5. (Optional) Get a quote for the amount the user wants to send.
-6. User sends fiat to the **same** stored VA details.
-7. Track via webhooks / Transactions API.
+6. (Optional) Get a quote for the amount the user wants to send.
+7. User sends fiat to the **same** stored VA details.
+8. Track via webhooks / Transactions API.
 
 ---
 
@@ -54,9 +55,9 @@ Most of this guide applies to every provider. Some providers need something extr
 
 | Provider | Code | What is different |
 | --- | --- | --- |
-| Noah | `NOAH` | After Sumsub is approved, Noah may ask for its own KYC step. Send the user to the provider link on the customer record (see step 3c). |
-| Due Network | `DUENETWORK` | Add a residential address before KYC. Due uses the address `country` when it creates the provider customer. Due may also ask for its own KYC step (see step 3c). Due has its own terms of service, separate from KYC: while they are pending, the link is on the customer record at `serviceProviderCustomers[].kyc.additionalInfo.TosURL`. |
-| Brale | `BRALE` | Business customers only. Brale runs KYB itself, so it does not use the Sumsub share in step 3. |
+| Noah | `NOAH` | After the share, Noah may ask for its own onboarding. The requirements list it as `NOAH_HOSTED_ONBOARDING` (see step 4c). |
+| Due Network | `DUENETWORK` | Before the KYC share, the customer needs a first and last name, an email and a residential address with a country. The requirements list each missing one as a `CUSTOMER_DETAILS` step, and Meld shares with Due once they are in. Due uses the address `country` when it creates the provider customer. After the share, Due may ask for its own onboarding (`DUENETWORK_HOSTED_ONBOARDING`), and has its own terms of service, separate from KYC (`DUENETWORK_HOSTED_TERMS`). See step 4c. |
+| Brale | `BRALE` | Business customers only. Brale runs KYB itself, so it does not use the Sumsub share, and its requirements list no KYC steps. |
 
 ---
 
@@ -164,33 +165,85 @@ Verify signatures per Webhook authentication docs.
 
 ---
 
-## 3. KYC
+## 3. Check the requirements
 
-Initiate KYC once per (customer, provider) **before** fetching deposit instructions, then wait for provider KYC `APPROVED`.
+**Endpoint:** `GET /crypto/onramp/{serviceProvider}/requirements?customerId={customerId}`
 
-**Endpoints:**
+**Header:** `Meld-Version: 2026-11-01`
 
-- `POST /accounts/customers/{customerId}/kyc/initiate`
-- `PATCH /accounts/customers/{customerId}/kyc/initiate`
+Read each provider's requirements before you start KYC, one call per provider. This is the [eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility#check-the-requirements) endpoint headless orders use. Send `customerId` only: deposit instructions have no amount, so there is no order to check. The response lists every step between this customer and the provider, with the call that clears each one.
+
+<Tip>
+  In an app or a web page, [`Meld.ensureReady`](/docs/stablecoins/headless-integration/sdks/customer-requirements#virtual-accounts-and-offramps) can run these steps for you: create a requirements session for the customer and your providers, without an order, and fetch the deposit instructions once it ends `READY`.
+</Tip>
+
+A new customer heading to Noah:
+
+```json
+{
+  "serviceProvider": "NOAH",
+  "eligible": false,
+  "requirements": [
+    {
+      "type": "MELD_KYC", "code": "MELD_KYC_APPROVED", "status": "REQUIRED", "timing": "PRE_ORDER",
+      "level": "LEVEL_2",
+      "action": {
+        "type": "CALL", "method": "POST",
+        "path": "/accounts/customers/WmYYgvN8ukpV62N3m4u3ee/kyc/initiate",
+        "body": { "targetServiceProviders": ["NOAH"] }
+      }
+    },
+    {
+      "type": "PROVIDER_KYC_SHARE", "code": "PROVIDER_KYC_SHARE", "status": "REQUIRED", "timing": "PRE_ORDER",
+      "dependsOn": ["MELD_KYC_APPROVED"],
+      "action": { "type": "WAIT", "event": "CUSTOMER_KYC_STATUS_CHANGE" }
+    },
+    {
+      "type": "PROVIDER_REVIEW", "code": "PROVIDER_KYC_APPROVED", "status": "REQUIRED", "timing": "PRE_ORDER",
+      "dependsOn": ["PROVIDER_KYC_SHARE"],
+      "action": { "type": "WAIT", "event": "CUSTOMER_KYC_STATUS_CHANGE" }
+    }
+  ]
+}
+```
+
+For Due Network, the same customer without a name, an email or an address also has a `CUSTOMER_DETAILS` step for each, before `MELD_KYC`:
+
+| `type` | `code` | `status` | `action` |
+| --- | --- | --- | --- |
+| `CUSTOMER_DETAILS` | `CUSTOMER_NAME` | `REQUIRED` | `CALL PATCH /accounts/customers/{customerId}`, with `name.firstName` and `name.lastName` |
+| `CUSTOMER_DETAILS` | `CUSTOMER_EMAIL` | `REQUIRED` | `CALL PATCH /accounts/customers/{customerId}`, with `email` |
+| `CUSTOMER_DETAILS` | `CUSTOMER_ADDRESS` | `REQUIRED` | `CALL POST /accounts/customers/{customerId}/addresses`, with a `RESIDENCE` address |
+| `MELD_KYC` | `MELD_KYC_APPROVED` | `REQUIRED` | `CALL POST /accounts/customers/{customerId}/kyc/initiate`, `targetServiceProviders: [DUENETWORK]` |
+
+Due's `PROVIDER_KYC_SHARE` then depends on those details as well as on `MELD_KYC_APPROVED`. `MELD_KYC` never depends on them, so the customer can start KYC while you collect them.
+
+Work through the list as [The checklist](/docs/stablecoins/headless-integration/shared-flows/eligibility#the-checklist) describes: do each step whose `dependsOn` steps are `SATISFIED` and whose `action` is a `CALL` or `OPEN_URL`, wait on the rest, and read the requirements again after each step and each webhook. The provider is ready once `eligible` is `true`.
+
+---
+
+## 4. KYC
+
+Start Unified KYC once per customer, naming every provider you plan to use. Take the call from the `MELD_KYC` step's `action`, and add the providers your other requirements name.
+
+**Endpoint:** `POST /accounts/customers/{customerId}/kyc/initiate`
+
+**Header:** `Meld-Version: 2026-11-01`
 
 Choose one Sumsub initiation mode:
 
 | Mode | When to use | What you send | What the user does |
 | --- | --- | --- | --- |
-| `HOSTED_URL` | User has **not** completed Sumsub yet | `serviceProvider: SUMSUB`, `mode: HOSTED_URL`, `kycShareProviders` | Open the returned `url` and complete Sumsub |
-| `TOKEN_IMPORT` | User already has a Sumsub applicant in your Sumsub account | Same \+ `serviceProviderDetails.kycToken` / `applicantId` | Usually nothing for Sumsub — Meld imports the existing applicant |
+| `HOSTED_URL` | User has **not** completed Sumsub yet | `targetServiceProviders`. `serviceProvider: SUMSUB` and `mode: HOSTED_URL` are the defaults | Open the returned `url` and complete Sumsub |
+| `TOKEN_IMPORT` | User already has a Sumsub applicant in your Sumsub account | `serviceProvider: SUMSUB`, `mode: TOKEN_IMPORT`, `targetServiceProviders`, and `serviceProviderDetails.kycToken` / `applicantId` | Usually nothing for Sumsub — Meld imports the existing applicant |
 
-Both modes share KYC to the providers listed in `kycShareProviders` after Sumsub is approved. You still must wait for **each share provider** to reach `APPROVED` before deposit-instructions.
+For virtual-account onramps, `NOAH` and `DUENETWORK` take a shared Sumsub KYC. Meld shares with each one once Sumsub approves the customer and the provider has what it needs before the share, such as Due's name, email and address. A provider that still lacks one never fails the call: the response lists it in `sharePrerequisites`, and Meld shares once you add it. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share).
 
-List only the providers you plan to use. For virtual-account onramps, `NOAH` and `DUENETWORK` accept a shared Sumsub KYC.
-
-### 3a. `HOSTED_URL` — Meld returns a Sumsub link
+### 4a. `HOSTED_URL` — Meld returns a Sumsub link
 
 ```json
 {
-  "serviceProvider": "SUMSUB",
-  "mode": "HOSTED_URL",
-  "kycShareProviders": ["NOAH", "DUENETWORK"]
+  "targetServiceProviders": ["NOAH", "DUENETWORK"]
 }
 ```
 
@@ -201,19 +254,21 @@ Response:
   "customerId": "WmYYgvN8ukpV62N3m4u3ee",
   "serviceProvider": "SUMSUB",
   "status": "PENDING",
-  "url": "https://kyc-provider.example.com/verify/abc123"
+  "url": "https://kyc-provider.example.com/verify/abc123",
+  "level": "LEVEL_2",
+  "expiresAt": "2026-11-04T15:30:00Z"
 }
 ```
 
-Direct the user to `url`. Listen for `CUSTOMER_KYC_STATUS_CHANGE`.
+Direct the user to `url` before `expiresAt`. Calling the same `POST` again gives a fresh one. Listen for `CUSTOMER_KYC_STATUS_CHANGE`.
 
-### 3b. `TOKEN_IMPORT` — import an existing Sumsub applicant
+### 4b. `TOKEN_IMPORT` — import an existing Sumsub applicant
 
 ```json
 {
   "serviceProvider": "SUMSUB",
   "mode": "TOKEN_IMPORT",
-  "kycShareProviders": ["NOAH", "DUENETWORK"],
+  "targetServiceProviders": ["NOAH", "DUENETWORK"],
   "serviceProviderDetails": {
     "kycToken": "_act-sbx-jwt-…",
     "applicantId": "sumsub-applicant-id"
@@ -221,52 +276,56 @@ Direct the user to `url`. Listen for `CUSTOMER_KYC_STATUS_CHANGE`.
 }
 ```
 
-There is typically no Sumsub `url` to open — Meld attaches the existing applicant and shares to `kycShareProviders`. Listen for `CUSTOMER_KYC_STATUS_CHANGE` the same way.
+There is typically no Sumsub `url` to open — Meld attaches the existing applicant and shares with each named provider. Listen for `CUSTOMER_KYC_STATUS_CHANGE` the same way.
 
-### 3c. After Sumsub — provider-specific KYC link
+If your account is set up to forward the token straight to the providers instead of importing it, Meld can't wait for what a provider needs before the share. A provider that lacks it fails the call with `422 KYC_SHARE_PREREQUISITES_MISSING`, and nothing is forwarded.
 
-After Sumsub approval, KYC is shared to `kycShareProviders`. A provider may still require its own step (status `PENDING`). The link lives on the customer record:
+### 4c. After Sumsub: the provider's own steps
 
-**Endpoint:** `GET /accounts/customers/{customerId}`
-
-Look up that provider in `serviceProviderCustomers[]`. When present, send the user to `kyc.additionalInfo.HostedURL`, then wait until that provider’s `kyc.status` is `APPROVED`.
-
-Sample customer response (Sumsub approved; Noah still needs provider KYC):
+After each `CUSTOMER_KYC_STATUS_CHANGE` webhook, read the requirements again. Once Meld has shared the KYC, a provider may still need its own step, which the requirements list with an `OPEN_URL` action. Noah, after the share, with its hosted onboarding open:
 
 ```json
 {
-  "id": "WmYYgvN8ukpV62N3m4u3ee",
-  "accountId": "W2aRZnYGPwhBWB94iFsZus",
-  "externalId": "your-internal-user-id-123",
-  "status": "ACTIVE",
-  "type": "INDIVIDUAL",
-  "serviceProviderCustomers": [
+  "serviceProvider": "NOAH",
+  "eligible": false,
+  "requirements": [
+    { "type": "MELD_KYC", "code": "MELD_KYC_APPROVED", "status": "SATISFIED", "timing": "PRE_ORDER", "level": "LEVEL_2", "currentLevel": "LEVEL_2" },
+    { "type": "PROVIDER_KYC_SHARE", "code": "PROVIDER_KYC_SHARE", "status": "SATISFIED", "timing": "PRE_ORDER" },
     {
-      "id": "spc_sumsub_example",
-      "serviceProvider": "SUMSUB",
-      "kyc": {
-        "status": "APPROVED",
-        "additionalInfo": null
+      "type": "EXTERNAL_KYC", "code": "NOAH_HOSTED_ONBOARDING", "status": "REQUIRED", "timing": "PRE_ORDER",
+      "action": {
+        "type": "OPEN_URL",
+        "url": "https://onboarding.noah.example/hosted?session=...",
+        "expiresAt": "2026-11-04T15:45:00Z",
+        "refresh": {
+          "method": "POST",
+          "path": "/accounts/customers/WmYYgvN8ukpV62N3m4u3ee/kyc/initiate",
+          "body": { "targetServiceProviders": ["NOAH"] }
+        }
       }
     },
     {
-      "id": "spc_noah_example",
-      "serviceProvider": "NOAH",
-      "kyc": {
-        "status": "PENDING",
-        "additionalInfo": {
-          "HostedURL": "https://noah.example.com/kyc/session/abc123"
-        }
-      }
+      "type": "PROVIDER_REVIEW", "code": "PROVIDER_KYC_APPROVED", "status": "PENDING", "timing": "PRE_ORDER",
+      "dependsOn": ["NOAH_HOSTED_ONBOARDING"],
+      "action": { "type": "WAIT", "event": "CUSTOMER_KYC_STATUS_CHANGE" }
     }
-  ],
-  "addresses": []
+  ]
 }
 ```
 
-You can also react to `CUSTOMER_KYC_STATUS_CHANGE` webhooks and re-fetch the customer when a share provider moves to `PENDING` or `APPROVED`.
+| Step | What to do |
+| --- | --- |
+| `NOAH_HOSTED_ONBOARDING`, `DUENETWORK_HOSTED_ONBOARDING` | Open `action.url` for the user. When `url` is absent, `expiresAt` is less than 60 seconds away, or the page fails to load, call `action.refresh`, then read the requirements again for the new `url`. Noah's hosted session lasts an hour, by Noah's own documentation |
+| `DUENETWORK_HOSTED_TERMS` | Due's own terms of service. Open `action.url`. After the user closes the page, call `action.refresh` and read the requirements again: Due sends no event for its terms, and the step turns `SATISFIED` once Meld reads them accepted |
+| A `WAIT` step | Wait for the `CUSTOMER_KYC_STATUS_CHANGE` webhook it names, then read the requirements again |
 
-## 4. Get a quote (optional)
+Never log or store a hosted URL. Meld includes it only for an API key that can create orders.
+
+### 4d. Ready
+
+The provider is ready once its requirements answer `eligible: true`. Fetch the deposit instructions then.
+
+## 5. Get a quote (optional)
 
 **Endpoint:** `POST /payments/crypto/quote?integrationMode=HEADLESS`
 
@@ -328,7 +387,7 @@ Response:
 
 ---
 
-## 5. Fetch virtual account details
+## 6. Fetch virtual account details
 
 **Endpoint:** `POST /payments/virtual-account/deposit-instructions`
 
@@ -430,6 +489,14 @@ Display details from `receivingBankInformation` (typed fields) and any extras in
 
 For SEPA, show `iban` / `bic` (and bank / account-holder name) from `receivingBankInformation`. Some providers also return a payment reference (for example Due Network’s `memo` in `serviceProviderDetails`) — the payer **must** include this reference on the transfer so the provider can correlate funds.
 
+### When deposit instructions are refused
+
+| HTTP | `code` | What to do |
+| --- | --- | --- |
+| `403` | `KYC_NOT_COMPLETED` | The provider can't take this customer yet. Read the provider's [requirements](#3-check-the-requirements) again and complete what they list |
+| `403` | `PROVIDER_TERMS_NOT_ACCEPTED` | The customer hasn't accepted the provider's own terms. `errors` names the step, such as `DUENETWORK_HOSTED_TERMS`. Read the requirements again and have the user complete it, as in step 4c |
+| `403` | `WHITELABEL_NOT_ENABLED` | Not a customer step: virtual accounts aren't enabled on your account. Contact Meld |
+
 ### After you have the details
 
 1. Store the VA details against your user.
@@ -438,7 +505,7 @@ For SEPA, show `iban` / `bic` (and bank / account-holder name) from `receivingBa
 
 > **Testing in sandbox:** you cannot send real fiat to the account, so call the simulate endpoint to create a test deposit instead — see [Simulate a deposit](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials#simulate-a-deposit).
 
-## 6. Tracking
+## 7. Tracking
 
 ### Webhook events (buy)
 
@@ -560,13 +627,34 @@ The terminal event is the same shape:
 
 ## Sequence Diagram
 
-<Frame>
-  ![Sumsub KYC Approval Workflow 2026 07 17 230908](/images/Sumsub-KYC-Approval-Workflow-2026-07-17-230908.png)
-</Frame>
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant B as Your backend
+    participant M as Meld
+
+    B->>M: GET /crypto/onramp/NOAH/requirements?customerId=...
+    M-->>B: MELD_KYC REQUIRED, PROVIDER_KYC_SHARE and PROVIDER_REVIEW waiting, eligible false
+    B->>M: POST /accounts/customers/{customerId}/kyc/initiate, targetServiceProviders [NOAH]
+    M-->>B: 200, PENDING, url
+    U->>M: Completes Sumsub
+    M-->>B: Webhook CUSTOMER_KYC_STATUS_CHANGE, APPROVED
+    Note over M: Meld shares the KYC with Noah
+    M-->>B: Webhook CUSTOMER_KYC_STATUS_CHANGE, kycRecipient NOAH PENDING
+    B->>M: GET /crypto/onramp/NOAH/requirements?customerId=...
+    M-->>B: NOAH_HOSTED_ONBOARDING REQUIRED, OPEN_URL
+    U->>M: Completes Noah's onboarding page
+    M-->>B: Webhook CUSTOMER_KYC_STATUS_CHANGE, kycRecipient NOAH APPROVED
+    B->>M: GET /crypto/onramp/NOAH/requirements?customerId=...
+    M-->>B: eligible true
+    B->>M: POST /payments/virtual-account/deposit-instructions
+```
 
 ## Notes and limits
 
 - Standing virtual accounts require `headlessOnrampsEnabled` on the account.
+- The requirements are advisory. Deposit instructions are the final check, so handle their refusals too.
 - Primary API: `POST /payments/virtual-account/deposit-instructions` (fetch once, reuse).
 - Supported payment methods for this flow: `ACH`, `SEPA`, `PIX`, `MOBILE_MONEY`.
 - Provider sandboxes do not move real money, but you can still complete a full onramp in sandbox for Noah and Due Network — see [Simulate a deposit](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials#simulate-a-deposit). For other providers you may stop at instruction issuance.

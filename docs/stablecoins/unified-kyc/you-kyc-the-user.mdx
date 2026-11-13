@@ -136,7 +136,7 @@ Call:
 
 `POST /accounts/customers/{customerId}/kyc/initiate`
 
-Choose a mode. Both modes return the same response shape and use the same webhook to signal approval.
+Send the header `Meld-Version: 2026-11-01`, and name the onramps the user may use in `targetServiceProviders`. Choose a mode. Both modes return the same response shape and use the same webhook to signal approval.
 
 _Note that the steps below show the Sumsub as the KYC provider as an example._
 
@@ -165,7 +165,7 @@ Generate the KYC share token for client id `meld.io_75082` (the exact steps depe
 | `mode` | Yes | `TOKEN_IMPORT` |
 | `serviceProviderDetails.kycToken` | Yes | KYC provider share/access token issued for `meld.io_75082` |
 | `serviceProviderDetails.applicantId` | Yes | KYC provider's applicant id for the user |
-| `kycShareProviders` | No | Optional set of additional Meld onramps to share KYC with after approval. See [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers) |
+| `targetServiceProviders` | No | The Meld onramps the user may use. Meld shares the KYC with each one that takes a share, once it is approved at that onramp's [level](/docs/stablecoins/unified-kyc/kyc-levels). See [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers) |
 
 #### **Response**
 
@@ -178,7 +178,9 @@ Generate the KYC share token for client id `meld.io_75082` (the exact steps depe
 }
 ```
 
-`status` is `APPROVED` when the imported applicant already matches Meld's verification level; otherwise it may be `PENDING`. `url` is a KYC provider WebSDK link when present — often not needed if status is already `APPROVED`.
+`status` is `APPROVED` when the imported applicant already matches Meld's verification level; otherwise it may be `PENDING`. `url` is a KYC provider WebSDK link when present — often not needed if status is already `APPROVED`. The response also carries `level`, `approvedLevel`, `expiresAt` and `sharePrerequisites`, listed under Mode B's response below.
+
+If your account is set up to forward the token straight to the onramps instead of importing it, Meld can't wait for an onramp's prerequisites, so it checks them first: an onramp missing what it needs before the share fails the call with `422 KYC_SHARE_PREREQUISITES_MISSING`, and nothing is forwarded. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share).
 
 ### Mode B — Raw applicant data (`RAW_DATA_IMPORT`)
 
@@ -258,7 +260,7 @@ Send **multipart/form-data**. Do **not** send this mode as JSON — `RAW_DATA_IM
 | `documents[].idDocType` | Yes | `PASSPORT`, `ID_CARD`, `DRIVERS`, `RESIDENCE_PERMIT`, or `SELFIE` |
 | `documents[].idDocSubType` | No | `FRONT_SIDE` / `BACK_SIDE` for double-sided docs; omit for single-sided types like `PASSPORT` and `SELFIE` |
 | `documents[].country` | No | 3-letter issuing country code |
-| `kycShareProviders` | No | Optional set of additional providers to share KYC with after approval. See [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers) |
+| `targetServiceProviders` | No | The Meld onramps the user may use, as in Mode A. Meld picks the level from them: see [Importing KYC you ran yourself](/docs/stablecoins/unified-kyc/kyc-levels#importing-kyc-you-ran-yourself) |
 
 #### Example (curl)
 
@@ -304,6 +306,9 @@ curl -X POST "https://api.meld.io/accounts/customers/{customerId}/kyc/initiate" 
 | :-- | :-- |
 | `status` | One of `PENDING`, `APPROVED`, `REJECTED`, `EXPIRED`, `UNKNOWN` |
 | `url` | KYC provider WebSDK link for reference/status. When a selfie is submitted, the applicant does not need an extra liveness step in the WebSDK. |
+| `expiresAt` | When `url` stops opening, in UTC. Present only with a `url` |
+| `level`, `approvedLevel` | The [level](/docs/stablecoins/unified-kyc/kyc-levels) the verification is at, and the highest level the user is approved at |
+| `sharePrerequisites` | `Meld-Version: 2026-11-01` only. The named onramps still waiting for something before Meld can share with them, and what. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share) |
 
 Meld creates (or reuses) the KYC provider's applicant, uploads the documents, and requests review immediately.
 
@@ -381,3 +386,4 @@ And that's it! Congrats, you are now using Meld's Unified KYC product to enhance
 | Missing file part declared in `documents[]` | `400` — missing/empty file part |
 | Invalid `data` JSON or bean validation failure | `400` — invalid raw KYC request |
 | Customer already has KYC at a different level | Fail — cannot start `RAW_DATA_IMPORT` against an incompatible existing applicant |
+| `targetServiceProviders` without `Meld-Version: 2026-11-01` | `400 KYC_TARGETS_NEED_MELD_VERSION`, and nothing is started |

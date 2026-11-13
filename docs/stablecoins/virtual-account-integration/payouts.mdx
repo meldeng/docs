@@ -26,14 +26,14 @@ This guide walks through customer creation, KYC, quoting, order creation, and we
 
 1. Create a customer in the Account API. (**one time per user**)
 2. Configure webhooks (including KYC events). (**one time**)
-3. Complete KYC for that customer with the offramp provider. (**one time per user / provider**)
+3. Read the offramp provider's requirements and complete what they list, KYC included. (**one time per user / provider**)
 4. Get a sell quote from the Payment API. (**every transaction**)
 5. Create a headless offramp order with fiat payout details. (**every transaction**)
 6. The end user sends crypto to the returned `walletAddress`. (**every transaction**)
 7. Track progress via webhooks and the Transactions API. (**every transaction**)
 
 ```text
-Customer → Webhooks → KYC → Quote → POST /crypto/order/headless/offramp → User sends crypto → Webhooks / GET transaction
+Customer → Webhooks → Requirements → KYC → Quote → POST /crypto/order/headless/offramp → User sends crypto → Webhooks / GET transaction
 ```
 
 Step 6 stays its own step: the user (or your treasury) must send the correct crypto amount to the provider-issued address before the fiat payout can complete.
@@ -149,26 +149,31 @@ Verify signatures per Webhook authentication docs.
 
 ## 3. KYC
 
-Offramp providers that use Sumsub sharing (Noah, Due Network, and similar) follow the same **ASYNC** KYC pattern as virtual account onramp:
+Offramp providers that take a Sumsub share (Noah, Due Network, and similar) follow the same **ASYNC** KYC pattern as the [virtual account onramp](/docs/stablecoins/virtual-account-integration/payins#3-check-the-requirements). KYC is per provider, not per direction, so the same requirements endpoint answers for an offramp:
 
-1. Initiate Sumsub via `POST /accounts/customers/{customerId}/kyc/initiate` (**once per customer**)
-2. Set `kycShareProviders` so approval is shared to the offramp provider
-3. Wait for provider KYC `APPROVED` (webhook or `GET /accounts/customers/{customerId}`) before the first sell order for that provider
+1. Read the provider's requirements: `GET /crypto/onramp/{serviceProvider}/requirements?customerId={customerId}`, with `Meld-Version: 2026-11-01` and no order parameters.
+2. Start Sumsub via `POST /accounts/customers/{customerId}/kyc/initiate` (**once per customer**), naming the offramp provider in `targetServiceProviders`, as the `MELD_KYC` step's `action` does.
+3. After each `CUSTOMER_KYC_STATUS_CHANGE` webhook, read the requirements again and do what they list, until `eligible` is `true`. Then create the first sell order for that provider.
+
+Brale and Yellow Card verify the customer themselves, so their requirements list no KYC steps.
+
+<Tip>
+  In an app or a web page, [`Meld.ensureReady`](/docs/stablecoins/headless-integration/sdks/customer-requirements#virtual-accounts-and-offramps) can run these steps for you: create a requirements session for the customer and the offramp provider, without an order, and create the sell order once it ends `READY`.
+</Tip>
 
 ### Initiate KYC
 
-**Endpoints:**
+**Endpoint:** `POST /accounts/customers/{customerId}/kyc/initiate`
 
-- `POST /accounts/customers/{customerId}/kyc/initiate`
-- `PATCH /accounts/customers/{customerId}/kyc/initiate`
+**Header:** `Meld-Version: 2026-11-01`
 
 ```json
 {
-  "serviceProvider": "SUMSUB",
-  "mode": "HOSTED_URL",
-  "kycShareProviders": ["NOAH", "DUENETWORK"]
+  "targetServiceProviders": ["NOAH", "DUENETWORK"]
 }
 ```
+
+Meld shares with each named provider once Sumsub approves the customer and the provider has what it needs before the share. Due Network needs a first and last name, an email and an address with a country. A provider still missing one never fails the call: the response lists it in `sharePrerequisites`, the requirements list it as a `CUSTOMER_DETAILS` step, and Meld shares once you add it. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share).
 
 Or import an existing Sumsub applicant:
 
@@ -176,7 +181,7 @@ Or import an existing Sumsub applicant:
 {
   "serviceProvider": "SUMSUB",
   "mode": "TOKEN_IMPORT",
-  "kycShareProviders": ["NOAH", "DUENETWORK"],
+  "targetServiceProviders": ["NOAH", "DUENETWORK"],
   "serviceProviderDetails": {
     "kycToken": "_act-sbx-jwt-…",
     "applicantId": "sumsub-applicant-id"
@@ -191,11 +196,13 @@ Response:
   "customerId": "WmYYgvN8ukpV62N3m4u3ee",
   "serviceProvider": "SUMSUB",
   "status": "PENDING",
-  "url": "https://kyc-provider.example.com/verify/abc123"
+  "url": "https://kyc-provider.example.com/verify/abc123",
+  "level": "LEVEL_2",
+  "expiresAt": "2026-11-04T15:30:00Z"
 }
 ```
 
-Direct the user to `url` when present. Listen for `CUSTOMER_KYC_STATUS_CHANGE`. If the offramp provider needs extra KYC, `serviceProviderCustomers[].kyc.additionalInfo.HostedURL` (when present) is where you send the user next; wait until that provider’s status is `APPROVED` before creating sell orders.
+Direct the user to `url` when present, before `expiresAt`. Listen for `CUSTOMER_KYC_STATUS_CHANGE`. If the offramp provider needs its own onboarding or terms after the share, its requirements list a `NOAH_HOSTED_ONBOARDING`, `DUENETWORK_HOSTED_ONBOARDING` or `DUENETWORK_HOSTED_TERMS` step with an `OPEN_URL` action: handle it as in [Payins, step 4c](/docs/stablecoins/virtual-account-integration/payins#4c-after-sumsub-the-providers-own-steps).
 
 ---
 
@@ -369,6 +376,14 @@ Provider support for each type is account- and rail-specific.
 | `paymentMethodType` | Fiat payout rail used |
 | `walletAddress` | Provider-issued address the user must send **crypto** to |
 
+### When the order is refused
+
+| HTTP | `code` | What to do |
+| --- | --- | --- |
+| `403` | `KYC_NOT_COMPLETED` | The provider can't take this customer yet. Read its requirements again and complete what they list |
+| `403` | `PROVIDER_TERMS_NOT_ACCEPTED` | The customer hasn't accepted the provider's own terms. `errors` names the step, such as `DUENETWORK_HOSTED_TERMS`. Read the requirements again and have the user complete it |
+| `403` | `WHITELABEL_NOT_ENABLED` | Not a customer step: headless offramps aren't enabled on your account. Contact Meld |
+
 <Warning>
 **`SERVICE_PROVIDER_ERROR` on create.** A `500` reading `CryptoAuthorizedAmount <n> exceeds customer deposit <m> — rate may have moved` means the provider re-priced between your quote and the order. Take a fresh quote and submit the order with the amount from that quote rather than a rounded figure, and mint a new `X-Idempotency-Key` for the retry.
 </Warning>
@@ -492,15 +507,48 @@ Example response:
 
 ## Sequence Diagram
 
-<Frame>
-  ![Sumsub KYC Approval Workflow 2026 07 18 004700](/images/Sumsub-KYC-Approval-Workflow-2026-07-18-004700.png)
-</Frame>
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant B as Your backend
+    participant M as Meld
+    participant P as Offramp provider
+
+    B->>M: POST /accounts/customers
+    M-->>B: customerId
+    B->>M: GET /crypto/onramp/NOAH/requirements?customerId=...
+    M-->>B: MELD_KYC REQUIRED, PROVIDER_KYC_SHARE and PROVIDER_REVIEW waiting, eligible false
+    B->>M: POST /accounts/customers/{customerId}/kyc/initiate, targetServiceProviders [NOAH]
+    M-->>B: 200, PENDING, url
+    U->>M: Completes Sumsub
+    M-->>B: Webhook CUSTOMER_KYC_STATUS_CHANGE, APPROVED
+    M->>P: Shares the KYC
+    M-->>B: Webhook CUSTOMER_KYC_STATUS_CHANGE, kycRecipient NOAH PENDING
+    B->>M: GET /crypto/onramp/NOAH/requirements?customerId=...
+    M-->>B: NOAH_HOSTED_ONBOARDING REQUIRED, OPEN_URL
+    U->>P: Completes the provider's onboarding page
+    M-->>B: Webhook CUSTOMER_KYC_STATUS_CHANGE, kycRecipient NOAH APPROVED
+    B->>M: GET /crypto/onramp/NOAH/requirements?customerId=...
+    M-->>B: eligible true
+    B->>M: POST /payments/crypto/quote?integrationMode=HEADLESS (sell)
+    M-->>B: quotes
+    B->>M: POST /crypto/order/headless/offramp (fiatPayoutMethod)
+    M->>P: Creates the sell order
+    M-->>B: id, walletAddress
+    U->>P: Sends exactly sourceAmount crypto to walletAddress
+    M-->>B: TRANSACTION_CRYPTO_* webhooks
+    P->>P: Converts the crypto and pays out fiat
+    M-->>B: TRANSACTION_CRYPTO_COMPLETE webhook
+    B->>M: GET /payments/transactions/{id}
+    M-->>B: transaction (CRYPTO_SELL)
+```
 
 ---
 
 ## Notes and limits
 
-- Always wait for provider KYC approval before create when your provider requires shared Sumsub / onboarding.
+- Create the sell order once the provider's requirements answer `eligible: true`. The order is still the final check.
 - Send the correct crypto amount and network/asset implied by your quote and order — the provider matches inbound crypto to the order.
 - Provider sandboxes may not complete full fiat settlement; you may stop at wallet address issuance.
 

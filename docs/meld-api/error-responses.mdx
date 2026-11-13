@@ -61,6 +61,7 @@ as a failure of its HTTP status class rather than an error in itself.
 | `PAYMENT_METHOD_NOT_SUPPORTED` | 400 | Requested payment method is not supported for this provider in headless mode |  |
 | `PHONE_NUMBER_REQUIRED` | 400 | customerPhoneNumber is required for the requested payment method | Send customerPhoneNumber. It is required when paymentMethodType is MOBILE_MONEY. |
 | `PRIOR_AUTHENTICATION_ERROR` | 500 | Error retrieving prior authentication | No stored provider authorisation matches the id supplied for this customer. |
+| `PROVIDER_TERMS_NOT_ACCEPTED` | 403 | The customer has not accepted the provider's terms | Returned by virtual-account deposit instructions and offramp order creation. `errors` names the terms step, for example `DUENETWORK_HOSTED_TERMS`. Read the provider's [requirements](/docs/stablecoins/headless-integration/shared-flows/eligibility#the-checklist), have the customer complete that step, then retry. |
 | `QUOTE_TIMEOUT` | 408 | Service provider took too long to respond | Providers did not respond in time. Retry with backoff. |
 | `SERVICE_PROVIDER_AUTHENTICATION_EXCEPTION` | 401 | Authentication error on service provider | Meld could not authenticate with the provider. Your credentials are not at fault — contact Meld support with the requestId. |
 | `SERVICE_PROVIDER_ERROR` | 500 | Service provider error | The provider failed while serving this request. Retry, then contact Meld support with the requestId. |
@@ -84,6 +85,10 @@ as a failure of its HTTP status class rather than an error in itself.
 | :--- | :--- | :--- | :--- |
 | `BAD_REQUEST` | 400 | Bad request | A search parameter is not accepted. Check the query values against the documented parameters for this version. |
 | `CONFLICT` | 409 | Conflict |  |
+| `KYC_BLOCKED` | 422 | The customer's KYC was rejected as final | `kyc/initiate` can't approve this customer at any level. Don't retry; providers that need Unified KYC won't take them. |
+| `KYC_REVIEW_IN_PROGRESS` | 409 | The customer's KYC is in review; retry once the review ends | `kyc/initiate` needs a higher KYC level while the current one is in review. Wait for the `CUSTOMER_KYC_STATUS_CHANGE` webhook, then call again. |
+| `KYC_SHARE_PREREQUISITES_MISSING` | 422 | A provider named for the share lacks what it needs before it | Returned for a `TOKEN_IMPORT` that Meld forwards to the providers, and, before Meld-Version 2026-11-01, for a provider named for sharing. `errors` lists each one as `PROVIDER:TYPE`, for example `UPHOLD:TERMS`. Supply them and call again. On 2026-11-01, name the providers in `targetServiceProviders`, which waits for them instead. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share). |
+| `KYC_TARGETS_NEED_MELD_VERSION` | 400 | targetServiceProviders needs Meld-Version 2026-11-01 or later | `targetServiceProviders` was sent on an older version, even empty, and nothing was started. Send `Meld-Version: 2026-11-01`. See [One provider list](/docs/stablecoins/unified-kyc/kyc-levels#one-provider-list-meld-version-2026-11-01). |
 
 
 ## Webhooks

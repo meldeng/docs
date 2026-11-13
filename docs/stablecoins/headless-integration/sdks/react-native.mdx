@@ -10,16 +10,16 @@ It wraps the native iOS and Android SDKs. The SDK does not render card input or 
 ## Install
 
 ```bash
-npm install @meldcrypto/react-native-sdk@0.10.0
+npm install @meldcrypto/react-native-sdk@0.12.0
 ```
 
-0.10.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), the [shared error codes](#error-codes) with `MeldErrorCode` and `attemptMayExist`, the order's `paymentMethodType` on each error, and, on Android, a wallet payment that lives as long as the Activity. It pins `MeldSDK` `~> 0.10.0` on iOS and `io.meld:meldsdk` 0.8.0 on Android, so it needs a new native build.
+0.10.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), the [shared error codes](#error-codes) with `MeldErrorCode` and `attemptMayExist`, the order's `paymentMethodType` on each error, and, on Android, a wallet payment that lives as long as the Activity. 0.12.0 adds [customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements): `Meld.ensureReady` and `Meld.openHostedVerification`. It pins `MeldSDK` `~> 0.12.0` on iOS and `io.meld:meldsdk` 0.10.0 on Android, so it needs a new native build.
 
 The wrapper autolinks. The native SDK it depends on is not an RN module, so wire it per platform.
 
 ### iOS
 
-The wrapper needs iOS 15 or later, and its pod pulls in `MeldSDK` from CocoaPods trunk. React Native SDK 0.10.0 pins `MeldSDK` to `~> 0.10.0`, so its pod resolves a 0.10 release for you, 0.10.0 or later. Don't pin `MeldSDK` yourself.
+The wrapper needs iOS 15 or later, and its pod pulls in `MeldSDK` from CocoaPods trunk. React Native SDK 0.12.0 pins `MeldSDK` to `~> 0.12.0`, so its pod resolves a 0.12 release for you, 0.12.0 or later. Don't pin `MeldSDK` yourself.
 
 Install with static frameworks, since the native SDK is a Swift pod:
 
@@ -29,7 +29,7 @@ cd ios && USE_FRAMEWORKS=static pod install
 
 If `Podfile.lock` already holds an older `MeldSDK`, run `pod update MeldSDK` as well.
 
-**Upgrading from an earlier React Native release.** If you pinned `MeldSDK` yourself, for example to `~> 0.9.1` for Stripe orders, with `pod 'MeldSDK', '~> 0.9.1'` in `ios/Podfile` or an `extraPods` entry for `expo-build-properties` in your Expo config, remove the pin before you upgrade. CocoaPods can't meet it and React Native SDK 0.10.0's pin at once, so `pod install` fails. In Expo, the change applies from the next native build (EAS Build, or `npx expo prebuild --clean`).
+**Upgrading from an earlier React Native release.** If you pinned `MeldSDK` yourself, for example to `~> 0.9.1` for Stripe orders, with `pod 'MeldSDK', '~> 0.9.1'` in `ios/Podfile` or an `extraPods` entry for `expo-build-properties` in your Expo config, remove the pin before you upgrade. CocoaPods can't meet it and React Native SDK 0.12.0's pin at once, so `pod install` fails. In Expo, the change applies from the next native build (EAS Build, or `npx expo prebuild --clean`).
 
 After you build, check that `Podfile.lock` lists the `MeldSDK` version you expect. Native support comes only with a new app build; an over-the-air JavaScript update cannot add it.
 
@@ -37,7 +37,7 @@ After you build, check that `Podfile.lock` lists the `MeldSDK` version you expec
 
 Nothing beyond autolinking. The wrapper's Gradle module pulls the native [Android SDK](/docs/stablecoins/headless-integration/sdks/android) from Maven Central. Requires `minSdk 24`. From React Native SDK 0.9.0 it also requires `compileSdk 34` or later and Android Gradle plugin 8.1.1 or later. The library declares `INTERNET` and `CAMERA`; camera is used for KYC capture inside a provider's surface and merges into your manifest automatically.
 
-React Native SDK 0.10.0 pins Android SDK 0.8.0, which adds Google Play services Wallet to your app for the readiness checks. See [what the SDK adds to your app](/docs/stablecoins/headless-integration/sdks/android#what-the-sdk-adds-to-your-app).
+React Native SDK 0.12.0 pins Android SDK 0.10.0, which adds Google Play services Wallet to your app for the readiness checks, and `androidx.activity` and `androidx.browser` for customer requirements. See [what the SDK adds to your app](/docs/stablecoins/headless-integration/sdks/android#what-the-sdk-adds-to-your-app).
 
 ### iOS permissions
 
@@ -52,6 +52,12 @@ In Expo, set it under `ios.infoPlist`. The Meld config plugin does not add it.
   }
 }
 ```
+
+---
+
+## Get the customer ready
+
+Before you create the order, `Meld.ensureReady` takes the customer through what each provider still needs: a verified contact, accepted terms, their details, Unified KYC and the provider's hosted onboarding. Your backend creates a requirements session, and the app passes it to the SDK, which runs it through the native SDK and its presenter for hosted pages. It needs React Native SDK 0.12.0 in a new native build: an over-the-air update can't add it. See [Customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements).
 
 ---
 

@@ -7,14 +7,16 @@ The Meld SDK puts a provider's payment surface inside your UI. You create the or
 
 It is a container and an event relay. It does not render card input, does not read or transport card data, and does not reach into the provider's content. Capture happens on the provider's PCI surface.
 
-| Platform | Package | Wallet contract from | Guide |
-| --- | --- | --- | --- |
-| Web | `@meldcrypto/sdk` | 0.7.0 | [Web SDK](/docs/stablecoins/headless-integration/sdks/web) |
-| iOS | `MeldSDK` | 0.10.0 | [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios) |
-| Android | `io.meld:meldsdk` | 0.8.0 | [Android SDK](/docs/stablecoins/headless-integration/sdks/android) |
-| React Native | `@meldcrypto/react-native-sdk` | 0.10.0 | [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native) |
+| Platform | Package | Wallet contract from | Customer requirements from | Guide |
+| --- | --- | --- | --- | --- |
+| Web | `@meldcrypto/sdk` | 0.7.0 | 0.9.0 | [Web SDK](/docs/stablecoins/headless-integration/sdks/web) |
+| iOS | `MeldSDK` | 0.10.0 | 0.12.0 | [iOS SDK](/docs/stablecoins/headless-integration/sdks/ios) |
+| Android | `io.meld:meldsdk` | 0.8.0 | 0.10.0 | [Android SDK](/docs/stablecoins/headless-integration/sdks/android) |
+| React Native | `@meldcrypto/react-native-sdk` | 0.10.0 | 0.12.0 | [React Native SDK](/docs/stablecoins/headless-integration/sdks/react-native) |
 
 From those releases, every Meld SDK shares one wallet contract: the [readiness checks](#check-before-you-mount) and the [shared error codes](/docs/stablecoins/headless-integration/wallets#error-codes).
+
+Before the order exists, `Meld.ensureReady` gets the customer ready for the providers you offer: your backend creates one requirements session, and the SDK works through what each provider still needs. See [Customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements).
 
 The API is the same shape on all four: configure the environment once, check that the SDK can present the order, mount it, handle five events, tear down. Only the install and the platform setup differ.
 

@@ -17,7 +17,7 @@ The SDK supports iOS 15 and later.
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/meldeng/meldsdk-ios", from: "0.10.0"),
+    .package(url: "https://github.com/meldeng/meldsdk-ios", from: "0.12.0"),
 ],
 targets: [
     .target(name: "YourApp", dependencies: [
@@ -29,12 +29,12 @@ targets: [
 **CocoaPods.**
 
 ```ruby
-pod 'MeldSDK', '~> 0.10.0'
+pod 'MeldSDK', '~> 0.12.0'
 ```
 
 Then `import MeldSDK`.
 
-0.10.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), and the [shared error codes](#error-codes) with the order's `paymentMethodType` on each error. The Stripe and Banxa Apple Pay device checks in [Provider notes](#provider-notes) need it too. The [Banxa card form](#card-forms-that-fail-before-they-show) presents natively from 0.9.3. Everything else on this page works from 0.9.1.
+0.10.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), and the [shared error codes](#error-codes) with the order's `paymentMethodType` on each error. The Stripe and Banxa Apple Pay device checks in [Provider notes](#provider-notes) need it too. The [Banxa card form](#card-forms-that-fail-before-they-show) presents natively from 0.9.3. Everything else on this page works from 0.9.1. 0.12.0 adds [customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements): `Meld.ensureReady` and `Meld.openHostedVerification`.
 
 `MeldSDK` depends on Stripe's `StripeCryptoOnramp` 26.11.x and on `PrimerSDK` 2.49 or a later 2.x, even if you use neither Stripe nor Banxa. An app that already depends on a different minor version of Stripe's iOS SDK cannot resolve both.
 
@@ -47,6 +47,12 @@ Meld.configure(environment: .sandbox) // or .production
 ```
 
 Call it once, before you check or mount an order, with the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
+
+---
+
+## Get the customer ready
+
+Before you create the order, `Meld.ensureReady` takes the customer through what each provider still needs: a verified contact, accepted terms, their details, Unified KYC and the provider's hosted onboarding. Your backend creates a requirements session, and the app passes it to the SDK, which opens hosted pages in Safari View Controller. It needs 0.12.0 or later. See [Customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements).
 
 ---
 

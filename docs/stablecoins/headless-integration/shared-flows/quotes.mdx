@@ -21,6 +21,7 @@ At `2026-05-01` each quote also carries fields the order needs:
 | --- | --- |
 | `destinationNetworkCode` | The chain you asked for, returned only when the quote request named one |
 | `integrationMode` | Which mode this quote is for, when you asked for `ALL` |
+| `customerKyc` | Whether this customer's Unified KYC reaches this provider's [level](/docs/stablecoins/unified-kyc/kyc-levels), on headless purchase rows only. See [Customer readiness on each row](#customer-readiness-on-each-row) |
 | `kycMode` | Who runs KYC for this provider. `ASYNC` and `SYNC` take a share of the customer's Unified KYC, ahead of the order or with it. `PROVIDER_MANAGED` verifies the customer itself, as Coinbase's [guest checkout](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc) does. `NONE` takes no share |
 | `isNativeAvailable` | Not a wallet-support flag, and only Apple Pay orders read it. Mercuryo's rows carry Mercuryo's own value. Meld asks Mercuryo again when you create a Mercuryo Apple Pay order, and refuses it with [`400 INVALID_PAYMENT_METHOD`](/docs/stablecoins/headless-integration/wallets#errors-on-order-creation) unless Mercuryo then reports that the native sheet can open for the customer's IP and corridor, so even a `true` row can be refused. Stripe's headless Apple Pay rows carry `true`. Other providers' rows, Coinbase and Banxa included, leave it `false` or out. Don't hide a row because it is `false` or absent: to decide which rows to offer, ask the SDK's [`presentationReadiness`](/docs/stablecoins/headless-integration/wallets#2-check-each-row-on-the-device) |
 
@@ -28,7 +29,31 @@ At `2026-05-01` each quote also carries fields the order needs:
 
 A `destinationNetworkCode` that doesn't match the chain in `destinationCurrencyCode`, for example `USDC_BASE` with `ETH`, returns `400 INVALID_CRYPTO_CURRENCY`.
 
-Pass `customerId` whenever you have one, so ramp intelligence and previously-used scoring apply.
+Pass `customerId` whenever you have one, so ramp intelligence and previously-used scoring apply, and, once Meld enables it for your account, headless purchase rows carry `customerKyc`.
+
+### Customer readiness on each row
+
+With a customer, each headless purchase row says whether the customer's Unified KYC already reaches that provider's level:
+
+```json
+"customerKyc": {
+  "requiredLevel": "LEVEL_2",
+  "approvedLevel": "LEVEL_1",
+  "status": "REQUIRED",
+  "reachable": false
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `requiredLevel` | The level this provider needs: `LEVEL_1`, `LEVEL_2` or `LEVEL_3`. Absent for a provider that needs no Unified KYC, such as Brale or Yellow Card, and for Coinbase and Stripe on an account without Level 1 |
+| `approvedLevel` | The highest level the customer is approved at. Absent without an approval |
+| `status` | The status the `MELD_KYC` step of the provider's [requirements](/docs/stablecoins/headless-integration/shared-flows/eligibility#the-checklist) reports: `SATISFIED`, `REQUIRED`, `PENDING`, `BLOCKED` or `UNKNOWN`. For Coinbase and Stripe, which verify the customer themselves, it is `SATISFIED` once the customer reaches `requiredLevel`, and `UNKNOWN` otherwise, because whether they need Unified KYC depends on the order. Absent when the provider has no Unified KYC step |
+| `reachable` | `false` when `status` is `REQUIRED`, `PENDING` or `BLOCKED`. `true` when it is `SATISFIED` or absent. Absent when `status` is `UNKNOWN` |
+
+Branch on `reachable === false` only: it means the customer must be verified before this provider takes them, so show the row with a verification step, or prefer another row. Anything else, `reachable` absent included, means offer the row, and let the provider's requirements decide. `customerKyc` covers the Unified KYC level and nothing else: agreements, contacts, the share and the provider's own review are in the requirements. Branch on `reachable`, not on `status`, which can gain values.
+
+`customerKyc` comes only on headless purchase rows, never on widget rows or sells, at `2026-05-01` or later. Meld enables it per account: it is on for every account in sandbox, and for production, ask your Meld representative. It needs a customer your account holds, named by `customerId` or `externalCustomerId`, and an API key that can create orders. If Meld can't read the customer's KYC, or can't read it within a short time limit, the rows carry no `customerKyc`, and the quote answers as usual, without waiting longer.
 
 ## 2. Send the version header
 
@@ -42,4 +67,4 @@ Pass `customerId` whenever you have one, so ramp intelligence and previously-use
 
 ## Next
 
-Check [eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) for the provider you chose, then create the order.
+Choose the provider from the quote, using `customerKyc` where the row has it. Then check [eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) for the provider you chose, and create the order.

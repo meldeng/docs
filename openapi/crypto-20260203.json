@@ -4098,7 +4098,7 @@
           "Headless"
         ],
         "summary": "Get a provider's verification requirements",
-        "description": "Returns the provider's customer-verification requirements and legal agreements. Pass customerId to additionally get the customer's current (advisory) per-field verification status. Pass the order you intend to create \u2014 payment method, amount and corridor \u2014 to additionally get the provider's own outstanding KYC details: those are jurisdiction-, amount- and method-dependent, so they can only be reported against a concrete intent.",
+        "description": "Returns the provider's customer-verification requirements and legal agreements. Pass customerId to additionally get the customer's current (advisory) per-field verification status. Pass the order you intend to create \u2014 payment method, amount and corridor \u2014 to additionally get the provider's own outstanding KYC details: those are jurisdiction-, amount- and method-dependent, so they can only be reported against a concrete intent. With customerId, requirements lists the same steps as one ordered checklist, each with its type, status and the call that clears it; eligible is false when a PRE_ORDER step is REQUIRED, PENDING or BLOCKED, true when every PRE_ORDER step is SATISFIED and Meld could check them all (for a provider that checks the order itself, that needs the whole order intent), and absent when Meld cannot tell, for example because a step is UNKNOWN. For the same customer and intent, true means order creation's checks before reservation pass; create stays the final check. A client does every step whose dependsOn is clear and whose action is a CALL, OPEN_URL or SDK_STEP, and waits on the rest. With Meld-Version 2026-11-01 or later, the response has no kycRequirements, and every action that names providers names them in targetServiceProviders, as kyc/initiate takes them on that version; older versions still return the deprecated kycRequirements, with the older provider fields in those actions. For a virtual-account onramp or an offramp, send customerId only: the same endpoint answers the provider's KYC for every direction.",
         "operationId": "/crypto-onramp-verification-requirements-get",
         "parameters": [
           {
@@ -4243,6 +4243,441 @@
         ],
         "x-mint": {
           "href": "/api-reference/crypto/headless/crypto-onramp-verification-requirements-get"
+        }
+      }
+    },
+    "/crypto/onramp/requirements-sessions": {
+      "post": {
+        "tags": [
+          "Headless"
+        ],
+        "summary": "Create a requirements session",
+        "description": "Mints a requirements session for one customer and up to five providers. Call it from your backend with an API key that can create orders, and pass the 201 response unchanged to `Meld.ensureReady` in your app or page. The SDK then runs the customer's requirements for those providers with the session token, and your API key never leaves your backend. The token is a bearer for this customer, these providers and this order only, and it expires after 30 minutes (`expiresAt`): never log or store it. Requirements sessions are unversioned, so every `Meld-Version` answers the same, and each provider's checklist is the one `GET /crypto/onramp/{serviceProvider}/requirements` returns at Meld-Version 2026-11-01. They are enabled per account: until yours is, the call answers 403 `REQUIREMENTS_SESSIONS_NOT_ENABLED`. Responses carry `Cache-Control: no-store`.",
+        "operationId": "/crypto-onramp-requirements-sessions-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementsSessionRequest"
+              },
+              "example": {
+                "customerId": "W9kL817BBS7bNEwxAZaX4z",
+                "serviceProviders": [
+                  "BANXA",
+                  "UPHOLD"
+                ],
+                "order": {
+                  "paymentMethodType": "CREDIT_DEBIT_CARD",
+                  "sourceCurrencyCode": "USD",
+                  "sourceAmount": 250,
+                  "destinationCurrencyCode": "USDC",
+                  "destinationNetworkCode": "BASE",
+                  "countryCode": "US"
+                },
+                "readyWhen": "ALL"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The session. Pass it to the SDK unchanged",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionResponse"
+                },
+                "example": {
+                  "id": "Ny9YeB5gTh8WaQc3DrUf7k",
+                  "customerId": "W9kL817BBS7bNEwxAZaX4z",
+                  "serviceProviders": [
+                    "BANXA",
+                    "UPHOLD"
+                  ],
+                  "readyWhen": "ALL",
+                  "expiresAt": "2026-11-04T15:28:30Z",
+                  "token": "<session token>",
+                  "requirementsActions": {
+                    "version": 1,
+                    "endpoint": "/crypto/onramp/requirements-sessions/Ny9YeB5gTh8WaQc3DrUf7k/actions",
+                    "bearerTokenPointer": "/token",
+                    "operations": [
+                      {
+                        "operation": "READ",
+                        "idempotencyKeyRequired": false
+                      },
+                      {
+                        "operation": "RUN_STEP",
+                        "idempotencyKeyRequired": true
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`REQUIREMENTS_SESSION_INVALID`: no providers or more than five, a provider named twice or unknown, an `order` missing a required field, or a `readyWhen` other than `ALL` or `ANY`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key can't create orders; `REQUIREMENTS_SESSIONS_NOT_ENABLED`: requirements sessions aren't enabled for your account in this environment; or `SERVICE_PROVIDER_NOT_ENABLED`: a provider isn't enabled for headless orders on your account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`CUSTOMER_NOT_FOUND`: your account has no customer with this `customerId`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/crypto/headless/crypto-onramp-requirements-sessions-create"
+        }
+      }
+    },
+    "/crypto/onramp/requirements-sessions/{id}/actions": {
+      "post": {
+        "tags": [
+          "Headless"
+        ],
+        "summary": "Run a requirements session action",
+        "description": "Called by the Meld SDK, not by your backend. `Meld.ensureReady` posts `READ` to get the session's plan, and `RUN_STEP` to run one step of it, with the session token as the bearer. A web page reaches it through your `actionProxyUrl` proxy, because the Meld API accepts it from a browser only on Meld's own origins; native apps call it directly. `READ` changes nothing and takes no `X-Idempotency-Key`. `RUN_STEP` takes a new `X-Idempotency-Key` for each run of a step. Requests are at most 64 KiB, a `READ` answer at most 256 KiB, and every response carries `Cache-Control: no-store`. Error bodies are `{version, code}`, with `fieldErrors` on a `RUN_STEP` 400.",
+        "operationId": "/crypto-onramp-requirements-sessions-actions-run",
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The session `id`, 1 to 64 base58 characters",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9A-HJ-NP-Za-km-z]{1,64}$"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "RUN_STEP only, and required there: a new UUID for each run of a step. Reuse it only to retry the same request after a network failure. READ must not send it",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Meld-End-User-Ip",
+            "in": "header",
+            "required": false,
+            "description": "Set only by your `actionProxyUrl` proxy: the end user's IP address, which Meld records as the evidence of a terms acceptance once Meld enables it for your account. Otherwise Meld records the address the request came from",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementsSessionActionRequest"
+              },
+              "example": {
+                "version": 1,
+                "operation": "READ"
+              },
+              "examples": {
+                "READ": {
+                  "summary": "Read the plan",
+                  "value": {
+                    "version": 1,
+                    "operation": "READ"
+                  }
+                },
+                "SUBMIT": {
+                  "summary": "Run a SUBMIT step",
+                  "value": {
+                    "version": 1,
+                    "operation": "RUN_STEP",
+                    "stepId": "*:MELD_KYC:MELD_KYC_APPROVED"
+                  }
+                },
+                "COLLECT": {
+                  "summary": "Run a COLLECT step",
+                  "value": {
+                    "version": 1,
+                    "operation": "RUN_STEP",
+                    "stepId": "*:CUSTOMER_DETAILS:CUSTOMER_EMAIL",
+                    "fields": {
+                      "email": "ada@example.com"
+                    }
+                  }
+                },
+                "AGREE": {
+                  "summary": "Run an AGREE step",
+                  "value": {
+                    "version": 1,
+                    "operation": "RUN_STEP",
+                    "stepId": "UPHOLD:AGREEMENT:general-us",
+                    "accepted": true
+                  }
+                },
+                "OPEN_URL": {
+                  "summary": "Refresh an OPEN_URL step",
+                  "value": {
+                    "version": 1,
+                    "operation": "RUN_STEP",
+                    "stepId": "NOAH:EXTERNAL_KYC:NOAH_HOSTED_ONBOARDING",
+                    "refresh": true
+                  }
+                },
+                "COLLECT_QUESTIONNAIRE": {
+                  "summary": "Answer a provider's questionnaire, one part each",
+                  "value": {
+                    "version": 1,
+                    "operation": "RUN_STEP",
+                    "stepId": "UPHOLD:PROVIDER_EXTRA_FIELDS:PROVIDER_EXTRA_KYC",
+                    "fields": {
+                      "customerDueDiligence": "{\"employment\":{\"status\":\"employed\"}}",
+                      "taxDetails": "{\"taxResidency\":{\"country\":\"US\"}}"
+                    }
+                  }
+                },
+                "VERIFY_CONTACT": {
+                  "summary": "Send a code to the contact on file",
+                  "value": {
+                    "version": 1,
+                    "operation": "RUN_STEP",
+                    "stepId": "COINBASEPAY:VERIFICATION:EMAIL"
+                  }
+                },
+                "VERIFY_CONTACT_CODE": {
+                  "summary": "Confirm a VERIFY_CONTACT code",
+                  "value": {
+                    "version": 1,
+                    "operation": "RUN_STEP",
+                    "stepId": "COINBASEPAY:VERIFICATION:EMAIL",
+                    "continuation": "Sd5CiG9mXo4YfUh7JwZk6r",
+                    "fields": {
+                      "otp": "123456"
+                    }
+                  }
+                },
+                "VERIFY_CONTACT_TYPED": {
+                  "summary": "Send a code to a phone the customer typed",
+                  "value": {
+                    "version": 1,
+                    "operation": "RUN_STEP",
+                    "stepId": "COINBASEPAY:VERIFICATION:PHONE",
+                    "fields": {
+                      "phone": "+14155550100"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "READ: the plan. RUN_STEP: what running the step left to do",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "title": "RequirementsSnapshot",
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/RequirementsSnapshot"
+                        }
+                      ]
+                    },
+                    {
+                      "title": "RequirementsRunOutcome",
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/RequirementsRunOutcome"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`INVALID_REQUEST`: a malformed body, a member the operation doesn't take, a missing or extra `X-Idempotency-Key`, or, on RUN_STEP, values Meld refuses, listed in `fieldErrors`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`AUTHORIZATION_REQUIRED`: the token is missing, invalid or expired, belongs to another session, or requirements sessions are no longer enabled for the account. Mint a new session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`STATE_NOT_FOUND`: RUN_STEP found no customer or verification to act on",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`CONCURRENT_STATE_CHANGE`: the step is no longer in `next`, no longer of that kind, or another run of it has not finished. Read again. `REQUEST_CONFLICT`: the `X-Idempotency-Key` was used with another request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`PROVIDER_REJECTED`: Meld or the provider refused the step",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionError"
+                }
+              }
+            }
+          },
+          "425": {
+            "description": "`OPERATION_IN_FLIGHT`: the same request is still running. Retry with the same key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`PROVIDER_RATE_LIMITED`: too many codes sent to this contact. Try later",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "`PROVIDER_UNAVAILABLE`: Meld or the provider couldn't be reached. Nothing changed. Try later. `INVALID_PROVIDER_RESPONSE`: the provider answered something Meld can't use, or a `READ` answer would be over 256 KiB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "`OUTCOME_UNKNOWN`: the step may or may not have run. Read again. Only an `OPEN_URL` step may then run again, with a new key, while `next` still offers it; any other step is left for the customer to retry, and runs again only once its run's claim has expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementsSessionError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "RequirementsSessionToken": []
+          }
+        ],
+        "x-mint": {
+          "href": "/api-reference/crypto/headless/crypto-onramp-requirements-sessions-actions-run"
         }
       }
     }
@@ -10106,16 +10541,29 @@
           "customerStatus": {
             "$ref": "#/components/schemas/CustomerStatus"
           },
+          "eligible": {
+            "type": "boolean",
+            "description": "false when any PRE_ORDER step is REQUIRED, PENDING or BLOCKED, which wins over everything; true only with a customerId the account holds, every PRE_ORDER step SATISFIED, and the whole order intent for a provider that checks the order itself (Banxa, Uphold, Coinbase, Stripe); absent otherwise: no customerId or one the account does not hold, no whole intent for such a provider, an unavailable policy, or a PRE_ORDER step that is UNKNOWN. For the same customer and intent, true means the checks order creation runs before reserving the order pass, unless state changes in between. Treat absent as create allowed"
+          },
           "kycRequirements": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/KycRequirement"
-            }
+            },
+            "deprecated": true,
+            "description": "Deprecated. Use requirements. Not returned on Meld-Version 2026-11-01 and later"
           },
           "legalAgreements": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LegalAgreement"
+            }
+          },
+          "requirements": {
+            "type": "array",
+            "description": "The whole answer as one ordered checklist, each step with its type, status and the call that clears it; absent only when no customerId was supplied",
+            "items": {
+              "$ref": "#/components/schemas/Requirement"
             }
           },
           "serviceProvider": {
@@ -10176,7 +10624,9 @@
               "BLOCKED"
             ]
           }
-        }
+        },
+        "deprecated": true,
+        "description": "Deprecated: an entry of kycRequirements, returned below Meld-Version 2026-11-01 only. Use Requirement"
       },
       "CustomerStatus": {
         "type": "object",
@@ -10256,6 +10706,889 @@
             "type": "boolean"
           }
         }
+      },
+      "Requirement": {
+        "type": "object",
+        "description": "One step of the checklist. type, status and action.type are open sets: treat a value you do not know as not satisfied",
+        "properties": {
+          "action": {
+            "description": "What clears the step; absent when SATISFIED or BLOCKED, and on an UNKNOWN step except <PROVIDER>_HOSTED_TERMS with TERMS_UNREAD. Its body holds only the selecting fields: add the order, contact target and acceptance evidence the endpoint needs. Send it with the Meld-Version you read the checklist with",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Action"
+              }
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable identifier of the step, e.g. ORDER_ROUTE, MELD_KYC_APPROVED, PROVIDER_KYC_SHARE, PROVIDER_KYC_APPROVED, CUSTOMER_EMAIL, an agreement's document code, <PROVIDER>_TERMS for terms Meld could not list yet, or <PROVIDER>_HOSTED_TERMS for terms accepted on the provider's own page"
+          },
+          "currentLevel": {
+            "type": "string",
+            "description": "For MELD_KYC, the level the customer is approved at; absent without an approval",
+            "enum": [
+              "NONE",
+              "LEVEL_1",
+              "LEVEL_2",
+              "LEVEL_3"
+            ]
+          },
+          "dependsOn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Codes of the steps that must be SATISFIED before this one. A step Meld or the provider runs, such as PROVIDER_KYC_SHARE or PROVIDER_REVIEW, starts by itself once they clear. MELD_KYC never depends on a provider's share prerequisites, and PROVIDER_EXTRA_FIELDS and PROVIDER_PROCESS depend on PROVIDER_KYC_SHARE only until the share is delivered"
+          },
+          "errorCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "On a BLOCKED PROVIDER_KYC_SHARE, the provider's codes for the refusal, e.g. PHONE_VERIFICATION_REQUIRED when Coinme needs the customer's phone verified first; absent when it gave none. An open set"
+          },
+          "level": {
+            "type": "string",
+            "description": "For MELD_KYC, the level the provider needs",
+            "enum": [
+              "NONE",
+              "LEVEL_1",
+              "LEVEL_2",
+              "LEVEL_3"
+            ]
+          },
+          "missingFields": {
+            "type": "array",
+            "description": "For PROVIDER_EXTRA_FIELDS and CUSTOMER_DETAILS, the details the step still needs",
+            "items": {
+              "$ref": "#/components/schemas/RequirementField"
+            }
+          },
+          "process": {
+            "description": "For PROVIDER_PROCESS, the process protocol to run",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OnrampProcessDescriptor"
+              }
+            ]
+          },
+          "processStates": {
+            "type": "array",
+            "description": "The provider's own state of the step, in its own vocabulary: for PROVIDER_PROCESS, that process; for PROVIDER_EXTRA_FIELDS, the provider's other steps",
+            "items": {
+              "$ref": "#/components/schemas/ProcessState"
+            }
+          },
+          "processes": {
+            "type": "array",
+            "description": "For PROVIDER_EXTRA_FIELDS, the codes of the provider's questionnaires that come as a form",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "type": "string",
+            "description": "On BLOCKED, the refusal: the provider's words or the code order creation would return. On UNKNOWN, why Meld cannot tell: STATE_UNAVAILABLE (the provider's own state is unreadable), RECORDS_UNAVAILABLE (Meld's customer, KYC, verification or share records are unreadable), ROUTE_UNAVAILABLE (the order's route, its catalog entry or the account's preference is unreadable, or the catalog lacks a bank-transfer route's receiving bank details), TERMS_UNRESOLVED (Meld could not list the provider's terms yet), TERMS_UNREAD (Meld has not read the provider's hosted terms yet) or UNRECORDABLE (the customer cannot hold an agreement receipt). An open set"
+          },
+          "satisfiedFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Meld keys of the details already held"
+          },
+          "status": {
+            "type": "string",
+            "description": "UNKNOWN: Meld could not read what decides the step, and reason says what; never counts as satisfied. Read again later",
+            "enum": [
+              "REQUIRED",
+              "PENDING",
+              "SATISFIED",
+              "BLOCKED",
+              "UNKNOWN"
+            ]
+          },
+          "timing": {
+            "type": "string",
+            "description": "ORDER_CONTINUATION steps run inside the order and never count against eligible",
+            "enum": [
+              "PRE_ORDER",
+              "PRE_ORDER_AND_ORDER_CONTINUATION",
+              "ORDER_CONTINUATION"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "ORDER_ROUTE: first, with a whole order intent only; whether order creation takes the route before it looks at the customer, BLOCKED with the code create would return. AGREEMENT: a catalog agreement, or a Terms-of-Service document the provider needs before the share. CUSTOMER_DETAILS: an email, name or address the provider needs on the customer before the share. PROVIDER_KYC_SHARE: Meld delivering the customer's KYC, SATISFIED once the provider has the customer, whatever it decides. PROVIDER_REVIEW: the provider's verdict, after its own steps. An open set: treat a value you do not know as not satisfied",
+            "enum": [
+              "VERIFICATION",
+              "AGREEMENT",
+              "CUSTOMER_DETAILS",
+              "MELD_KYC",
+              "PROVIDER_KYC_SHARE",
+              "PROVIDER_EXTRA_FIELDS",
+              "EXTERNAL_KYC",
+              "PROVIDER_PROCESS",
+              "PROVIDER_REVIEW",
+              "ORDER_ROUTE"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "For AGREEMENT, the document to show"
+          }
+        }
+      },
+      "RequirementField": {
+        "type": "object",
+        "description": "A detail a step still needs",
+        "properties": {
+          "allowedValues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fieldType": {
+            "type": "string"
+          },
+          "jsonSchema": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "The Meld field key; absent when the provider named a field Meld has no key for"
+          },
+          "label": {
+            "type": "string"
+          },
+          "providerCode": {
+            "type": "string",
+            "description": "The provider's own name for the field"
+          },
+          "source": {
+            "type": "string",
+            "description": "SUMSUB: captured on the KYC page. INTEGRATOR: only the integrator can supply it. PROVIDER: only the provider's own UI can collect it",
+            "enum": [
+              "SUMSUB",
+              "INTEGRATOR",
+              "PROVIDER"
+            ]
+          }
+        }
+      },
+      "Action": {
+        "type": "object",
+        "description": "What clears a step: CALL a Meld endpoint, OPEN_URL a hosted page, run an SDK_STEP on the order, or WAIT for a webhook",
+        "properties": {
+          "body": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "event": {
+            "type": "string",
+            "description": "For WAIT, the webhook that reports the outcome"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "For OPEN_URL, when url stops opening (ISO-8601 UTC); absent when the provider states no lifetime",
+            "example": "2026-11-04T15:45:00Z"
+          },
+          "method": {
+            "type": "string"
+          },
+          "nextStep": {
+            "type": "string",
+            "description": "For SDK_STEP, the step the order's actions name",
+            "enum": [
+              "NONE",
+              "SDK_REGISTER_CUSTOMER",
+              "SDK_AUTHORIZE",
+              "SDK_REAUTHORIZE",
+              "SDK_COLLECT_KYC",
+              "SDK_VERIFY_IDENTITY",
+              "SDK_REGISTER_WALLET",
+              "SDK_COLLECT_PAYMENT_METHOD",
+              "CREATE_PAYMENT_SESSION",
+              "REFRESH_QUOTE",
+              "CONFIRM_PAYMENT",
+              "RETRY",
+              "COMPLETE",
+              "REGION_NOT_SUPPORTED",
+              "START_NEW_ORDER",
+              "WAIT_FOR_PAYMENT",
+              "WAIT_FOR_PROVIDER",
+              "OPEN_HOSTED_VERIFICATION",
+              "UNKNOWN",
+              "AUTHORIZE_ACCOUNT",
+              "SELECT_SOURCE_ACCOUNT",
+              "COLLECT_SECOND_FACTOR",
+              "SELECT_CASH_LOCATION"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "refresh": {
+            "description": "For OPEN_URL, the call that mints a fresh page. Call it when url is absent, when expiresAt is less than 60 seconds away, or when the page fails to load, at most once before showing the page and once after it closes, then read the checklist again",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Call"
+              }
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CALL",
+              "OPEN_URL",
+              "SDK_STEP",
+              "WAIT"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "For OPEN_URL, the page to open; absent once expiresAt has passed. Never log or store it"
+          }
+        }
+      },
+      "Call": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "OnrampProcessDescriptor": {
+        "type": "object",
+        "description": "Executable process discovery. Call READ with customerId/order before choosing an input source.",
+        "properties": {
+          "automaticSubmissionRetryAllowed": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "pollIntervalMs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pollTimeoutMs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "RequirementsSessionRequest": {
+        "type": "object",
+        "description": "Who the session is for, and what for",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "The Meld customer the session is for",
+            "example": "W9kL817BBS7bNEwxAZaX4z"
+          },
+          "order": {
+            "description": "The order you mean to create, whole or absent. With it, each provider that checks the order itself answers for this order, as the requirements do with the order parameters. Without it, such a provider never answers READY",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RequirementsSessionOrder"
+              }
+            ]
+          },
+          "readyWhen": {
+            "type": "string",
+            "description": "ALL, the default: the session is READY when every provider is. ANY: when one is",
+            "enum": [
+              "ALL",
+              "ANY"
+            ]
+          },
+          "serviceProviders": {
+            "type": "array",
+            "description": "The providers you might create the order with: 1 to 5, each once. Steps they share, such as Unified KYC or an email, run once for all of them",
+            "items": {
+              "type": "string",
+              "example": "BANXA"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "customerId",
+          "serviceProviders"
+        ]
+      },
+      "RequirementsSessionOrder": {
+        "type": "object",
+        "description": "The order intent, as the requirements take it in their query parameters",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "description": "Where the customer is, ISO 3166-1 alpha-2",
+            "example": "US"
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "description": "Token the customer is buying, as Meld names it",
+            "example": "USDC"
+          },
+          "destinationNetworkCode": {
+            "type": "string",
+            "description": "Chain, as Meld names it. Required for Stripe, recommended otherwise",
+            "example": "BASE"
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "description": "How the customer will pay",
+            "example": "CREDIT_DEBIT_CARD"
+          },
+          "sourceAmount": {
+            "type": "number",
+            "description": "What the customer pays. Greater than zero",
+            "exclusiveMinimum": 0,
+            "example": 250
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "description": "Fiat the customer pays in, ISO 4217",
+            "example": "USD"
+          },
+          "subdivision": {
+            "type": "string",
+            "description": "State or province, ISO 3166-2",
+            "example": "US-CA"
+          }
+        },
+        "required": [
+          "countryCode",
+          "destinationCurrencyCode",
+          "paymentMethodType",
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
+      },
+      "RequirementsSessionResponse": {
+        "type": "object",
+        "description": "The session. Pass it to `Meld.ensureReady` unchanged, and never log it: it carries the token",
+        "properties": {
+          "customerId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the token expires, 30 minutes after the session was created (ISO-8601 UTC)",
+            "example": "2026-11-04T15:28:30Z"
+          },
+          "id": {
+            "type": "string",
+            "description": "The session id, 1 to 64 base58 characters"
+          },
+          "readyWhen": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "ANY"
+            ]
+          },
+          "requirementsActions": {
+            "$ref": "#/components/schemas/RequirementsActions"
+          },
+          "serviceProviders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "token": {
+            "type": "string",
+            "description": "The session bearer. Never log or store it"
+          }
+        },
+        "required": [
+          "customerId",
+          "expiresAt",
+          "id",
+          "readyWhen",
+          "requirementsActions",
+          "serviceProviders",
+          "token"
+        ]
+      },
+      "RequirementsActions": {
+        "type": "object",
+        "description": "Where the SDK sends the session's actions, and with what. Read by the SDK",
+        "properties": {
+          "bearerTokenPointer": {
+            "type": "string",
+            "description": "JSON pointer to the bearer token in the session",
+            "example": "/token"
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "The actions path, on the API host of the environment the session was created in",
+            "example": "/crypto/onramp/requirements-sessions/Ny9YeB5gTh8WaQc3DrUf7k/actions"
+          },
+          "operations": {
+            "type": "array",
+            "description": "READ, without an idempotency key, and RUN_STEP, with one",
+            "items": {
+              "$ref": "#/components/schemas/RequirementsActionOperation"
+            }
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          }
+        }
+      },
+      "RequirementsActionOperation": {
+        "type": "object",
+        "properties": {
+          "idempotencyKeyRequired": {
+            "type": "boolean"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "READ",
+              "RUN_STEP"
+            ]
+          }
+        }
+      },
+      "RequirementsSessionActionRequest": {
+        "type": "object",
+        "description": "READ, or RUN_STEP for one step of `next`. Any member the operation or the step's kind doesn't take is 400 `INVALID_REQUEST`",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "description": "RUN_STEP on an AGREE step: `true`, once the customer accepted. Meld records the acceptance with its own clock and the customer's IP address"
+          },
+          "continuation": {
+            "type": "string",
+            "description": "RUN_STEP on a VERIFY_CONTACT step: the `continuation` of the last outcome, sent with the code in `fields.otp`"
+          },
+          "fields": {
+            "type": "object",
+            "description": "RUN_STEP on a COLLECT step: the value for each of the step's field keys, exactly those keys. On a VERIFY_CONTACT step: the `email` or `phone` the last outcome asked for, or the `otp`. At most 20",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "READ",
+              "RUN_STEP"
+            ]
+          },
+          "refresh": {
+            "type": "boolean",
+            "description": "RUN_STEP on an OPEN_URL step: `true`. Mints a new page for the step"
+          },
+          "stepId": {
+            "type": "string",
+            "description": "RUN_STEP: the `stepId` of a step in `next`, up to 256 characters. Opaque",
+            "maxLength": 256
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+              1
+            ]
+          }
+        },
+        "required": [
+          "operation",
+          "version"
+        ]
+      },
+      "RequirementsSnapshot": {
+        "type": "object",
+        "description": "READ: every session provider's checklist, and the plan across them",
+        "properties": {
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the session token expires"
+          },
+          "next": {
+            "type": "array",
+            "description": "The steps a client can run now, in the order to run them. A step shared by several providers appears once, naming them all",
+            "items": {
+              "$ref": "#/components/schemas/RequirementsStep"
+            }
+          },
+          "pollAfterMs": {
+            "type": "integer",
+            "format": "int32",
+            "description": "When to read again while waiting: 2000 while a provider process runs, otherwise 4000, 15000 or 30000 as the session ages",
+            "example": 4000
+          },
+          "providers": {
+            "type": "array",
+            "description": "One entry per session provider, in session order",
+            "items": {
+              "$ref": "#/components/schemas/RequirementsSessionProvider"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "With `readyWhen` ALL: BLOCKED when any provider is, READY when all are, ACTION_REQUIRED when `next` has steps or a provider has a step to act on, WAITING when only `waitingOn` is left, UNDETERMINED otherwise. With ANY: READY when one provider is, BLOCKED only when all are. An open set",
+            "enum": [
+              "READY",
+              "ACTION_REQUIRED",
+              "WAITING",
+              "BLOCKED",
+              "UNDETERMINED"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          },
+          "waitingOn": {
+            "type": "array",
+            "description": "Steps Meld or a provider is running, such as a review",
+            "items": {
+              "$ref": "#/components/schemas/RequirementsWait"
+            }
+          }
+        },
+        "required": [
+          "expiresAt",
+          "next",
+          "pollAfterMs",
+          "providers",
+          "status",
+          "version",
+          "waitingOn"
+        ]
+      },
+      "RequirementsSessionProvider": {
+        "type": "object",
+        "properties": {
+          "eligible": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "The provider's `eligible`, as the requirements report it. Always present: `null` where the requirements leave it out"
+          },
+          "requirements": {
+            "type": "array",
+            "description": "The provider's whole checklist, as the requirements return it at Meld-Version 2026-11-01",
+            "items": {
+              "$ref": "#/components/schemas/Requirement"
+            }
+          },
+          "serviceProvider": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "BLOCKED: a step before the order is BLOCKED. READY: `eligible` is true. ACTION_REQUIRED: a step can be acted on. WAITING: only waits are left. UNDETERMINED otherwise. An open set",
+            "enum": [
+              "READY",
+              "ACTION_REQUIRED",
+              "WAITING",
+              "BLOCKED",
+              "UNDETERMINED"
+            ]
+          }
+        },
+        "required": [
+          "eligible",
+          "requirements",
+          "serviceProvider",
+          "status"
+        ]
+      },
+      "RequirementsStep": {
+        "type": "object",
+        "description": "A step a client can run, with what it needs",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "The checklist step's `code`"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "OPEN_URL: when `url` stops opening, when known"
+          },
+          "fields": {
+            "type": "array",
+            "description": "COLLECT: the fields to collect",
+            "items": {
+              "$ref": "#/components/schemas/RequirementsStepField"
+            }
+          },
+          "kind": {
+            "type": "string",
+            "description": "What running it takes. An open set: a client doesn't run a kind it doesn't know",
+            "enum": [
+              "SUBMIT",
+              "COLLECT",
+              "AGREE",
+              "OPEN_URL",
+              "VERIFY_CONTACT"
+            ]
+          },
+          "level": {
+            "type": "string",
+            "description": "MELD_KYC: the highest level among the providers it serves",
+            "enum": [
+              "NONE",
+              "LEVEL_1",
+              "LEVEL_2",
+              "LEVEL_3"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "description": "The checklist step's `reason`, when it has one"
+          },
+          "serviceProviders": {
+            "type": "array",
+            "description": "The providers the step serves",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stepId": {
+            "type": "string",
+            "description": "Identifies the step in RUN_STEP. Opaque, up to 256 characters"
+          },
+          "type": {
+            "type": "string",
+            "description": "The checklist step's `type`"
+          },
+          "url": {
+            "type": "string",
+            "description": "AGREE: the document to show. OPEN_URL: the page to open, while it is valid. Never log or store it"
+          }
+        },
+        "required": [
+          "code",
+          "kind",
+          "serviceProviders",
+          "stepId",
+          "type"
+        ]
+      },
+      "RequirementsStepField": {
+        "type": "object",
+        "properties": {
+          "allowedValues": {
+            "type": "array",
+            "description": "The only values Meld takes, when the provider sets them",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fieldType": {
+            "type": "string"
+          },
+          "jsonSchema": {
+            "type": "string",
+            "description": "A JSON Schema for the value, when the provider sets one"
+          },
+          "key": {
+            "type": "string",
+            "description": "The key to send the value under, for example `email`, `name.firstName`, `address.postalCode`, or one of the provider's own"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
+      "RequirementsWait": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string",
+            "description": "The webhook that reports the outcome, for example `CUSTOMER_KYC_STATUS_CHANGE`. Absent for a provider process that is polled"
+          },
+          "serviceProviders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stepId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "serviceProviders",
+          "stepId",
+          "type"
+        ]
+      },
+      "RequirementsRunOutcome": {
+        "type": "object",
+        "description": "RUN_STEP: what running the step left to do. Read again to see whether it is satisfied",
+        "properties": {
+          "continuation": {
+            "type": "string",
+            "description": "COLLECT after a code was sent: send it back with `fields.otp`",
+            "maxLength": 64
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "OPEN_URL: when `url` stops opening, when Meld knows"
+          },
+          "fields": {
+            "type": "array",
+            "description": "COLLECT: the keys to send in the next RUN_STEP's `fields`",
+            "items": {
+              "$ref": "#/components/schemas/RequirementsRunField"
+            }
+          },
+          "outcome": {
+            "type": "string",
+            "description": "DONE: nothing more for this run; read again. OPEN_URL: open `url`; read again once the page closes. COLLECT: run the step again with `fields` (and `continuation` when set). An open set",
+            "enum": [
+              "DONE",
+              "OPEN_URL",
+              "COLLECT"
+            ]
+          },
+          "stepId": {
+            "type": "string",
+            "description": "The step that ran"
+          },
+          "url": {
+            "type": "string",
+            "description": "OPEN_URL: the page to open. Never log or store it"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          }
+        },
+        "required": [
+          "outcome",
+          "stepId",
+          "version"
+        ]
+      },
+      "RequirementsRunField": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "otp"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
+      "RequirementsSessionError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "An open set: INVALID_REQUEST, AUTHORIZATION_REQUIRED, STATE_NOT_FOUND, REQUEST_CONFLICT, CONCURRENT_STATE_CHANGE, OPERATION_IN_FLIGHT, PROVIDER_REJECTED, PROVIDER_RATE_LIMITED, PROVIDER_UNAVAILABLE, INVALID_PROVIDER_RESPONSE, OUTCOME_UNKNOWN",
+            "enum": [
+              "INVALID_REQUEST",
+              "AUTHORIZATION_REQUIRED",
+              "STATE_NOT_FOUND",
+              "REQUEST_CONFLICT",
+              "CONCURRENT_STATE_CHANGE",
+              "OPERATION_IN_FLIGHT",
+              "PROVIDER_REJECTED",
+              "PROVIDER_RATE_LIMITED",
+              "PROVIDER_UNAVAILABLE",
+              "INVALID_PROVIDER_RESPONSE",
+              "OUTCOME_UNKNOWN"
+            ],
+            "example": "INVALID_REQUEST"
+          },
+          "fieldErrors": {
+            "type": "array",
+            "description": "RUN_STEP 400 only: the keys Meld refused, and why. Never the values",
+            "items": {
+              "$ref": "#/components/schemas/RequirementsFieldError"
+            }
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32",
+            "example": 1
+          }
+        },
+        "required": [
+          "code",
+          "version"
+        ]
+      },
+      "RequirementsFieldError": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "email"
+          },
+          "reason": {
+            "type": "string",
+            "description": "REQUIRED: a key of the step is missing. INVALID: the value fails Meld's check. UNSUPPORTED: the step has no such key. An open set",
+            "enum": [
+              "REQUIRED",
+              "INVALID",
+              "UNSUPPORTED"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "reason"
+        ]
       }
     },
     "securitySchemes": {
@@ -10268,6 +11601,11 @@
       "BasicAuth": {
         "type": "http",
         "scheme": "basic"
+      },
+      "RequirementsSessionToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "The `token` of a requirements session. The Meld SDK sends it"
       }
     }
   },

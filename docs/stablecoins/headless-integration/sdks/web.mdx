@@ -10,10 +10,10 @@ The SDK is a container and an event relay. It does not render card input, read c
 ## Install
 
 ```bash
-npm install @meldcrypto/sdk@0.7.0
+npm install @meldcrypto/sdk@0.9.0
 ```
 
-0.7.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), and the [shared error codes](#error-codes), named by `Meld.ErrorCode`, with the order's `paymentMethodType` on each error.
+0.7.0 is the release that brings the wallet contract every Meld SDK shares: the [readiness checks](#check-readiness-before-you-create-the-order), and the [shared error codes](#error-codes), named by `Meld.ErrorCode`, with the order's `paymentMethodType` on each error. 0.9.0 adds [customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements): `Meld.ensureReady` and `Meld.openHostedVerification`.
 
 ```js
 import Meld from '@meldcrypto/sdk';
@@ -24,6 +24,14 @@ Meld.configure({ environment: 'sandbox' }); // or 'production'
 Use the environment your backend created the order in. See [Environments](/docs/stablecoins/headless-integration/sdks#environments).
 
 Use it with a bundler — the SDK is bundled into your app.
+
+---
+
+## Get the customer ready
+
+Before you create the order, `Meld.ensureReady` takes the customer through what each provider still needs: a verified contact, accepted terms, their details, Unified KYC and the provider's hosted onboarding. Your backend creates a requirements session, and the page passes it to the SDK. It needs 0.9.0 or later.
+
+On the web, the session's calls go through a proxy on your backend, which you name with `actionProxyUrl` in `Meld.configure`. See [Customer requirements](/docs/stablecoins/headless-integration/sdks/customer-requirements), and [its proxy contract](/docs/stablecoins/headless-integration/sdks/customer-requirements#on-the-web-proxy-the-calls).
 
 ---
 

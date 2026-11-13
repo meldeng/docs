@@ -533,6 +533,18 @@
               }
             ]
           },
+          "kycLevel": {
+            "description": "Minimum Meld (Sumsub) KYC level the provider accepts",
+            "type": "string",
+            "examples": [
+              "LEVEL_2"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycLevel"
+              }
+            ]
+          },
           "isExchange": {
             "type": "boolean",
             "description": "Whether the provider is a centralized exchange",
@@ -1153,6 +1165,16 @@
             "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
           }
         }
+      },
+      "KycLevel": {
+        "description": "Minimum Meld (Sumsub) KYC level a provider accepts",
+        "type": "string",
+        "enum": [
+          "NONE",
+          "LEVEL_1",
+          "LEVEL_2",
+          "LEVEL_3"
+        ]
       }
     },
     "securitySchemes": {
@@ -2123,6 +2145,7 @@
                           "uiCustomization": false
                         },
                         "kycMode": "ASYNC",
+                        "kycLevel": "LEVEL_2",
                         "isExchange": false
                       }
                     ]

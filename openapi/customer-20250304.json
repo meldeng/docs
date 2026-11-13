@@ -2089,7 +2089,7 @@
           "Customers"
         ],
         "summary": "Initiate customer KYC",
-        "description": "Retrieve a url that when launched displays a UI that commences KYC for your user",
+        "description": "Retrieve a url that when launched displays a UI that commences KYC for your user. With a targetServiceProvider or order, Meld picks the KYC level: an applicant approved at that level gets APPROVED with no url, and a lower one is moved up and gets a url at the new level.",
         "operationId": "accounts-customers-kyc-initiate",
         "parameters": [
           {
@@ -2119,8 +2119,7 @@
                 "$ref": "#/components/schemas/InitiateKycRequest"
               },
               "example": {
-                "mode": "HOSTED_URL",
-                "serviceProvider": "SUMSUB"
+                "targetServiceProvider": "BANXA"
               }
             }
           },
@@ -2138,7 +2137,7 @@
             }
           },
           "422": {
-            "description": "Customer is not compliant for KYC sharing",
+            "description": "Customer is not compliant for KYC sharing: (code KYC_SHARE_PREREQUISITES_MISSING) a provider named in kycShareProviders lacks what it needs before the share, and errors lists each one as PROVIDER:TYPE, or (code KYC_BLOCKED) the customer's KYC was rejected as final. A targetServiceProvider never fails on its own prerequisites: Meld adds it to the share providers and shares once they are met",
             "content": {
               "application/json": {
                 "schema": {
@@ -2146,7 +2145,14 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "Stable identifier for the failure."
+                      "description": "`KYC_SHARE_PREREQUISITES_MISSING` or `KYC_BLOCKED`. Absent on other refusals to share."
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "With `KYC_SHARE_PREREQUISITES_MISSING`, one `PROVIDER:TYPE` per missing prerequisite, for example `UPHOLD:TERMS`. TYPE is TERMS, EMAIL, NAME or ADDRESS, and can gain values."
                     },
                     "message": {
                       "type": "string",
@@ -2182,6 +2188,16 @@
                       "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
                     }
                   }
+                },
+                "example": {
+                  "code": "KYC_SHARE_PREREQUISITES_MISSING",
+                  "message": "Customer is not compliant to share KYC with provider=UPHOLD, missing=[EMAIL, TERMS]",
+                  "errors": [
+                    "UPHOLD:EMAIL",
+                    "UPHOLD:TERMS"
+                  ],
+                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
+                  "timestamp": "2026-08-14T09:41:22.482+00:00"
                 }
               }
             }
@@ -2242,7 +2258,7 @@
             }
           },
           "409": {
-            "description": "KYC already initiated for this customer and provider\n\nResolve the conflicting state, then retry.",
+            "description": "KYC already initiated for this customer and provider (requests without targetServiceProvider or order), or (code KYC_REVIEW_IN_PROGRESS) a level change is needed while the customer's KYC is in review\n\nResolve the conflicting state, then retry.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2250,7 +2266,7 @@
                   "properties": {
                     "code": {
                       "type": "string",
-                      "description": "`CONFLICT`"
+                      "description": "`CONFLICT`, or `KYC_REVIEW_IN_PROGRESS`"
                     },
                     "message": {
                       "type": "string",
@@ -7636,6 +7652,24 @@
             "additionalProperties": {},
             "description": "Provider-specific data returned when KYC was shared (e.g. hosted onboarding URL)"
           },
+          "approvedLevel": {
+            "type": "string",
+            "description": "Highest Meld KYC level the customer is approved at. It stays while a higher level is in review and is absent when nothing is approved. Present on the KYC provider's entry only.",
+            "enum": [
+              "LEVEL_1",
+              "LEVEL_2",
+              "LEVEL_3"
+            ]
+          },
+          "level": {
+            "type": "string",
+            "description": "Meld KYC level this verification is for. Present on the KYC provider's entry only.",
+            "enum": [
+              "LEVEL_1",
+              "LEVEL_2",
+              "LEVEL_3"
+            ]
+          },
           "onboardingMethod": {
             "description": "Onboarding method used to initiate the KYC share",
             "allOf": [
@@ -8173,7 +8207,7 @@
         "properties": {
           "kycShareProviders": {
             "type": "array",
-            "description": "Additional KYC providers to share the result with",
+            "description": "Additional KYC providers to share the result with. Each is checked up front, and one missing a share prerequisite fails the call with 422 KYC_SHARE_PREREQUISITES_MISSING",
             "items": {
               "type": "string",
               "enum": [
@@ -8252,19 +8286,26 @@
           },
           "mode": {
             "type": "string",
-            "description": "KYC initiation mode",
+            "description": "KYC initiation mode. Optional on POST, where it defaults to HOSTED_URL; required on PATCH",
             "enum": [
               "HOSTED_URL",
               "TOKEN_IMPORT"
             ]
           },
+          "order": {
+            "description": "POST only: the order the customer is about to place",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KycOrderIntent"
+              }
+            ]
+          },
           "serviceProvider": {
             "type": "string",
-            "description": "KYC provider to use (currently only SUMSUB is supported)",
+            "description": "KYC provider to use (currently only SUMSUB is supported). Optional on POST, where it defaults to SUMSUB; required on PATCH",
             "enum": [
               "SUMSUB"
             ],
-            "example": "SUMSUB",
             "minLength": 1
           },
           "serviceProviderDetails": {
@@ -8274,12 +8315,83 @@
                 "$ref": "#/components/schemas/KycServiceProviderDetails"
               }
             ]
+          },
+          "targetServiceProvider": {
+            "type": "string",
+            "description": "POST only: the provider the customer is heading to. Meld verifies the customer at the level that provider needs, steps an existing applicant up to it, and shares the result when the provider takes a KYC share. The provider's share prerequisites (its terms, an email, a name or an address) never fail the call: Meld shares once they are met",
+            "enum": [
+              "ACROSS",
+              "AEROPAY",
+              "AKOYA",
+              "ALCHEMYPAY",
+              "APPLEPAY",
+              "AUTHORIZENET",
+              "BANXA",
+              "BILIRA",
+              "BINANCECONNECT",
+              "BINANCEPAY",
+              "BLOCKCHAINDOTCOM",
+              "BOOMFI",
+              "BRAINTREE",
+              "BRALE",
+              "BTCDIRECT",
+              "CASHAPP",
+              "CHECKOUT",
+              "CIRCLE",
+              "COINBASEPAY",
+              "COINFLOW",
+              "DUENETWORK",
+              "ELDORADO",
+              "FINICITY",
+              "FLASHNET",
+              "FONBNK",
+              "GUARDARIAN",
+              "HARBOUR",
+              "KOYWE",
+              "KRYPTONIM",
+              "MERCURYO",
+              "MESH",
+              "MESO",
+              "MOONPAY",
+              "MOOV",
+              "MX",
+              "NMI",
+              "NOAH",
+              "ONMETA",
+              "ONRAMPMONEY",
+              "PAYBIS",
+              "PAYPAL",
+              "PLAID",
+              "RAMP",
+              "REVOLUT",
+              "ROBINHOOD",
+              "ROUTERPROTOCOL",
+              "SALTEDGE",
+              "SALTEDGEPARTNERS",
+              "SARDINE",
+              "SHIFT4",
+              "SHOPIFY",
+              "SIMPLEX",
+              "SKRILLCRYPTO",
+              "SQUARE",
+              "STRIPE",
+              "SUMSUB",
+              "SWAPPED",
+              "TANGOCARD",
+              "TELLER",
+              "TOPPER",
+              "TRANSAK",
+              "TREMENDOUS",
+              "TRANSFI",
+              "UNLIMIT",
+              "UPHOLD",
+              "WYRE",
+              "XANPOOL",
+              "YELLOWCARD",
+              "YODLEE"
+            ]
           }
-        },
-        "required": [
-          "mode",
-          "serviceProvider"
-        ]
+        }
       },
       "KycServiceProviderDetails": {
         "description": "Provider-specific details for KYC initiation",
@@ -8325,9 +8437,32 @@
         "type": "object",
         "description": "Response after initiating KYC: customer/provider/status. Token is obtained via getToken once KYC is complete.",
         "properties": {
+          "approvedLevel": {
+            "type": "string",
+            "description": "Highest Meld KYC level the customer is approved at; absent when nothing is approved",
+            "enum": [
+              "LEVEL_1",
+              "LEVEL_2",
+              "LEVEL_3"
+            ]
+          },
           "customerId": {
             "type": "string",
             "description": "Customer id (Meld)"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "When url stops opening (ISO-8601 UTC); present only with url",
+            "example": "2026-11-04T15:30:00Z"
+          },
+          "level": {
+            "type": "string",
+            "description": "Meld KYC level the url verifies; absent when unknown",
+            "enum": [
+              "LEVEL_1",
+              "LEVEL_2",
+              "LEVEL_3"
+            ]
           },
           "serviceProvider": {
             "type": "string",
@@ -10892,6 +11027,45 @@
             "description": "Number of remaining customers before/after this page, depending the direction this page was selected."
           }
         }
+      },
+      "KycOrderIntent": {
+        "type": "object",
+        "description": "The order the customer is about to place, as sent to the onramp requirements and processes",
+        "properties": {
+          "countryCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "destinationCurrencyCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "destinationNetworkCode": {
+            "type": "string"
+          },
+          "paymentMethodType": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceAmount": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "sourceCurrencyCode": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subdivision": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "countryCode",
+          "destinationCurrencyCode",
+          "paymentMethodType",
+          "sourceAmount",
+          "sourceCurrencyCode"
+        ]
       }
     },
     "securitySchemes": {

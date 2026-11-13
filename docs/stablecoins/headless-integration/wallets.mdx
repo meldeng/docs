@@ -34,8 +34,8 @@ Apple Pay never runs on Android, and Google Pay never runs on iOS or the web. Ev
 | Provider | Wallets | Customers | Before the order | Your setup | The customer sees |
 | --- | --- | --- | --- | --- | --- |
 | Mercuryo, Banxa | Apple Pay | Countries in the quote | [Unified KYC](/docs/stablecoins/unified-kyc) | Merchant identifier, certificate from Meld's CSR | The Apple Pay sheet |
-| Stripe | Apple Pay | US except New York, paying USD | An email on the customer. Stripe verifies the customer itself, so Unified KYC is optional: Meld fills Stripe's forms from it | Merchant identifier, certificate from Stripe's CSR | Stripe's Link sign-in and identity checks, then the Apple Pay sheet |
-| Coinbase | Apple Pay, Google Pay | US, paying USD | A verified email and US mobile number, and Coinbase's agreements. At Coinbase's lifetime cap, [step-up KYC](#coinbase-guest-checkout-and-step-up-kyc) | Google Pay: your app's approval | The wallet's sheet |
+| Stripe | Apple Pay | US except New York, paying USD | An email on the customer. Stripe verifies the customer itself, so Unified KYC is optional: Meld fills Stripe's forms from it. With [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on, Unified KYC at Level 1 unless Stripe already verified the customer for the order | Merchant identifier, certificate from Stripe's CSR | Stripe's Link sign-in and identity checks, then the Apple Pay sheet |
+| Coinbase | Apple Pay, Google Pay | US, paying USD | A verified email and US mobile number, and Coinbase's agreements. At Coinbase's lifetime cap, [step-up KYC](#coinbase-guest-checkout-and-step-up-kyc), at Level 1 when it is on | Google Pay: your app's approval | The wallet's sheet |
 
 [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility) tells you what a provider still needs for a given customer, so you don't have to hardcode the column above.
 
@@ -44,6 +44,7 @@ Apple Pay never runs on Android, and Google Pay never runs on iOS or the web. Ev
 - **Credentials.** In production, Stripe orders run on your own Stripe account. Stripe onboards it for its embedded crypto onramp and registers your app as a trusted application. Then add your Stripe keys to your Meld account as in [provider setup](/docs/stablecoins/for-all-products/service-provider-setup), together with the Link OAuth client ID, client secret and headless API version Stripe gives you, and point a Stripe webhook for `crypto.onramp_session.updated` at the webhook URL the Meld dashboard shows for the integration. In sandbox, Meld provides the Stripe integration: see [Headless testing](/docs/stablecoins/sandbox-guide/headless-testing#apple-pay-with-stripe).
 - **Link.** Stripe signs the customer in to Link with the email on the Meld customer, and sends the one-time code to the phone on that Link account.
 - **Identity.** Stripe runs its own KYC in the SDK, after you create the order, and takes no Unified KYC share, so Meld doesn't refuse a Stripe order without Unified KYC. The SDK asks only for the details Stripe lists as missing: name and address first. Date of birth and SSN, and then an ID document and selfie in Stripe's own screens, come only when the order is over the customer's current Stripe limits or Stripe's risk checks call for them. When the customer's Unified KYC is approved, Meld fills those forms with their name, date of birth, US address and SSN, so they type less.
+- **Level 1.** On an account with [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on, a Stripe order needs Unified KYC at Level 1, unless Stripe has already verified the customer at a tier whose limits cover the order. Eligibility, with the order, reports it as `MELD_KYC_APPROVED` with `level: LEVEL_1`, and an order created without it is refused with `403 KYC_NOT_COMPLETED` before anything is reserved, so you can resend the same request once the customer is approved. On the Sumsub page the customer types only their SSN and any detail the Meld customer lacks, with no ID document or selfie. Meld then fills Stripe's forms from the Meld customer and the SSN. Stripe's SDK still asks for a name or US address the Meld customer doesn't hold, so create the customer with everything you know. Stripe's own ID document and selfie still run in Stripe's screens when Stripe asks for them, listed in eligibility as `STRIPE_IDENTITY` with `timing: ORDER_CONTINUATION`. Meld can see what Stripe has verified only while the customer's last Link sign-in is still valid, so a returning customer can be asked for Level 1 even for an order Stripe would take.
 - **Cards.** `CREDIT_DEBIT_CARD` runs the same flow, with Stripe collecting the card. It needs no Apple setup.
 
 ### Coinbase
@@ -51,7 +52,7 @@ Apple Pay never runs on Android, and Google Pay never runs on iOS or the web. Ev
 - **Credentials.** In production, Coinbase orders run on your own Coinbase Developer Platform project. See [provider credentials](/docs/stablecoins/headless-integration#provider-credentials).
 - **Merchant of record.** Coinbase takes the payment on its own payment page, and the SDK opens the wallet's sheet from it. You need no Apple setup.
 - **Before the order.** Verify the email and phone with `serviceProvider: "COINBASEPAY"`, and record the customer's acceptance of Coinbase's agreements. Both are in [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility).
-- **Limits.** Coinbase caps each customer weekly and over their lifetime. At the lifetime cap, the order is refused with `CUSTOMER_NOT_PAYMENT_READY` until the customer steps up with their date of birth and SSN. See [Coinbase guest checkout and step-up KYC](#coinbase-guest-checkout-and-step-up-kyc).
+- **Limits.** Coinbase caps each customer weekly and over their lifetime. At the lifetime cap, the order is refused with `CUSTOMER_NOT_PAYMENT_READY` until the customer steps up with their date of birth and SSN, through Unified KYC at Level 1 when it is on for your account. See [Coinbase guest checkout and step-up KYC](#coinbase-guest-checkout-and-step-up-kyc).
 - **Quote.** Send `walletAddress` on the [headless quote](/docs/stablecoins/headless-integration/shared-flows/quotes), so Coinbase prices the same checkout the order uses.
 - **Settlement.** Meld creates the transaction once Coinbase reports the payment, usually a minute or more after `onPaymentSubmitted`. An order the customer never pays sends no webhook.
 - **Sandbox.** For Apple Pay, sandbox covers everything up to creating the order. The current SDKs can't present a sandbox Coinbase Apple Pay order (it ends in `PRESENTATION_FAILED`), so test the sheet in production with a small order. Google Pay runs in sandbox: see [Google Pay in sandbox](#google-pay-in-sandbox).
@@ -508,7 +509,7 @@ The webhook payload includes `paymentTransactionId`, `paymentTransactionStatus`,
 
 ## Coinbase guest checkout and step-up KYC
 
-Coinbase's guest checkout lets a new customer buy with Apple Pay or Google Pay without Unified KYC: no date of birth, SSN, ID document or selfie. Coinbase caps how many guest purchases a customer can make. A customer who reaches that cap steps up once, with their date of birth and SSN. You collect them through [Unified KYC](/docs/stablecoins/unified-kyc), and Meld passes Coinbase what it needs.
+Coinbase's guest checkout lets a new customer buy with Apple Pay or Google Pay without Unified KYC: no date of birth, SSN, ID document or selfie. Coinbase caps how many guest purchases a customer can make. A customer who reaches that cap steps up once, with their date of birth and SSN. You collect them through [Unified KYC](/docs/stablecoins/unified-kyc), and Meld passes Coinbase what it needs. On an account with [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on, that is Level 1: the customer types their SSN and any detail the Meld customer lacks, with no ID document or selfie.
 
 Start every customer as a guest, and run KYC only for those who reach the cap.
 
@@ -516,9 +517,9 @@ Start every customer as a guest, and run KYC only for those who reach the cap.
 | --- | --- | --- |
 | Before the first purchase | Their email and US mobile number, each confirmed with a one-time code, and their acceptance of Coinbase's agreements | [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility), with `serviceProvider: "COINBASEPAY"` on each verification. Then [the integration loop](#the-integration-loop) |
 | Every later purchase | Nothing, until a verification or their acceptance goes stale, which eligibility reports | Eligibility, then the integration loop |
-| At Coinbase's lifetime cap, once | Their date of birth and US SSN | The steps below: Unified KYC, then Coinbase's `limitUpgrade` process |
+| At Coinbase's lifetime cap, once | Their date of birth and US SSN | The steps below: Unified KYC, at Level 1 when it is on, then Coinbase's `limitUpgrade` process |
 
-Coinbase's quote rows carry `kycMode: PROVIDER_MANAGED`, because Coinbase verifies the customer itself. So eligibility for Coinbase doesn't list `MELD_KYC_APPROVED` or `PROVIDER_KYC_SHARE`, and a guest order needs no Unified KYC.
+Coinbase's quote rows carry `kycMode: PROVIDER_MANAGED`, because Coinbase verifies the customer itself. So Coinbase's checklist has no `PROVIDER_KYC_SHARE` or `PROVIDER_REVIEW` step, and a guest order needs no Unified KYC. The checklist lists `MELD_KYC` for Coinbase only on an account with Level 1 on, at the cap, when the upgrade needs details from Unified KYC that Meld can't send yet.
 
 ```mermaid
 sequenceDiagram
@@ -529,7 +530,7 @@ sequenceDiagram
     participant KYC as Sumsub page
 
     Api->>Meld: GET /crypto/onramp/COINBASEPAY/requirements
-    Meld-->>Api: PROVIDER_EXTRA_KYC REQUIRED, process limitUpgrade
+    Meld-->>Api: PROVIDER_PROCESS limitUpgrade REQUIRED
     Api->>Meld: POST /crypto/onramp/COINBASEPAY/processes/limitUpgrade, READ
     Meld-->>Api: REQUIRED, inputSources
     App->>Api: customer taps Verify identity
@@ -537,7 +538,7 @@ sequenceDiagram
     Meld-->>Api: 403 KYC_NOT_COMPLETED
 
     Note over App,KYC: Only while Meld has no date of birth and SSN for the customer
-    Api->>Meld: POST /accounts/customers/{customerId}/kyc/initiate
+    Api->>Meld: POST /accounts/customers/{customerId}/kyc/initiate, targetServiceProviders [COINBASEPAY]
     Meld-->>Api: url
     Api-->>App: url
     App->>KYC: customer completes KYC
@@ -560,7 +561,7 @@ Coinbase puts two limits on each guest, keyed on their verified phone number. It
 
 | Limit | When the customer reaches it | What you do |
 | --- | --- | --- |
-| Lifetime purchases | Eligibility reports `PROVIDER_EXTRA_KYC` as `REQUIRED`, and Meld refuses the order with `422 CUSTOMER_NOT_PAYMENT_READY` before it reaches Coinbase | Step the customer up, as below |
+| Lifetime purchases | Eligibility lists the `limitUpgrade` step as `REQUIRED`, and Meld refuses the order with `422 CUSTOMER_NOT_PAYMENT_READY` before it reaches Coinbase | Step the customer up, as below |
 | Weekly spending | Coinbase refuses the order itself, as `422 HEADLESS_PROVIDER_REJECTED`, and that order is spent | Nothing raises it. Offer a smaller amount, another provider, or a later try. Don't send the customer to KYC |
 
 An approved upgrade lifts the lifetime cap only, not the weekly one. If Meld can't read Coinbase's limits, it lets the order through and Coinbase enforces both limits itself, so a capped order then also ends in `422 HEADLESS_PROVIDER_REJECTED`.
@@ -580,38 +581,45 @@ GET /crypto/onramp/COINBASEPAY/requirements
   &countryCode=US
 ```
 
-For a customer at the cap, `kycRequirements` holds:
+For a customer at the cap, the checklist holds a `PROVIDER_PROCESS` step:
 
 ```json
 {
-  "code": "PROVIDER_EXTRA_KYC",
+  "type": "PROVIDER_PROCESS",
+  "code": "limitUpgrade",
   "status": "REQUIRED",
-  "processes": ["limitUpgrade"],
-  "reason": "Coinbase's lifetime transaction limit has been reached; identity verification is required to request an upgrade",
-  "processActions": [
-    {
-      "code": "limitUpgrade",
-      "type": "LIMIT_UPGRADE",
-      "protocol": "MELD_ONRAMP_PROCESS_V1",
-      "endpoint": "/crypto/onramp/COINBASEPAY/processes/limitUpgrade",
-      "method": "POST",
-      "pollIntervalMs": 2000,
-      "pollTimeoutMs": 30000,
-      "automaticSubmissionRetryAllowed": false
-    }
-  ]
+  "timing": "PRE_ORDER",
+  "process": {
+    "code": "limitUpgrade",
+    "type": "LIMIT_UPGRADE",
+    "protocol": "MELD_ONRAMP_PROCESS_V1",
+    "endpoint": "/crypto/onramp/COINBASEPAY/processes/limitUpgrade",
+    "method": "POST",
+    "pollIntervalMs": 2000,
+    "pollTimeoutMs": 30000,
+    "automaticSubmissionRetryAllowed": false
+  },
+  "action": {
+    "type": "CALL",
+    "method": "POST",
+    "path": "/crypto/onramp/COINBASEPAY/processes/limitUpgrade",
+    "body": { "operation": "START" }
+  }
 }
 ```
 
-`processActions` describes the process: where to call it, and how often to poll. Read those values from the response. The top-level `availableProcesses` lists the same `limitUpgrade` on every Coinbase response, whether the customer needs it or not, so don't treat its presence as a requirement.
+`process` describes the process: where to call it, and how often to poll. Read those values from the response. The `action` is the `START` you send in step 3, from the customer's tap, with `customerId`, the `order` and an `inputSource` added. The top-level `availableProcesses` lists the same `limitUpgrade` on every Coinbase response, whether the customer needs it or not, so don't treat its presence as a requirement.
 
-| `PROVIDER_EXTRA_KYC` | Means | Do |
+On an account with [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on, while Meld has no date of birth and US SSN for the customer, the checklist also holds a `MELD_KYC` step with `level: LEVEL_1`, `REQUIRED`, ahead of the `limitUpgrade` step, which depends on it. Run [step 4](#4-run-unified-kyc-when-meld-has-no-ssn) first.
+
+| The checklist holds | Means | Do |
 | --- | --- | --- |
-| `SATISFIED` | The customer is under the lifetime cap, or their upgrade is active | Create the order |
-| `REQUIRED` | The customer is at the cap, and Coinbase will take an upgrade | Steps 2 to 5 |
-| `PENDING` | Coinbase is reviewing the customer's upgrade. `processStates` shows `limitUpgrade` as `PENDING` | Tell the customer their verification is under review. Check again later, and don't start the process again |
-| `BLOCKED` | The customer is at the cap, and Coinbase offers no upgrade | Offer another provider |
-| No entry | Meld couldn't ask Coinbase, for example because the customer's phone isn't verified yet | Carry on. Meld checks the cap again when you create the order |
+| `PROVIDER_EXTRA_KYC`, `SATISFIED` | The customer is under the lifetime cap, or their upgrade is active | Create the order |
+| `limitUpgrade`, `REQUIRED` | The customer is at the cap, and Coinbase will take an upgrade | Steps 2 to 5 |
+| `limitUpgrade`, `PENDING` | Coinbase is reviewing the customer's upgrade. Its `processStates` shows `limitUpgrade` as `PENDING` | Tell the customer their verification is under review. Check again later, and don't start the process again |
+| `limitUpgrade`, `BLOCKED` | The customer is at the cap, and Coinbase offers no upgrade | Offer another provider |
+| `PROVIDER_EXTRA_KYC`, `UNKNOWN`, with `reason: STATE_UNAVAILABLE` | Meld couldn't read Coinbase's answer, so `eligible` is absent | Carry on. Meld checks the cap again when you create the order |
+| Neither | Meld didn't ask Coinbase, for example because the customer's phone isn't verified yet | Carry on. Meld checks the cap again when you create the order |
 
 If you create the order anyway, Meld refuses it before anything is reserved:
 
@@ -650,7 +658,7 @@ Response:
 
 ```json
 {
-  "process": { "code": "limitUpgrade", "...": "the descriptor from processActions" },
+  "process": { "code": "limitUpgrade", "...": "the descriptor from the step's process" },
   "status": "REQUIRED",
   "inputSources": ["HOSTED_FORM", "CUSTOMER_KYC"],
   "pollable": true,
@@ -677,9 +685,11 @@ Response:
 `inputSources` lists how the customer can give Coinbase their identity:
 
 - **`CUSTOMER_KYC`:** Meld reads the date of birth and SSN from the customer's Unified KYC, and sends Coinbase the date of birth and the SSN's last four digits. The customer types nothing more. Meld offers it only when Coinbase asks for exactly those two fields.
-- **`HOSTED_FORM`:** Coinbase's own page, where the customer types them. Always offered while the status is `REQUIRED`.
+- **`HOSTED_FORM`:** Coinbase's own page, where the customer types them. Always offered while the status is `REQUIRED`, except on an account with Level 1 on.
 
 Prefer `CUSTOMER_KYC` when it is offered. With `reason: CORRECT_IDENTITY`, Coinbase wants the customer to correct the details it was sent, so only `HOSTED_FORM` is offered.
+
+On an account with [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on, Meld offers only `CUSTOMER_KYC`, and only once it holds the customer's date of birth and US SSN. Until then `inputSources` is empty and eligibility lists `MELD_KYC_APPROVED`: go to step 4. `inputSources` is also empty when Coinbase asks for details other than those two, which Meld can't send, and with `reason: CORRECT_IDENTITY`, because the customer can't correct their details through Meld yet. Offer another provider then.
 
 ### 3. Start the upgrade
 
@@ -716,18 +726,32 @@ Errors from `READ` and `START` use the [standard envelope](/docs/meld-api/error-
 
 ### 4. Run Unified KYC when Meld has no SSN
 
-A `403 KYC_NOT_COMPLETED` means the customer's Unified KYC holds no date of birth and SSN yet. [Check the customer's KYC](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-2-check-if-the-user-is-already-kyced):
+A `403 KYC_NOT_COMPLETED` means the customer's Unified KYC holds no date of birth and SSN yet. On an account with Level 1 on, eligibility also says so up front, as a `MELD_KYC_APPROVED` step.
 
-- **Not `APPROVED`, or no KYC at all.** Start Unified KYC: [`POST /accounts/customers/{customerId}/kyc/initiate`](/api-reference/customer/customers/accounts-customers-kyc-initiate)
+**With [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on**, start Unified KYC naming Coinbase: [`POST /accounts/customers/{customerId}/kyc/initiate`](/api-reference/customer/customers/accounts-customers-kyc-initiate), with `Meld-Version: 2026-11-01`
+
+```json
+{
+  "targetServiceProviders": ["COINBASEPAY"]
+}
+```
+
+This is the call the `MELD_KYC` step's `action` carries. For a customer with a US `RESIDENCE` address, Meld starts Level 1: on the Sumsub page the customer types their SSN and any detail the Meld customer lacks, with no ID document or selfie. A customer who already started Unified KYC continues it, at the level they started, rather than getting `409`.
+
+- **`200` with a `url`.** `level` says which level it verifies. Open the `url` in your app, and wait for the [`CUSTOMER_KYC_STATUS_CHANGE`](/docs/stablecoins/for-all-products/webhook-events#customer_kyc_status_change) webhook with `payload.status: APPROVED`. Check eligibility again. Once `MELD_KYC_APPROVED` is `SATISFIED`, run the `limitUpgrade` step's action, `START` with `inputSource: CUSTOMER_KYC`, when the customer taps to continue, as in step 3.
+- **`200` with `status: APPROVED` and no `url`, while eligibility still lists `MELD_KYC_APPROVED` for Coinbase.** The customer's approved Unified KYC has no date of birth and US SSN that Meld can send, and Meld can't add them to an approved verification yet. Offer another provider.
+
+**Without Level 1**, [check the customer's KYC](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-2-check-if-the-user-is-already-kyced):
+
+- **Not `APPROVED`, or no KYC at all.** Start Unified KYC: [`POST /accounts/customers/{customerId}/kyc/initiate`](/api-reference/customer/customers/accounts-customers-kyc-initiate), with `Meld-Version: 2026-11-01`
 
   ```json
   {
-    "serviceProvider": "SUMSUB",
-    "mode": "HOSTED_URL"
+    "targetServiceProviders": ["COINBASEPAY"]
   }
   ```
 
-  Open the `url` it returns in your app. Coinbase takes no KYC share, so leave `kycShareProviders` out unless another provider needs it. If the `POST` answers `409`, the customer already has a session: send the same body with `PATCH` for a fresh `url`. This is the standard Unified KYC that other providers use, so Sumsub also asks the customer for an ID document and a selfie.
+  Open the `url` it returns in your app. Coinbase takes no KYC share, so naming it only sets the level, which is Level 2 without Level 1. Name any other provider the customer may use too. If the customer already started Unified KYC, the same `POST` answers with a fresh `url`. This is the standard Unified KYC that other providers use, so Sumsub also asks the customer for an ID document and a selfie.
 
   Wait for the [`CUSTOMER_KYC_STATUS_CHANGE`](/docs/stablecoins/unified-kyc/meld-kyces-the-user#step-3-have-meld-kyc-the-user) webhook with `payload.status: APPROVED`. Then, when the customer is back in your flow and taps to continue, read the process and start it with `CUSTOMER_KYC` again.
 
@@ -743,7 +767,7 @@ After `START`, read the process every `process.pollIntervalMs` while `pollable` 
 | --- | --- |
 | `SATISFIED` | Check eligibility again, then create the order. A refused order was never created, so you can resend the same request |
 | `PENDING` after `pollTimeoutMs` | Coinbase is still reviewing, which isn't a failure. Tell the customer, stop polling, and check eligibility again when they come back. Don't start the process again |
-| `REQUIRED` with `reason: CORRECT_IDENTITY` | Coinbase wants the details corrected. Let the customer start `HOSTED_FORM`, to correct them on Coinbase's page |
+| `REQUIRED` with `reason: CORRECT_IDENTITY` | Coinbase wants the details corrected. Let the customer start `HOSTED_FORM`, to correct them on Coinbase's page. On an account with Level 1 on, offer another provider |
 | `REQUIRED` after `HOSTED_FORM` | The customer hasn't submitted Coinbase's page yet. Let them reopen the same `hostedForm.url` until `hostedForm.expiresAt`, and start `HOSTED_FORM` again only after it expires |
 | `BLOCKED` | Offer another provider |
 
@@ -804,7 +828,7 @@ Errors use the [standard envelope](/docs/meld-api/error-responses). Unless the t
 | `403` | `SERVICE_PROVIDER_NOT_ENABLED` | Your account has no credentials for the provider | See [provider credentials](/docs/stablecoins/headless-integration#provider-credentials) |
 | `403` | `VERIFICATION_REQUIRED` | `errors` lists what the customer still needs: `email`, `phone` or `agreement`, each `MISSING` or `STALE` | Complete what is listed, as in [Eligibility](/docs/stablecoins/headless-integration/shared-flows/eligibility), then resend |
 | `403` | `LEGAL_ACCEPTANCE_REQUIRED` | Only the provider's agreements are unmet | [Record the acceptance](/docs/stablecoins/headless-integration/shared-flows/eligibility#legal-agreements), then resend |
-| `403` | `KYC_NOT_COMPLETED` | The provider hasn't approved the customer | Re-check eligibility before retrying |
+| `403` | `KYC_NOT_COMPLETED` | The provider hasn't approved the customer, or the customer's Unified KYC isn't approved at the provider's [level](/docs/stablecoins/unified-kyc/kyc-levels). For Stripe on an account with Level 1 on, `errors` holds `MELD_KYC_APPROVED: LEVEL_1`, and nothing was reserved | Re-check eligibility and clear what it lists, then resend |
 | `409` | `HEADLESS_PAYMENT_OUTCOME_UNKNOWN` | Meld couldn't confirm with the provider whether the order started | Create a new order rather than retrying in a loop |
 | `422` | `CUSTOMER_NOT_PAYMENT_READY` | The customer reached a provider limit, and no order was created. `errors` names the [process](/docs/stablecoins/headless-integration/shared-flows/eligibility#provider-processes) that raises it and its state, for example `limitUpgrade: REQUIRED` | Run the process, then resend the same request. For Coinbase, see [step-up KYC](#coinbase-guest-checkout-and-step-up-kyc) |
 | `422` | `HEADLESS_PROVIDER_REJECTED` | The provider refused the order, and the order is spent. Stripe reports this as `STRIPE_HEADLESS_PROVIDER_REJECTED` | Create a new order with a new `X-Idempotency-Key` and `externalOrderId`. If `errors` lists `email: REJECTED` or `phone: REJECTED`, verify that channel again first. If every order fails, check the provider account's setup. A Coinbase customer over the weekly spending cap ends here too: don't send them to KYC, as [Coinbase's limits](#coinbases-limits) explains |

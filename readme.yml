@@ -190,6 +190,10 @@ securitySchemes:
   BasicAuth:
     type: http
     scheme: basic
+  RequirementsSessionToken:
+    type: http
+    scheme: bearer
+    description: The `token` of a requirements session. The Meld SDK sends it
 servers:
   - url: https://api-sb.meld.io
     description: Meld API sandbox
@@ -738,6 +742,18 @@ payment-http:
               - get
             tags:
               - Headless
+          /crypto/onramp/requirements-sessions:
+            methods:
+              - post
+            tags:
+              - Headless
+          /crypto/onramp/requirements-sessions/{id}/actions:
+            methods:
+              - post
+            tags:
+              - Headless
+            security:
+              - RequirementsSessionToken: []
           /crypto/order/headless/offramp:
             methods:
               - post

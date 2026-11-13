@@ -210,6 +210,7 @@
                         "group": "SDKs",
                         "pages": [
                           "docs/stablecoins/headless-integration/sdks/index",
+                          "docs/stablecoins/headless-integration/sdks/customer-requirements",
                           "docs/stablecoins/headless-integration/sdks/web",
                           "docs/stablecoins/headless-integration/sdks/ios",
                           "docs/stablecoins/headless-integration/sdks/android",
@@ -234,6 +235,7 @@
                     "group": "Unified KYC",
                     "pages": [
                       "docs/stablecoins/unified-kyc/index",
+                      "docs/stablecoins/unified-kyc/kyc-levels",
                       "docs/stablecoins/unified-kyc/meld-kyces-the-user",
                       "docs/stablecoins/unified-kyc/you-kyc-the-user",
                       "docs/stablecoins/unified-kyc/retrieve-kyc"
@@ -633,6 +635,7 @@
                     "group": "Unified KYC",
                     "pages": [
                       "docs/stablecoins/unified-kyc/index",
+                      "docs/stablecoins/unified-kyc/kyc-levels",
                       "docs/stablecoins/unified-kyc/you-kyc-the-user",
                       "docs/stablecoins/unified-kyc/meld-kyces-the-user"
                     ]
@@ -1021,6 +1024,7 @@
                     "group": "Unified KYC",
                     "pages": [
                       "docs/stablecoins/unified-kyc/index",
+                      "docs/stablecoins/unified-kyc/kyc-levels",
                       "docs/stablecoins/unified-kyc/you-kyc-the-user",
                       "docs/stablecoins/unified-kyc/meld-kyces-the-user"
                     ]

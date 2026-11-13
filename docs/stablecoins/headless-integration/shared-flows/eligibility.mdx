@@ -5,6 +5,12 @@ description: "What the customer still has to do before a provider will accept th
 
 A provider being able to take the order does not mean it will accept this customer. Check what is still outstanding before you create the order, so you collect it while the customer is still in the flow rather than surfacing a rejection once they think they are done.
 
+Choose the provider from the [quote](/docs/stablecoins/headless-integration/shared-flows/quotes#customer-readiness-on-each-row) first: each headless purchase row's `customerKyc` says whether the customer's Unified KYC already reaches that provider's level. Then read the [requirements](#check-the-requirements) for the provider you chose, or start one [requirements session](/docs/stablecoins/headless-integration/sdks/customer-requirements) for several.
+
+<Tip>
+  **In an app or a web page, use [`Meld.ensureReady`](/docs/stablecoins/headless-integration/sdks/customer-requirements).** Your backend creates one requirements session for the customer and the providers you offer, and the SDK works through this checklist for all of them: it runs the steps, shows the hosted pages, and asks your UI only for what the customer types or agrees to. The rest of this page is the checklist itself, for when you run it from your backend.
+</Tip>
+
 ---
 
 ## Create the customer
@@ -30,7 +36,7 @@ The customer has no SSN or tax-id field. An SSN lives only in the customer's [Un
 
 | Meld fills | With | When |
 | --- | --- | --- |
-| Unified KYC | The customer's name, date of birth, email and phone | When you first start Unified KYC for the customer, with `mode: HOSTED_URL`. A name or date of birth you add to the customer later doesn't reach a KYC already started, and the address and SSN are never prefilled |
+| Unified KYC | The customer's name, date of birth, email and phone. With [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on for your account, also the `RESIDENCE` address | When you first start Unified KYC for the customer, with `mode: HOSTED_URL`. Without Level 1, a name or date of birth you add to the customer later doesn't reach a KYC already started, and the address is never prefilled. With Level 1, Meld also fills a KYC the customer hasn't submitted yet, wherever it is empty. The SSN is never prefilled |
 | Stripe's KYC, in the SDK | Name, date of birth and US `RESIDENCE` address from the customer, and the SSN from Unified KYC | Only once Unified KYC has approved the customer. Otherwise the customer types what Stripe asks for |
 | The customer | Name, date of birth, email and phone from Unified KYC, each only if the customer's is empty, and the residence address when the customer has none or theirs lacks a country or region | When Unified KYC approves the customer. The SSN is never copied |
 
@@ -40,21 +46,23 @@ Send everything you already know when you create the customer, before you start 
 
 ## Which providers need Unified KYC
 
-[Unified KYC](/docs/stablecoins/unified-kyc) has one level today, and it includes an ID document and a selfie. Run it only for a customer who orders from a provider that needs it. The quote row's [`kycMode`](/docs/stablecoins/headless-integration/shared-flows/quotes#1-ask-for-headless-quotes) says which kind a provider is: `SYNC` and `ASYNC` need Unified KYC, `PROVIDER_MANAGED` doesn't.
+[Unified KYC](/docs/stablecoins/unified-kyc) verifies a customer at a [level](/docs/stablecoins/unified-kyc/kyc-levels). Level 2 includes an ID document and a selfie. Level 1, which Meld turns on per account, takes the customer's details and SSN only, for US residents. Run Unified KYC only for a customer who orders from a provider that needs it. The quote row's [`kycMode`](/docs/stablecoins/headless-integration/shared-flows/quotes#1-ask-for-headless-quotes) says which kind a provider is, and its [`customerKyc.requiredLevel`](/docs/stablecoins/headless-integration/shared-flows/quotes#customer-readiness-on-each-row) the level it needs: `SYNC` and `ASYNC` need Unified KYC, at Level 2 for every such provider today. `PROVIDER_MANAGED` doesn't, except at Level 1 on an account with Level 1 on: Stripe before an order Stripe hasn't verified the customer for, and Coinbase at its lifetime cap.
 
 | Provider | Unified KYC | Also needed |
 | --- | --- | --- |
 | Mercuryo | Approved before the order. Meld shares it with Mercuryo when you create the order | Apple Pay in the US, for a customer new to Mercuryo: Mercuryo's own verification. The order is refused with `403 KYC_NOT_COMPLETED`, and `serviceProviderDetails.hostedVerificationUrl` is Mercuryo's page for it. Never log or store that URL |
 | Banxa | Approved, and [shared with Banxa](/docs/stablecoins/unified-kyc#share-kyc-with-providers) | Details Banxa asks for, such as occupation or source of funds, when `PROVIDER_EXTRA_KYC` lists them in `missingFields` |
-| Uphold | Approved, and shared with Uphold | Uphold's due-diligence and tax questions, when `PROVIDER_EXTRA_KYC` lists them |
+| Uphold | Approved, and shared with Uphold | Before the share: an email, an address with a country, and Uphold's onboarding terms, accepted by the customer. After it: Uphold's due-diligence and tax questions, when `PROVIDER_EXTRA_KYC` lists them |
 | Noah | Approved, and shared with Noah | Noah's own KYC step, when Noah asks for one: see [Provider-specific requirements](/docs/stablecoins/virtual-account-integration/payins#provider-specific-requirements) |
-| Due Network | Approved, and shared with Due Network | Due's own KYC step, when Due asks for one, and Due's terms of service: see [Provider-specific requirements](/docs/stablecoins/virtual-account-integration/payins#provider-specific-requirements) |
+| Due Network | Approved, and shared with Due Network | Before the share: a first and last name, an email, and an address with a country. After it: Due's own KYC step, when Due asks for one, and Due's terms of service: see [Provider-specific requirements](/docs/stablecoins/virtual-account-integration/payins#provider-specific-requirements) |
 | Coinme | Approved, and shared with Coinme | — |
-| Coinbase | Not for guest orders. At Coinbase's lifetime cap, Meld sends Coinbase the date of birth and the SSN's last four digits from it | An email and a US mobile number, each confirmed with a one-time code, and Coinbase's agreements. See [Coinbase guest checkout and step-up KYC](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc) |
-| Stripe | Not needed. Stripe runs its own KYC in the SDK, and an approved Unified KYC only fills it in | An email on the customer. See [Wallets → Stripe](/docs/stablecoins/headless-integration/wallets#stripe) |
+| Coinbase | Not for guest orders. At Coinbase's lifetime cap, Meld sends Coinbase the date of birth and the SSN's last four digits from it. With Level 1 on, Level 1 is enough | An email and a US mobile number, each confirmed with a one-time code, and Coinbase's agreements. See [Coinbase guest checkout and step-up KYC](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc) |
+| Stripe | Without Level 1, not needed: Stripe runs its own KYC in the SDK, and an approved Unified KYC only fills it in. With Level 1 on, Level 1 before an order Stripe hasn't already verified the customer for | An email on the customer. See [Wallets → Stripe](/docs/stablecoins/headless-integration/wallets#stripe) |
 | Brale | Not needed | Business customers only. Brale verifies them itself |
 | T-0 | Not needed | Travel-rule originator and beneficiary data (IVMS-101) on each order, in `providerData.travelRuleData` |
 | Yellow Card | Not needed | For mobile money, the customer's phone on the order, in `customerPhoneNumber` |
+
+The checklist lists what a provider needs before the share as steps of their own. See [What a provider needs before the share](/docs/stablecoins/unified-kyc#what-a-provider-needs-before-the-share).
 
 ---
 
@@ -62,18 +70,24 @@ Send everything you already know when you create the customer, before you start 
 
 **Endpoint:** [`GET /crypto/onramp/{serviceProvider}/requirements`](/api-reference/crypto/headless/crypto-onramp-verification-requirements-get)
 
-Returns everything standing between this customer and an accepted order with that provider: agreements to sign, contacts to verify, and KYC still outstanding.
+**Header:** `Meld-Version: 2026-11-01`
+
+Returns everything standing between this customer and an accepted order with that provider: agreements to sign, contacts to verify, details to add to the customer, and KYC still outstanding.
+
+Each step's `action` is a call for the same `Meld-Version`. On `2026-11-01`, a call that names providers names them in `targetServiceProviders`, as `kyc/initiate` takes them on that version. Older versions answer the same checklist, with the older provider fields in those calls instead. Send each call with the `Meld-Version` you read the checklist with.
 
 | Query parameter | Required | Description |
 | --- | --- | --- |
 | `customerId` | yes | The Meld customer you are checking |
-| `paymentMethodType` | yes | How the customer will pay, e.g. `CREDIT_DEBIT_CARD` |
-| `sourceCurrencyCode` | yes | Fiat they pay in, ISO 4217 |
-| `sourceAmount` | yes | What they pay |
-| `destinationCurrencyCode` | yes | Token they are buying, as Meld names it |
-| `countryCode` | yes | Where the customer is, ISO 3166-1 alpha-2 |
+| `paymentMethodType` | yes for an order | How the customer will pay, e.g. `CREDIT_DEBIT_CARD` |
+| `sourceCurrencyCode` | yes for an order | Fiat they pay in, ISO 4217 |
+| `sourceAmount` | yes for an order | What they pay |
+| `destinationCurrencyCode` | yes for an order | Token they are buying, as Meld names it |
+| `countryCode` | yes for an order | Where the customer is, ISO 3166-1 alpha-2 |
 | `destinationNetworkCode` | yes for Stripe, recommended otherwise | Chain, as Meld names it. The same value you quoted with |
 | `subdivision` | optional | State or province, ISO 3166-2 — `US-CA` |
+
+Send the whole order whenever you are about to create one. For a [virtual account](/docs/stablecoins/virtual-account-integration/payins) or an [offramp](/docs/stablecoins/virtual-account-integration/payouts), which have no order to check yet, send `customerId` only: the same endpoint answers the provider's KYC for every direction.
 
 ```
 GET /crypto/onramp/BANXA/requirements
@@ -102,19 +116,185 @@ Response:
     "email": { "satisfied": true },
     "phone": { "satisfied": false, "reason": "MISSING" }
   },
-  "kycRequirements": [
-    { "code": "MELD_KYC_APPROVED", "status": "SATISFIED" },
-    { "code": "PROVIDER_KYC_SHARE", "status": "PENDING" },
-    { "code": "PROVIDER_EXTRA_KYC", "status": "REQUIRED", "missingFields": ["occupation", "sourceOfFunds"] }
+  "eligible": false,
+  "requirements": [
+    { "...": "the steps, as in The checklist" }
   ]
 }
 ```
+
+With a `customerId`, the response carries `requirements` and `eligible`: the whole answer as one ordered checklist, each step with the call that clears it. See [The checklist](#the-checklist).
+
+---
+
+## The checklist
+
+`requirements` lists every step standing between the customer and the order. Each step comes after the steps it depends on. It restates `verificationRequirements`, `customerStatus` and `legalAgreements`, and adds what to do next.
+
+`kycRequirements` is deprecated: older versions return it, and `2026-11-01` never does. To move off it, see [Deprecated: kycRequirements](#deprecated-kycrequirements).
+
+A customer approved at Level 1, heading to Banxa, which needs Level 2 and a share:
+
+```json
+{
+  "serviceProvider": "BANXA",
+  "eligible": false,
+  "requirements": [
+    { "type": "ORDER_ROUTE", "code": "ORDER_ROUTE", "status": "SATISFIED", "timing": "PRE_ORDER" },
+    { "type": "VERIFICATION", "code": "EMAIL", "status": "SATISFIED", "timing": "PRE_ORDER" },
+    {
+      "type": "MELD_KYC", "code": "MELD_KYC_APPROVED", "status": "REQUIRED", "timing": "PRE_ORDER",
+      "level": "LEVEL_2", "currentLevel": "LEVEL_1",
+      "action": {
+        "type": "CALL", "method": "POST",
+        "path": "/accounts/customers/W9kL817BBS7bNEwxAZaX4z/kyc/initiate",
+        "body": { "targetServiceProviders": ["BANXA"] }
+      }
+    },
+    {
+      "type": "PROVIDER_KYC_SHARE", "code": "PROVIDER_KYC_SHARE", "status": "REQUIRED", "timing": "PRE_ORDER",
+      "dependsOn": ["MELD_KYC_APPROVED"],
+      "action": { "type": "WAIT", "event": "CUSTOMER_KYC_STATUS_CHANGE" }
+    },
+    {
+      "type": "PROVIDER_REVIEW", "code": "PROVIDER_KYC_APPROVED", "status": "REQUIRED", "timing": "PRE_ORDER",
+      "dependsOn": ["PROVIDER_KYC_SHARE"],
+      "action": { "type": "WAIT", "event": "CUSTOMER_KYC_STATUS_CHANGE" }
+    }
+  ]
+}
+```
+
+The share and the provider's verdict are two steps. `PROVIDER_KYC_SHARE` is Meld delivering the customer's KYC, and it is `SATISFIED` once the provider has the customer, whatever the provider decides. `PROVIDER_REVIEW` is that decision. It comes after the provider's own steps, and `eligible` stays `false` until the provider approves.
+
+Work through it like this:
+
+1. Do every step that isn't `SATISFIED`, whose `dependsOn` steps are all `SATISFIED`, and whose `action` is `CALL`, `OPEN_URL` or `SDK_STEP`. You can do them in any order. Steps that need the customer, such as accepting an agreement or starting a process, run only from the customer's tap. An `SDK_STEP` runs inside the order, so it needs nothing from you before you create it.
+2. Wait on the rest: a `WAIT` step, a step whose `dependsOn` steps are still open, and an `UNKNOWN` step with no `action`. Meld or the provider runs a `WAIT` step once what it waits on is done, and the webhook it names tells you when. The others become yours to do once their `dependsOn` steps are `SATISFIED`, or once a later read gives them an `action`. An `UNKNOWN` step means Meld couldn't read something: read again later.
+3. Call the endpoint again, with the same order, after each step you do and each webhook. Repeat until `eligible` is `true`. Then create the order.
+
+A customer heading to Uphold, with no Unified KYC, no email on the customer, and Uphold's terms not accepted yet:
+
+| `type` | `code` | `status` | `dependsOn` | `action` |
+| --- | --- | --- | --- | --- |
+| `ORDER_ROUTE` | `ORDER_ROUTE` | `SATISFIED` | — | — |
+| `AGREEMENT` | `general-us` | `REQUIRED` | — | `CALL POST /accounts/terms-of-service/acceptances`, `serviceProvider: UPHOLD`, `code: general-us` |
+| `CUSTOMER_DETAILS` | `CUSTOMER_EMAIL` | `REQUIRED` | — | `CALL PATCH /accounts/customers/{customerId}`, with the `email` |
+| `MELD_KYC` | `MELD_KYC_APPROVED` | `REQUIRED` | — | `CALL POST /accounts/customers/{customerId}/kyc/initiate`, `targetServiceProviders: [UPHOLD]` |
+| `PROVIDER_KYC_SHARE` | `PROVIDER_KYC_SHARE` | `REQUIRED` | `MELD_KYC_APPROVED`, `general-us`, `CUSTOMER_EMAIL` | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` |
+| `PROVIDER_REVIEW` | `PROVIDER_KYC_APPROVED` | `REQUIRED` | `PROVIDER_KYC_SHARE` | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` |
+
+The terms, the email and Unified KYC don't depend on each other, so the customer can do all three at once. Meld shares with Uphold once all are done. With the order, the share and the steps after it then read:
+
+| `type` | `code` | `status` | `dependsOn` | `action` |
+| --- | --- | --- | --- | --- |
+| `PROVIDER_KYC_SHARE` | `PROVIDER_KYC_SHARE` | `SATISFIED` | — | — |
+| `PROVIDER_EXTRA_FIELDS` | `PROVIDER_EXTRA_KYC` | `REQUIRED` | — | `CALL PATCH /accounts/customers/{customerId}/kyc/extra-details` |
+| `PROVIDER_REVIEW` | `PROVIDER_KYC_APPROVED` | `PENDING` | `PROVIDER_EXTRA_KYC` | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` |
+
+Uphold's due-diligence and tax questions open as soon as Uphold has the customer, and its verdict waits on them.
+
+### Steps
+
+| `type` | `code` | `action` |
+| --- | --- | --- |
+| `ORDER_ROUTE` | `ORDER_ROUTE`, first, and only with the whole order: whether order creation takes this route before it looks at the customer. That covers the payment method and corridor, the provider's headless support, the provider being enabled on your account, its credentials, and for a route paid by bank transfer, the receiving bank details Meld's catalog publishes for it. `BLOCKED` with `reason` set to the code order creation would return: `PAYMENT_METHOD_NOT_SUPPORTED`, `INVALID_PAYMENT_METHOD`, `INVALID_CRYPTO_CURRENCY`, `HEADLESS_NOT_SUPPORTED`, `WHITELABEL_NOT_ENABLED`, `SERVICE_PROVIDER_NOT_ENABLED` or `TRANSACTION_INVALID_PROVIDER`. `UNKNOWN` with `ROUTE_UNAVAILABLE` when Meld couldn't read the route, or the catalog publishes no receiving bank details for a bank-transfer route. While it isn't `SATISFIED`, the provider's own checks don't run, so `PROVIDER_EXTRA_KYC` isn't listed | None. On `BLOCKED`, offer another provider or payment method from the quote |
+| `VERIFICATION` | `EMAIL` or `PHONE`, for a contact the provider refuses orders without | `CALL POST /accounts/customers/{customerId}/verifications` with `channel`, and `serviceProvider` when the provider needs its own code. Add `target`, then confirm the code: see [Contact verification](#contact-verification) |
+| `AGREEMENT` | The agreement's code, for example `GUEST_CHECKOUT_TERMS_OF_SERVICE:US`, or for terms the provider needs before the share, the document's code, for example `general-us`. `url` is the document to show | `CALL POST /accounts/terms-of-service/acceptances` with `serviceProvider` and `code`, once the customer accepts. Add `externalCustomerId`, `acceptedAt` and `ipAddress`: see [Legal agreements](#legal-agreements) |
+| `AGREEMENT` | `<PROVIDER>_TERMS`, for example `UPHOLD_TERMS`: terms the provider needs before the share that Meld couldn't list yet, because the customer has no address or the provider didn't answer. `status: UNKNOWN` and `reason: TERMS_UNRESOLVED`. `dependsOn` lists `CUSTOMER_ADDRESS` while the address is missing | None. A later read lists the documents in its place |
+| `AGREEMENT` | `<PROVIDER>_HOSTED_TERMS`, today `DUENETWORK_HOSTED_TERMS`: terms the customer accepts on the provider's own page, after the share. Listed once the provider has the customer, unless its verdict is `BLOCKED`, and kept after the verdict. `SATISFIED` once the provider reports the terms accepted. `UNKNOWN` with `TERMS_UNREAD` while Meld hasn't read the provider's terms state yet. The provider's verdict never waits on it, but the provider refuses deposits and payouts until it is `SATISFIED` | `OPEN_URL` for the terms page while `REQUIRED`, with `refresh`. After the customer closes the page, call `refresh`, then read the checklist again: the provider sends no event when the terms are accepted. While `UNKNOWN`, `CALL POST /accounts/customers/{customerId}/kyc/initiate` naming the provider, which reads the terms state |
+| `CUSTOMER_DETAILS` | A detail the provider needs on the Meld customer before the share. `CUSTOMER_EMAIL` with `missingFields` key `email`, `CUSTOMER_NAME` with `name.firstName` and `name.lastName`, `CUSTOMER_ADDRESS` with `address.lineOne`, `address.city`, `address.postalCode` and `address.countryCode`. `<PROVIDER>_SHARE_PREREQUISITES`, `UNKNOWN` with `RECORDS_UNAVAILABLE`, when Meld couldn't read what the provider still needs | `CALL PATCH /accounts/customers/{customerId}` with the email or name. `CALL POST /accounts/customers/{customerId}/addresses` with `type: RESIDENCE` and an `address` holding those four fields. None on the `UNKNOWN` step |
+| `MELD_KYC` | `MELD_KYC_APPROVED`. `level` is the [level](/docs/stablecoins/unified-kyc/kyc-levels) the provider needs, and `currentLevel` the one the customer is approved at, absent without an approval. `SATISFIED` once the customer is approved at `level`, or once the provider has the customer through the share and has approved them. `REQUIRED` also when the customer opened the Sumsub page and never submitted it. It never depends on what a provider needs before the share | `CALL POST /accounts/customers/{customerId}/kyc/initiate` naming the provider while `REQUIRED`: it answers with a fresh `url`. `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` while `PENDING` |
+| `PROVIDER_KYC_SHARE` | `PROVIDER_KYC_SHARE`: Meld delivering the customer's KYC to the provider. `SATISFIED` once the provider has the customer, whatever it decides. Until then, `dependsOn` lists `MELD_KYC_APPROVED` while it isn't approved, and each step the provider still needs before the share, such as `general-us` or `CUSTOMER_EMAIL` | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` while it waits on anything. Meld shares by itself once they clear. With nothing left to wait on, `CALL POST /accounts/customers/{customerId}/kyc/initiate` naming the provider, which runs a share that never happened. `BLOCKED`, with the provider's `reason` and any `errorCodes`, when the provider refused the share and nothing is missing |
+| `PROVIDER_EXTRA_FIELDS` | `PROVIDER_EXTRA_KYC`. `missingFields` describes each field to collect, including the fields the provider always asks for once it reports one you can answer, and `satisfiedFields` names those Meld already holds. `processes` names the provider's questionnaires that come as a form, such as Uphold's due-diligence and tax questions, and `processStates` the provider's state of each step it reported | `CALL PATCH /accounts/customers/{customerId}/kyc/initiate`, with `serviceProvider`, `mode` and the provider in `body`. Collect every field in `missingFields` in one pass, and add them as `serviceProviderDetails`. `PATCH`, not `POST`: it adds the provider's details to the customer's existing KYC. For a provider whose questions come as a form, such as Uphold's, the action names that form's endpoint |
+| `PROVIDER_PROCESS` | The process code, for example `limitUpgrade`. `process` describes it, and `processStates` holds the provider's state of it, when the provider reported one | `CALL` the process with `operation: START`, adding `customerId` and the `order`, while `REQUIRED`. `READ` while `PENDING`. See [Provider processes](#provider-processes) |
+| `EXTERNAL_KYC` | A step only the provider can run: `NOAH_HOSTED_ONBOARDING` or `DUENETWORK_HOSTED_ONBOARDING` before the order, `STRIPE_IDENTITY` inside it. When the provider won't open its page again, for example while it reviews the customer, the step leaves the list and `PROVIDER_REVIEW` waits | `OPEN_URL` for the provider's hosted page, with `expiresAt` and `refresh`: see [Fields on each step](#fields-on-each-step). `SDK_STEP` for a step the SDK runs inside the order |
+| `PROVIDER_REVIEW` | `PROVIDER_KYC_APPROVED`: the provider's verdict on the customer. `dependsOn` lists `PROVIDER_KYC_SHARE` until the share, and every `PROVIDER_EXTRA_FIELDS`, `PROVIDER_PROCESS` and hosted onboarding step still open | `WAIT` for `CUSTOMER_KYC_STATUS_CHANGE` while `REQUIRED` or `PENDING`. After the share, `REQUIRED` means a rejection the customer can retry, or an expiry. `BLOCKED`, with `reason`, when the provider rejected the customer |
+
+The steps a provider needs before the share come right after the catalog's agreements and before `MELD_KYC`. They are listed only until the share. `PROVIDER_EXTRA_FIELDS` and `PROVIDER_PROCESS` steps depend on `PROVIDER_KYC_SHARE` only until the share, so you can submit them as soon as the provider has the customer, before its verdict. A step that takes its input from Unified KYC, such as Coinbase's `limitUpgrade`, depends on `MELD_KYC_APPROVED` instead. A hosted terms step comes after the hosted onboarding step and before `PROVIDER_REVIEW`.
+
+Only the steps the provider needs are listed. A `PROVIDER_MANAGED` provider, such as Coinbase or Stripe, has no `PROVIDER_KYC_SHARE` or `PROVIDER_REVIEW` step, and lists `MELD_KYC` only on an account with Level 1 on, when the order or Coinbase's upgrade needs it. Mercuryo has no `PROVIDER_KYC_SHARE` step either, because Meld shares with it when you create the order. See [Which providers need Unified KYC](#which-providers-need-unified-kyc).
+
+`type`, `status`, `reason`, `errorCodes` and `action.type` can gain values. Treat one you don't recognise as not satisfied.
+
+### Fields on each step
+
+| Field | Meaning |
+| --- | --- |
+| `status` | `REQUIRED`, `PENDING`, `SATISFIED`, `BLOCKED` or `UNKNOWN`, as in the table below |
+| `timing` | `PRE_ORDER`, or `ORDER_CONTINUATION` for a step that runs inside the order, after you create it. `ORDER_CONTINUATION` steps never hold up `eligible` |
+| `level`, `currentLevel` | `MELD_KYC` only: `LEVEL_1`, `LEVEL_2` or `LEVEL_3` |
+| `reason` | On a `BLOCKED` step, the refusal: the provider's words, or the code order creation would return. On an `UNKNOWN` step, why Meld can't tell: `STATE_UNAVAILABLE`, the provider's own state is unreadable; `RECORDS_UNAVAILABLE`, Meld's records of the customer, their KYC, verification or share are unreadable; `ROUTE_UNAVAILABLE`, the order's route, its catalog entry or your account's preference is unreadable, or the catalog lacks a bank-transfer route's receiving bank details; `TERMS_UNRESOLVED`, Meld couldn't list the provider's terms yet; `TERMS_UNREAD`, Meld hasn't read the provider's hosted terms yet; `UNRECORDABLE`, the customer can't hold an agreement receipt, because it has no `externalCustomerId` |
+| `errorCodes` | `PROVIDER_KYC_SHARE` only, when `BLOCKED`: the provider's codes for the refusal, such as Coinme's `PHONE_VERIFICATION_REQUIRED` when it needs the customer's phone verified first. Absent when the provider gave none |
+| `missingFields` | `PROVIDER_EXTRA_FIELDS` and `CUSTOMER_DETAILS`. Each field has `key`, `label`, `fieldType`, `allowedValues` or `jsonSchema` where the provider sets them, and `source`: `INTEGRATOR` for you to collect, `SUMSUB` for one the customer gives on the Sumsub page, `PROVIDER` for one only the provider's own page can collect. A field Meld has no key for carries the provider's own name in `providerCode` instead of `key` |
+| `satisfiedFields` | `PROVIDER_EXTRA_FIELDS` only: the keys Meld already holds |
+| `processes` | `PROVIDER_EXTRA_FIELDS` only: the codes of the provider's questionnaires that come as a form |
+| `processStates` | The provider's own state of a step: `code`, `status` in the provider's words, and `submittable`, `reason` and `model` where it sets them. On `PROVIDER_PROCESS`, the state of that process. On `PROVIDER_EXTRA_FIELDS`, the states of the provider's other steps |
+| `dependsOn` | Codes of steps that must be `SATISFIED` first. A step Meld or the provider runs, such as the share or the review, starts by itself once they are |
+| `url` | `AGREEMENT` from the catalog only: the document to show |
+| `process` | `PROVIDER_PROCESS` only: the process's `endpoint`, `method`, `pollIntervalMs` and `pollTimeoutMs` |
+| `action` | What clears the step, below. Absent on a `SATISFIED` or `BLOCKED` step, and on every `UNKNOWN` step except `<PROVIDER>_HOSTED_TERMS` with `TERMS_UNREAD`, which carries the call that reads the terms |
+
+| `status` | What to do |
+| --- | --- |
+| `REQUIRED` | Do the `action` once the `dependsOn` steps are `SATISFIED`. A `WAIT` means Meld or the provider does it |
+| `PENDING` | Wait. The `action` says for what |
+| `SATISFIED` | Nothing |
+| `BLOCKED` | This provider won't proceed for this customer. Read `reason`, and offer another provider from the quote |
+| `UNKNOWN` | Meld couldn't read what decides this step, and `reason` says what. Never counts as satisfied. Read again later. Meanwhile `eligible` is absent, so you may create the order, and order creation decides |
+
+| `action.type` | Fields | What to do |
+| --- | --- | --- |
+| `CALL` | `method`, `path`, `body` | Call Meld from your backend. `body` holds only the fields that select the step. Add what the endpoint needs from you, such as the order, the contact to verify or the acceptance evidence |
+| `OPEN_URL` | `url`, `expiresAt`, `refresh` | Open `url` for the customer, as below. Never log or store the URL. Meld includes it only for an API key that can create orders, and the step is `REQUIRED` with no `action` for any other key |
+| `SDK_STEP` | `nextStep` | Nothing before the order. The SDK runs the step, for example `SDK_VERIFY_IDENTITY`, after you create it |
+| `WAIT` | `event` | Wait for that webhook, then check eligibility again |
+
+An `OPEN_URL` page is short-lived. `expiresAt` is when `url` stops opening, and is absent when the provider states no lifetime. Noah documents an hour for its hosted onboarding session, and Meld sets `expiresAt` from that. Due Network states none. Once `expiresAt` has passed, `url` is absent and the step stays `REQUIRED`. `refresh` is the call that mints a new page: `POST /accounts/customers/{customerId}/kyc/initiate` naming the provider. It answers `200` once the page is ready, and you read the checklist again for the new `url` and `expiresAt`.
+
+- **Refresh** when `url` is absent, when `expiresAt` is less than 60 seconds away, or when the page fails to load.
+- **Refresh at most once** before you show a page, and once after the customer closes it, then read the checklist again.
+- When the provider won't open its page again, for example while it reviews the customer, the step leaves the list and `PROVIDER_REVIEW` waits, so the refreshes end.
+
+### `eligible`
+
+| `eligible` | When |
+| --- | --- |
+| `true` | You sent `customerId` for a customer your account holds, and the whole order for a provider that needs one, and every `PRE_ORDER` step is `SATISFIED`. Create the order |
+| `false` | A `PRE_ORDER` step is `REQUIRED`, `PENDING` or `BLOCKED`. This wins over everything else |
+| Absent | No `PRE_ORDER` step is `REQUIRED`, `PENDING` or `BLOCKED`, and Meld can't tell: no `customerId`, or one your account doesn't hold, no whole order for a provider that needs one, the provider's policy unavailable, or a `PRE_ORDER` step `UNKNOWN`. You can still create the order |
+
+**`eligible: true` agrees with order creation.** For the same customer and order, it means the checks order creation runs before it reserves anything will pass, unless something changes in between. It doesn't cover:
+
+- values only the create request carries, such as `externalOrderId`, `redirectUrl`, the wallet address, or the phone for mobile money;
+- your account's setup with the provider, such as Banxa's Apple Pay merchant identifier and redirect URL;
+- a refusal after Meld reserves the order: Uphold's own refusal, or Mercuryo's verification for a customer new to Mercuryo in the US;
+- a Coinbase customer who stays at Coinbase's cap after Coinbase asks them to submit their details again;
+- Yellow Card's country for the order's currency, which order creation looks up in Meld's catalog.
+
+Handle the [order errors](/docs/stablecoins/headless-integration/wallets#errors-on-order-creation) either way.
+
+Some providers check the order themselves, such as Banxa, Uphold, Coinbase and Stripe. Without the whole order, their checklist has no `ORDER_ROUTE` and none of their own steps, such as Coinbase's `limitUpgrade` or Stripe's Level 1, so `eligible` is never `true`: it is `false` when a `PRE_ORDER` step it lists is `REQUIRED`, `PENDING` or `BLOCKED`, and absent otherwise. For a provider without such a check, such as Noah, Due Network, Brale or Yellow Card, `eligible` is answered from `customerId` alone. It then covers the customer's KYC, not whether the provider offers the product: a Yellow Card deposit, for example, can still be refused as not supported. `requirements` itself is absent only without a `customerId`.
+
+A `customerId` your account doesn't hold is answered as a customer Meld has no records for: Meld reads none of that customer's KYC, lists the KYC steps as `REQUIRED`, and never answers `eligible: true`.
+
+### When order creation refuses
+
+The checklist and order creation agree, so a refusal means something changed, or the order hit one of the exclusions above. Read the requirements again for the same customer and order, and clear what they list. With the SDK, create a new session and run [`ensureReady`](/docs/stablecoins/headless-integration/sdks/customer-requirements) again instead:
+
+| Order creation answers | What to do |
+| --- | --- |
+| `403 KYC_NOT_COMPLETED` | Read the requirements again, and clear the KYC step it lists |
+| `403 VERIFICATION_REQUIRED` | Read the requirements again, and verify the contact or record the agreement it lists |
+| `403 PROVIDER_TERMS_NOT_ACCEPTED` | From virtual-account deposit instructions or an offramp order. Read the requirements again, and have the customer complete the `<PROVIDER>_HOSTED_TERMS` step |
+| `500 CUSTOMER_VERIFICATION_UNAVAILABLE` | Meld couldn't read the customer's verification. Read the requirements again later |
+| `403 KYC_NOT_COMPLETED` from Mercuryo, with `serviceProviderDetails.hostedVerificationUrl` | Mercuryo's own verification, for a customer new to Mercuryo. Open that page for the customer, with [`Meld.openHostedVerification`](/docs/stablecoins/headless-integration/sdks/customer-requirements#a-hosted-verification-on-a-refused-order) in an app or a web page, then create the order again with a new `externalOrderId`. Never log or store the URL |
 
 ---
 
 ## What comes back, and what to do
 
-Four things, independent of each other. A customer can be through KYC and still be blocked on an unaccepted agreement. Work through them in the order below, then re-check.
+The top-level fields behind the checklist, independent of each other. A customer can be through KYC and still be blocked on an unaccepted agreement. The checklist already lists each of them as a step, so read these sections for what each step asks of you.
 
 ---
 
@@ -210,54 +390,11 @@ It only fires when the line type is actually known. An unscreened number is left
 
 ---
 
-### KYC requirements
-
-One entry per KYC step this provider needs, each reported independently.
-
-| `code` | What it covers |
-| --- | --- |
-| `MELD_KYC_APPROVED` | Meld's own KYC has cleared the customer |
-| `PROVIDER_KYC_SHARE` | That verification has been shared with this provider, and accepted. Meld shares only with providers named in `kycShareProviders`, so `REQUIRED` here usually means the provider was never named — add it as in [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers) |
-| `PROVIDER_EXTRA_KYC` | The provider wants details of its own beyond the share |
-
-Only the steps the provider needs are listed. A `PROVIDER_MANAGED` provider, such as Coinbase or Stripe, lists no `MELD_KYC_APPROVED` or `PROVIDER_KYC_SHARE`. Mercuryo lists no `PROVIDER_KYC_SHARE`, because Meld shares with it when you create the order. See [Which providers need Unified KYC](#which-providers-need-unified-kyc).
-
-| Field | Meaning |
-| --- | --- |
-| `status` | `REQUIRED`, `PENDING`, `SATISFIED` or `BLOCKED` |
-| `missingFields` | The fields to collect |
-| `processes` / `processStates` | Provider-side steps, where the provider exposes them |
-| `processActions` | How to run each of those steps: see [Provider processes](#provider-processes) |
-| `reason` | Why, on a `BLOCKED` requirement |
-
-Collect everything in `missingFields` across all requirements in one pass, then send it as `serviceProviderDetails` on:
-
-[`PATCH /accounts/customers/{customerId}/kyc/initiate`](/api-reference/customer/customers/accounts-customers-kyc-update)
-
-`PATCH`, not `POST`. The customer already has a KYC session by this point — `POST` starts one. This adds the provider's own extra details to the session that exists. See [Unified KYC](/docs/stablecoins/unified-kyc) for the modes and the payload.
-
-#### Reading `status`
-
-| `status` | What it means | What to do |
-| --- | --- | --- |
-| `REQUIRED` | Nothing submitted, or something was rejected | Collect `missingFields` and submit |
-| `PENDING` | Submitted, provider still reviewing | Wait. Show a pending state and re-check |
-| `SATISFIED` | Done | Nothing. Do not re-prompt |
-| `BLOCKED` | This provider will not proceed for this customer | Read `reason`, offer another provider from the quote |
-
-Two of these are easy to get wrong.
-
-**`PENDING` is not failure.** Treating it as `REQUIRED` sends the customer back through a form they have already filled in, and some providers review asynchronously, so it can last minutes.
-
-**`BLOCKED` is not retryable.** Re-submitting will not clear it. It is provider-specific, so the other providers in the quote are usually still open.
-
----
-
 ### Provider processes
 
-Some requirements are cleared by a process the provider runs, such as Coinbase's `limitUpgrade`, which raises a customer's limit. The requirement names the process, and the order is refused with `422 CUSTOMER_NOT_PAYMENT_READY` until it completes. For the whole Coinbase flow, from the cap through Unified KYC to the next order, see [Coinbase guest checkout and step-up KYC](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc).
+Some steps are cleared by a process the provider runs, such as Coinbase's `limitUpgrade`, which raises a customer's limit. The checklist lists it as a `PROVIDER_PROCESS` step, and the order is refused with `422 CUSTOMER_NOT_PAYMENT_READY` until it completes. For the whole Coinbase flow, from the cap through Unified KYC to the next order, see [Coinbase guest checkout and step-up KYC](/docs/stablecoins/headless-integration/wallets#coinbase-guest-checkout-and-step-up-kyc).
 
-The requirement's `processActions` describes each process: its `endpoint` and `method`, and its `pollIntervalMs` and `pollTimeoutMs`. The top-level `availableProcesses` lists every process the provider offers, whether or not the customer needs one, so act on the requirement, not on that list.
+The step's `process` describes the process: its `endpoint` and `method`, and its `pollIntervalMs` and `pollTimeoutMs`. The top-level `availableProcesses` lists every process the provider offers, whether or not the customer needs one, so act on the step, not on that list.
 
 Run it from your backend, with the customer and the same order intent you checked:
 
@@ -281,7 +418,7 @@ Run it from your backend, with the customer and the same order intent you checke
 `READ` returns the process `status` and the `inputSources` it accepts. Send `operation: START` with one of them as `inputSource`:
 
 - `CUSTOMER_KYC` sends the provider details from the customer's [Unified KYC](/docs/stablecoins/unified-kyc). It is refused with `403 KYC_NOT_COMPLETED` if those details are missing. Prefer it when it is offered.
-- `HOSTED_FORM` returns `hostedForm.url`, a provider page for the customer to complete before `hostedForm.expiresAt`. Never log or store it.
+- `HOSTED_FORM` returns `hostedForm.url`, a provider page for the customer to complete before `hostedForm.expiresAt`. Never log or store it. Coinbase doesn't offer it on an account with Level 1 on.
 
 Then `READ` every `process.pollIntervalMs` while `pollable` is `true`, and resend the order once `status` is `SATISFIED`. `PENDING` means the provider is still reviewing: stop polling after `process.pollTimeoutMs` and check eligibility later. `BLOCKED` and `UNAVAILABLE` mean the provider won't proceed: offer another provider. Never retry `START` automatically.
 
@@ -289,4 +426,53 @@ Then `READ` every `process.pollIntervalMs` while `pollable` is `true`, and resen
 
 ### Re-check before you create the order
 
-Call the endpoint again with the same five order parameters. Submitting is not the same as satisfied: a provider may still be reviewing, and `PENDING` will not accept an order.
+Call the endpoint again with the same five order parameters. Submitting is not the same as satisfied: a provider may still be reviewing, and `PENDING` will not accept an order. Create the order once `eligible` is `true`, or when it is absent.
+
+---
+
+## Deprecated: kycRequirements
+
+`kycRequirements` is the older form of the same answer. Meld returns it only below `Meld-Version: 2026-11-01`, never on `2026-11-01` or later, and every entry has a checklist step that says more:
+
+| `kycRequirements` code | Checklist steps |
+| --- | --- |
+| `MELD_KYC_APPROVED` | `MELD_KYC`, code `MELD_KYC_APPROVED`, with `level` and `currentLevel` |
+| `PROVIDER_KYC_SHARE` | `PROVIDER_KYC_SHARE`, the delivery, and `PROVIDER_REVIEW`, code `PROVIDER_KYC_APPROVED`, the provider's verdict |
+| `PROVIDER_EXTRA_KYC` | `PROVIDER_EXTRA_FIELDS`, code `PROVIDER_EXTRA_KYC`, with `missingFields` as field objects, `satisfiedFields`, `processes` and `processStates`, and one `PROVIDER_PROCESS` step for each entry of `processActions` |
+
+Move to the checklist and send `Meld-Version: 2026-11-01`. Until you do, the entries read as below.
+
+### The entries
+
+One entry per KYC step this provider needs, each reported independently.
+
+| `code` | What it covers |
+| --- | --- |
+| `MELD_KYC_APPROVED` | Meld's own KYC has cleared the customer at the provider's [level](/docs/stablecoins/unified-kyc/kyc-levels) |
+| `PROVIDER_KYC_SHARE` | That verification has been shared with this provider, and accepted. Meld shares only with providers named on `kyc/initiate`, so `REQUIRED` here usually means the provider was never named — add it as in [Share KYC with providers](/docs/stablecoins/unified-kyc#share-kyc-with-providers). It can also mean the provider still needs something before the share, which the [checklist](#the-checklist) lists. The checklist splits this entry into two steps: `PROVIDER_KYC_SHARE`, the delivery, and `PROVIDER_REVIEW`, the provider's verdict |
+| `PROVIDER_EXTRA_KYC` | The provider wants details of its own beyond the share |
+
+Only the steps the provider needs are listed. A `PROVIDER_MANAGED` provider, such as Coinbase or Stripe, lists no `PROVIDER_KYC_SHARE`, and lists `MELD_KYC_APPROVED` only on an account with Level 1 on, when the order or Coinbase's upgrade needs it. Mercuryo lists no `PROVIDER_KYC_SHARE` either, because Meld shares with it when you create the order. See [Which providers need Unified KYC](#which-providers-need-unified-kyc).
+
+| Field | Meaning |
+| --- | --- |
+| `status` | `REQUIRED`, `PENDING`, `SATISFIED` or `BLOCKED` |
+| `missingFields` | The fields to collect |
+| `processes` / `processStates` | Provider-side steps, where the provider exposes them |
+| `processActions` | How to run each of those steps: see [Provider processes](#provider-processes) |
+| `reason` | Why, on a `BLOCKED` requirement |
+
+### Reading `status`
+
+| `status` | What it means | What to do |
+| --- | --- | --- |
+| `REQUIRED` | Nothing submitted, or something was rejected | Collect `missingFields` and submit |
+| `PENDING` | Submitted, provider still reviewing | Wait. Show a pending state and re-check |
+| `SATISFIED` | Done | Nothing. Do not re-prompt |
+| `BLOCKED` | This provider will not proceed for this customer | Read `reason`, offer another provider from the quote |
+
+Two of these are easy to get wrong.
+
+**`PENDING` is not failure.** Treating it as `REQUIRED` sends the customer back through a form they have already filled in, and some providers review asynchronously, so it can last minutes.
+
+**`BLOCKED` is not retryable.** Re-submitting will not clear it. It is provider-specific, so the other providers in the quote are usually still open.
