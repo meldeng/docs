@@ -1,0 +1,173 @@
+---
+title: "Provider Specific Behavior"
+hidden: true
+noindex: true
+---
+
+While Meld strives to normalize the behavior across all onramp providers, some providers have specific rules and behaviors. Those are documented here.
+
+## Flashnet
+
+Flashnet is supported on both desktop and mobile. On desktop it shows a Cash App QR code for the user to scan; on mobile it deep-links directly into the Cash App app.
+
+## MoneyGram
+
+MoneyGram lets users buy USDC with cash at a MoneyGram location (cash-in) and sell USDC for cash pickup (cash-out). The Meld widget hosts MoneyGram's own widget, where the user picks a location, completes MoneyGram's KYC and confirms the order.
+
+### Cash-out signing
+
+When the user confirms a cash-out, the Meld widget asks the page or app that embeds it to send the transfer, and waits for the transaction hash.
+
+To offer MoneyGram cash-out:
+
+- Create the sell session with a `walletAddress` your app can send from. The transfer must come from that wallet, or MoneyGram rejects the deposit.
+- Open the widget URL in an iframe on your web page, or in a React Native WebView. A redirect or a new tab leaves nobody to answer the request, so the user can't finish the cash-out.
+- Handle the `meld:sign-transaction` message described below.
+
+Cash-in needs none of this. MoneyGram sends the USDC to the session's wallet after the user pays at the counter.
+
+### Message flow
+
+<Steps>
+  <Step title="Meld asks for the transfer">
+    The Meld widget sends `meld:sign-transaction` to your page or app.
+  </Step>
+  <Step title="You send it">
+    You show the transfer to the user and send it from their wallet once they approve it.
+  </Step>
+  <Step title="You reply with the hash">
+    You reply with `meld:sign-transaction-result`, carrying the transaction hash. Meld passes it to MoneyGram, which then confirms the deposit on chain.
+  </Step>
+</Steps>
+
+If the transfer isn't sent, reply with an error instead. MoneyGram shows the error to the user, who can try again.
+
+### Request: `meld:sign-transaction`
+
+```json
+{
+  "type": "meld:sign-transaction",
+  "requestId": "sign-1",
+  "transaction": {
+    "chain": "solana",
+    "from": "<the session's walletAddress>",
+    "to": "<MoneyGram's deposit address>",
+    "amount": "200",
+    "asset": "USDC",
+    "requiredNetwork": "testnet",
+    "tokenAddress": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+    "tokenDecimals": 6,
+    "memo": "<memo>"
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `type` | Always `meld:sign-transaction`. |
+| `requestId` | Identifies this request. Echo it in your reply. |
+| `transaction.chain` | Chain to send on, for example `solana`. |
+| `transaction.from` | The session's `walletAddress`. Send from this wallet only. |
+| `transaction.to` | MoneyGram's deposit address. |
+| `transaction.amount` | Amount in whole tokens, as a decimal string: `"200"` is 200 USDC. Convert it to base units with `tokenDecimals` without going through floating point. |
+| `transaction.asset` | Token to send, for example `USDC`. |
+| `transaction.requiredNetwork` | Optional. Network the transfer must be on, for example `testnet` in sandbox. |
+| `transaction.tokenAddress` | Optional. Token mint or contract address. |
+| `transaction.tokenDecimals` | Optional. Token decimals, `6` for USDC. |
+| `transaction.issuer` | Optional. Asset issuer, on Stellar. |
+| `transaction.memo` | Optional. When present, attach it to the transfer: a memo instruction on Solana, the transaction memo on Stellar. |
+
+### Reply: `meld:sign-transaction-result`
+
+<CodeGroup>
+```json Sent
+{
+  "type": "meld:sign-transaction-result",
+  "requestId": "sign-1",
+  "txHash": "<transaction hash>"
+}
+```
+
+```json Not sent
+{
+  "type": "meld:sign-transaction-result",
+  "requestId": "sign-1",
+  "error": "The transfer was rejected in the wallet"
+}
+```
+</CodeGroup>
+
+| Field | Description |
+| --- | --- |
+| `type` | Always `meld:sign-transaction-result`. |
+| `requestId` | The `requestId` from the request. Meld ignores replies with any other value. |
+| `txHash` | Hash of the transfer you sent (the signature on Solana). Reply once the network has accepted the transaction. |
+| `error` | Send instead of `txHash` when the transfer wasn't sent. MoneyGram shows this text to the user. |
+
+### Web page (iframe)
+
+The Meld widget posts the request to `window.parent`. Listen for `message` events from the widget's iframe, and reply with `postMessage` on that iframe's window. Meld accepts replies only from its parent window.
+
+```js
+const widget = document.getElementById("meld-widget");
+const widgetOrigin = new URL(widget.src).origin;
+const sentTransfers = new Map();
+
+window.addEventListener("message", async (event) => {
+  if (event.source !== widget.contentWindow || event.origin !== widgetOrigin) return;
+  const { type, requestId, transaction } = event.data ?? {};
+  if (type !== "meld:sign-transaction") return;
+
+  const key = [transaction.chain, transaction.to, transaction.amount, transaction.memo].join("|");
+  let result;
+  try {
+    const txHash = sentTransfers.get(key) ?? (await sendTransfer(transaction));
+    sentTransfers.set(key, txHash);
+    result = { txHash };
+  } catch (error) {
+    result = { error: error.message || "The transfer was not sent" };
+  }
+
+  widget.contentWindow.postMessage(
+    { type: "meld:sign-transaction-result", requestId, ...result },
+    widgetOrigin,
+  );
+});
+```
+
+`sendTransfer` is your wallet code. It asks the user to approve the transfer, sends it, and returns the transaction hash.
+
+### React Native WebView
+
+The Meld widget calls `window.ReactNativeWebView.postMessage` with the request as a JSON string, which your app receives in `onMessage`. Reply by injecting a `window.postMessage` call that carries the reply object.
+
+```tsx
+<WebView
+  ref={webView}
+  source={{ uri: widgetUrl }}
+  onMessage={async (event) => {
+    if (new URL(event.nativeEvent.url).origin !== new URL(widgetUrl).origin) return;
+    let message;
+    try {
+      message = JSON.parse(event.nativeEvent.data);
+    } catch {
+      return;
+    }
+    if (message?.type !== "meld:sign-transaction") return;
+
+    let result;
+    try {
+      result = { txHash: await sendTransfer(message.transaction) };
+    } catch (error) {
+      result = { error: error.message || "The transfer was not sent" };
+    }
+
+    const reply = { type: "meld:sign-transaction-result", requestId: message.requestId, ...result };
+    webView.current?.injectJavaScript(`window.postMessage(${JSON.stringify(reply)}, "*"); true;`);
+  }}
+/>
+```
+
+<Warning>
+Don't reply with the WebView's own `postMessage` method. It delivers a string, and Meld reads the reply as an object.
+</Warning>
