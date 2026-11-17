@@ -11,7 +11,7 @@ Meld generally recommends testing the unified KYC flow in production for a reali
 
 However, if you would like to test the flow end-to-end in Meld's sandbox, please follow this guide.
 
-When testing from the Meld Sandbox environment, you will be testing against Sumsub and Virtual Account providers' Sandbox environments as well. This means you can enter fake data, provide fake documents, and provide any answers to the questionnaires. Only the liveliness check will be performed by Sumsub for real (you will need to perform simple moving actions in front of the camera).
+When testing from the Meld Sandbox environment, you will be testing against Sumsub and Virtual Account providers' Sandbox environments as well. This means you can enter fake data and provide any answers to the questionnaires. For the identity document and the liveness check, see [Complete the Sumsub check in sandbox](#complete-the-sumsub-check-in-sandbox).
 
 ## Quick Start
 
@@ -72,6 +72,60 @@ As the user goes through the KYC flow, you will receive webhooks informing you t
 ```
 
 If the `serviceProviderCustomers.kyc.status` is `REJECTED`, this means the user has failed KYC. Either the user has to go through the KYC flow once again (repeat this step), or the user will be unable to use this flow, and is unlikely to be able to buy crypto. Note that a user who fails KYC in this flow will very likely also fail KYC directly with any onramp.
+
+#### Complete the Sumsub check in sandbox
+
+Sandbox runs no real document checks: the result comes from the document template you upload. Only the liveness check is real: it records the face of whoever takes it, so have a team member take it (or use **Continue on phone**), not a real customer. Use made-up values everywhere else, never your own or a customer's.
+
+**1. Create the test customer** with `POST /accounts/customers`. Use a new email for each test customer, at a domain you control:
+
+```json
+{
+  "name": { "firstName": "John", "lastName": "Verified" },
+  "email": "you+kyc-test-1@yourcompany.com",
+  "dateOfBirth": "1990-01-15"
+}
+```
+
+**2. Start KYC** with `POST /accounts/customers/{customerId}/kyc/initiate` and the header `Meld-Version: 2026-11-01`. To share the KYC with Banxa, name it in `targetServiceProviders`:
+
+```json
+{
+  "serviceProvider": "SUMSUB",
+  "mode": "HOSTED_URL",
+  "targetServiceProviders": ["BANXA"]
+}
+```
+
+**3. Upload a document template** on the Sumsub page. Choose **United States of America** and **Driving license**, then upload both sides exactly as downloaded from [Sumsub's document templates](https://docs.sumsub.com/docs/verification-document-templates). Don't rename, screenshot, photograph or convert them, and never use a real identity document.
+
+| Outcome you want | Front | Back |
+| --- | --- | --- |
+| Approved (New Jersey license) | [`US_NJ_Front_Approved.png`](https://sumsub.com/files/US_NJ_Front_Approved.png) | [`US_NJ_Back_Approved.png`](https://sumsub.com/files/US_NJ_Back_Approved.png) |
+| Resubmission requested (California license) | [`f2dfedb-us-template-front.png`](https://files.readme.io/f2dfedb-us-template-front.png) | [`6c18515-us-template-back.png`](https://files.readme.io/6c18515-us-template-back.png) |
+| Final rejection (New Jersey license) | [`US_NJ_Front_Rejected.png`](https://sumsub.com/files/US_NJ_Front_Rejected.png) | [`US_NJ_Back_Rejected.png`](https://sumsub.com/files/US_NJ_Back_Rejected.png) |
+
+Use the approved template for Banxa. Other documents can leave Banxa without a name: its orders are then refused with `422 CUSTOMER_NOT_PAYMENT_READY` and `NAME` in `serviceProviderDetails.kycRequirements`.
+
+**4. Take the selfie**, then **fill in the personal details** with these values:
+
+| Sumsub field | Test value |
+| --- | --- |
+| Country of residence, nationality, tax residence country | `United States of America` |
+| First name | `John` |
+| Last name | `Verified` |
+| Date of birth | `01/15/1990` |
+| Address line 1 | `123 Main Street` |
+| Address line 2 (optional) | `Apt 4` |
+| City | `Newark` |
+| State | `New Jersey` |
+| Post code | `07102` |
+| Contact number | `+1 201 555 0123` |
+| Social security number (SSN) | `123-45-6789` |
+| Country of birth (optional) | `United States of America` |
+| Place of birth (optional) | `Newark` |
+
+**5. Wait for the result.** Sumsub shows **Verifying your ID** and usually decides within a few minutes. You then receive `CUSTOMER_KYC_STATUS_CHANGE` for Sumsub, and for Banxa with `kycRecipient`. After a resubmission request, choose **Start resubmission** and upload the approved template. After a final rejection, or a Banxa `NAME` refusal, start again from step 1 with a new email.
 
 ### 2. You already KYCed the user with your Sumsub account
 
