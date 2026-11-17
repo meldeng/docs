@@ -1408,6 +1408,7 @@ metric-http:
     tags:
       - name: Activity Log
     meld_oas: metric
+    prune_unreferenced_schemas: true
     versions:
       unversioned:
         readme_oas:

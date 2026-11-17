@@ -373,9 +373,6 @@ def prep_meld_oas_file(meld_oas_file, configs):
         meld_oas_file.get('components', {}).get('schemas', {})
     )
 
-    if configs['prune_unreferenced_schemas']:
-        prune_unreferenced_schemas(meld_oas_file)
-
     return meld_oas_file
 
 
@@ -768,6 +765,10 @@ def main():
                             # Re-apply defaults from unversioned config to ensure they're preserved through merges
                             apply_defaults_to_schemas(meld_oas_file, unversioned_config)
                             prev_oas_file = meld_oas_file
+
+                        # Prune after merging: later versions inherit their paths from earlier ones.
+                        if configs[section][version]['prune_unreferenced_schemas']:
+                            prune_unreferenced_schemas(meld_oas_file)
 
                         update_readme(meld_oas_file, env, configs[section][version], s3)
 

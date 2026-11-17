@@ -3,7 +3,7 @@
   "components": {
     "schemas": {
       "AccountHolderType": {
-        "description": "Customer type for a payment method field requirement slice",
+        "description": "Customer type a payment method field requirement slice applies to",
         "type": "string",
         "enum": [
           "INDIVIDUAL",
@@ -11,7 +11,7 @@
         ]
       },
       "CardRenderMode": {
-        "description": "Render mode for CREDIT_DEBIT_CARD payment method in headless flows",
+        "description": "How a headless integration renders the provider's payment-collection surface. Applies only to headless CREDIT_DEBIT_CARD and APPLE_PAY payment methods; null for every other method.",
         "type": "string",
         "enum": [
           "IFRAME",
@@ -81,13 +81,13 @@
         "properties": {
           "countryCode": {
             "type": "string",
-            "description": "Country code",
+            "description": "ISO 3166-1 alpha-2 country code",
             "examples": [
               "US"
             ]
           },
           "category": {
-            "description": "Provider category",
+            "description": "Provider category the defaults apply to",
             "type": "string",
             "examples": [
               "CRYPTO_ONRAMP"
@@ -100,7 +100,7 @@
           },
           "currencyCode": {
             "type": "string",
-            "description": "Default currency code",
+            "description": "Default canonical currency code for the country and category",
             "examples": [
               "USD"
             ]
@@ -111,7 +111,13 @@
             "items": {
               "type": "string"
             },
-            "description": "Supported payment method codes"
+            "description": "Default canonical payment method codes for the country and category",
+            "examples": [
+              [
+                "CREDIT_DEBIT_CARD",
+                "APPLE_PAY"
+              ]
+            ]
           }
         }
       },
@@ -134,91 +140,95 @@
         "properties": {
           "currencyCode": {
             "type": "string",
-            "description": "Currency code",
+            "description": "Canonical currency code: ISO 4217 for fiat; for crypto a Meld asset code, where the same asset on another chain usually carries a chain suffix (e.g. USDC_ARBITRUM)",
             "examples": [
-              "USD"
+              "USDC"
             ]
           },
           "name": {
             "type": "string",
-            "description": "Currency name",
+            "description": "Currency display name",
             "examples": [
-              "US Dollar"
+              "USD Coin"
             ]
           },
           "decimalPlaces": {
             "type": "integer",
             "format": "int32",
-            "description": "Number of decimal places",
+            "description": "Number of decimal places supported for amounts",
             "examples": [
-              2
+              18
             ]
           },
           "type": {
             "type": "string",
             "description": "Currency type",
             "examples": [
-              "FIAT"
+              "CRYPTO"
+            ],
+            "enum": [
+              "FIAT",
+              "CRYPTO"
             ]
           },
           "chainCode": {
             "type": "string",
-            "description": "Chain code for crypto currencies",
+            "description": "Canonical chain code for crypto currencies; null for fiat",
             "examples": [
               "ETH"
             ]
           },
           "chainId": {
             "type": "string",
-            "description": "Numeric chain ID for crypto currencies",
+            "description": "Chain identifier: the EVM numeric chain id (e.g. 1, 42161) or a CAIP-2 style reference for other chains (e.g. bip122:000000000019d6689c085ae165831e93). Null for fiat and for chains without a known id.",
             "examples": [
               "1"
             ]
           },
           "contract": {
             "type": "string",
-            "description": "Contract address for token",
+            "description": "Token contract address; null for fiat and usually for native coins (some native coins carry the zero address)",
             "examples": [
-              "0x1234..."
+              "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
             ]
           },
           "symbol": {
             "type": "string",
             "description": "Currency symbol image URL generated from currency type and code",
             "examples": [
-              "https://cdn.meld.io/images-currency/crypto/BTC/symbol.png"
+              "https://cdn.meld.io/images-currency/crypto/USDC/symbol.png"
             ]
           }
         }
       },
       "CurrencyLimit": {
-        "description": "Default currency limit",
+        "description": "Platform-wide default, minimum and maximum amounts for one canonical currency, in major units of that currency. Independent of provider; each value may be null.",
         "type": "object",
         "properties": {
           "currencyCode": {
             "type": "string",
-            "description": "Currency code",
+            "description": "Canonical currency code (fiat or crypto)",
             "examples": [
               "EUR"
             ]
           },
           "defaultValue": {
             "type": "number",
-            "description": "Default amount",
+            "description": "Amount preselected by default; null when not configured",
             "examples": [
               100.0
             ]
           },
           "min": {
             "type": "number",
-            "description": "Minimum amount",
+            "description": "Platform minimum amount; null when not configured",
             "examples": [
               10.0
             ]
           },
           "max": {
             "type": "number",
-            "description": "Maximum amount",
+            "description": "Platform maximum amount; null when not configured",
             "examples": [
               14900.0
             ]
@@ -246,6 +256,14 @@
           "CRYPTO"
         ]
       },
+      "Direction": {
+        "description": "Ramp direction. ONRAMP covers CRYPTO_ONRAMP and CRYPTO_VIRTUAL_ACCOUNT_ONRAMP; OFFRAMP covers CRYPTO_OFFRAMP and CRYPTO_VIRTUAL_ACCOUNT_OFFRAMP. Swap categories are not included.",
+        "type": "string",
+        "enum": [
+          "ONRAMP",
+          "OFFRAMP"
+        ]
+      },
       "DomainType": {
         "description": "The domain in which a service provider operates",
         "type": "string",
@@ -262,14 +280,14 @@
             "type": "string",
             "description": "Field key. Public requirements use the leaf JSON property for nested fields (`city`); admin catalog endpoints return the catalog PK (`beneficiaryAddress.city`) so upsert/delete stay copy-pasteable.",
             "examples": [
-              "bankCode"
+              "accountNumber"
             ]
           },
           "label": {
             "type": "string",
             "description": "Human-readable label",
             "examples": [
-              "Bank / institution code"
+              "Account number"
             ]
           },
           "fieldType": {
@@ -300,7 +318,7 @@
           },
           "providerPath": {
             "type": "string",
-            "description": "Provider API path for this field",
+            "description": "Provider API path for this field; null for aggregate requests (no serviceProvider). Returned on provider-scoped requests under the compatibility setting for client compatibility; send includeProviderMappings=true to keep receiving it once that compatibility mode is switched off.",
             "examples": [
               "financialInstitutionId"
             ]
@@ -318,14 +336,21 @@
             "items": {
               "type": "string"
             },
-            "description": "Allowed values for ENUM fields. Provider-scoped reads return that provider's set. Union mode returns options only when every provider contributing this field publishes the same non-empty, case-sensitive set, ignoring order and exact duplicates. Otherwise omitted; omission does not mean unrestricted. Fetch provider-scoped requirements before validating provider-native values."
+            "description": "For fields with a Meld enum catalog, the accepted Meld values (CHECKING, NATIONAL_ID, \u2026), including provider codes already equal to catalog values. With serviceProvider, returns that provider's values; without it, their intersection across contributors with a closed set. Fields without a Meld catalog retain provider-native options; aggregate responses include them only when all contributors publish matching lists. An empty list means no value is accepted yet. Omission can mean no closed set or unavailable aggregate options; it does not prove unrestricted input. Fetch provider-scoped requirements for validation."
           },
           "derived": {
             "type": "boolean",
-            "description": "When true, Meld fills this field from the customer (`type`, `name`). Do not send it in payout details. The provider still requires it when `required` is true.",
+            "description": "When true, Meld supplies this value. Do not send it in payout details. The provider still requires it when `required` is true.",
             "examples": [
               false
             ]
+          },
+          "providerValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderValue"
+            },
+            "description": "Provider code to write for each allowed Meld value. Returned only when serviceProvider is set and includeProviderMappings is true; null otherwise or when no translation exists."
           }
         }
       },
@@ -343,13 +368,19 @@
           },
           "protocol": {
             "type": "string",
-            "description": "Adapter protocol identifier; consumers must recognize it before use"
+            "description": "Adapter protocol identifier (upper-case letters, digits and underscores); consumers must recognize it before use and fail closed otherwise",
+            "examples": [
+              "BANXA_CHECKOUT"
+            ]
           },
           "version": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "description": "Protocol version; consumers must explicitly support it"
+            "description": "Protocol version; consumers must explicitly support it",
+            "examples": [
+              1
+            ]
           }
         }
       },
@@ -363,6 +394,16 @@
           "PAYMENT_REFERENCE"
         ]
       },
+      "KycLevel": {
+        "description": "Minimum Meld (Sumsub) KYC level a provider accepts",
+        "type": "string",
+        "enum": [
+          "NONE",
+          "LEVEL_1",
+          "LEVEL_2",
+          "LEVEL_3"
+        ]
+      },
       "KycMode": {
         "description": "How a provider expects Meld-supplied KYC to be shared",
         "type": "string",
@@ -373,35 +414,43 @@
           "PROVIDER_MANAGED"
         ]
       },
+      "KycShareMethod": {
+        "description": "How Meld-verified KYC reaches the provider",
+        "type": "string",
+        "enum": [
+          "TOKEN",
+          "RAW"
+        ]
+      },
       "Limit": {
         "type": "object",
-        "description": "Limits for a supported route",
+        "description": "Single-denomination projection of the route's limits, kept for v1 compatibility. Uses the fiat-leg limit when one exists, otherwise the crypto-leg limit, rounded to 2 decimal places (HALF_UP for a fiat denomination, HALF_EVEN otherwise), so small crypto bounds lose precision. Use /v2/supported/routes for every denomination at full precision.",
         "properties": {
           "currencyCode": {
             "type": "string",
-            "description": "Currency code",
+            "description": "Currency the bounds are denominated in: the route's fiat currency, or its crypto currency when no fiat limit exists",
             "examples": [
               "USD"
             ]
           },
           "min": {
             "type": "number",
-            "description": "Minimum amount",
+            "description": "Inclusive minimum amount in currencyCode, 2 decimal places; null when unknown",
             "examples": [
-              10
+              10.0
             ]
           },
           "max": {
             "type": "number",
-            "description": "Maximum amount",
+            "description": "Inclusive maximum amount in currencyCode, 2 decimal places; null when unknown",
             "examples": [
-              10000
+              10000.0
             ]
           }
         }
       },
       "LimitType": {
-        "description": "Limit windows applied to transaction limits",
+        "description": "Window a provider KYC limit amount applies to",
         "type": "string",
         "enum": [
           "TRANSACTION",
@@ -468,9 +517,14 @@
           },
           "status": {
             "type": "string",
-            "description": "Provider status",
+            "description": "Provider lifecycle status (ProviderStatus name). Only LIVE providers have published support data; PAUSED and DEPRECATED providers have none.",
             "examples": [
               "LIVE"
+            ],
+            "enum": [
+              "LIVE",
+              "PAUSED",
+              "DEPRECATED"
             ]
           },
           "categories": {
@@ -489,14 +543,24 @@
           },
           "url": {
             "type": "string",
-            "description": "Provider website",
+            "description": "Provider website; null when not set",
             "examples": [
-              "https://example.com"
+              "https://banxa.com"
+            ]
+          },
+          "supportUrl": {
+            "type": "string",
+            "description": "End-user help or contact page, declared by the provider's connector; null when the provider has none",
+            "examples": [
+              "https://support.banxa.com/en/support/home"
             ]
           },
           "lastLoadedAt": {
-            "description": "Last time this provider's API-facing support data was loaded",
+            "description": "Last time this provider's API-facing support data was loaded; null until the first load",
             "type": "string",
+            "examples": [
+              "2026-10-30T08:15:00Z"
+            ],
             "allOf": [
               {
                 "$ref": "#/components/schemas/OffsetDateTime"
@@ -521,6 +585,13 @@
               }
             ]
           },
+          "checkout": {
+            "type": "boolean",
+            "description": "Whether the provider supports the hosted checkout (widget) flow; false for headless-only providers",
+            "examples": [
+              true
+            ]
+          },
           "kycMode": {
             "description": "How the provider accepts Meld-supplied KYC; applies to widget and headless flows alike",
             "type": "string",
@@ -543,6 +614,18 @@
               {
                 "$ref": "#/components/schemas/KycLevel"
               }
+            ]
+          },
+          "kycShareMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KycShareMethod"
+            },
+            "description": "How Meld-verified KYC reaches the provider; every listed method is used together on each share: TOKEN (share token), RAW (data sent to the provider's KYC endpoint). Empty when Meld shares none",
+            "examples": [
+              [
+                "TOKEN"
+              ]
             ]
           },
           "isExchange": {
@@ -634,8 +717,20 @@
               "card"
             ]
           },
+          "category": {
+            "description": "Provider category this payment method is published under",
+            "type": "string",
+            "examples": [
+              "CRYPTO_ONRAMP"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
+          },
           "limits": {
-            "description": "Limits for this payment method. Null when limits are not available.",
+            "description": "Limits for this payment method in a single denomination (see Limit). Null when limits are not available.",
             "type": "object",
             "allOf": [
               {
@@ -656,8 +751,12 @@
             "type": "boolean",
             "description": "Whether this provider payment method is enabled for headless flows"
           },
+          "checkoutSupported": {
+            "type": "boolean",
+            "description": "Whether this provider payment method is available in the hosted checkout (widget)"
+          },
           "cardRenderMode": {
-            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported",
+            "description": "Card render mode; populated only for headless CREDIT_DEBIT_CARD and APPLE_PAY methods, otherwise null",
             "type": "string",
             "allOf": [
               {
@@ -684,6 +783,7 @@
         }
       },
       "PaymentMethodFieldType": {
+        "description": "Data type of a payment-method or KYC field",
         "type": "string",
         "enum": [
           "STRING",
@@ -739,7 +839,7 @@
             "type": "string",
             "description": "Canonical payment method code",
             "examples": [
-              "DO_BANK_TRANSFER"
+              "PAYOUT_TO_BANK"
             ]
           },
           "countryCode": {
@@ -768,7 +868,7 @@
         }
       },
       "PaymentType": {
-        "description": "Enumeration of payment method types supported by the platform",
+        "description": "Payment method type grouping canonical payment methods",
         "type": "string",
         "enum": [
           "BANK_TRANSFER",
@@ -825,14 +925,14 @@
           },
           "min": {
             "type": "number",
-            "description": "Minimum amount",
+            "description": "Minimum amount; null when unknown",
             "examples": [
               10.0
             ]
           },
           "max": {
             "type": "number",
-            "description": "Maximum amount",
+            "description": "Maximum amount; null when unknown",
             "examples": [
               10000.0
             ]
@@ -878,13 +978,13 @@
           },
           "countryCode": {
             "type": "string",
-            "description": "Country code",
+            "description": "ISO 3166-1 alpha-2 country code",
             "examples": [
               "US"
             ]
           },
           "limitType": {
-            "description": "Limit window",
+            "description": "Window the level amounts apply to",
             "type": "string",
             "examples": [
               "DAILY"
@@ -897,28 +997,28 @@
           },
           "currencyCode": {
             "type": "string",
-            "description": "Currency code",
+            "description": "Canonical currency (fiat or crypto) the level amounts are denominated in",
             "examples": [
               "USD"
             ]
           },
           "level1": {
             "type": "number",
-            "description": "KYC level 1 amount",
+            "description": "Limit for a customer verified to KYC level 1, in currencyCode per limitType window; zero or greater, null when not configured",
             "examples": [
               1000.0
             ]
           },
           "level2": {
             "type": "number",
-            "description": "KYC level 2 amount",
+            "description": "Limit for a customer verified to KYC level 2, in currencyCode per limitType window; zero or greater, null when not configured",
             "examples": [
               10000.0
             ]
           },
           "level3": {
             "type": "number",
-            "description": "KYC level 3 amount",
+            "description": "Limit for a customer verified to KYC level 3, in currencyCode per limitType window; zero or greater, null when not configured",
             "examples": [
               50000.0
             ]
@@ -926,7 +1026,7 @@
         }
       },
       "ProviderStatus": {
-        "description": "Integration status for a service provider",
+        "description": "Integration lifecycle status for a service provider or one of its categories. A provider status other than LIVE removes the provider's published support data.",
         "type": "string",
         "enum": [
           "LIVE",
@@ -947,7 +1047,27 @@
           }
         }
       },
-      "Response1": {
+      "ProviderValue": {
+        "type": "object",
+        "description": "One Meld value and the provider code create writes for it",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Meld value the caller sends",
+            "examples": [
+              "CHECKING"
+            ]
+          },
+          "providerValue": {
+            "type": "string",
+            "description": "Provider code create writes",
+            "examples": [
+              "cc"
+            ]
+          }
+        }
+      },
+      "Response4": {
         "description": "Response wrapper for payment method field requirements",
         "type": "object",
         "properties": {
@@ -960,7 +1080,7 @@
           }
         }
       },
-      "Response2": {
+      "Response5": {
         "description": "Provider fiat limit response",
         "type": "object",
         "properties": {
@@ -973,7 +1093,7 @@
           }
         }
       },
-      "Response3": {
+      "Response6": {
         "description": "Provider KYC limit response",
         "type": "object",
         "properties": {
@@ -992,37 +1112,57 @@
         "properties": {
           "countryCode": {
             "type": "string",
-            "description": "Country code",
+            "description": "ISO 3166-1 alpha-2 country code of one representative matching row; the method may also be supported in other countries within the lookup",
             "examples": [
               "US"
             ]
           },
           "providerMethod": {
             "type": "string",
-            "description": "Provider payment method code",
+            "description": "Provider payment method code of one representative matching row; in a multi-provider lookup it belongs to one of the matching providers",
             "examples": [
-              "CARD"
+              "card"
             ]
           },
           "method": {
             "type": "string",
-            "description": "Payment method code",
+            "description": "Canonical payment method code",
             "examples": [
               "CREDIT_DEBIT_CARD"
             ]
           },
+          "category": {
+            "description": "Category of this entry: the requested category, or with a direction filter this row's category (one entry per method and category). Null only when neither category nor direction was requested.",
+            "type": "string",
+            "examples": [
+              "CRYPTO_ONRAMP"
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              }
+            ]
+          },
           "name": {
             "type": "string",
-            "description": "Payment method name",
+            "description": "Payment method display name",
             "examples": [
               "Credit or debit card"
             ]
           },
           "type": {
             "type": "string",
-            "description": "Payment method type",
+            "description": "Payment method type (PaymentType name)",
             "examples": [
               "CARD"
+            ],
+            "enum": [
+              "BANK_TRANSFER",
+              "CARD",
+              "CASH",
+              "EXCHANGE",
+              "LOCAL",
+              "MOBILE_WALLET"
             ]
           },
           "logo": {
@@ -1038,8 +1178,12 @@
             "type": "boolean",
             "description": "Whether this method is enabled for headless flows in the response context. For multi-provider search, true when any matching provider supports it headlessly."
           },
+          "checkoutSupported": {
+            "type": "boolean",
+            "description": "Whether this method is available in the hosted checkout (widget) in the response context; for multi-provider search, true when any matching provider offers it there."
+          },
           "cardRenderMode": {
-            "description": "Card render mode; only populated for CREDIT_DEBIT_CARD when headlessSupported",
+            "description": "Card render mode; populated only in a single-provider lookup for headless CREDIT_DEBIT_CARD and APPLE_PAY methods, otherwise null",
             "type": "string",
             "allOf": [
               {
@@ -1165,16 +1309,6 @@
             "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
           }
         }
-      },
-      "KycLevel": {
-        "description": "Minimum Meld (Sumsub) KYC level a provider accepts",
-        "type": "string",
-        "enum": [
-          "NONE",
-          "LEVEL_1",
-          "LEVEL_2",
-          "LEVEL_3"
-        ]
       }
     },
     "securitySchemes": {
@@ -1187,6 +1321,11 @@
       "BasicAuth": {
         "type": "http",
         "scheme": "basic"
+      },
+      "RequirementsSessionToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "The `token` of a requirements session. The Meld SDK sends it"
       }
     }
   },
@@ -1200,7 +1339,7 @@
     "/network-partner/supported/countries": {
       "get": {
         "summary": "List supported countries",
-        "description": "Returns countries supported across live providers with flag URLs and supported subdivision codes. All filters are optional and can be combined freely; a request without filters returns every country served by a live provider. Currency and payment-method filters match countries where some live provider supports the value there (independent per-provider checks, not full route existence). When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Returns countries supported across live providers with flag URLs and supported subdivision codes. All filters are optional and can be combined freely; a request without filters returns every country served by a live provider. Currency and payment-method filters match countries where some live provider supports the value there (independent per-provider checks, not full route existence). When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. `headless=true` and `kycShared=true` must hold for the same partner as the other filters, for example `paymentMethod=APPLE_PAY&headless=true` lists countries with native Apple Pay. An unknown `country` returns `400`. Provider scope rules:\n- No authentication: results come from the global dataset; `Meld-Account-Id` is ignored.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim. An identity without a `providers` claim, or with an empty one, is unrestricted.\n- `Meld-Account-Id` only: ignored for anonymous callers.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets. An account id this service has no account data for leaves the scope unchanged; a known account with no providers yields an empty scope.\n- Naming an account that does not belong to the caller returns `403` when account-header enforcement is enabled, unless the caller has an authorized administrator or service role. With enforcement in monitor mode, the request is only reported and proceeds.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
         "operationId": "list-supported-countries",
         "tags": [
           "Supported"
@@ -1253,6 +1392,24 @@
             }
           },
           {
+            "description": "When true, only countries where a partner offers the matching payment method (or, without a method filter, any payment method) headlessly. Omitted or false applies no headless filter.",
+            "example": true,
+            "name": "headless",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "When true, only partners Meld shares KYC with (non-empty `kycShareMethods`). Omitted or false applies no KYC filter.",
+            "example": true,
+            "name": "kycShared",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "description": "Comma-separated partner ids",
             "example": "BANXA,TRANSAK",
             "name": "partners",
@@ -1280,7 +1437,7 @@
             }
           },
           {
-            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "description": "Optional. Base58 encoded account id, ignored for anonymous callers. For authenticated callers, intersects identity providers with account providers. With account-header enforcement enabled, the account must belong to the caller unless the caller has an authorized administrator or service role.",
             "name": "Meld-Account-Id",
             "in": "header",
             "schema": {
@@ -1331,7 +1488,7 @@
             }
           },
           "400": {
-            "description": "Request rejected - see the code and message",
+            "description": "Unknown country code, or an invalid enum value",
             "content": {
               "application/json": {
                 "schema": {
@@ -1410,7 +1567,7 @@
     "/network-partner/supported/currencies": {
       "get": {
         "summary": "Search supported currencies",
-        "description": "Searches currencies supported across providers and returns canonical currency metadata including symbol image URLs. Defaults to `type=CRYPTO`; use `type=FIAT` to search fiat support. `network` is only valid for crypto searches. `providerCurrencyCode` can filter both crypto and fiat provider-specific codes. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partner` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Searches currencies supported across providers and returns canonical currency metadata including symbol image URLs. Defaults to `type=CRYPTO`; use `type=FIAT` to search fiat support. `network` is only valid for crypto searches. `providerCurrencyCode` can filter both crypto and fiat provider-specific codes. Provider scope rules:\n- No authentication: results come from the global dataset; `Meld-Account-Id` is ignored.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim. An identity without a `providers` claim, or with an empty one, is unrestricted.\n- `Meld-Account-Id` only: ignored for anonymous callers.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets. An account id this service has no account data for leaves the scope unchanged; a known account with no providers yields an empty scope.\n- Naming an account that does not belong to the caller returns `403` when account-header enforcement is enabled, unless the caller has an authorized administrator or service role. With enforcement in monitor mode, the request is only reported and proceeds.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partner` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
         "operationId": "search-supported-currencies",
         "tags": [
           "Supported"
@@ -1442,6 +1599,24 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "When true, only currencies a partner supports in a country where it also offers a headless payment method (of `paymentType`, when given). Omitted or false applies no headless filter.",
+            "example": true,
+            "name": "headless",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "When true, only partners Meld shares KYC with (non-empty `kycShareMethods`). Omitted or false applies no KYC filter.",
+            "example": true,
+            "name": "kycShared",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -1506,7 +1681,7 @@
             }
           },
           {
-            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "description": "Optional. Base58 encoded account id, ignored for anonymous callers. For authenticated callers, intersects identity providers with account providers. With account-header enforcement enabled, the account must belong to the caller unless the caller has an authorized administrator or service role.",
             "name": "Meld-Account-Id",
             "in": "header",
             "schema": {
@@ -1545,7 +1720,7 @@
             }
           },
           "400": {
-            "description": "Invalid filter combination",
+            "description": "`network` supplied for a FIAT search, `subdivision` without a US or CA country, or an invalid enum value",
             "content": {
               "application/json": {
                 "examples": {
@@ -1634,7 +1809,7 @@
     "/network-partner/supported/fiat-limits": {
       "get": {
         "summary": "Search supported provider fiat limits",
-        "description": "Searches provider-supplied fiat amount limits across live providers. Returns only loaded provider fiat limit rows; default currency fallback limits are not included. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Searches fiat-denominated amount limits per provider, category, country, fiat currency and payment method. All filters are optional. Rows start from the provider's loaded fiat limits. Where transaction-limit rules denominated in that fiat currency, and not specific to a crypto currency or chain, exist for the same combination, the resolved rule replaces the loaded row (or adds a row): matching rules are intersected and, without a `subdivision` filter, the widest bounds across subdivisions are used; resolved values are rounded to 2 decimal places. Default currency limits are not included. Rows are not filtered by provider status. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. `country` must be 2 characters, `subdivision` requires a US or CA `country`, and over-long codes return `400`. Provider scope rules:\n- No authentication: results come from the global dataset; `Meld-Account-Id` is ignored.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim. An identity without a `providers` claim, or with an empty one, is unrestricted.\n- `Meld-Account-Id` only: ignored for anonymous callers.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets. An account id this service has no account data for leaves the scope unchanged; a known account with no providers yields an empty scope.\n- Naming an account that does not belong to the caller returns `403` when account-header enforcement is enabled, unless the caller has an authorized administrator or service role. With enforcement in monitor mode, the request is only reported and proceeds.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
         "operationId": "list-supported-fiat-limits",
         "tags": [
           "Supported"
@@ -1705,7 +1880,7 @@
             }
           },
           {
-            "description": "Country subdivision code used as a filter only. Supported for US and CA only.",
+            "description": "Country subdivision code. Supported for US and CA only. Excludes rows restricted to other subdivisions and keeps country-wide rows; the response does not say which subdivisions a row applies to.",
             "example": "US-NY",
             "name": "subdivision",
             "in": "query",
@@ -1714,7 +1889,7 @@
             }
           },
           {
-            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "description": "Optional. Base58 encoded account id, ignored for anonymous callers. For authenticated callers, intersects identity providers with account providers. With account-header enforcement enabled, the account must belong to the caller unless the caller has an authorized administrator or service role.",
             "name": "Meld-Account-Id",
             "in": "header",
             "schema": {
@@ -1746,13 +1921,13 @@
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/Response2"
+                  "$ref": "#/components/schemas/Response5"
                 }
               }
             }
           },
           "400": {
-            "description": "Request rejected - see the code and message",
+            "description": "`country` not 2 characters, `subdivision` without a US or CA country, a code over its maximum length, or an invalid enum value",
             "content": {
               "application/json": {
                 "schema": {
@@ -1831,7 +2006,7 @@
     "/network-partner/supported/kyc-limits": {
       "get": {
         "summary": "Search supported provider KYC limits",
-        "description": "Searches admin-curated provider KYC limits across live providers. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Searches admin-curated provider KYC limits across live providers. All filters are optional. `country` must be 2 characters and `currencyCode` and partner ids at most 32 characters; violations return `400` with a plain-text message. Provider scope rules:\n- No authentication: results come from the global dataset; `Meld-Account-Id` is ignored.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim. An identity without a `providers` claim, or with an empty one, is unrestricted.\n- `Meld-Account-Id` only: ignored for anonymous callers.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets. An account id this service has no account data for leaves the scope unchanged; a known account with no providers yields an empty scope.\n- Naming an account that does not belong to the caller returns `403` when account-header enforcement is enabled, unless the caller has an authorized administrator or service role. With enforcement in monitor mode, the request is only reported and proceeds.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
         "operationId": "list-supported-kyc-limits",
         "tags": [
           "Supported"
@@ -1893,7 +2068,7 @@
             }
           },
           {
-            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "description": "Optional. Base58 encoded account id, ignored for anonymous callers. For authenticated callers, intersects identity providers with account providers. With account-header enforcement enabled, the account must belong to the caller unless the caller has an authorized administrator or service role.",
             "name": "Meld-Account-Id",
             "in": "header",
             "schema": {
@@ -1926,17 +2101,23 @@
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/Response3"
+                  "$ref": "#/components/schemas/Response6"
                 }
               }
             }
           },
           "400": {
-            "description": "Request rejected - see the code and message",
+            "description": "`country` not 2 characters, or `currencyCode` or a partner id longer than 32 characters",
             "content": {
-              "application/json": {
+              "text/plain": {
+                "examples": {
+                  "invalidCountry": {
+                    "summary": "Country code of the wrong length",
+                    "value": "countryCode must be 2 characters"
+                  }
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "string"
                 }
               }
             }
@@ -2011,7 +2192,7 @@
     "/network-partner/supported/partners": {
       "get": {
         "summary": "List live partners supporting a route",
-        "description": "Searches live partners by category, country, optional subdivision, fiat currency, crypto currency, and payment method or payment type. All filters are optional and can be combined freely; a request without filters returns every live partner. When category, country, fiat currency, and crypto currency are all provided (for swap and CRYPTO_TRANSFER categories: category, country, and crypto currency), partners are matched against actual provider routes; partial filter combinations match partners that support each provided value independently. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partner` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Searches live partners by category, country, optional subdivision, fiat currency, crypto currency, and payment method or payment type. All filters are optional and can be combined freely; a request without filters returns every live partner. When category, country, fiat currency, and crypto currency are all provided (for swap and CRYPTO_TRANSFER categories: category, country, and crypto currency), partners are matched against actual provider routes; partial filter combinations match partners that support each provided value independently. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. `headless=true` narrows the result to partners that support the matching payment method headlessly, for example `country=DE&paymentMethod=APPLE_PAY&headless=true`. `kycShared=true` narrows it to partners Meld shares KYC with (non-empty `kycShareMethods`). An unknown `country`, or a `subdivision` outside US and CA, returns `400`. Provider scope rules:\n- No authentication: results come from the global dataset; `Meld-Account-Id` is ignored.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim. An identity without a `providers` claim, or with an empty one, is unrestricted.\n- `Meld-Account-Id` only: ignored for anonymous callers.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets. An account id this service has no account data for leaves the scope unchanged; a known account with no providers yields an empty scope.\n- Naming an account that does not belong to the caller returns `403` when account-header enforcement is enabled, unless the caller has an authorized administrator or service role. With enforcement in monitor mode, the request is only reported and proceeds.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partner` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
         "operationId": "list-supported-partners",
         "tags": [
           "Supported"
@@ -2064,6 +2245,24 @@
             }
           },
           {
+            "description": "When true, only partners whose matching payment method is headless-capable in the requested country, subdivision and fiat. Omitted or false applies no headless filter.",
+            "example": true,
+            "name": "headless",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "When true, only partners Meld shares KYC with (non-empty `kycShareMethods`). Omitted or false applies no KYC filter.",
+            "example": true,
+            "name": "kycShared",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "description": "Partner id",
             "example": "BANXA",
             "name": "partner",
@@ -2100,7 +2299,7 @@
             }
           },
           {
-            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "description": "Optional. Base58 encoded account id, ignored for anonymous callers. For authenticated callers, intersects identity providers with account providers. With account-header enforcement enabled, the account must belong to the caller unless the caller has an authorized administrator or service role.",
             "name": "Meld-Account-Id",
             "in": "header",
             "schema": {
@@ -2122,9 +2321,17 @@
                         "name": "Banxa",
                         "status": "LIVE",
                         "categories": [
+                          "CRYPTO_OFFRAMP",
                           "CRYPTO_ONRAMP"
                         ],
                         "capabilities": [
+                          {
+                            "category": "CRYPTO_OFFRAMP",
+                            "domains": [
+                              "PAYMENT"
+                            ],
+                            "status": "LIVE"
+                          },
                           {
                             "category": "CRYPTO_ONRAMP",
                             "domains": [
@@ -2134,6 +2341,8 @@
                           }
                         ],
                         "url": "https://www.banxa.com",
+                        "supportUrl": "https://support.banxa.com/en/support/home",
+                        "lastLoadedAt": "2026-10-30T08:42:33.861929Z",
                         "logo": {
                           "dark": "https://cdn.meld.io/images-serviceprovider/BANXA/logo_dark.png",
                           "light": "https://cdn.meld.io/images-serviceprovider/BANXA/logo_light.png",
@@ -2144,8 +2353,13 @@
                           "supported": true,
                           "uiCustomization": false
                         },
+                        "checkout": true,
                         "kycMode": "ASYNC",
                         "kycLevel": "LEVEL_2",
+                        "kycShareMethods": [
+                          "TOKEN",
+                          "RAW"
+                        ],
                         "isExchange": false
                       }
                     ]
@@ -2165,7 +2379,7 @@
             }
           },
           "400": {
-            "description": "Request rejected - see the code and message",
+            "description": "Unknown country code, `subdivision` without a US or CA country, or an invalid enum value",
             "content": {
               "application/json": {
                 "schema": {
@@ -2244,7 +2458,7 @@
     "/network-partner/supported/payment-methods": {
       "get": {
         "summary": "Search supported payment methods",
-        "description": "Searches payment methods supported across providers. Results are deduplicated across providers and returned as canonical payment-method entries with logo URLs for the requested filters. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Searches payment methods supported across providers for the requested filters, all optional. Returns one row per canonical payment method, or with `direction` one row per payment method and category, each carrying its `category`. `countryCode` and `providerMethod` come from one representative provider row, so they describe a single matching offer rather than every country or provider. `headlessSupported` and `checkoutSupported` are true when any matching provider offers the method in that flow. `category` is present when `category` or `direction` is requested. `category` and `direction` are mutually exclusive: supplying both returns `400`. A `subdivision` without a US or CA `country` returns `400`. Provider scope rules:\n- No authentication: results come from the global dataset; `Meld-Account-Id` is ignored.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim. An identity without a `providers` claim, or with an empty one, is unrestricted.\n- `Meld-Account-Id` only: ignored for anonymous callers.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets. An account id this service has no account data for leaves the scope unchanged; a known account with no providers yields an empty scope.\n- Naming an account that does not belong to the caller returns `403` when account-header enforcement is enabled, unless the caller has an authorized administrator or service role. With enforcement in monitor mode, the request is only reported and proceeds.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
         "operationId": "list-supported-payment-methods",
         "tags": [
           "Supported"
@@ -2288,6 +2502,33 @@
             }
           },
           {
+            "description": "Ramp direction, instead of category. Rows are returned per payment method and category, each with its category.",
+            "example": "ONRAMP",
+            "name": "direction",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Direction"
+            }
+          },
+          {
+            "description": "When true, only payment methods a partner offers headlessly. Omitted or false applies no headless filter.",
+            "example": true,
+            "name": "headless",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "When true, only partners Meld shares KYC with (non-empty `kycShareMethods`). Omitted or false applies no KYC filter.",
+            "example": true,
+            "name": "kycShared",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "description": "Comma-separated partner ids",
             "example": "BANXA,TRANSAK",
             "name": "partners",
@@ -2315,7 +2556,7 @@
             }
           },
           {
-            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "description": "Optional. Base58 encoded account id, ignored for anonymous callers. For authenticated callers, intersects identity providers with account providers. With account-header enforcement enabled, the account must belong to the caller unless the caller has an authorized administrator or service role.",
             "name": "Meld-Account-Id",
             "in": "header",
             "schema": {
@@ -2334,14 +2575,17 @@
                     "value": [
                       {
                         "countryCode": "US",
-                        "providerMethod": "CARD",
+                        "providerMethod": "debit-credit-card",
                         "method": "CREDIT_DEBIT_CARD",
-                        "name": "Credit or debit card",
+                        "category": "CRYPTO_ONRAMP",
+                        "name": "Credit & Debit Card",
                         "type": "CARD",
                         "logo": {
                           "dark": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png",
                           "light": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_light.png"
-                        }
+                        },
+                        "headlessSupported": true,
+                        "checkoutSupported": true
                       }
                     ]
                   }
@@ -2356,7 +2600,7 @@
             }
           },
           "400": {
-            "description": "Request rejected - see the code and message",
+            "description": "Both `category` and `direction` supplied, `subdivision` without a US or CA country, or an invalid enum value",
             "content": {
               "application/json": {
                 "schema": {
@@ -2435,7 +2679,7 @@
     "/network-partner/supported/payment-methods/requirements": {
       "get": {
         "summary": "Search payment method field requirements",
-        "description": "Returns per-provider field requirements and provider API path mappings for a payment method. Nested field `key` values are the leaf JSON property (`city`), not the catalog PK (`beneficiaryAddress.city`); nest them under `parentKey`. When `serviceProvider` is omitted, returns the union of required fields across providers (one block per category + payment method + country + accountHolderType; `providerPath` is omitted). `allowedValues` is returned only when all providers contributing that field publish the same non-empty, case-sensitive set (order and exact duplicates do not matter). Missing or differing sets omit options; omission does not mean unrestricted. Validate against provider-scoped requirements. A field is `required` if any matching provider requires it. The response is the account-facing contract for the requested category. Offramp keys with `derived=false` are what the account sends in payout details; onramp keys are the receiving-bank fields on the deposit instruction. `derived=true` fields (`accountHolderType`, `firstName`, `lastName`, `fullName`) are still required by the provider; Meld fills them from the customer. Omit `accountHolderType` to return both the INDIVIDUAL and BUSINESS slices. All filters are optional and can be combined; providing no filters returns the union across all stored requirements. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `serviceProvider` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Returns per-provider field requirements and provider API path mappings for a payment method. Nested field `key` values are the leaf JSON property (`city`), not the catalog PK (`beneficiaryAddress.city`); nest them under `parentKey`. When `serviceProvider` is omitted, returns one block per category + payment method + country + accountHolderType, without `serviceProvider`. `providerValues` is returned only when `serviceProvider` is set and `includeProviderMappings` is true. During a rollout, `providerPath` is returned whenever `serviceProvider` is set, with or without `includeProviderMappings`; send `includeProviderMappings=true` if you rely on it, as it will become gated the same way. Without `serviceProvider` both are omitted. For fields with a Meld enum catalog, `allowedValues` holds the Meld values that the provider's codes map to, including codes already equal to catalog values. With mappings included, `providerValues` supplies provider write codes where translation is needed. Without `serviceProvider`, catalogued options are intersected across contributors; a provider that publishes no closed set does not narrow them. Fields without a Meld catalog retain provider-native options, such as bank or country lists. Aggregate responses include those options only when all contributors publish matching lists. An empty list means no value is accepted yet. Omission can mean no closed set or unavailable aggregate options; it does not prove unrestricted input. Fetch provider-scoped requirements for validation. A field is `required` if any matching provider requires it. The response is the account-facing contract for the requested category. Offramp keys with `derived=false` are what the account sends in payout details; onramp keys are the receiving-bank fields on the deposit instruction. `derived=true` means Meld supplies the value and the caller does not send it. The provider still requires it. Omit `accountHolderType` to return both the INDIVIDUAL and BUSINESS slices. All filters are optional and can be combined; providing no filters returns the union across all stored requirements. `countryCode` must be 2 characters and `serviceProvider` and `paymentMethod` at most 32 characters; violations return `400`. Provider scope rules:\n- No authentication: results come from the global dataset; `Meld-Account-Id` is ignored.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim. An identity without a `providers` claim, or with an empty one, is unrestricted.\n- `Meld-Account-Id` only: ignored for anonymous callers.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets. An account id this service has no account data for leaves the scope unchanged; a known account with no providers yields an empty scope.\n- Naming an account that does not belong to the caller returns `403` when account-header enforcement is enabled, unless the caller has an authorized administrator or service role. With enforcement in monitor mode, the request is only reported and proceeds.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `serviceProvider` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
         "operationId": "search-payment-method-field-requirements",
         "tags": [
           "Supported"
@@ -2469,7 +2713,7 @@
             }
           },
           {
-            "description": "Country code",
+            "description": "Country code (2 characters)",
             "example": "DO",
             "name": "countryCode",
             "in": "query",
@@ -2478,8 +2722,16 @@
             }
           },
           {
+            "description": "Include providerValues, providerPath, and internal derived bankCode. Requires serviceProvider. Defaults to false. Provider-scoped reads also retain derived bankCode and providerPath under the existing compatibility setting.",
+            "name": "includeProviderMappings",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "description": "Canonical payment method code",
-            "example": "DO_BANK_TRANSFER",
+            "example": "PAYOUT_TO_BANK",
             "name": "paymentMethod",
             "in": "query",
             "schema": {
@@ -2496,7 +2748,7 @@
             }
           },
           {
-            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "description": "Optional. Base58 encoded account id, ignored for anonymous callers. For authenticated callers, intersects identity providers with account providers. With account-header enforcement enabled, the account must belong to the caller unless the caller has an authorized administrator or service role.",
             "name": "Meld-Account-Id",
             "in": "header",
             "schema": {
@@ -2511,23 +2763,128 @@
               "application/json": {
                 "examples": {
                   "paymentMethodRequirements": {
-                    "summary": "Field requirements for a specific payment method",
+                    "summary": "Public bank identifier requirements",
                     "value": {
                       "requirements": [
                         {
-                          "serviceProvider": "DUENETWORK",
                           "category": "CRYPTO_OFFRAMP",
-                          "paymentMethod": "DO_BANK_TRANSFER",
-                          "countryCode": "DO",
+                          "paymentMethod": "PAYOUT_TO_BANK",
+                          "countryCode": "CO",
                           "accountHolderType": "INDIVIDUAL",
                           "fields": [
                             {
+                              "key": "bankIdentifier",
+                              "label": "Bank",
+                              "fieldType": "OBJECT",
+                              "required": true,
+                              "displayOrder": 1,
+                              "derived": false
+                            },
+                            {
+                              "key": "type",
+                              "label": "Identifier type",
+                              "fieldType": "ENUM",
+                              "parentKey": "bankIdentifier",
+                              "required": true,
+                              "displayOrder": 1,
+                              "allowedValues": [
+                                "BANK_DIRECTORY_CODE",
+                                "NATIONAL_BANK_CODE",
+                                "SWIFT_BIC"
+                              ],
+                              "derived": false
+                            },
+                            {
+                              "key": "value",
+                              "label": "Bank identifier value",
+                              "fieldType": "STRING",
+                              "parentKey": "bankIdentifier",
+                              "required": true,
+                              "displayOrder": 1,
+                              "derived": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "providerMappings": {
+                    "summary": "Provider-scoped includeProviderMappings=true",
+                    "value": {
+                      "requirements": [
+                        {
+                          "category": "CRYPTO_OFFRAMP",
+                          "paymentMethod": "PAYOUT_TO_BANK",
+                          "countryCode": "CO",
+                          "accountHolderType": "INDIVIDUAL",
+                          "serviceProvider": "DLOCAL",
+                          "fields": [
+                            {
                               "key": "bankCode",
-                              "label": "Bank / institution code",
+                              "label": "Bank code",
                               "fieldType": "STRING",
                               "required": true,
-                              "providerPath": "financialInstitutionId",
-                              "displayOrder": 1
+                              "displayOrder": 1,
+                              "derived": true,
+                              "providerPath": "beneficiary.bank_account.code"
+                            },
+                            {
+                              "key": "bankIdentifier",
+                              "label": "Bank",
+                              "fieldType": "OBJECT",
+                              "required": true,
+                              "displayOrder": 1,
+                              "derived": false
+                            },
+                            {
+                              "key": "type",
+                              "label": "Identifier type",
+                              "fieldType": "ENUM",
+                              "parentKey": "bankIdentifier",
+                              "required": true,
+                              "displayOrder": 1,
+                              "allowedValues": [
+                                "BANK_DIRECTORY_CODE",
+                                "NATIONAL_BANK_CODE",
+                                "SWIFT_BIC"
+                              ],
+                              "derived": false
+                            },
+                            {
+                              "key": "value",
+                              "label": "Bank identifier value",
+                              "fieldType": "STRING",
+                              "parentKey": "bankIdentifier",
+                              "required": true,
+                              "displayOrder": 1,
+                              "derived": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "accountDefault": {
+                    "summary": "Account supplies no purpose when Meld has a default",
+                    "value": {
+                      "requirements": [
+                        {
+                          "category": "CRYPTO_OFFRAMP",
+                          "paymentMethod": "PAYOUT_TO_BANK",
+                          "countryCode": "CO",
+                          "accountHolderType": "INDIVIDUAL",
+                          "serviceProvider": "DLOCAL",
+                          "fields": [
+                            {
+                              "key": "purpose",
+                              "label": "Purpose",
+                              "fieldType": "ENUM",
+                              "required": true,
+                              "displayOrder": 2,
+                              "derived": true,
+                              "allowedValues": [
+                                "PERSONAL_TRANSFER"
+                              ]
                             }
                           ]
                         }
@@ -2536,13 +2893,13 @@
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/Response1"
+                  "$ref": "#/components/schemas/Response4"
                 }
               }
             }
           },
           "400": {
-            "description": "Request rejected - see the code and message",
+            "description": "`countryCode` not 2 characters, `serviceProvider` or `paymentMethod` longer than 32 characters, or an invalid enum value",
             "content": {
               "application/json": {
                 "schema": {
@@ -2618,10 +2975,278 @@
         }
       }
     },
+    "/network-partner/supported/routes/direction/{direction}/{countryCode}/{sourceCurrencyCode}/{destinationCurrencyCode}": {
+      "get": {
+        "summary": "List supported routes by direction",
+        "description": "Same as find-supported-routes, across every non-swap category of the direction: ONRAMP covers CRYPTO_ONRAMP and CRYPTO_VIRTUAL_ACCOUNT_ONRAMP (fiat to crypto), OFFRAMP covers CRYPTO_OFFRAMP and CRYPTO_VIRTUAL_ACCOUNT_OFFRAMP (crypto to fiat). Each payment method carries the category it is published under; a method published under two categories is returned once per category. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. An unknown `countryCode`, or a `subdivision` outside US and CA, returns `400`. Provider scope rules:\n- No authentication: results come from the global dataset; `Meld-Account-Id` is ignored.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim. An identity without a `providers` claim, or with an empty one, is unrestricted.\n- `Meld-Account-Id` only: ignored for anonymous callers.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets. An account id this service has no account data for leaves the scope unchanged; a known account with no providers yields an empty scope.\n- Naming an account that does not belong to the caller returns `403` when account-header enforcement is enabled, unless the caller has an authorized administrator or service role. With enforcement in monitor mode, the request is only reported and proceeds.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "operationId": "find-supported-routes-by-direction",
+        "tags": [
+          "Supported"
+        ],
+        "parameters": [
+          {
+            "name": "Meld-Version",
+            "in": "header",
+            "description": "Dated API version to use for this request, e.g. `2026-02-03`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2026-02-03"
+            }
+          },
+          {
+            "description": "Country code",
+            "example": "US",
+            "name": "countryCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Canonical destination currency code. Crypto for ONRAMP; fiat for OFFRAMP.",
+            "example": "BTC",
+            "name": "destinationCurrencyCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Ramp direction",
+            "example": "ONRAMP",
+            "name": "direction",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Direction"
+            }
+          },
+          {
+            "description": "Canonical source currency code. Fiat for ONRAMP; crypto for OFFRAMP.",
+            "example": "USD",
+            "name": "sourceCurrencyCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "When true, returns only payment methods available in the hosted checkout (widget)",
+            "name": "checkout",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "When true, returns only headless-capable payment methods",
+            "name": "headless",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Comma-separated partner ids",
+            "example": "PAYBIS,BANXA",
+            "name": "partners",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Canonical payment method code",
+            "example": "CREDIT_DEBIT_CARD",
+            "name": "paymentMethod",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Payment method type",
+            "example": "CARD",
+            "name": "paymentType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PaymentType"
+            }
+          },
+          {
+            "description": "Country subdivision code. Supported for US and CA only. Use either full ISO 3166-2 code or local code.",
+            "example": "US-NY",
+            "name": "subdivision",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional. Base58 encoded account id, ignored for anonymous callers. For authenticated callers, intersects identity providers with account providers. With account-header enforcement enabled, the account must belong to the caller unless the caller has an authorized administrator or service role.",
+            "name": "Meld-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Supported routes",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "supportedRoutesByDirection": {
+                    "summary": "One partner's ONRAMP methods across two categories",
+                    "value": [
+                      {
+                        "partner": "UPHOLD",
+                        "source": "USD",
+                        "destination": "USDC",
+                        "paymentMethods": [
+                          {
+                            "paymentType": "CARD",
+                            "name": "CREDIT_DEBIT_CARD",
+                            "partnerMethodName": "credit-card",
+                            "category": "CRYPTO_ONRAMP",
+                            "limits": {
+                              "currencyCode": "USD",
+                              "min": 10.83,
+                              "max": 16133.0
+                            },
+                            "logo": {
+                              "dark": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png",
+                              "light": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_light.png"
+                            },
+                            "headlessSupported": true,
+                            "checkoutSupported": false,
+                            "cardRenderMode": "IFRAME",
+                            "headlessPresentation": {
+                              "surface": "EMBEDDED_WIDGET",
+                              "protocol": "UPHOLD_WIDGET",
+                              "version": 1
+                            },
+                            "headlessProviderMethod": "credit-card"
+                          },
+                          {
+                            "paymentType": "BANK_TRANSFER",
+                            "name": "ACH",
+                            "partnerMethodName": "ACH",
+                            "category": "CRYPTO_VIRTUAL_ACCOUNT_ONRAMP",
+                            "limits": {
+                              "currencyCode": "USD",
+                              "min": 10.83,
+                              "max": 16133.0
+                            },
+                            "logo": {
+                              "dark": "https://cdn.meld.io/images-paymentmethod/ACH/logo_dark.png",
+                              "light": "https://cdn.meld.io/images-paymentmethod/ACH/logo_light.png"
+                            },
+                            "headlessSupported": true,
+                            "checkoutSupported": false,
+                            "headlessProviderMethod": "ACH"
+                          }
+                        ],
+                        "kycLimits": []
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupportedRoute"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown country code, `subdivision` without a US or CA country, or an invalid enum value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The credentials are valid but not for this account or provider scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "The path exists but not for this method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "No representation available for the requested Accept header",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request body media type not supported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected failure in this service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-mint": {
+          "href": "/api-reference/network-partners/supported/find-supported-routes-by-direction"
+        }
+      }
+    },
     "/network-partner/supported/routes/{category}/{countryCode}/{sourceCurrencyCode}/{destinationCurrencyCode}": {
       "get": {
         "summary": "List supported routes",
-        "description": "Searches supported partner routes by category, country, optional subdivision, source currency, destination currency, and payment method or payment type. For onramp categories the route is fiat to crypto; for non-swap offramp categories it is crypto to fiat. Swap and CRYPTO_TRANSFER routes are crypto to crypto. Provider matching uses the destination crypto for CRYPTO_ONRAMP_SWAP and CRYPTO_TRANSFER, and the source crypto for CRYPTO_OFFRAMP_SWAP. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. Provider scope rules:\n- No Basic Auth and no `Meld-Account-Id`: results come from the global dataset.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim.\n- `Meld-Account-Id` only: results are restricted to providers configured for that account.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
+        "description": "Searches supported partner routes by category, country, optional subdivision, source currency, destination currency, and payment method or payment type. For onramp categories the route is fiat to crypto; for non-swap offramp categories it is crypto to fiat. Swap and CRYPTO_TRANSFER routes are crypto to crypto. Provider matching uses the destination crypto for CRYPTO_ONRAMP_SWAP and CRYPTO_TRANSFER, and the source crypto for CRYPTO_OFFRAMP_SWAP. Each payment method carries one `limits` object rounded to 2 decimal places, in the fiat currency when known, otherwise the crypto currency; `/v2/supported/routes` returns every denomination at full precision. When both `paymentMethod` and `paymentType` are provided, `paymentMethod` takes precedence. An unknown `countryCode`, or a `subdivision` outside US and CA, returns `400`. Provider scope rules:\n- No authentication: results come from the global dataset; `Meld-Account-Id` is ignored.\n- Basic Auth only: results are restricted to the authenticated identity's `providers` claim. An identity without a `providers` claim, or with an empty one, is unrestricted.\n- `Meld-Account-Id` only: ignored for anonymous callers.\n- Both Basic Auth and `Meld-Account-Id`: results are restricted to the intersection of both provider sets. An account id this service has no account data for leaves the scope unchanged; a known account with no providers yields an empty scope.\n- Naming an account that does not belong to the caller returns `403` when account-header enforcement is enabled, unless the caller has an authorized administrator or service role. With enforcement in monitor mode, the request is only reported and proceeds.\n- Explicit partner filters are intersected with the resolved provider scope.\n\nExplicit `partners` filtering is intersected with the resolved provider scope.\nIf the effective provider scope contains no providers, this collection endpoint returns `200` with an empty result.",
         "operationId": "find-supported-routes",
         "tags": [
           "Supported"
@@ -2678,6 +3303,22 @@
             }
           },
           {
+            "description": "When true, returns only payment methods available in the hosted checkout (widget)",
+            "name": "checkout",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "When true, returns only headless-capable payment methods",
+            "name": "headless",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "description": "Comma-separated partner ids",
             "example": "PAYBIS,BANXA",
             "name": "partners",
@@ -2714,7 +3355,7 @@
             }
           },
           {
-            "description": "Optional. Base58 encoded account id. Restricts results to providers configured for the account. If Basic Auth is also present, the effective scope is the intersection of authenticated providers and account providers.",
+            "description": "Optional. Base58 encoded account id, ignored for anonymous callers. For authenticated callers, intersects identity providers with account providers. With account-header enforcement enabled, the account must belong to the caller unless the caller has an authorized administrator or service role.",
             "name": "Meld-Account-Id",
             "in": "header",
             "schema": {
@@ -2739,16 +3380,26 @@
                           {
                             "paymentType": "CARD",
                             "name": "CREDIT_DEBIT_CARD",
-                            "partnerMethodName": "card",
+                            "partnerMethodName": "debit-credit-card",
+                            "category": "CRYPTO_ONRAMP",
                             "limits": {
                               "currencyCode": "USD",
                               "min": 10.0,
-                              "max": 10000.0
+                              "max": 15000.0
                             },
                             "logo": {
                               "dark": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_dark.png",
                               "light": "https://cdn.meld.io/images-paymentmethod/CREDIT_DEBIT_CARD/logo_light.png"
-                            }
+                            },
+                            "headlessSupported": true,
+                            "checkoutSupported": true,
+                            "cardRenderMode": "IFRAME",
+                            "headlessPresentation": {
+                              "surface": "VENDOR_SDK",
+                              "protocol": "BANXA_CHECKOUT",
+                              "version": 1
+                            },
+                            "headlessProviderMethod": "debit-credit-card"
                           }
                         ],
                         "kycLimits": [
@@ -2777,7 +3428,7 @@
             }
           },
           "400": {
-            "description": "Request rejected - see the code and message",
+            "description": "Unknown country code, `subdivision` without a US or CA country, or an invalid enum value",
             "content": {
               "application/json": {
                 "schema": {

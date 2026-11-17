@@ -71,9 +71,6 @@
             "ApiKeyAuth": []
           }
         ],
-        "x-mint": {
-          "href": "/api-reference/bank-linking/connect/bank-linking-connect-create"
-        },
         "parameters": [
           {
             "name": "Meld-Version",
@@ -85,7 +82,10 @@
               "example": "2026-02-03"
             }
           }
-        ]
+        ],
+        "x-mint": {
+          "href": "/api-reference/bank-linking/connect/bank-linking-connect-create"
+        }
       }
     },
     "/bank-linking/connect/repair": {
@@ -135,9 +135,6 @@
             "ApiKeyAuth": []
           }
         ],
-        "x-mint": {
-          "href": "/api-reference/bank-linking/connect/bank-linking-connect-repair"
-        },
         "parameters": [
           {
             "name": "Meld-Version",
@@ -149,7 +146,10 @@
               "example": "2026-02-03"
             }
           }
-        ]
+        ],
+        "x-mint": {
+          "href": "/api-reference/bank-linking/connect/bank-linking-connect-repair"
+        }
       }
     },
     "/bank-linking/connections/{connectionId}": {
@@ -177,8 +177,7 @@
             "description": "Connection id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -198,15 +197,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -257,8 +248,7 @@
             "description": "Connection id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -271,15 +261,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -332,8 +314,7 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -342,8 +323,7 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -352,8 +332,7 @@
             "description": "Institution id. If present, only institution connections with this institution will be included.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -362,8 +341,7 @@
             "description": "Comma separated list of institution connection statuses. If present, only institution connections with these statuses will be included.\n\nFind out more about connection statuses [here.](https://docs.meld.io/docs/connection-statuses-and-errors)",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -372,8 +350,7 @@
             "description": "Comma separated list of service providers. If present, only institution connections with these service providers will be included.\n\n***Note:*** Reference [Supported Service Providers](https://docs.meld.io/docs/creating-connections#supported-service-providers) for the list of available bank linking providers.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -383,7 +360,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": ""
+              "format": "date"
             }
           },
           {
@@ -393,7 +370,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": ""
+              "format": "date"
             }
           },
           {
@@ -402,8 +379,7 @@
             "description": "Unique key corresponding to an institution connection's position in the paginated list of results -- used to indicate that only institution connections residing before this key will be retrieved.\n\nEach institution connection carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -412,8 +388,7 @@
             "description": "Unique key corresponding to a institution connection's position in the paginated list of results -- used to indicate that only institution connections residing after this key will be retrieved.\n\nEach institution connection carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -422,8 +397,8 @@
             "description": "Limits number of returned institution connections.\n\n*Default value*: 10\n\n*Minimum value*: 1\n\n*Maximum value*: 100",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "integer",
+              "format": "int32"
             }
           },
           {
@@ -432,8 +407,7 @@
             "description": "Institution name. If present, only institution connections with this institution will be included.If institutionId is present then institutionId will take precedence.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -496,8 +470,7 @@
             "description": "Connection id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -530,15 +503,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -591,8 +556,7 @@
             "description": "Connection id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -622,15 +586,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -708,9 +664,6 @@
             "ApiKeyAuth": []
           }
         ],
-        "x-mint": {
-          "href": "/api-reference/bank-linking/connections/bank-linking-connections-import"
-        },
         "parameters": [
           {
             "name": "Meld-Version",
@@ -722,7 +675,10 @@
               "example": "2026-02-03"
             }
           }
-        ]
+        ],
+        "x-mint": {
+          "href": "/api-reference/bank-linking/connections/bank-linking-connections-import"
+        }
       }
     },
     "/bank-linking/accounts/{financialAccountId}": {
@@ -750,8 +706,7 @@
             "description": "Financial account id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -771,15 +726,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -832,8 +779,7 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. Should not be provided in conjunction with `externalCustomerId`",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -842,8 +788,7 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity. Should not be provided in conjunction with `customerId`",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -852,8 +797,7 @@
             "description": "Institution id",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -862,8 +806,7 @@
             "description": "Connection id",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -872,8 +815,7 @@
             "description": "Unique key corresponding to a financial account's position in the paginated list of results -- used to indicate that only financial accounts residing before this key will be retrieved.\n\nEach financial account carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -882,8 +824,7 @@
             "description": "Unique key corresponding to a financial account's position in the paginated list of results -- used to indicate that only financial accounts residing after this key will be retrieved.\n\nEach financial account carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -892,8 +833,8 @@
             "description": "Limits number of returned financial accounts.\n\n*Default value*: 10\n\n*Minimum value*: 1\n\n*Maximum value*: 100",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -956,8 +897,7 @@
             "description": "Financial account id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -990,15 +930,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1051,8 +983,7 @@
             "description": "Transaction id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -1072,15 +1003,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1133,8 +1056,7 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. If provided, `externalCustomerId` should not be provided. However, if both are present then `customerId` takes precedence.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1143,8 +1065,7 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity. If provided, `customerId` should not be provided. However, if both are present then `customerId` takes precedence.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1153,8 +1074,7 @@
             "description": "Financial account id",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1164,7 +1084,6 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": "",
               "enum": [
                 "PENDING",
                 "POSTED"
@@ -1178,7 +1097,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": ""
+              "format": "date"
             }
           },
           {
@@ -1188,7 +1107,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": ""
+              "format": "date"
             }
           },
           {
@@ -1197,8 +1116,7 @@
             "description": "Unique key corresponding to a transaction's position in the paginated list of results -- used to indicate that only transactions residing before this key will be retrieved.\n\nEach transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1207,8 +1125,7 @@
             "description": "Unique key corresponding to a transaction's position in the paginated list of results -- used to indicate that only transactions residing after this key will be retrieved.\n\nEach transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1217,8 +1134,7 @@
             "description": "Transaction category",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1227,8 +1143,7 @@
             "description": "Connection Id",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1237,8 +1152,8 @@
             "description": "Limits number of returned financial account transactions.\n\n*Default value*: 100\n\n*Minimum value*: 1\n\n*Maximum value*: 1000",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -1301,8 +1216,7 @@
             "description": "Investment Holding id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -1322,15 +1236,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1383,8 +1289,7 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. Should not be provided in conjunction with `externalCustomerId`",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1393,8 +1298,7 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity. Should not be provided in conjunction with`customerId`",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1403,8 +1307,7 @@
             "description": "Financial account id",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1413,8 +1316,7 @@
             "description": "Connection Id",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1423,8 +1325,7 @@
             "description": "Unique key corresponding to a investment holding's position in the paginated list of results -- used to indicate that only investment holdings residing before this key will be retrieved.\n\nEach investment holding carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1433,8 +1334,7 @@
             "description": "Unique key corresponding to a investment holding's position in the paginated list of results -- used to indicate that only investment holdings residing after this key will be retrieved.\n\nEach investment holding carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1443,8 +1343,8 @@
             "description": "Limits number of returned financial account investment holdings.\n\n*Default value*: 100\n\n*Minimum value*: 1\n\n*Maximum value*: 1000",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -1507,8 +1407,7 @@
             "description": "Investment Transaction id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -1528,15 +1427,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1589,8 +1480,7 @@
             "description": "Meld generated unique identifier for your customer. This should be used to track customer activity. Should not be provided in conjunction with `externalCustomerId`",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1599,8 +1489,7 @@
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity. Should not be provided in conjunction with `customerId`",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1609,8 +1498,7 @@
             "description": "Financial account id",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1620,7 +1508,6 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": "",
               "enum": [
                 "PENDING",
                 "POSTED"
@@ -1634,7 +1521,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": ""
+              "format": "date"
             }
           },
           {
@@ -1644,7 +1531,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "default": ""
+              "format": "date"
             }
           },
           {
@@ -1653,8 +1540,7 @@
             "description": "Connection Id",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1663,8 +1549,7 @@
             "description": "Unique key corresponding to a investment transaction's position in the paginated list of results -- used to indicate that only investment transactions residing before this key will be retrieved.\n\nEach investment transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1673,8 +1558,7 @@
             "description": "Unique key corresponding to a investment transaction's position in the paginated list of results -- used to indicate that only investment transactions residing after this key will be retrieved.\n\nEach investment transaction carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1683,8 +1567,8 @@
             "description": "Limits number of returned financial account investment transactions.\n\n*Default value*: 100\n\n*Minimum value*: 1\n\n*Maximum value*: 1000",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -1747,8 +1631,7 @@
             "description": "Institution id",
             "required": true,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -1768,15 +1651,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {
-                    "default": ""
-                  },
-                  "default": "",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ErrorResponse"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1829,8 +1704,7 @@
             "description": "Unique key corresponding to a institution's position in the paginated list of results -- used to indicate that only institutions residing before this key will be retrieved.\n\nEach institution carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1839,8 +1713,7 @@
             "description": "Unique key corresponding to a institution's position in the paginated list of results -- used to indicate that only institutions residing after this key will be retrieved.\n\nEach institution carries a unique key. Reference [Pagination](https://docs.meld.io/docs/pagination)\n\nThe ***before*** and ***after*** fields cannot be used in the same request.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1849,8 +1722,7 @@
             "description": "Comma separated list of service providers. If present, only institutions supported by at least one of the service providers will be included.\n\n***Note:*** Reference [Supported Service Providers](https://docs.meld.io/docs/creating-connections#supported-service-providers) for the list of available bank linking providers.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1859,8 +1731,8 @@
             "description": "Limits number of returned institutions.\n\n*Default value*: 10\n\n*Minimum value*: 1\n\n*Maximum value*: 1000",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "integer",
+              "format": "int32"
             }
           },
           {
@@ -1869,8 +1741,7 @@
             "description": "If present, only institutions will be included whose name matches partially or fully.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1879,8 +1750,7 @@
             "description": "If present, only institutions will be included whose type matches.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           },
           {
@@ -1889,8 +1759,7 @@
             "description": "Comma separated list of regions. If present, only institutions supported by at least one of the regions will be included.",
             "required": false,
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -1939,73 +1808,47 @@
             "description": "Service provider to search by",
             "enum": [
               "ACROSS",
-              "AEROPAY",
-              "AKOYA",
               "ALCHEMYPAY",
               "APPLEPAY",
-              "AUTHORIZENET",
               "BANXA",
-              "BILIRA",
               "BINANCECONNECT",
               "BINANCEPAY",
               "BLOCKCHAINDOTCOM",
-              "BOOMFI",
-              "BRAINTREE",
               "BRALE",
               "BTCDIRECT",
-              "CASHAPP",
-              "CHECKOUT",
-              "CIRCLE",
               "COINBASEPAY",
-              "COINFLOW",
+              "COINME",
+              "DLOCAL",
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
               "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
-              "HARBOUR",
               "KOYWE",
               "KRYPTONIM",
               "MERCURYO",
-              "MESH",
-              "MESO",
-              "MOONPAY",
-              "MOOV",
               "MX",
-              "NMI",
               "NOAH",
               "ONMETA",
               "ONRAMPMONEY",
               "PAYBIS",
               "PAYPAL",
               "PLAID",
-              "RAMP",
+              "RAMPNOW",
               "REVOLUT",
               "ROBINHOOD",
-              "ROUTERPROTOCOL",
               "SALTEDGE",
               "SALTEDGEPARTNERS",
-              "SARDINE",
-              "SHIFT4",
-              "SHOPIFY",
-              "SIMPLEX",
-              "SKRILLCRYPTO",
-              "SQUARE",
               "STRIPE",
               "SUMSUB",
               "SWAPPED",
-              "TANGOCARD",
-              "TELLER",
               "TOPPER",
               "TRANSAK",
-              "TREMENDOUS",
-              "TRANSFI",
+              "TZERO",
               "UNLIMIT",
-              "WYRE",
-              "XANPOOL",
-              "YELLOWCARD",
-              "YODLEE"
+              "UPHOLD",
+              "YELLOWCARD"
             ]
           },
           "serviceProviderInstitutionId": {
@@ -2025,6 +1868,9 @@
           "code": {
             "type": "string"
           },
+          "displayMessage": {
+            "type": "string"
+          },
           "errors": {
             "type": "array",
             "items": {
@@ -2038,7 +1884,8 @@
             "type": "string"
           },
           "serviceProviderDetails": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": {}
           },
           "timestamp": {
             "type": "string",
@@ -2306,6 +2153,448 @@
           }
         }
       },
+      "ListServiceProviderPreference": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ServiceProviderPreference"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "algorithm": {
+                "type": "string",
+                "enum": [
+                  "SINGLE",
+                  "ORDERED",
+                  "EQUAL_DISTRIBUTION",
+                  "HEALTH",
+                  "OPTIONAL_PRODUCT_COVERAGE",
+                  "PREFER_OAUTH"
+                ]
+              },
+              "serviceProviders": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "ACROSS",
+                    "ALCHEMYPAY",
+                    "APPLEPAY",
+                    "BANXA",
+                    "BINANCECONNECT",
+                    "BINANCEPAY",
+                    "BLOCKCHAINDOTCOM",
+                    "BRALE",
+                    "BTCDIRECT",
+                    "COINBASEPAY",
+                    "COINME",
+                    "DLOCAL",
+                    "DUENETWORK",
+                    "ELDORADO",
+                    "FINICITY",
+                    "FLASHNET",
+                    "FONBNK",
+                    "GUARDARIAN",
+                    "KOYWE",
+                    "KRYPTONIM",
+                    "MERCURYO",
+                    "MX",
+                    "NOAH",
+                    "ONMETA",
+                    "ONRAMPMONEY",
+                    "PAYBIS",
+                    "PAYPAL",
+                    "PLAID",
+                    "RAMPNOW",
+                    "REVOLUT",
+                    "ROBINHOOD",
+                    "SALTEDGE",
+                    "SALTEDGEPARTNERS",
+                    "STRIPE",
+                    "SUMSUB",
+                    "SWAPPED",
+                    "TOPPER",
+                    "TRANSAK",
+                    "TZERO",
+                    "UNLIMIT",
+                    "UPHOLD",
+                    "YELLOWCARD"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "MultipleValueRoutingCondition": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RoutingCondition"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "variable": {
+                "type": "string",
+                "enum": [
+                  "INSTITUTION_ID",
+                  "PRODUCTS",
+                  "OPTIONAL_PRODUCTS",
+                  "REGIONS",
+                  "SERVICE_PROVIDERS",
+                  "SERVICE_PROVIDER_PRODUCTS",
+                  "SERVICE_PROVIDER_PRODUCT_HEALTH",
+                  "SERVICE_PROVIDER_OAUTH"
+                ]
+              },
+              "operator": {
+                "type": "string",
+                "enum": [
+                  "IN",
+                  "NOT_IN",
+                  "NOT_CONTAINS"
+                ]
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RoutingCondition": {
+        "discriminator": {
+          "propertyName": "operator"
+        },
+        "properties": {
+          "operator": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operator"
+        ]
+      },
+      "RoutingDefinition": {
+        "discriminator": {
+          "propertyName": "type"
+        },
+        "properties": {
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "RoutingProfileCreateRequest": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Action this profile can route",
+            "enum": [
+              "BANK_LINKING_CONNECT"
+            ]
+          },
+          "actionDefault": {
+            "type": "boolean",
+            "description": "Whether this is the default profile for the account; the first profile defaults to true"
+          },
+          "definition": {
+            "description": "Routing definition",
+            "oneOf": [
+              {
+                "title": "RuleRoutingDefinition",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RuleRoutingDefinition"
+                  }
+                ]
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Name to describe this profile; a default name is generated when omitted"
+          }
+        },
+        "required": [
+          "action",
+          "definition"
+        ]
+      },
+      "Rule": {
+        "type": "object",
+        "properties": {
+          "conditions": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "title": "MultipleValueRoutingCondition",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/MultipleValueRoutingCondition"
+                    }
+                  ]
+                },
+                {
+                  "title": "SingleValueRoutingCondition",
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SingleValueRoutingCondition"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "label": {
+            "type": "string"
+          },
+          "preference": {
+            "oneOf": [
+              {
+                "title": "ListServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ListServiceProviderPreference"
+                  }
+                ]
+              },
+              {
+                "title": "SingleServiceProviderPreference",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "RuleRoutingDefinition": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RoutingDefinition"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "rules": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Rule"
+                }
+              },
+              "useSmartRouting": {
+                "type": "boolean"
+              },
+              "defaultPreference": {
+                "oneOf": [
+                  {
+                    "title": "ListServiceProviderPreference",
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ListServiceProviderPreference"
+                      }
+                    ]
+                  },
+                  {
+                    "title": "SingleServiceProviderPreference",
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/SingleServiceProviderPreference"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "ServiceProviderPreference": {
+        "discriminator": {
+          "propertyName": "algorithm"
+        },
+        "properties": {
+          "algorithm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "algorithm"
+        ]
+      },
+      "SingleServiceProviderPreference": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ServiceProviderPreference"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "algorithm": {
+                "type": "string",
+                "enum": [
+                  "SINGLE",
+                  "ORDERED",
+                  "EQUAL_DISTRIBUTION",
+                  "HEALTH",
+                  "OPTIONAL_PRODUCT_COVERAGE",
+                  "PREFER_OAUTH"
+                ]
+              },
+              "serviceProvider": {
+                "type": "string",
+                "enum": [
+                  "ACROSS",
+                  "ALCHEMYPAY",
+                  "APPLEPAY",
+                  "BANXA",
+                  "BINANCECONNECT",
+                  "BINANCEPAY",
+                  "BLOCKCHAINDOTCOM",
+                  "BRALE",
+                  "BTCDIRECT",
+                  "COINBASEPAY",
+                  "COINME",
+                  "DLOCAL",
+                  "DUENETWORK",
+                  "ELDORADO",
+                  "FINICITY",
+                  "FLASHNET",
+                  "FONBNK",
+                  "GUARDARIAN",
+                  "KOYWE",
+                  "KRYPTONIM",
+                  "MERCURYO",
+                  "MX",
+                  "NOAH",
+                  "ONMETA",
+                  "ONRAMPMONEY",
+                  "PAYBIS",
+                  "PAYPAL",
+                  "PLAID",
+                  "RAMPNOW",
+                  "REVOLUT",
+                  "ROBINHOOD",
+                  "SALTEDGE",
+                  "SALTEDGEPARTNERS",
+                  "STRIPE",
+                  "SUMSUB",
+                  "SWAPPED",
+                  "TOPPER",
+                  "TRANSAK",
+                  "TZERO",
+                  "UNLIMIT",
+                  "UPHOLD",
+                  "YELLOWCARD"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "SingleValueRoutingCondition": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RoutingCondition"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "variable": {
+                "type": "string",
+                "enum": [
+                  "INSTITUTION_ID",
+                  "PRODUCTS",
+                  "OPTIONAL_PRODUCTS",
+                  "REGIONS",
+                  "SERVICE_PROVIDERS",
+                  "SERVICE_PROVIDER_PRODUCTS",
+                  "SERVICE_PROVIDER_PRODUCT_HEALTH",
+                  "SERVICE_PROVIDER_OAUTH"
+                ]
+              },
+              "operator": {
+                "type": "string",
+                "enum": [
+                  "IN",
+                  "NOT_IN",
+                  "NOT_CONTAINS"
+                ]
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "RoutingProfileResponse": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Account id"
+          },
+          "action": {
+            "type": "string",
+            "description": "Action this profile can route",
+            "enum": [
+              "BANK_LINKING_CONNECT"
+            ]
+          },
+          "actionDefault": {
+            "type": "boolean",
+            "description": "Whether or not this is the default profile for the action on this account"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time created"
+          },
+          "definition": {
+            "description": "Routing definition",
+            "oneOf": [
+              {
+                "title": "RuleRoutingDefinition",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RuleRoutingDefinition"
+                  }
+                ]
+              }
+            ]
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time deleted"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this profile"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name to describe this profile"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time last updated"
+          }
+        }
+      },
       "ConnectionAddProductsRequest": {
         "type": "object",
         "properties": {
@@ -2373,70 +2662,6 @@
           }
         }
       },
-      "AuthenticationBypassDetails": {
-        "type": "object",
-        "properties": {
-          "category": {
-            "type": "string",
-            "description": "The widget type associated with the previously authenticated crypto session",
-            "enum": [
-              "CRYPTO_ONRAMP",
-              "CRYPTO_OFFRAMP",
-              "CRYPTO_TRANSFER"
-            ]
-          },
-          "previouslyAuthenticatedId": {
-            "type": "string",
-            "description": "The Meld id of the crypto session in which the customer has already authenticated with their institution. The auth tied to this session will be used to import the connection if it is still valid. This id may pertain to the initial session in which the customer authenticated, or any subsequent session that used this prior authentication successfully.\n\nFor more details, reference [Using Multiple Products without Re-authenticating](https://docs.meld.io/docs/using-multiple-products-without-reauthenticating)",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "category",
-          "previouslyAuthenticatedId"
-        ]
-      },
-      "ImportAkoyaDetails": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ImportDetails"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "providerId": {
-                "type": "string",
-                "description": "Akoya provider id (aka institution id)",
-                "minLength": 1
-              },
-              "refreshToken": {
-                "type": "string",
-                "description": "Akoya refresh token",
-                "minLength": 1
-              },
-              "products": {
-                "type": "array",
-                "description": "Meld products to import from the connection. Optional. If not present, then all products supported by the institution will be used",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "BALANCES",
-                    "IDENTIFIERS",
-                    "INVESTMENT_HOLDINGS",
-                    "INVESTMENT_TRANSACTIONS",
-                    "OWNERS",
-                    "TRANSACTIONS"
-                  ]
-                }
-              }
-            }
-          }
-        ],
-        "required": [
-          "providerId",
-          "refreshToken"
-        ]
-      },
       "ImportDetails": {
         "type": "object",
         "description": "A provider's connection info",
@@ -2452,13 +2677,11 @@
             "type": "string",
             "description": "Service provider",
             "enum": [
-              "AKOYA",
               "FINICITY",
               "MX",
               "PLAID",
               "SALTEDGE",
-              "SALTEDGEPARTNERS",
-              "YODLEE"
+              "SALTEDGEPARTNERS"
             ]
           }
         }
@@ -2504,52 +2727,6 @@
           "institutionLoginId"
         ]
       },
-      "ImportMeshDetails": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ImportDetails"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "importType": {
-                "type": "string",
-                "description": "The type of import being performed.",
-                "enum": [
-                  "MELD_AUTHENTICATED"
-                ]
-              },
-              "products": {
-                "type": "array",
-                "description": "Meld products to import from the connection. Optional. If not present, then all products supported by the institution will be used",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "BALANCES",
-                    "IDENTIFIERS",
-                    "INVESTMENT_HOLDINGS",
-                    "INVESTMENT_TRANSACTIONS",
-                    "OWNERS",
-                    "TRANSACTIONS"
-                  ]
-                },
-                "uniqueItems": true
-              },
-              "authenticationBypassDetails": {
-                "description": "Details of the previously authenticated crypto session that will be used to import the connection. Only required if importType is MELD_AUTHENTICATED.",
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/AuthenticationBypassDetails"
-                  }
-                ]
-              }
-            }
-          }
-        ],
-        "required": [
-          "importType"
-        ]
-      },
       "ImportPlaidDetails": {
         "allOf": [
           {
@@ -2579,26 +2756,10 @@
             "items": {
               "oneOf": [
                 {
-                  "title": "ImportAkoyaDetails",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ImportAkoyaDetails"
-                    }
-                  ]
-                },
-                {
                   "title": "ImportFinicityDetails",
                   "allOf": [
                     {
                       "$ref": "#/components/schemas/ImportFinicityDetails"
-                    }
-                  ]
-                },
-                {
-                  "title": "ImportMeshDetails",
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ImportMeshDetails"
                     }
                   ]
                 },
@@ -2638,8 +2799,16 @@
             "type": "string",
             "minLength": 1
           },
+          "error": {
+            "type": "string",
+            "description": "Error the service provider's widget surfaced to the customer during this step, if any. The widget is often the only place a provider-side failure is visible, so this is recorded even when the step is not otherwise classified as an error."
+          },
           "selectedInstitutionId": {
             "type": "string"
+          },
+          "serviceProvider": {
+            "type": "string",
+            "description": "Service provider the widget attributes this step to."
           },
           "serviceProviderDetails": {
             "type": "object",
@@ -2681,7 +2850,8 @@
           },
           "institutionSelectionText": {
             "type": "string",
-            "description": "The text to display at the top of bank picker"
+            "description": "The text to display at the top of bank picker",
+            "example": "Select your institution"
           },
           "routingRetry": {
             "type": "boolean",
@@ -2726,10 +2896,9 @@
           },
           "externalCustomerId": {
             "type": "string",
-            "default": "testUser",
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "minLength": 1,
-            "example": "testUser"
+            "default": "testUser"
           },
           "institutionId": {
             "type": "string",
@@ -2737,7 +2906,8 @@
           },
           "institutionSearchString": {
             "type": "string",
-            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value"
+            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value",
+            "example": "Chase"
           },
           "optionalProducts": {
             "type": "array",
@@ -2767,7 +2937,13 @@
                 "OWNERS",
                 "TRANSACTIONS"
               ]
-            }
+            },
+            "default": [
+              "TRANSACTIONS",
+              "IDENTIFIERS",
+              "BALANCES",
+              "OWNERS"
+            ]
           },
           "redirectUrl": {
             "type": "string",
@@ -2828,10 +3004,9 @@
           },
           "externalCustomerId": {
             "type": "string",
-            "default": "testUser",
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "minLength": 1,
-            "example": "testUser"
+            "default": "testUser"
           },
           "institutionId": {
             "type": "string",
@@ -2839,7 +3014,8 @@
           },
           "institutionSearchString": {
             "type": "string",
-            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value"
+            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value",
+            "example": "Chase"
           },
           "optionalProducts": {
             "type": "array",
@@ -2873,7 +3049,13 @@
                 "INVESTMENT_TRANSACTIONS",
                 "TRANSACTIONS"
               ]
-            }
+            },
+            "default": [
+              "TRANSACTIONS",
+              "IDENTIFIERS",
+              "BALANCES",
+              "OWNERS"
+            ]
           },
           "redirectUrl": {
             "type": "string",
@@ -2940,73 +3122,47 @@
             "description": "If provided and supported, return details for this service provider instead of for the best service provider available.",
             "enum": [
               "ACROSS",
-              "AEROPAY",
-              "AKOYA",
               "ALCHEMYPAY",
               "APPLEPAY",
-              "AUTHORIZENET",
               "BANXA",
-              "BILIRA",
               "BINANCECONNECT",
               "BINANCEPAY",
               "BLOCKCHAINDOTCOM",
-              "BOOMFI",
-              "BRAINTREE",
               "BRALE",
               "BTCDIRECT",
-              "CASHAPP",
-              "CHECKOUT",
-              "CIRCLE",
               "COINBASEPAY",
-              "COINFLOW",
+              "COINME",
+              "DLOCAL",
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
               "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
-              "HARBOUR",
               "KOYWE",
               "KRYPTONIM",
               "MERCURYO",
-              "MESH",
-              "MESO",
-              "MOONPAY",
-              "MOOV",
               "MX",
-              "NMI",
               "NOAH",
               "ONMETA",
               "ONRAMPMONEY",
               "PAYBIS",
               "PAYPAL",
               "PLAID",
-              "RAMP",
+              "RAMPNOW",
               "REVOLUT",
               "ROBINHOOD",
-              "ROUTERPROTOCOL",
               "SALTEDGE",
               "SALTEDGEPARTNERS",
-              "SARDINE",
-              "SHIFT4",
-              "SHOPIFY",
-              "SIMPLEX",
-              "SKRILLCRYPTO",
-              "SQUARE",
               "STRIPE",
               "SUMSUB",
               "SWAPPED",
-              "TANGOCARD",
-              "TELLER",
               "TOPPER",
               "TRANSAK",
-              "TREMENDOUS",
-              "TRANSFI",
+              "TZERO",
               "UNLIMIT",
-              "WYRE",
-              "XANPOOL",
-              "YELLOWCARD",
-              "YODLEE"
+              "UPHOLD",
+              "YELLOWCARD"
             ]
           }
         },
@@ -3033,73 +3189,47 @@
               "type": "string",
               "enum": [
                 "ACROSS",
-                "AEROPAY",
-                "AKOYA",
                 "ALCHEMYPAY",
                 "APPLEPAY",
-                "AUTHORIZENET",
                 "BANXA",
-                "BILIRA",
                 "BINANCECONNECT",
                 "BINANCEPAY",
                 "BLOCKCHAINDOTCOM",
-                "BOOMFI",
-                "BRAINTREE",
                 "BRALE",
                 "BTCDIRECT",
-                "CASHAPP",
-                "CHECKOUT",
-                "CIRCLE",
                 "COINBASEPAY",
-                "COINFLOW",
+                "COINME",
+                "DLOCAL",
                 "DUENETWORK",
                 "ELDORADO",
                 "FINICITY",
                 "FLASHNET",
                 "FONBNK",
                 "GUARDARIAN",
-                "HARBOUR",
                 "KOYWE",
                 "KRYPTONIM",
                 "MERCURYO",
-                "MESH",
-                "MESO",
-                "MOONPAY",
-                "MOOV",
                 "MX",
-                "NMI",
                 "NOAH",
                 "ONMETA",
                 "ONRAMPMONEY",
                 "PAYBIS",
                 "PAYPAL",
                 "PLAID",
-                "RAMP",
+                "RAMPNOW",
                 "REVOLUT",
                 "ROBINHOOD",
-                "ROUTERPROTOCOL",
                 "SALTEDGE",
                 "SALTEDGEPARTNERS",
-                "SARDINE",
-                "SHIFT4",
-                "SHOPIFY",
-                "SIMPLEX",
-                "SKRILLCRYPTO",
-                "SQUARE",
                 "STRIPE",
                 "SUMSUB",
                 "SWAPPED",
-                "TANGOCARD",
-                "TELLER",
                 "TOPPER",
                 "TRANSAK",
-                "TREMENDOUS",
-                "TRANSFI",
+                "TZERO",
                 "UNLIMIT",
-                "WYRE",
-                "XANPOOL",
-                "YELLOWCARD",
-                "YODLEE"
+                "UPHOLD",
+                "YELLOWCARD"
               ]
             }
           },
@@ -3115,19 +3245,17 @@
             "type": "string",
             "description": "The service provider used for the current connect session.",
             "enum": [
-              "AKOYA",
               "FINICITY",
               "MX",
               "PLAID",
               "SALTEDGE",
-              "SALTEDGEPARTNERS",
-              "YODLEE"
+              "SALTEDGEPARTNERS"
             ]
           },
           "serviceProviderDetails": {
             "type": "object",
             "additionalProperties": {},
-            "description": "Service provider specific details needed to start a connection. For Yodlee, this includes the configName of the configuration template used to initialize the connect flow. Note: Not all service providers require additional details to start a connection. This value will be null if additional details are not required."
+            "description": "Service provider specific details needed to start a connection. Note: Not all service providers require additional details to start a connection. This value will be null if additional details are not required."
           },
           "serviceProviderInitializationErrors": {
             "type": "array",
@@ -3138,11 +3266,11 @@
           },
           "token": {
             "type": "string",
-            "description": "Token if the service provider needs a token to connect. For Plaid this is a link token. For Yodlee this is an auth token."
+            "description": "Token if the service provider needs a token to connect. For Plaid this is a link token."
           },
           "url": {
             "type": "string",
-            "description": "URL if the service provider needs a url to connect. For Finicity this is a connect URL. For Yodlee this is a fast link URL"
+            "description": "URL if the service provider needs a url to connect. For Finicity this is a connect URL."
           }
         }
       },
@@ -3163,73 +3291,47 @@
             "description": "The service provider that had an error during initialization",
             "enum": [
               "ACROSS",
-              "AEROPAY",
-              "AKOYA",
               "ALCHEMYPAY",
               "APPLEPAY",
-              "AUTHORIZENET",
               "BANXA",
-              "BILIRA",
               "BINANCECONNECT",
               "BINANCEPAY",
               "BLOCKCHAINDOTCOM",
-              "BOOMFI",
-              "BRAINTREE",
               "BRALE",
               "BTCDIRECT",
-              "CASHAPP",
-              "CHECKOUT",
-              "CIRCLE",
               "COINBASEPAY",
-              "COINFLOW",
+              "COINME",
+              "DLOCAL",
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
               "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
-              "HARBOUR",
               "KOYWE",
               "KRYPTONIM",
               "MERCURYO",
-              "MESH",
-              "MESO",
-              "MOONPAY",
-              "MOOV",
               "MX",
-              "NMI",
               "NOAH",
               "ONMETA",
               "ONRAMPMONEY",
               "PAYBIS",
               "PAYPAL",
               "PLAID",
-              "RAMP",
+              "RAMPNOW",
               "REVOLUT",
               "ROBINHOOD",
-              "ROUTERPROTOCOL",
               "SALTEDGE",
               "SALTEDGEPARTNERS",
-              "SARDINE",
-              "SHIFT4",
-              "SHOPIFY",
-              "SIMPLEX",
-              "SKRILLCRYPTO",
-              "SQUARE",
               "STRIPE",
               "SUMSUB",
               "SWAPPED",
-              "TANGOCARD",
-              "TELLER",
               "TOPPER",
               "TRANSAK",
-              "TREMENDOUS",
-              "TRANSFI",
+              "TZERO",
               "UNLIMIT",
-              "WYRE",
-              "XANPOOL",
-              "YELLOWCARD",
-              "YODLEE"
+              "UPHOLD",
+              "YELLOWCARD"
             ]
           },
           "serviceProviderDetails": {
@@ -3305,19 +3407,17 @@
             "type": "string",
             "description": "Service provider",
             "enum": [
-              "AKOYA",
               "FINICITY",
               "MX",
               "PLAID",
               "SALTEDGE",
-              "SALTEDGEPARTNERS",
-              "YODLEE"
+              "SALTEDGEPARTNERS"
             ]
           },
           "serviceProviderDetails": {
             "type": "object",
             "additionalProperties": {},
-            "description": "Service provider specific details needed to complete a connection. For Plaid this is a public token. For MX this is a memberGuid that can be captured via postmessages in the widget connect flow. For Yodlee this is a providerAccountId also captured via postmessages in the widget."
+            "description": "Service provider specific details needed to complete a connection. For Plaid this is a public token. For MX this is a memberGuid that can be captured via postmessages in the widget connect flow."
           }
         },
         "required": [
@@ -3443,13 +3543,11 @@
             "type": "string",
             "description": "Service provider through which access to the account will be provided. If the account is only connected via one service provider, this field can be omitted and it will use that connected service provider.",
             "enum": [
-              "AKOYA",
               "FINICITY",
               "MX",
               "PLAID",
               "SALTEDGE",
-              "SALTEDGEPARTNERS",
-              "YODLEE"
+              "SALTEDGEPARTNERS"
             ]
           }
         },
@@ -3517,13 +3615,11 @@
             "type": "string",
             "description": "Service provider",
             "enum": [
-              "AKOYA",
               "FINICITY",
               "MX",
               "PLAID",
               "SALTEDGE",
-              "SALTEDGEPARTNERS",
-              "YODLEE"
+              "SALTEDGEPARTNERS"
             ]
           },
           "token": {
@@ -3657,6 +3753,32 @@
             "type": "string",
             "format": "date-time",
             "description": "transaction date"
+          }
+        }
+      },
+      "RoutingProfileUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "actionDefault": {
+            "type": "boolean",
+            "description": "Whether this is the default profile for the account"
+          },
+          "definition": {
+            "description": "New routing definition",
+            "oneOf": [
+              {
+                "title": "RuleRoutingDefinition",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RuleRoutingDefinition"
+                  }
+                ]
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "New name for the profile"
           }
         }
       },
@@ -3825,73 +3947,47 @@
             "description": "The service provider used to generate the report",
             "enum": [
               "ACROSS",
-              "AEROPAY",
-              "AKOYA",
               "ALCHEMYPAY",
               "APPLEPAY",
-              "AUTHORIZENET",
               "BANXA",
-              "BILIRA",
               "BINANCECONNECT",
               "BINANCEPAY",
               "BLOCKCHAINDOTCOM",
-              "BOOMFI",
-              "BRAINTREE",
               "BRALE",
               "BTCDIRECT",
-              "CASHAPP",
-              "CHECKOUT",
-              "CIRCLE",
               "COINBASEPAY",
-              "COINFLOW",
+              "COINME",
+              "DLOCAL",
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
               "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
-              "HARBOUR",
               "KOYWE",
               "KRYPTONIM",
               "MERCURYO",
-              "MESH",
-              "MESO",
-              "MOONPAY",
-              "MOOV",
               "MX",
-              "NMI",
               "NOAH",
               "ONMETA",
               "ONRAMPMONEY",
               "PAYBIS",
               "PAYPAL",
               "PLAID",
-              "RAMP",
+              "RAMPNOW",
               "REVOLUT",
               "ROBINHOOD",
-              "ROUTERPROTOCOL",
               "SALTEDGE",
               "SALTEDGEPARTNERS",
-              "SARDINE",
-              "SHIFT4",
-              "SHOPIFY",
-              "SIMPLEX",
-              "SKRILLCRYPTO",
-              "SQUARE",
               "STRIPE",
               "SUMSUB",
               "SWAPPED",
-              "TANGOCARD",
-              "TELLER",
               "TOPPER",
               "TRANSAK",
-              "TREMENDOUS",
-              "TRANSFI",
+              "TZERO",
               "UNLIMIT",
-              "WYRE",
-              "XANPOOL",
-              "YELLOWCARD",
-              "YODLEE"
+              "UPHOLD",
+              "YELLOWCARD"
             ]
           },
           "serviceProviderDetails": {
@@ -3906,6 +4002,61 @@
               "IN_PROGRESS",
               "COMPLETED",
               "FAILED"
+            ]
+          }
+        }
+      },
+      "DiscreteValue": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "value": {
+            "type": "string",
+            "description": "Value"
+          }
+        }
+      },
+      "RoutingVariableResponse": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "operators": {
+            "type": "array",
+            "description": "List of valid operators which can be used with this variable.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "IN",
+                "NOT_IN",
+                "NOT_CONTAINS"
+              ]
+            }
+          },
+          "values": {
+            "type": "array",
+            "description": "Discrete values for variables which support it",
+            "items": {
+              "$ref": "#/components/schemas/DiscreteValue"
+            }
+          },
+          "variable": {
+            "type": "string",
+            "description": "Variable id.",
+            "enum": [
+              "INSTITUTION_ID",
+              "PRODUCTS",
+              "OPTIONAL_PRODUCTS",
+              "REGIONS",
+              "SERVICE_PROVIDERS",
+              "SERVICE_PROVIDER_PRODUCTS",
+              "SERVICE_PROVIDER_PRODUCT_HEALTH",
+              "SERVICE_PROVIDER_OAUTH"
             ]
           }
         }
@@ -4295,85 +4446,48 @@
             "type": "string",
             "enum": [
               "ACROSS",
-              "AEROPAY",
-              "AKOYA",
               "ALCHEMYPAY",
               "APPLEPAY",
-              "AUTHORIZENET",
               "BANXA",
-              "BILIRA",
               "BINANCECONNECT",
               "BINANCEPAY",
               "BLOCKCHAINDOTCOM",
-              "BOOMFI",
-              "BRAINTREE",
               "BRALE",
               "BTCDIRECT",
-              "CASHAPP",
-              "CHECKOUT",
-              "CIRCLE",
               "COINBASEPAY",
-              "COINFLOW",
+              "COINME",
+              "DLOCAL",
               "DUENETWORK",
               "ELDORADO",
               "FINICITY",
               "FLASHNET",
               "FONBNK",
               "GUARDARIAN",
-              "HARBOUR",
               "KOYWE",
               "KRYPTONIM",
               "MERCURYO",
-              "MESH",
-              "MESO",
-              "MOONPAY",
-              "MOOV",
               "MX",
-              "NMI",
               "NOAH",
               "ONMETA",
               "ONRAMPMONEY",
               "PAYBIS",
               "PAYPAL",
               "PLAID",
-              "RAMP",
+              "RAMPNOW",
               "REVOLUT",
               "ROBINHOOD",
-              "ROUTERPROTOCOL",
               "SALTEDGE",
               "SALTEDGEPARTNERS",
-              "SARDINE",
-              "SHIFT4",
-              "SHOPIFY",
-              "SIMPLEX",
-              "SKRILLCRYPTO",
-              "SQUARE",
               "STRIPE",
               "SUMSUB",
               "SWAPPED",
-              "TANGOCARD",
-              "TELLER",
               "TOPPER",
               "TRANSAK",
-              "TREMENDOUS",
-              "TRANSFI",
+              "TZERO",
               "UNLIMIT",
-              "WYRE",
-              "XANPOOL",
-              "YELLOWCARD",
-              "YODLEE"
+              "UPHOLD",
+              "YELLOWCARD"
             ]
-          }
-        }
-      },
-      "RoutingProfileResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
           }
         }
       },
@@ -4892,10 +5006,9 @@
           },
           "externalCustomerId": {
             "type": "string",
-            "default": "testUser",
             "description": "Your unique identifier for your customer. If maintaining your own customer management system this can also be used for tracking customer activity.",
             "minLength": 1,
-            "example": "testUser"
+            "default": "testUser"
           },
           "institutionId": {
             "type": "string",
@@ -4903,7 +5016,8 @@
           },
           "institutionSearchString": {
             "type": "string",
-            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value"
+            "description": "When searching financial institutions via the Meld bank picker, pre-populate the search string with this value",
+            "example": "Chase"
           },
           "optionalProducts": {
             "type": "array",
@@ -4933,7 +5047,13 @@
                 "INVESTMENT_TRANSACTIONS",
                 "TRANSACTIONS"
               ]
-            }
+            },
+            "default": [
+              "TRANSACTIONS",
+              "IDENTIFIERS",
+              "BALANCES",
+              "OWNERS"
+            ]
           },
           "redirectUrl": {
             "type": "string",
@@ -5251,6 +5371,11 @@
       "BasicAuth": {
         "type": "http",
         "scheme": "basic"
+      },
+      "RequirementsSessionToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "The `token` of a requirements session. The Meld SDK sends it"
       }
     }
   },
