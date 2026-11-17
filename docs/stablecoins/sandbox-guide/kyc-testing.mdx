@@ -78,8 +78,21 @@ If the `serviceProviderCustomers.kyc.status` is `REJECTED`, this means the user 
 Sandbox runs no real document checks: the result comes from the document template you upload. Only the liveness check is real: it records the face of whoever takes it, so have a team member take it (or use **Continue on phone**), not a real customer.
 
 - **Document:** upload one of [Sumsub's document templates](https://docs.sumsub.com/docs/verification-document-templates) exactly as downloaded. Don't rename, screenshot, photograph or convert it, and never use a real identity document. For an approved check, choose **United States of America** and **Driving license**, and upload the New Jersey license (`US_NJ_Front_Approved.png` and `US_NJ_Back_Approved.png`). Other templates simulate a request to resubmit (the California license) or a final rejection (`US_NJ_Front_Rejected.png`). Other documents can leave Banxa without a name: its orders are then refused with `422 CUSTOMER_NOT_PAYMENT_READY` and `NAME` in `serviceProviderDetails.kycRequirements`.
-- **Personal details:** enter made-up values, never your own or a customer's. For a US customer, use a dummy Social Security number, such as `123-45-6789`.
+- **Personal details:** enter made-up values, never your own or a customer's. You can copy the values below. Create the Meld customer with the same name.
 - **Asked to resubmit or rejected:** after a resubmission request, choose **Start resubmission** and upload the approved template. After a final rejection, or a Banxa `NAME` refusal, start again with a new test customer.
+
+| Sumsub field | Test value |
+| --- | --- |
+| Country of residence, nationality, tax residence country | `United States of America` |
+| First name | `John` |
+| Last name | `Verified` |
+| Date of birth | `01/15/1990` |
+| Address line 1 | `123 Main Street` |
+| City | `Newark` |
+| State | `New Jersey` |
+| Post code | `07102` |
+| Contact number | `+1 201 555 0123` |
+| Social security number (SSN) | `123-45-6789` |
 
 ### 2. You already KYCed the user with your Sumsub account
 
