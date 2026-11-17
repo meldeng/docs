@@ -54,7 +54,7 @@
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "description": "Unauthenticated or authenticated with insufficient access",
             "content": {
               "application/json": {
                 "schema": {
@@ -109,7 +109,7 @@
             }
           },
           "401": {
-            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "description": "Invalid credentials",
             "content": {
               "application/json": {
                 "schema": {
@@ -164,7 +164,7 @@
             }
           },
           "400": {
-            "description": "Bad Request : check request values and format\n\nThe webhook profile could not be tested as configured. Check the destination URL and that the profile is complete.",
+            "description": "Bad Request : check request values and format",
             "content": {
               "application/json": {
                 "schema": {
@@ -229,7 +229,7 @@
             }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.",
             "content": {
               "application/json": {
                 "schema": {
@@ -289,9 +289,6 @@
             "ApiKeyAuth": []
           }
         ],
-        "x-mint": {
-          "href": "/api-reference/webhooks/profile/webhooks-profiles-create"
-        },
         "parameters": [
           {
             "name": "Meld-Version",
@@ -303,7 +300,10 @@
               "example": "2026-02-03"
             }
           }
-        ]
+        ],
+        "x-mint": {
+          "href": "/api-reference/webhooks/profile/webhooks-profiles-create"
+        }
       },
       "get": {
         "tags": [
@@ -364,7 +364,7 @@
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "description": "Unauthenticated or authenticated with insufficient access",
             "content": {
               "application/json": {
                 "schema": {
@@ -419,7 +419,7 @@
             }
           },
           "401": {
-            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "description": "Invalid credentials",
             "content": {
               "application/json": {
                 "schema": {
@@ -474,7 +474,7 @@
             }
           },
           "400": {
-            "description": "Bad Request : check request values and format\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad Request : check request values and format",
             "content": {
               "application/json": {
                 "schema": {
@@ -539,7 +539,7 @@
             }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.",
             "content": {
               "application/json": {
                 "schema": {
@@ -626,7 +626,7 @@
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "description": "Unauthenticated or authenticated with insufficient access",
             "content": {
               "application/json": {
                 "schema": {
@@ -681,7 +681,7 @@
             }
           },
           "401": {
-            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "description": "Invalid credentials",
             "content": {
               "application/json": {
                 "schema": {
@@ -736,7 +736,7 @@
             }
           },
           "400": {
-            "description": "Bad Request : check request values and format\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad Request : check request values and format",
             "content": {
               "application/json": {
                 "schema": {
@@ -801,7 +801,7 @@
             }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.",
             "content": {
               "application/json": {
                 "schema": {
@@ -861,9 +861,6 @@
             "ApiKeyAuth": []
           }
         ],
-        "x-mint": {
-          "href": "/api-reference/webhooks/profile/webhooks-events-get"
-        },
         "parameters": [
           {
             "name": "Meld-Version",
@@ -875,7 +872,10 @@
               "example": "2026-02-03"
             }
           }
-        ]
+        ],
+        "x-mint": {
+          "href": "/api-reference/webhooks/profile/webhooks-events-get"
+        }
       }
     },
     "/notifications/webhooks/{webhookProfileId}": {
@@ -918,62 +918,17 @@
             }
           },
           "404": {
-            "description": "Webhook profile cannot be found\n\nVerify the identifier in the request.",
+            "description": "Webhook profile cannot be found",
             "content": {
-              "application/json": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`NOT_FOUND`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Resource not found"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "serviceProviderDetails": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "description": "The provider's own error code, when it sent one."
-                        },
-                        "message": {
-                          "type": "string",
-                          "description": "The provider's own message."
-                        }
-                      },
-                      "additionalProperties": {},
-                      "example": {
-                        "code": "5034",
-                        "message": "Digital currency and blockchain combination is restricted for customer's country"
-                      },
-                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "NOT_FOUND",
-                  "message": "Resource not found",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "description": "Unauthenticated or authenticated with insufficient access",
             "content": {
               "application/json": {
                 "schema": {
@@ -1028,7 +983,7 @@
             }
           },
           "401": {
-            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "description": "Invalid credentials",
             "content": {
               "application/json": {
                 "schema": {
@@ -1083,7 +1038,7 @@
             }
           },
           "400": {
-            "description": "Bad Request : check request values and format\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad Request : check request values and format",
             "content": {
               "application/json": {
                 "schema": {
@@ -1148,7 +1103,7 @@
             }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1261,62 +1216,17 @@
             }
           },
           "404": {
-            "description": "Webhook profile cannot be found\n\nVerify the identifier in the request.",
+            "description": "Webhook profile cannot be found",
             "content": {
-              "application/json": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`NOT_FOUND`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Resource not found"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "serviceProviderDetails": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "description": "The provider's own error code, when it sent one."
-                        },
-                        "message": {
-                          "type": "string",
-                          "description": "The provider's own message."
-                        }
-                      },
-                      "additionalProperties": {},
-                      "example": {
-                        "code": "5034",
-                        "message": "Digital currency and blockchain combination is restricted for customer's country"
-                      },
-                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "NOT_FOUND",
-                  "message": "Resource not found",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "description": "Unauthenticated or authenticated with insufficient access",
             "content": {
               "application/json": {
                 "schema": {
@@ -1371,7 +1281,7 @@
             }
           },
           "401": {
-            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "description": "Invalid credentials",
             "content": {
               "application/json": {
                 "schema": {
@@ -1426,7 +1336,7 @@
             }
           },
           "400": {
-            "description": "Bad Request : check request values and format\n\nThe webhook profile could not be tested as configured. Check the destination URL and that the profile is complete.",
+            "description": "Bad Request : check request values and format",
             "content": {
               "application/json": {
                 "schema": {
@@ -1491,7 +1401,7 @@
             }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1597,62 +1507,17 @@
             }
           },
           "404": {
-            "description": "Webhook profile cannot be found\n\nVerify the identifier in the request.",
+            "description": "Webhook profile cannot be found",
             "content": {
-              "application/json": {
+              "*/*": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "`NOT_FOUND`"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Resource not found"
-                    },
-                    "requestId": {
-                      "type": "string",
-                      "description": "Quote this when asking Meld about a specific failure."
-                    },
-                    "serviceProviderDetails": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "description": "The provider's own error code, when it sent one."
-                        },
-                        "message": {
-                          "type": "string",
-                          "description": "The provider's own message."
-                        }
-                      },
-                      "additionalProperties": {},
-                      "example": {
-                        "code": "5034",
-                        "message": "Digital currency and blockchain combination is restricted for customer's country"
-                      },
-                      "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear."
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "example": "2026-08-14T09:41:22.482+00:00",
-                      "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`)."
-                    }
-                  }
-                },
-                "example": {
-                  "code": "NOT_FOUND",
-                  "message": "Resource not found",
-                  "requestId": "01JB2K7C9XQZ4M8N2P5R6T3V",
-                  "timestamp": "2026-08-14T09:41:22.482+00:00"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthenticated or authenticated with insufficient access\n\nCheck the account's permissions for this operation.",
+            "description": "Unauthenticated or authenticated with insufficient access",
             "content": {
               "application/json": {
                 "schema": {
@@ -1707,7 +1572,7 @@
             }
           },
           "401": {
-            "description": "Invalid credentials\n\nCheck the API credentials being sent.",
+            "description": "Invalid credentials",
             "content": {
               "application/json": {
                 "schema": {
@@ -1762,7 +1627,7 @@
             }
           },
           "400": {
-            "description": "Bad Request : check request values and format\n\nRead errors[] and message for the field that failed, then correct it.",
+            "description": "Bad Request : check request values and format",
             "content": {
               "application/json": {
                 "schema": {
@@ -1827,7 +1692,7 @@
             }
           },
           "500": {
-            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.\n\nAn internal Meld error. Contact Meld support with the requestId; a retry may not clear it.",
+            "description": "Server Error. This applies to all 5xx errors, including but not limited to 500, 501, 502, 503, and 504 errors. You should treat all of these errors the same.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1895,7 +1760,6 @@
   },
   "components": {
     "schemas": {
-      "YodleeWebhookPayload": {},
       "TransakWebhookRequest": {
         "type": "object",
         "properties": {
@@ -2039,106 +1903,6 @@
           "webhook_type"
         ]
       },
-      "MoovWebhookPayload": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/WebhookData"
-          },
-          "eventID": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          }
-        }
-      },
-      "WebhookData": {
-        "type": "object",
-        "properties": {
-          "accountID": {
-            "type": "string"
-          },
-          "bankAccountID": {
-            "type": "string"
-          },
-          "capability": {
-            "type": "string"
-          },
-          "cardID": {
-            "type": "string"
-          },
-          "disputeID": {
-            "type": "string"
-          },
-          "paymentMethodID": {
-            "type": "string"
-          },
-          "refundID": {
-            "type": "string"
-          },
-          "representativeID": {
-            "type": "string"
-          },
-          "sourceID": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "transferID": {
-            "type": "string"
-          },
-          "updateType": {
-            "type": "string"
-          },
-          "walletID": {
-            "type": "string"
-          }
-        }
-      },
-      "CoinFlowWebhookPayload": {
-        "type": "object",
-        "properties": {
-          "category": {
-            "type": "string"
-          },
-          "created": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/WebhookData"
-          },
-          "eventType": {
-            "type": "string"
-          }
-        }
-      },
-      "BraintreeForm": {
-        "type": "object",
-        "properties": {
-          "payload": {
-            "type": "string"
-          },
-          "signature": {
-            "type": "string"
-          }
-        }
-      },
-      "AeropayWebhookPayload": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "$ref": "#/components/schemas/WebhookData"
-          },
-          "date": {
-            "type": "string"
-          },
-          "topic": {
-            "type": "string"
-          }
-        }
-      },
       "WebhookProfileCreateRequest": {
         "type": "object",
         "properties": {
@@ -2152,6 +1916,7 @@
                 "TRANSACTION_CRYPTO_FAILED",
                 "TRANSACTION_CRYPTO_TRANSFERRING",
                 "TRANSACTION_CRYPTO_COMPLETE",
+                "ORDER_CRYPTO_FAILED",
                 "TRANSACTION_FIAT_CREATED",
                 "TRANSACTION_FIAT_UPDATED",
                 "BANK_LINKING_CONNECTION_COMPLETED",
@@ -2165,6 +1930,7 @@
                 "BANK_LINKING_HISTORICAL_TRANSACTIONS_AGGREGATED",
                 "BANK_LINKING_NEW_ACCOUNTS_AVAILABLE",
                 "CUSTOMER_KYC_STATUS_CHANGE",
+                "CUSTOMER_KYB_TOS_APPROVED",
                 "TEST",
                 "WEBHOOK_TEST"
               ]
@@ -2242,48 +2008,30 @@
         "type": "object",
         "properties": {
           "code": {
-            "type": "string",
-            "description": "Stable identifier for the failure."
+            "type": "string"
+          },
+          "displayMessage": {
+            "type": "string"
           },
           "errors": {
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "description": "What was rejected, one entry per field or rule."
+            }
           },
           "message": {
-            "type": "string",
-            "description": "A description of what went wrong."
+            "type": "string"
           },
           "requestId": {
-            "type": "string",
-            "description": "Quote this when asking Meld about a specific failure."
+            "type": "string"
           },
           "serviceProviderDetails": {
             "type": "object",
-            "properties": {
-              "code": {
-                "type": "string",
-                "description": "The provider's own error code, when it sent one."
-              },
-              "message": {
-                "type": "string",
-                "description": "The provider's own message."
-              }
-            },
-            "example": {
-              "code": "5034",
-              "message": "Digital currency and blockchain combination is restricted for customer's country"
-            },
-            "description": "The provider's own error detail, when the failure came from a service provider. Usually `code` and `message`; a few providers pass their own body through, so other keys can appear.",
             "additionalProperties": {}
           },
           "timestamp": {
             "type": "string",
-            "format": "date-time",
-            "description": "When the failure occurred. ISO 8601, UTC (`YYYY-MM-DDThh:mm:ss.sss+00:00`).",
-            "example": "2026-08-14T09:41:22.482+00:00"
+            "format": "date-time"
           }
         }
       },
@@ -2302,24 +2050,33 @@
           "email": {
             "type": "string",
             "format": "email",
-            "minLength": 1
+            "maxLength": 254,
+            "minLength": 0
           },
           "employer": {
             "type": "string",
-            "minLength": 1
+            "maxLength": 200,
+            "minLength": 0
           },
           "firstName": {
             "type": "string",
-            "minLength": 1
+            "maxLength": 100,
+            "minLength": 0
           },
           "lastName": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 0
           },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 0
           }
         },
         "required": [
@@ -2349,6 +2106,7 @@
                 "TRANSACTION_CRYPTO_FAILED",
                 "TRANSACTION_CRYPTO_TRANSFERRING",
                 "TRANSACTION_CRYPTO_COMPLETE",
+                "ORDER_CRYPTO_FAILED",
                 "TRANSACTION_FIAT_CREATED",
                 "TRANSACTION_FIAT_UPDATED",
                 "BANK_LINKING_CONNECTION_COMPLETED",
@@ -2362,6 +2120,7 @@
                 "BANK_LINKING_HISTORICAL_TRANSACTIONS_AGGREGATED",
                 "BANK_LINKING_NEW_ACCOUNTS_AVAILABLE",
                 "CUSTOMER_KYC_STATUS_CHANGE",
+                "CUSTOMER_KYB_TOS_APPROVED",
                 "TEST",
                 "WEBHOOK_TEST"
               ]
@@ -2410,6 +2169,15 @@
             }
           }
         }
+      },
+      "WebhookProfileSecret": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "Secret used to sign webhooks sent to this profile (Meld-Signature)"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -2422,6 +2190,11 @@
       "BasicAuth": {
         "type": "http",
         "scheme": "basic"
+      },
+      "RequirementsSessionToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "The `token` of a requirements session. The Meld SDK sends it"
       }
     }
   },
