@@ -66,7 +66,38 @@ def apply_error_overlay(payload: dict, spec_path: Path) -> int:
                 if status not in existing:
                     existing[status] = body
                     restored += 1
+                elif "content" not in existing[status] and "content" in body:
+                    existing[status]["content"] = body["content"]
+                    restored += 1
     return restored
+
+
+SERVICE_PROVIDERS_DEPRECATION = (
+    "<Warning>\n\n**⚠️ Deprecated — this endpoint is slated for removal.** Migrate to the "
+    "[Network Partner API](/api-reference/network-partners) as soon as you can; see the "
+    "[migration guide](/docs/stablecoins/white-label-api-integration/migration-service-provider-to-network-partner). "
+    "Do not build new integrations against this endpoint.\n\n</Warning>\n\n"
+)
+
+
+def mark_service_providers_deprecated(payload: dict) -> int:
+    updated = 0
+    info = payload.setdefault("info", {})
+    if "<Warning>" not in (info.get("description") or ""):
+        info["description"] = SERVICE_PROVIDERS_DEPRECATION
+        updated += 1
+    for operations in payload.get("paths", {}).values():
+        for method, operation in operations.items():
+            if method.lower() not in HTTP_METHODS or not isinstance(operation, dict):
+                continue
+            description = operation.get("description") or ""
+            if "<Warning>" not in description:
+                operation["description"] = SERVICE_PROVIDERS_DEPRECATION + description
+                updated += 1
+            if not operation.get("deprecated"):
+                operation["deprecated"] = True
+                updated += 1
+    return updated
 
 
 def slugify(text: str) -> str:
@@ -580,6 +611,9 @@ def normalize_spec(spec_path: Path, is_latest: bool = True) -> int:
             if mint_config.get("href") != href:
                 mint_config["href"] = href
                 updated += 1
+
+    if service == "serviceproviders":
+        updated += mark_service_providers_deprecated(payload)
 
     restored = apply_error_overlay(payload, spec_path)
     if restored:

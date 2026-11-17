@@ -11,6 +11,7 @@
 - Configuration lives in `docs.json`
 - Run `mint dev` to preview locally
 - Run `mint broken-links` to check links
+- `openapi/*.json` is generated: each API reference sync overwrites it. Don't edit it directly. Put spec fixes in `normalize_openapi.py` or `openapi-error-overlay.json` (error bodies), or fix the source spec in the service.
 
 ## Terminology
 
