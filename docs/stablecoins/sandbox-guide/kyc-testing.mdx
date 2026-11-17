@@ -11,7 +11,7 @@ Meld generally recommends testing the unified KYC flow in production for a reali
 
 However, if you would like to test the flow end-to-end in Meld's sandbox, please follow this guide.
 
-When testing from the Meld Sandbox environment, you will be testing against Sumsub and Virtual Account providers' Sandbox environments as well. This means you can enter fake data, provide fake documents, and provide any answers to the questionnaires. Only the liveliness check will be performed by Sumsub for real (you will need to perform simple moving actions in front of the camera).
+When testing from the Meld Sandbox environment, you will be testing against Sumsub and Virtual Account providers' Sandbox environments as well. This means you can enter fake data and provide any answers to the questionnaires. For the identity document, upload one of Sumsub's document templates, as described in [Complete the Sumsub check in sandbox](#complete-the-sumsub-check-in-sandbox). Only the liveness check will be performed by Sumsub for real (you will need to perform simple moving actions in front of the camera).
 
 ## Quick Start
 
@@ -72,6 +72,18 @@ As the user goes through the KYC flow, you will receive webhooks informing you t
 ```
 
 If the `serviceProviderCustomers.kyc.status` is `REJECTED`, this means the user has failed KYC. Either the user has to go through the KYC flow once again (repeat this step), or the user will be unable to use this flow, and is unlikely to be able to buy crypto. Note that a user who fails KYC in this flow will very likely also fail KYC directly with any onramp.
+
+#### Complete the Sumsub check in sandbox
+
+Sandbox runs no real document checks: the result comes from the document template you upload. Only the liveness check is real and needs a person in front of a camera (or **Continue on phone**).
+
+- **Document:** upload one of [Sumsub's document templates](https://docs.sumsub.com/docs/verification-document-templates) exactly as downloaded. Don't rename, screenshot or convert it. For an approved check, use the New Jersey driver's license (`US_NJ_Front_Approved.png` and `US_NJ_Back_Approved.png`). Other templates simulate a request to resubmit (the California driver's license) or a final rejection (`US_NJ_Front_Rejected.png`).
+- **Personal details:** any values work. For a US customer, use a dummy Social Security number, such as `123-45-6789`.
+- **Document sent back:** choose **Start resubmission** and upload the approved template.
+
+<Note>
+  If a Banxa order is refused with `422 CUSTOMER_NOT_PAYMENT_READY` and `NAME` in `serviceProviderDetails.kycRequirements`, Banxa didn't get a name from the shared KYC. Create a new test customer and complete the Sumsub check with the New Jersey driver's license template.
+</Note>
 
 ### 2. You already KYCed the user with your Sumsub account
 
