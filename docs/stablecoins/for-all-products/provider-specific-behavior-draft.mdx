@@ -1,0 +1,20 @@
+---
+title: "Provider Specific Behavior"
+hidden: true
+noindex: true
+---
+
+While Meld strives to normalize the behavior across all onramp providers, some providers have specific rules and behaviors. Those are documented here.
+
+## Flashnet
+
+Flashnet is supported on both desktop and mobile. On desktop it shows a Cash App QR code for the user to scan; on mobile it deep-links directly into the Cash App app.
+
+## MoneyGram
+
+MoneyGram lets users buy USDC with cash at a MoneyGram location (cash-in) and sell USDC for cash pickup (cash-out). The Meld widget hosts MoneyGram's own widget, where the user picks a location, completes MoneyGram's KYC and confirms the order.
+
+- **No quotes.** Meld doesn't get quotes from MoneyGram, so MoneyGram never appears in quote results. To offer it, set `serviceProvider` to `MONEYGRAM` when you create the session.
+- **Meld widget only.** Open the session's widget URL, which loads the Meld widget. MoneyGram's widget can't be opened on its own.
+- **Cash-in confirmation code.** MoneyGram shows the confirmation code only on its own screen and doesn't send it by email or SMS. Some stores ask for it, so the user should note it before closing the widget.
+- **Cash-out signing.** When the user confirms a cash-out, your page or app sends the USDC from the user's wallet, so cash-out works only when the widget is embedded in it. See [MoneyGram cash-out signing](/docs/stablecoins/for-all-products/moneygram-cash-out-signing).
