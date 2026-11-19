@@ -1,13 +1,22 @@
 ---
-title: "Headless Card and Wallet Testing"
-description: "Sandbox testing for headless card, Apple Pay and Google Pay, run from your own UI."
+title: "Headless Testing"
+description: "Sandbox testing for headless orders paid by card, Apple Pay, Google Pay, bank transfer or mobile money."
 ---
 
-This page is for developers and QA running sandbox orders through headless card, Apple Pay and Google Pay. Widget flows are tested with the [White-Label API and Meld Checkout testing credentials](/docs/stablecoins/sandbox-guide/test), and virtual accounts with [Virtual Account Flow Testing Credentials](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials).
+Use this page to test headless buys and sells in sandbox, paid by card, Apple Pay, Google Pay, bank transfer or mobile money. To test widget flows, see [White-Label API and Meld Checkout testing credentials](/docs/stablecoins/sandbox-guide/test). To test virtual accounts, see [Virtual Account Flow Testing Credentials](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials).
 
 ## What you can verify
 
 The order call, the capture surface appearing in your app, the [SDK](/docs/stablecoins/headless-integration/sdks)'s events, and the webhook chain. How far past that you can go depends on the provider's sandbox and the payment method.
+
+You can take these orders to a final status in sandbox:
+
+| Provider | Flow | Sandbox result |
+| --- | --- | --- |
+| [T-0](#t-0) | Buy | `SETTLED`, after you simulate the payment |
+| [Yellow Card](#yellow-card) | Sell | `SETTLED`, `FAILED` or `REFUNDED`, chosen by the payout phone number and the customer's last name |
+| [dLocal](#dlocal) | Sell | `SETTLED`, after you simulate the deposit |
+| [Brale](#brale) | Sell | `SETTLED`, after you simulate the deposit |
 
 ---
 
@@ -16,10 +25,13 @@ The order call, the capture surface appearing in your app, the [SDK](/docs/stabl
 **Base URL:** `https://api-sb.meld.io`
 
 - A sandbox API key with payment access
-- Headless onramps enabled on your sandbox account. Ask your Meld representative. Until they are, orders are refused with `403 WHITELABEL_NOT_ENABLED`
-- Sandbox credentials for the provider you are testing, on your Meld sandbox account
+- Headless onramps enabled on your sandbox account, and headless offramps if you test a sell. Contact Meld support to enable them. Until then, orders are refused with `403 WHITELABEL_NOT_ENABLED`
+- The provider you are testing enabled on your sandbox account
+- A unique `externalOrderId` for each order
 - A webhook endpoint reachable from the internet, configured in the dashboard
-- A test customer with an email. For Banxa and Mercuryo, also KYC-approved: for Banxa, start KYC with `BANXA` in `targetServiceProviders` and `Meld-Version: 2026-11-01`; for both, complete it as in [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing#complete-the-sumsub-check-in-sandbox). Stripe and Coinbase need no Unified KYC. With [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on for your account, Stripe needs it at Level 1
+- A test customer with an email. For Banxa and Mercuryo, also KYC-approved: for Banxa, start KYC with `BANXA` in `targetServiceProviders` and `Meld-Version: 2026-11-01`; for both, complete it as in [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing#complete-the-sumsub-check-in-sandbox). Stripe and Coinbase need no Unified KYC. With [Level 1](/docs/stablecoins/unified-kyc/kyc-levels) on for your account, Stripe needs it at Level 1. For other providers, a `403 KYC_NOT_COMPLETED` means the provider can't take the customer yet: see [KYC Testing](/docs/stablecoins/sandbox-guide/kyc-testing)
+
+In the examples, replace `<YOUR_API_KEY>` with your sandbox API key and `<CUSTOMER_ID>` with your test customer's `id`.
 
 <Warning>
   Sandbox coverage is narrower than production, and a US test customer is the most common reason an otherwise correct integration returns no quotes. Quote first and use whatever country and currency pair comes back with the provider you intend to test. Stripe serves only US customers.
@@ -35,6 +47,12 @@ Test cards against **Banxa**. It is the provider with a published headless card 
 2. Create the order with `paymentMethodType: CREDIT_DEBIT_CARD`.
 3. Mount the order in your client.
 4. Pay with one of the cards below.
+
+<Warning>
+  Banxa card orders don't complete in sandbox. Contact Meld support before you test this flow.
+</Warning>
+
+Banxa also needs the customer's acceptance of its terms. Record it, or send `verification.agreementAcceptedAt` on the create request: see [Legal agreements](/docs/stablecoins/headless-integration/shared-flows/eligibility#legal-agreements). Without it, the order is refused with `403 LEGAL_ACCEPTANCE_REQUIRED`.
 
 ### Successful authorization
 
@@ -131,7 +149,205 @@ Coinbase Google Pay runs in Google's test environment when your sandbox Coinbase
 
 ---
 
+## Test bank transfer and mobile money
+
+### Simulate a payment or deposit
+
+No money moves in sandbox. To complete a T-0, dLocal or Brale order, simulate its payment or deposit:
+
+```bash
+curl -s -X POST "https://api-sb.meld.io/payments/mock/headless/simulate" \
+  -H "Authorization: BASIC <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{ "externalOrderId": "my-order-001" }'
+```
+
+**Expected:** `200` with the order's `transactionId`.
+
+### T-0
+
+Send the originator and beneficiary names for the travel rule in `providerData.travelRuleData`.
+
+```bash
+curl -s -X POST "https://api-sb.meld.io/crypto/order/headless/onramp" \
+  -H "Authorization: BASIC <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": "<CUSTOMER_ID>",
+    "externalOrderId": "my-order-001",
+    "serviceProvider": "TZERO",
+    "paymentMethodType": "ACH",
+    "sourceCurrencyCode": "USD",
+    "sourceAmount": 100,
+    "destinationCurrencyCode": "USDT",
+    "destinationNetworkCode": "ETH",
+    "destinationWalletAddress": "0x1ab6f09b58ef63b38cee48af542561c75f2cd44c",
+    "countryCode": "US",
+    "providerData": {
+      "travelRuleData": {
+        "originator": [{ "naturalPerson": { "name": { "nameIdentifier": [{
+          "primaryIdentifier": "Tester",
+          "secondaryIdentifier": "Example",
+          "nameIdentifierType": "NATURAL_PERSON_NAME_TYPE_CODE_LEGL"
+        }] } } }],
+        "beneficiary": [{ "naturalPerson": { "name": { "nameIdentifier": [{
+          "primaryIdentifier": "Tester",
+          "secondaryIdentifier": "Example",
+          "nameIdentifierType": "NATURAL_PERSON_NAME_TYPE_CODE_LEGL"
+        }] } } }]
+      }
+    }
+  }'
+```
+
+**Expected:** `201` with `responseKind: RECEIVING_BANK_DETAILS`. Without `travelRuleData`, the order is refused with `400 TRANSACTION_MISSING_SERVICE_PROVIDER_DETAILS`.
+
+Then [simulate the payment](#simulate-a-payment-or-deposit) and [check the transaction](#verify-the-result). Expect `SETTLED`.
+
+### Yellow Card
+
+Choose the outcome with the last 10 digits of `fiatPayoutMethod.details.phoneNumber`. For a refund, also create the test customer with `name.lastName` set to `RefundSuccess`. The payout's own `lastName` doesn't change the outcome.
+
+| Outcome | `fiatPayoutMethod.details.phoneNumber` | Customer's `name.lastName` | Order status |
+| --- | --- | --- | --- |
+| Success | `+2541111111111` | Any | `SETTLED` |
+| Failure | `+2540000000000` | Any except `RefundSuccess` | `FAILED` |
+| Refund | `+2540000000000` | `RefundSuccess` | `REFUNDED` |
+
+Give the customer an email address. Without one, the order is refused with `400 CUSTOMER_EMAIL_REQUIRED`.
+
+Before your first Yellow Card order, contact Meld support to link your test customer to Yellow Card. Until it is linked, the order is refused with `404 NOT_FOUND` and the message `ServiceProviderCustomer not found`.
+
+```bash
+curl -s -X POST "https://api-sb.meld.io/crypto/order/headless/offramp" \
+  -H "Authorization: BASIC <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": "<CUSTOMER_ID>",
+    "serviceProvider": "YELLOWCARD",
+    "externalOrderId": "my-order-002",
+    "sourceCurrencyCode": "USDT_TRON",
+    "destinationCurrencyCode": "KES",
+    "sourceAmount": 10,
+    "countryCode": "KE",
+    "sourceWalletAddress": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+    "fiatPayoutMethod": {
+      "type": "MOBILE_MONEY",
+      "details": {
+        "firstName": "Jane",
+        "lastName": "Tester",
+        "phoneNumber": "+2541111111111"
+      }
+    }
+  }'
+```
+
+**Expected:** `201` with `status: AWAITING_DEPOSIT`. You don't need to send crypto: the order reaches its final status within seconds. [Check the result](#verify-the-result).
+
+To get a quote first, send the corridor to `POST /payments/partner/quote` with the payout amount in `destinationAmount`. This endpoint refuses `sourceAmount` with `400 BAD_REQUEST`.
+
+```bash
+curl -s -X POST "https://api-sb.meld.io/payments/partner/quote" \
+  -H "Authorization: BASIC <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "serviceProviders": ["YELLOWCARD"],
+    "sourceCurrencyCode": "USDT_TRON",
+    "destinationCurrencyCode": "KES",
+    "destinationAmount": 1000,
+    "countryCode": "KE"
+  }'
+```
+
+**Expected:** `200` with a `YELLOWCARD` quote. If you get `408 QUOTE_TIMEOUT`, Yellow Card's sandbox was slow to answer: send the request again.
+
+### dLocal
+
+Identify the bank with a Meld bank code in `fiatPayoutMethod.details.bankIdentifier`. If you send `bankCode` instead, the order is refused with `400 BENEFICIARY_DETAILS_INVALID`.
+
+```bash
+curl -s -X POST "https://api-sb.meld.io/crypto/order/headless/offramp" \
+  -H "Authorization: BASIC <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": "<CUSTOMER_ID>",
+    "serviceProvider": "DLOCAL",
+    "externalOrderId": "my-order-003",
+    "sourceCurrencyCode": "PYUSD_SOLANA",
+    "destinationCurrencyCode": "COP",
+    "sourceAmount": 100,
+    "countryCode": "CO",
+    "fiatPayoutMethod": {
+      "type": "PAYOUT_TO_BANK",
+      "details": {
+        "accountNumber": "1234567890",
+        "bankIdentifier": { "type": "BANK_DIRECTORY_CODE", "value": "BANCOLOMBIA" },
+        "bankAccountType": "SAVINGS",
+        "documentType": "NATIONAL_ID",
+        "documentId": "1020304050",
+        "purpose": "FAMILY_SUPPORT",
+        "flowType": "B2C",
+        "accountHolderType": "INDIVIDUAL",
+        "firstName": "Juan",
+        "lastName": "Duarte",
+        "beneficiaryAddress": {
+          "streetLineOne": "Calle 100 # 10-20",
+          "city": "Bogota",
+          "country": "CO"
+        }
+      }
+    }
+  }'
+```
+
+**Expected:** `201` with `status: AWAITING_DEPOSIT`. Then [simulate the deposit](#simulate-a-payment-or-deposit) and [check the result](#verify-the-result). Expect `SETTLED`.
+
+### Brale
+
+Brale pays out by `ACH` to a US bank account.
+
+```bash
+curl -s -X POST "https://api-sb.meld.io/crypto/order/headless/offramp" \
+  -H "Authorization: BASIC <YOUR_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": "<CUSTOMER_ID>",
+    "serviceProvider": "BRALE",
+    "externalOrderId": "my-order-004",
+    "sourceCurrencyCode": "USDC",
+    "destinationCurrencyCode": "USD",
+    "sourceAmount": "0.01",
+    "countryCode": "US",
+    "sourceWalletAddress": "0x1ab6f09b58ef63b38cee48af542561c75f2cd44c",
+    "fiatPayoutMethod": {
+      "type": "ACH",
+      "details": {
+        "accountHolderName": "Test Tester",
+        "bankAccountType": "CHECKING",
+        "routingNumber": "021000021",
+        "accountNumber": "000555443210",
+        "bankName": "Test Bank"
+      }
+    }
+  }'
+```
+
+**Expected:** `201` with `status: AWAITING_DEPOSIT`. Then [simulate the deposit](#simulate-a-payment-or-deposit) and [check the result](#verify-the-result). Expect `SETTLED`.
+
+If you get `422 SERVICE_PROVIDER_ERROR`, Brale has disabled that bank account after a failed transfer. Use a different account number.
+
+---
+
 ## Verify the result
+
+Get the order's transaction:
+
+```bash
+curl -s "https://api-sb.meld.io/payments/transactions?orderIds=<ORDER_ID>" \
+  -H "Authorization: BASIC <YOUR_API_KEY>"
+```
+
+Replace `<ORDER_ID>` with the `id` from the create response.
 
 For card, check all three. Each catches something the others do not.
 
