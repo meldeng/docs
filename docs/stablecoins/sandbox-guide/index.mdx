@@ -67,30 +67,26 @@ The sandbox environment is designed for:
 
 ## 🏦 Sandbox-Friendly Providers
 
-### ✅ Recommended for Testing (Full Sandbox Support)
+### ✅ Recommended for Testing
 
-These providers offer reliable sandbox environments ideal for testing:
+You can complete an order in sandbox with these providers, using the test values on each provider's page:
 
-* **Unlimit** - Complete sandbox functionality with test cards
-* **Transak** - Full-featured sandbox with test SSN/PAN numbers
+| Provider | Product | Sandbox result | Details |
+| --- | --- | --- | --- |
+| Stripe | Buy, widget and headless | `SETTLED` with Stripe's test values. Supports fewer currency pairs than production | [Stripe](/docs/stablecoins/sandbox-guide/test#stripe), [Apple Pay with Stripe](/docs/stablecoins/sandbox-guide/headless-testing#apple-pay-with-stripe) |
+| Banxa | Buy, widget; sell quotes | `SETTLED` with Banxa's test card. Sell quotes in `EUR` and `GBP` only, not `USD` | [Banxa](/docs/stablecoins/sandbox-guide/test#banxa) |
+| Topper | Buy, widget (`ETH`) | Paid, then stays in `SETTLING` | [Topper](/docs/stablecoins/sandbox-guide/test#topper) |
+| T-0 | Buy, headless bank transfer | `SETTLED` after a simulated payment | [T-0](/docs/stablecoins/sandbox-guide/headless-testing#t-0) |
+| Yellow Card | Sell, headless mobile money | `SETTLED`, `FAILED` or `REFUNDED`, chosen by the payout phone number and the customer's last name. Contact Meld support to link your test customer first | [Yellow Card](/docs/stablecoins/sandbox-guide/headless-testing#yellow-card) |
+| dLocal | Sell, headless bank payout | `SETTLED` after a simulated deposit | [dLocal](/docs/stablecoins/sandbox-guide/headless-testing#dlocal) |
+| Brale | Sell, headless bank payout | `SETTLED` after a simulated deposit | [Brale](/docs/stablecoins/sandbox-guide/headless-testing#brale) |
+| Noah | Buy, virtual account | `SETTLED` after a simulated deposit | [Noah](/docs/stablecoins/sandbox-guide/virtual-account-flow-testing-credentials#noah) |
 
 ### ⚠️ Limited Sandbox Support
 
-These providers have sandbox limitations:
-
-* **Banxa** - Sandbox often rejects KYC/transactions; production testing recommended
-* **Stripe** - Runs on Meld's Stripe sandbox with Stripe's test values, and supports fewer currency pairs than production. For headless, see [Apple Pay with Stripe](/docs/stablecoins/sandbox-guide/headless-testing#apple-pay-with-stripe)
-* **Paybis** - Basic sandbox functionality
-* **BTC Direct** - Limited sandbox features
+* **Transak** - Quotes work and the widget opens. See [Transak](/docs/stablecoins/sandbox-guide/test#transak)
+* **Mercuryo** - Contact Meld support to allow-list your IP address. A new customer waits for Mercuryo's manual identity review. See [Mercuryo](/docs/stablecoins/sandbox-guide/test#mercuryo)
 * **Coinbase Pay** - Widget flows are production only. Headless Apple Pay can be tested up to order creation: see [Wallets → Coinbase](/docs/stablecoins/headless-integration/wallets#coinbase). For headless transfers, see [Transfer Flow](#transfer-flow)
-
-### ❌ Production Only
-
-These providers do not offer sandbox environments:
-
-* **Robinhood** - Production environment only
-* **Blockchain.com** - Production environment only
-* **Alchemy Pay** - Production-like sandbox requiring real payments
 
 ## 🔄 Flow Testing Capabilities
 
@@ -103,10 +99,8 @@ These providers do not offer sandbox environments:
 
 ### Sell Flow (Offramp)
 
-* ⚠️ **Limited testing** - quote generation only
-* Cannot complete full transactions in sandbox
-* Real cryptocurrency/fiat required for end-to-end testing
-* Use for UI flow testing only
+* ✅ **Headless sells** with Yellow Card, dLocal and Brale reach a final status in sandbox. See [Headless Testing](/docs/stablecoins/sandbox-guide/headless-testing#test-bank-transfer-and-mobile-money)
+* ⚠️ Other sell flows: quote generation only. Real cryptocurrency/fiat required for end-to-end testing
 
 ### Transfer Flow
 
@@ -118,13 +112,12 @@ These providers do not offer sandbox environments:
 ### 1. Start with Buy Flow
 
 * Begin all integrations with buy flow testing
-* Use recommended providers (Unlimit, Transak)
+* Use a recommended provider, such as Stripe for a widget buy or T-0 for a headless buy
 * Complete full transaction flow before moving to other flows
 
 ### 2. Provider Selection for Testing
 
 * Choose providers from "Recommended for Testing" list
-* Avoid production-only providers during initial development
 * Test with multiple providers to understand variations
 
 ### 3. Sandbox Data Handling
